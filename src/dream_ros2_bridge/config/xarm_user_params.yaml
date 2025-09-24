@@ -1,0 +1,29 @@
+ufactory_driver:
+  ros__parameters:
+    joint_states:
+      rate: 50
+      flags: -1
+    services:
+      debug: false
+      motion_enable: true
+      move_gohome: true
+      set_mode: true
+      set_state: true
+      set_gripper_enable: true
+      set_gripper_mode: true
+      set_gripper_speed: true
+      set_gripper_position: true
+      set_position: true
+      set_position_aa: true
+      set_collision_sensitivity: true
+      set_tcp_offset: true
+      set_tcp_load: true
+
+      get_state: true
+      get_gripper_position: true
+      get_position: true
+      get_servo_angle: true
+      get_servo_angle_j: true
+      get_position_aa: true
+
+      clean_gripper_error: true

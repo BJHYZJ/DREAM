@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+# Copyright (c) Hello Robot, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in the root directory
+# of this source tree.
+#
+# Some code may be adapted from other open-source works with their respective licenses. Original
+# license information maybe found below, if so.
+
+
+from dream.agent.robot_agent import RobotAgent
+from dream.agent.task.emote import EmoteTask
+from dream.agent.zmq_client import HomeRobotZmqClient
+from dream.core import get_parameters
+
+
+def main(
+    robot_ip: str = "",
+    local: bool = False,
+    parameter_file: str = "default_planner.yaml",
+):
+    # Create robot client
+    parameters = get_parameters(parameter_file)
+    robot = HomeRobotZmqClient(
+        robot_ip=robot_ip,
+        use_remote_computer=(not local),
+        parameters=parameters,
+    )
+
+    robot.move_to_nav_posture()
+
+    # create robot agent
+    demo = RobotAgent(robot, parameters=parameters)
+
+    # create emote task
+    emote_task = EmoteTask(demo)
+    task = emote_task.get_task("nod")
+    task.run()
+
+    task = emote_task.get_task("shake_head")
+    task.run()
+
+    task = emote_task.get_task("wave")
+    task.run()
+
+    task = emote_task.get_task("avert_gaze")
+    task.run()
+
+
+if __name__ == "__main__":
+    main()

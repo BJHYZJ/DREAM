@@ -1,0 +1,1428 @@
+[
+  {
+    "timestamp": 1758092471.4332006,
+    "msg_count": 1,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940263,
+        "nanosec": 448575973
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940263,
+        "nanosec": 448575973
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 189,
+      "mapgraph_poses_count": 189,
+      "mapdata_links_count": 384,
+      "mapgraph_links_count": 384
+    }
+  },
+  {
+    "timestamp": 1758092472.4331954,
+    "msg_count": 2,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940264,
+        "nanosec": 547496557
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940264,
+        "nanosec": 547496557
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 190,
+      "mapgraph_poses_count": 190,
+      "mapdata_links_count": 386,
+      "mapgraph_links_count": 386
+    }
+  },
+  {
+    "timestamp": 1758092473.4332335,
+    "msg_count": 3,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940265,
+        "nanosec": 598117589
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940265,
+        "nanosec": 598117589
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 191,
+      "mapgraph_poses_count": 191,
+      "mapdata_links_count": 388,
+      "mapgraph_links_count": 388
+    }
+  },
+  {
+    "timestamp": 1758092474.43325,
+    "msg_count": 4,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940266,
+        "nanosec": 647941112
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940266,
+        "nanosec": 647941112
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 192,
+      "mapgraph_poses_count": 192,
+      "mapdata_links_count": 390,
+      "mapgraph_links_count": 390
+    }
+  },
+  {
+    "timestamp": 1758092475.4334264,
+    "msg_count": 5,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940267,
+        "nanosec": 648355960
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940267,
+        "nanosec": 648355960
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 193,
+      "mapgraph_poses_count": 193,
+      "mapdata_links_count": 392,
+      "mapgraph_links_count": 392
+    }
+  },
+  {
+    "timestamp": 1758092476.4333339,
+    "msg_count": 6,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940268,
+        "nanosec": 747928619
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940268,
+        "nanosec": 747928619
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 194,
+      "mapgraph_poses_count": 194,
+      "mapdata_links_count": 394,
+      "mapgraph_links_count": 394
+    }
+  },
+  {
+    "timestamp": 1758092477.4332113,
+    "msg_count": 7,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940269,
+        "nanosec": 797095298
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940269,
+        "nanosec": 797095298
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 195,
+      "mapgraph_poses_count": 195,
+      "mapdata_links_count": 396,
+      "mapgraph_links_count": 396
+    }
+  },
+  {
+    "timestamp": 1758092478.4332,
+    "msg_count": 8,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940270,
+        "nanosec": 798382520
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940270,
+        "nanosec": 798382520
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 196,
+      "mapgraph_poses_count": 196,
+      "mapdata_links_count": 398,
+      "mapgraph_links_count": 398
+    }
+  },
+  {
+    "timestamp": 1758092479.4332116,
+    "msg_count": 9,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092480.4331899,
+    "msg_count": 10,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092481.4332182,
+    "msg_count": 11,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092482.433316,
+    "msg_count": 12,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092483.4332833,
+    "msg_count": 13,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092484.433194,
+    "msg_count": 14,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092485.433229,
+    "msg_count": 15,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092486.4332008,
+    "msg_count": 16,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092487.4332035,
+    "msg_count": 17,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092488.4331875,
+    "msg_count": 18,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092489.4332163,
+    "msg_count": 19,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092490.4332104,
+    "msg_count": 20,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092491.4331677,
+    "msg_count": 21,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092492.433321,
+    "msg_count": 22,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092493.4331753,
+    "msg_count": 23,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092494.4331963,
+    "msg_count": 24,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092495.4332976,
+    "msg_count": 25,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092496.4332108,
+    "msg_count": 26,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092497.4331744,
+    "msg_count": 27,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092498.4331594,
+    "msg_count": 28,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940271,
+        "nanosec": 847648620
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 197,
+      "mapgraph_poses_count": 197,
+      "mapdata_links_count": 400,
+      "mapgraph_links_count": 400
+    }
+  },
+  {
+    "timestamp": 1758092499.4332182,
+    "msg_count": 29,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940272,
+        "nanosec": 946049690
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940272,
+        "nanosec": 946049690
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 198,
+      "mapgraph_poses_count": 198,
+      "mapdata_links_count": 402,
+      "mapgraph_links_count": 402
+    }
+  },
+  {
+    "timestamp": 1758092500.4332464,
+    "msg_count": 30,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940273,
+        "nanosec": 946962594
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940273,
+        "nanosec": 946962594
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 199,
+      "mapgraph_poses_count": 199,
+      "mapdata_links_count": 404,
+      "mapgraph_links_count": 404
+    }
+  },
+  {
+    "timestamp": 1758092501.433201,
+    "msg_count": 31,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940274,
+        "nanosec": 996322631
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940274,
+        "nanosec": 996322631
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 200,
+      "mapgraph_poses_count": 200,
+      "mapdata_links_count": 406,
+      "mapgraph_links_count": 406
+    }
+  },
+  {
+    "timestamp": 1758092502.433251,
+    "msg_count": 32,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940275,
+        "nanosec": 998064994
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940275,
+        "nanosec": 998064994
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 201,
+      "mapgraph_poses_count": 201,
+      "mapdata_links_count": 408,
+      "mapgraph_links_count": 408
+    }
+  },
+  {
+    "timestamp": 1758092503.4331996,
+    "msg_count": 33,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940277,
+        "nanosec": 47019004
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940277,
+        "nanosec": 47019004
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 202,
+      "mapgraph_poses_count": 202,
+      "mapdata_links_count": 410,
+      "mapgraph_links_count": 410
+    }
+  },
+  {
+    "timestamp": 1758092504.4332068,
+    "msg_count": 34,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940278,
+        "nanosec": 48624515
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940278,
+        "nanosec": 48624515
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 203,
+      "mapgraph_poses_count": 203,
+      "mapdata_links_count": 412,
+      "mapgraph_links_count": 412
+    }
+  },
+  {
+    "timestamp": 1758092505.4331958,
+    "msg_count": 35,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940279,
+        "nanosec": 96375465
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940279,
+        "nanosec": 96375465
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 204,
+      "mapgraph_poses_count": 204,
+      "mapdata_links_count": 414,
+      "mapgraph_links_count": 414
+    }
+  },
+  {
+    "timestamp": 1758092506.4331837,
+    "msg_count": 36,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940280,
+        "nanosec": 98152160
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940280,
+        "nanosec": 98152160
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 205,
+      "mapgraph_poses_count": 205,
+      "mapdata_links_count": 416,
+      "mapgraph_links_count": 416
+    }
+  },
+  {
+    "timestamp": 1758092507.4332688,
+    "msg_count": 37,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940281,
+        "nanosec": 148624897
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940281,
+        "nanosec": 148624897
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 206,
+      "mapgraph_poses_count": 206,
+      "mapdata_links_count": 418,
+      "mapgraph_links_count": 418
+    }
+  },
+  {
+    "timestamp": 1758092508.433165,
+    "msg_count": 38,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940282,
+        "nanosec": 196576356
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940282,
+        "nanosec": 196576356
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 207,
+      "mapgraph_poses_count": 207,
+      "mapdata_links_count": 420,
+      "mapgraph_links_count": 420
+    }
+  },
+  {
+    "timestamp": 1758092509.4332566,
+    "msg_count": 39,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940283,
+        "nanosec": 197647571
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940283,
+        "nanosec": 197647571
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 208,
+      "mapgraph_poses_count": 208,
+      "mapdata_links_count": 422,
+      "mapgraph_links_count": 422
+    }
+  },
+  {
+    "timestamp": 1758092510.4331796,
+    "msg_count": 40,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  },
+  {
+    "timestamp": 1758092511.4331808,
+    "msg_count": 41,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  },
+  {
+    "timestamp": 1758092512.4331963,
+    "msg_count": 42,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  },
+  {
+    "timestamp": 1758092513.4331713,
+    "msg_count": 43,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  },
+  {
+    "timestamp": 1758092514.4331505,
+    "msg_count": 44,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  },
+  {
+    "timestamp": 1758092515.4331694,
+    "msg_count": 45,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  },
+  {
+    "timestamp": 1758092516.4331763,
+    "msg_count": 46,
+    "mapdata_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "mapgraph_header": {
+      "stamp": {
+        "sec": 1757940284,
+        "nanosec": 198629617
+      },
+      "frame_id": "map"
+    },
+    "graph_comparison": {
+      "poses_id_identical": true,
+      "poses_identical": true,
+      "links_identical": true,
+      "map_to_odom_identical": true,
+      "poses_id_diff": {},
+      "poses_diff": {},
+      "links_diff": {},
+      "mapdata_poses_count": 209,
+      "mapgraph_poses_count": 209,
+      "mapdata_links_count": 424,
+      "mapgraph_links_count": 424
+    }
+  }
+]

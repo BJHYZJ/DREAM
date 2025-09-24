@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: dream
+Version: 0.3.0
+Summary: dream package
+Home-page: https://github.com/BJHYZJ/dream
+Author: Zhijie Yan
+Author-email: Yanzhijie@buaa.edu.cn
+License: UNKNOWN
+Platform: UNKNOWN
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+Provides-Extra: discord
+Provides-Extra: hand_tracker
+
+UNKNOWN
+
