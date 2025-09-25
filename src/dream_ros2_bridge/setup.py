@@ -52,6 +52,7 @@ setup(
             "orbslam3 = dream_ros2_bridge.nodes.orbslam3:main",
             'd435i_accel_correction = dream_ros2_bridge.nodes.d435i_accel_correction:main',
             "server = dream_ros2_bridge.remote.server:main",
+            "server_dream = dream_ros2_bridge.remote.server_dream:main",
             "server_no_d405 = dream_ros2_bridge.remote.server_no_d405:main",
             "urdf_loader = dream_ros2_bridge.urdf_loader:main",
         ],
