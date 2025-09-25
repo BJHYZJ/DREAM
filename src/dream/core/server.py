@@ -213,7 +213,8 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.report_steps == 0:
                 print(f"[SEND FULL STATE] time taken = {dt} avg = {sum_time/steps}")
 
-            time.sleep(1e-4)
+            # time.sleep(1e-4)
+            time.sleep(1)
             t0 = timeit.default_timer()
 
     def spin_recv(self):
