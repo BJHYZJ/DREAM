@@ -31,7 +31,7 @@ configurable_parameters = [{'name': 'camera_namespace',             'default': '
                            {'name': 'enable_gyro',                  'default': 'true', 'description': "''"},
                            {'name': 'enable_accel',                 'default': 'true', 'description': "''"},
                            {"name": 'unite_imu_method',             'default': '2',    'description': "[0-None, 1-copy, 2-linear_interpolation]"},
-                           {'name': 'pointcloud.enable',            'default': 'false', 'description': ''},
+                           {'name': 'pointcloud.enable',            'default': 'true', 'description': ''},
                            {'name': 'pointcloud.stream_filter',     'default': '2', 'description': 'texture stream for pointcloud'},
                            {'name': 'pointcloud.stream_index_filter','default': '0', 'description': 'texture stream index for pointcloud'},
                            {'name': 'enable_sync',                  'default': 'true', 'description': "''"},

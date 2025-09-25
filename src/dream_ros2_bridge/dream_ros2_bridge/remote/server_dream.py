@@ -110,7 +110,7 @@ class ZmqServer(BaseZmqServer):
         """Get the state message for the robot."""
         q, dq, eff = self.client.get_joint_state()
         message = {
-            "base_pose_in_map": self.client.get_base_in_map_pose().matrix(),
+            "base_pose_in_map": self.client.get_base_in_map_pose(),
             "ee_pose_in_map": self.client.get_ee_pose_in_map().matrix(),
             "joint_positions": q,
             "joint_velocities": dq,
