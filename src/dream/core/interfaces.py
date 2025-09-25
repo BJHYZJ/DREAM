@@ -222,6 +222,9 @@ class Observations:
     ] = None  # (camera_height, camera_width) in [0, num_sem_categories - 1]
     camera_K: Optional[np.ndarray] = None  # (3, 3) camera intrinsics matrix
 
+    image_scaling: Optional[float] = None
+    depth_scaling: Optional[float] = None
+
     # Pose of the camera in world coordinates
     # camera_pose: Optional[np.ndarray] = None
     camera_pose_in_arm: Optional[np.ndarray] = None
@@ -229,16 +232,16 @@ class Observations:
     camera_pose_in_map: Optional[np.ndarray] = None
 
     # End effector camera
-    ee_rgb: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in [0, 255]
-    ee_depth: Optional[np.ndarray] = None  # (camera_height, camera_width) in meters
-    ee_xyz: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in camera coordinates
-    ee_semantic: Optional[
-        np.ndarray
-    ] = None  # (camera_height, camera_width) in [0, num_sem_categories - 1]
-    ee_camera_K: Optional[np.ndarray] = None  # (3, 3) camera intrinsics matrix
+    # ee_rgb: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in [0, 255]
+    # # ee_depth: Optional[np.ndarray] = None  # (camera_height, camera_width) in meters
+    # ee_xyz: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in camera coordinates
+    # ee_semantic: Optional[
+    #     np.ndarray
+    # ] = None  # (camera_height, camera_width) in [0, num_sem_categories - 1]
+    # ee_camera_K: Optional[np.ndarray] = None  # (3, 3) camera intrinsics matrix
 
     # Pose of the end effector camera in world coordinates
-    ee_camera_pose: Optional[np.ndarray] = None
+    # ee_camera_pose: Optional[np.ndarray] = None
 
     # Pose of the end effector grasp center in world coordinates
     ee_pose_in_map: Optional[np.ndarray] = None
@@ -325,8 +328,8 @@ class Observations:
             scaling: scaling factor for xyz"""
         if self.xyz is None:
             self.compute_xyz(scaling=scaling)
-        if self.xyz is not None and self.camera_pose is not None:
-            return self.transform_points(self.xyz, self.camera_pose)
+        if self.xyz is not None and self.camera_pose_in_map is not None:
+            return self.transform_points(self.xyz, self.camera_pose_in_map)
         return None
 
     def transform_points(self, points: np.ndarray, pose: np.ndarray):

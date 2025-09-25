@@ -32,7 +32,7 @@ from dream.core.interfaces import Observations
 from dream.core.parameters import Parameters
 from dream.mapping.grid import GridParams
 from dream.mapping.instance import Instance, InstanceMemory
-from dream.motion import Footprint, HelloStretchIdx, PlanResult, RobotModel
+from dream.motion import Footprint, DreamIdx, PlanResult, RobotModel
 from dream.perception.encoders import BaseImageTextEncoder
 from dream.perception.wrapper import OvmmPerception
 from dream.utils.data_tools.dict import update

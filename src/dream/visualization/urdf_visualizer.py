@@ -17,35 +17,21 @@ import numpy as np
 import urchin as urdf_loader
 from trimesh import Trimesh
 
-from dream.motion import HelloStretchIdx
+from dream.motion import DreamIdx
 
-model_name = "SE3"  # RE1V0, RE2V0, SE3
-tool_name = "eoa_wrist_dw3_tool_sg3"  # eoa_wrist_dw3_tool_sg3, tool_stretch_gripper, etc
-urdf_name = f"/{model_name}/stretch_description_{model_name}_{tool_name}.urdf"
+urdf_name = f"urdf/rangerminiv3_with_xarm6.urdf"
 
-# Handle different versions of importlib
-# This is important for supporting older versions of python that are build on orin
-try:
-    pkg_path = str(importlib_resources.files("stretch_urdf"))
-except AttributeError:
-    # Fallback for Python < 3.9
-    import pkg_resources
+# python 3.10
+pkg_path = importlib_resources.files("dream_ros2_bridge")
 
-    def files(package):
-        return pkg_resources.resource_filename(package, "")
+urdf_file_path = pkg_path / urdf_name
+mesh_files_directory_path = pkg_path / "meshes"
+urdf_dir = pkg_path / "urdf"
 
-    pkg_path = files("stretch_urdf")
-
-urdf_file_path = pkg_path + urdf_name
-mesh_files_directory_path = pkg_path + f"/{model_name}/meshes"
-urdf_dir = pkg_path + f"/{model_name}/"
-
-
-def get_absolute_path_stretch_urdf(urdf_file_path, mesh_files_directory_path) -> str:
+def get_absolute_path_dream_urdf(urdf_file_path, mesh_files_directory_path) -> str:
     """
     Generates Robot URDF with absolute path to mesh files
     """
-
     with open(urdf_file_path, "r") as f:
         _urdf_file = f.read()
 
@@ -55,15 +41,15 @@ def get_absolute_path_stretch_urdf(urdf_file_path, mesh_files_directory_path) ->
     for match in re.finditer(pattern, _urdf_file):
         orig = match.group(1)
         fn = match.group(1).split("/")[-1]
-        file_path = mesh_files_directory_path + "/" + fn
-        _urdf_file = _urdf_file.replace(orig, file_path)
+        file_path = mesh_files_directory_path / fn
+        _urdf_file = _urdf_file.replace(orig, str(file_path))
 
     # Absosolute path converted streth xml
-    temp_abs_urdf = "stretch_temp_abs.urdf"
-    with open(urdf_dir + temp_abs_urdf, "w") as f:
+    temp_abs_urdf = "rangerminiv3_with_xarm6_tmp.urdf"
+    with open(urdf_dir / temp_abs_urdf, "w") as f:
         f.write(_urdf_file)
-    print("Saving temp abs path dream urdf: {}".format(urdf_dir + f"{temp_abs_urdf}"))
-    return urdf_dir + temp_abs_urdf
+    print("Saving temp abs path dream urdf: {}".format(urdf_dir / f"{temp_abs_urdf}"))
+    return urdf_dir / temp_abs_urdf
 
 
 class URDFVisualizer:
@@ -72,7 +58,7 @@ class URDFVisualizer:
     using urchin.urdf_loader
     """
 
-    abs_urdf_file_path = get_absolute_path_stretch_urdf(urdf_file_path, mesh_files_directory_path)
+    abs_urdf_file_path = get_absolute_path_dream_urdf(urdf_file_path, mesh_files_directory_path)
 
     def __init__(self, urdf_file: str = abs_urdf_file_path):
         self.urdf = urdf_loader.URDF.load(urdf_file)
@@ -157,6 +143,6 @@ class URDFVisualizer:
     def get_transform_fk(self, q, link_name):
         state = q.copy()
         cfg = {}
-        for k in HelloStretchIdx.name_to_idx:
-            cfg[k] = state[HelloStretchIdx.name_to_idx[k]]
+        for k in DreamIdx.name_to_idx:
+            cfg[k] = state[DreamIdx.name_to_idx[k]]
         return self.get_transform(cfg, link_name)

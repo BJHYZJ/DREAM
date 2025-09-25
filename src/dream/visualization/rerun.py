@@ -22,7 +22,7 @@ import torch
 from dream.core.interfaces import Observations
 from dream.mapping.scene_graph import SceneGraph
 from dream.mapping.voxel.voxel_map import SparseVoxelMapNavigationSpace
-from dream.motion import HelloStretchIdx
+from dream.motion import DreamIdx
 from dream.perception.wrapper import OvmmPerception
 from dream.utils.logger import Logger
 from dream.visualization import urdf_visualizer
@@ -114,7 +114,7 @@ def log_to_rerun(topic_name, data, **kwargs):
     rr.log(topic_name, data, **kwargs)
 
 
-class StretchURDFLogger(urdf_visualizer.URDFVisualizer):
+class DreamURDFLogger(urdf_visualizer.URDFVisualizer):
     link_names = []
     link_poses = []
 
@@ -149,8 +149,8 @@ class StretchURDFLogger(urdf_visualizer.URDFVisualizer):
         """
         state = obs["joint"]
         cfg = {}
-        for k in HelloStretchIdx.name_to_idx:
-            cfg[k] = state[HelloStretchIdx.name_to_idx[k]]
+        for k in DreamIdx.name_to_idx:
+            cfg[k] = state[DreamIdx.name_to_idx[k]]
         lk_cfg = {
             "joint_wrist_yaw": cfg["wrist_yaw"],
             "joint_wrist_pitch": cfg["wrist_pitch"],
@@ -219,7 +219,7 @@ class RerunVisualizer:
                 spawn_gui = False
                 open_browser = True
                 logger.warning("Docker environment detected. Disabling GUI.")
-        rr.init("Stretch_robot", spawn=spawn_gui)
+        rr.init("Dream_robot", spawn=spawn_gui)
 
         if output_path is not None:
             rr.save(output_path / "rerun_log.rrd")
@@ -232,7 +232,7 @@ class RerunVisualizer:
         self.show_camera_point_clouds = show_camera_point_clouds
 
         if self.display_robot_mesh:
-            self.urdf_logger = StretchURDFLogger()
+            self.urdf_logger = DreamURDFLogger()
             self.urdf_logger.load_robot_mesh(use_collision=False)
 
         # Create environment Box place holder
@@ -291,7 +291,7 @@ class RerunVisualizer:
             identity_name (str): rerun identity name
             img (2D or 3D array): the 2d image you want to log into rerun
         """
-        # rr.init("Stretch_robot", spawn=(not self.open_browser))
+        # rr.init("Dream_robot", spawn=(not self.open_browser))
         log_to_rerun(identity_name, rr.Image(img))
 
     def log_text(self, identity_name: str, text: str):
@@ -301,7 +301,7 @@ class RerunVisualizer:
             identity_name (str): rerun identity name
             text (str): Markdown codes you want to log in rerun
         """
-        # rr.init("Stretch_robot", spawn=(not self.open_browser))
+        # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.log(identity_name, rr.TextDocument(text, media_type=rr.MediaType.MARKDOWN))
 
     def log_arrow3D(
@@ -321,7 +321,7 @@ class RerunVisualizer:
             colors (a N x 3 array): RGB colors of all 3D arrows
             radii (float): size of the arrows
         """
-        # rr.init("Stretch_robot", spawn=(not self.open_browser))
+        # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.log(
             identity_name,
             rr.Arrows3D(origins=origins, vectors=vectors, colors=colors, radii=radii),
@@ -342,7 +342,7 @@ class RerunVisualizer:
             colors (a N x 3 array): RGB colors of all 3D points
             radii (float): size of the arrows
         """
-        # rr.init("Stretch_robot", spawn=(not self.open_browser))
+        # rr.init("Dream_robot", spawn=(not self.open_browser))
         log_to_rerun(
             identity_name,
             rr.Points3D(
@@ -358,7 +358,7 @@ class RerunVisualizer:
         Args:
             obs (Observations): Observation dataclass
         """
-        # rr.init("Stretch_robot", spawn=(not self.open_browser))
+        # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.set_time_seconds("realtime", time.time())
         log_to_rerun("world/head_camera/rgb", rr.Image(obs.rgb))
 
@@ -424,11 +424,11 @@ class RerunVisualizer:
         """
         # rr.set_time_seconds("realtime", time.time())
         # EE Frame
-        if not "ee_pose" in obs:
+        if not "ee_pose_in_map" in obs:
             return
-        if obs["ee_pose"] is None:
+        if obs["ee_pose_in_map"] is None:
             return
-        rot, trans = decompose_homogeneous_matrix(obs["ee_pose"])
+        rot, trans = decompose_homogeneous_matrix(obs["ee_pose_in_map"])
         ee_arrow = rr.Arrows3D(
             origins=[0, 0, 0], vectors=[0.2, 0, 0], radii=0.02, labels="ee", colors=[0, 255, 0, 255]
         )
@@ -492,10 +492,10 @@ class RerunVisualizer:
         """Log robot joint states"""
         rr.set_time_seconds("realtime", time.time())
         state = obs["joint"]
-        for k in HelloStretchIdx.name_to_idx:
+        for k in DreamIdx.name_to_idx:
             rr.log(
                 f"robot_state/joint_pose/{k}",
-                rr.Scalar(state[HelloStretchIdx.name_to_idx[k]]),
+                rr.Scalar(state[DreamIdx.name_to_idx[k]]),
                 static=True,
             )
 
@@ -676,7 +676,7 @@ class RerunVisualizer:
 
                 # Cameras use the lower-res servo object
                 self.log_head_camera(servo)
-                self.log_ee_camera(servo)
+                # self.log_ee_camera(servo)
 
                 self.log_robot_state(obs)
 

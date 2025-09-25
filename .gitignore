@@ -7,3 +7,4 @@ __pycache__/
 # VS Code 配置（可选，避免上传个人配置）
 .vscode/
 *.egg-info
+memory

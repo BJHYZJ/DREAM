@@ -86,13 +86,13 @@ class ZmqServer(BaseZmqServer):
             "depth": depth,
             "gps": obs.gps,
             "compass": obs.compass,
-            "camera_pose_in_map": obs.camera_pose_in_map,
-            "camera_pose_in_arm": obs.camera_pose_in_arm,
-            "camera_pose_in_base": obs.camera_pose_in_base,
+            "camera_pose_in_map": obs.camera_pose_in_map.matrix(),
+            "camera_pose_in_arm": obs.camera_pose_in_arm.matrix(),
+            "camera_pose_in_base": obs.camera_pose_in_base.matrix(),
             "joint": obs.joint,
             "joint_velocities": obs.joint_velocities,
             "camera_K": obs.camera_K.cpu().numpy(),
-            "ee_pose_in_map": obs.ee_pose_in_map,
+            "ee_pose_in_map": obs.ee_pose_in_map.matrix(),
             "rgb_width": width,
             "rgb_height": height,
             "lidar_points": obs.lidar_points,
@@ -110,8 +110,8 @@ class ZmqServer(BaseZmqServer):
         """Get the state message for the robot."""
         q, dq, eff = self.client.get_joint_state()
         message = {
-            "base_pose_in_map": self.client.get_base_in_map_pose(),
-            "ee_pose_in_map": self.client.get_ee_pose_in_map(),
+            "base_pose_in_map": self.client.get_base_in_map_pose().matrix(),
+            "ee_pose_in_map": self.client.get_ee_pose_in_map().matrix(),
             "joint_positions": q,
             "joint_velocities": dq,
             "joint_efforts": eff,
@@ -237,42 +237,42 @@ class ZmqServer(BaseZmqServer):
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)
 
-    def _get_ee_cam_message(self) -> Dict[str, Any]:
-        # Read images from the end effector and head cameras
-        ee_depth_image = self.client.ee_dpt_cam.get()
-        ee_color_image = self.client.ee_rgb_cam.get()
-        ee_color_image, ee_depth_image = self._rescale_color_and_depth(
-            ee_color_image, ee_depth_image, self.ee_image_scaling
-        )
+    # def _get_ee_cam_message(self) -> Dict[str, Any]:
+    #     # Read images from the end effector and head cameras
+    #     ee_depth_image = self.client.ee_dpt_cam.get()
+    #     ee_color_image = self.client.ee_rgb_cam.get()
+    #     ee_color_image, ee_depth_image = self._rescale_color_and_depth(
+    #         ee_color_image, ee_depth_image, self.ee_image_scaling
+    #     )
 
-        # Adapt color so we can use higher shutter speed
-        ee_color_image = adjust_gamma(ee_color_image, 2.5)
+    #     # Adapt color so we can use higher shutter speed
+    #     ee_color_image = adjust_gamma(ee_color_image, 2.5)
 
-        # Conversion
-        ee_depth_image = (ee_depth_image * 1000).astype(np.uint16)
+    #     # Conversion
+    #     ee_depth_image = (ee_depth_image * 1000).astype(np.uint16)
 
-        # Compress the images
-        compressed_ee_depth_image = compression.to_jp2(ee_depth_image)
-        compressed_ee_color_image = compression.to_jpg(ee_color_image)
+    #     # Compress the images
+    #     compressed_ee_depth_image = compression.to_jp2(ee_depth_image)
+    #     compressed_ee_color_image = compression.to_jpg(ee_color_image)
 
-        ee_camera_pose = self.client.ee_camera_pose
+    #     ee_camera_pose = self.client.ee_camera_pose
 
-        d405_output = {
-            "ee_cam/color_camera_K": scale_camera_matrix(
-                self.client.ee_rgb_cam.get_K(), self.ee_image_scaling
-            ),
-            "ee_cam/depth_camera_K": scale_camera_matrix(
-                self.client.ee_dpt_cam.get_K(), self.ee_image_scaling
-            ),
-            "ee_cam/color_image": compressed_ee_color_image,
-            "ee_cam/depth_image": compressed_ee_depth_image,
-            "ee_cam/color_image/shape": ee_color_image.shape,
-            "ee_cam/depth_image/shape": ee_depth_image.shape,
-            "ee_cam/image_scaling": self.ee_image_scaling,
-            "ee_cam/depth_scaling": self.ee_depth_scaling,
-            "ee_cam/pose": ee_camera_pose,
-        }
-        return d405_output
+    #     d405_output = {
+    #         "ee_cam/color_camera_K": scale_camera_matrix(
+    #             self.client.ee_rgb_cam.get_K(), self.ee_image_scaling
+    #         ),
+    #         "ee_cam/depth_camera_K": scale_camera_matrix(
+    #             self.client.ee_dpt_cam.get_K(), self.ee_image_scaling
+    #         ),
+    #         "ee_cam/color_image": compressed_ee_color_image,
+    #         "ee_cam/depth_image": compressed_ee_depth_image,
+    #         "ee_cam/color_image/shape": ee_color_image.shape,
+    #         "ee_cam/depth_image/shape": ee_depth_image.shape,
+    #         "ee_cam/image_scaling": self.ee_image_scaling,
+    #         "ee_cam/depth_scaling": self.ee_depth_scaling,
+    #         "ee_cam/pose": ee_camera_pose,
+    #     }
+    #     return d405_output
 
     def get_servo_message(self) -> Dict[str, Any]:
         # if self.use_d405:
@@ -289,7 +289,7 @@ class ZmqServer(BaseZmqServer):
         compressed_head_color_image = compression.to_jpg(head_color_image)
 
         message = {
-            "ee/pose_in_map": self.client.get_ee_pose_in_map(),
+            "ee/pose_in_map": self.client.get_ee_pose_in_map().matrix(),
             "head_cam/color_camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),
@@ -302,7 +302,7 @@ class ZmqServer(BaseZmqServer):
             "head_cam/depth_image/shape": head_depth_image.shape,
             "head_cam/image_scaling": self.image_scaling,
             "head_cam/depth_scaling": self.depth_scaling,
-            "head_cam/pose": self.client.get_head_camera_pose_in_map(),
+            "head_cam/pose": self.client.get_head_camera_pose_in_map().matrix(),
             "robot/config": obs.joint,
             "step": self._last_step,
         }

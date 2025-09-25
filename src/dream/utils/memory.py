@@ -12,7 +12,7 @@ import shutil
 from datetime import datetime
 from typing import Optional
 
-path = os.path.expanduser("~/.dream")
+path = os.path.expanduser("./memory")
 
 
 def _ensure_path_exists() -> None:
@@ -38,13 +38,13 @@ def lookup_address(
         if len(robot_ip) > 0:
             # Update the robot IP address file
             if update:
-                with open(os.path.expanduser("~/.dream/robot_ip.txt"), "w") as f:
+                with open(f"{path}/robot_ip.txt", "w") as f:
                     f.write(robot_ip)
         else:
             # Look up the robot computer in config directory
-            if not os.path.exists(os.path.expanduser("~/.dream/robot_ip.txt")):
+            if not os.path.exists(f"{path}/robot_ip.txt"):
                 return None
-            robot_ip = open(os.path.expanduser("~/.dream/robot_ip.txt")).read().strip()
+            robot_ip = open(f"{path}/robot_ip.txt").read().strip()
         recv_address = "tcp://" + robot_ip
     else:
         recv_address = "tcp://127.0.0.1"
