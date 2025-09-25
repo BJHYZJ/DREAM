@@ -570,12 +570,7 @@ class StretchRosInterface(Node):
             raise RuntimeError("Already created cameras")
         print("Creating cameras...")
         self.rgb_cam = RosCamera(self, self._color_topic)
-        self.dpt_cam = RosCamera(
-            self,
-            self._depth_topic,
-            rotations=3,
-            buffer_size=self._depth_buffer_size,
-        )
+        self.dpt_cam = RosCamera(self, self._depth_topic)
         # if use_d405:
         #     self.ee_rgb_cam = RosCamera(
         #         self,
