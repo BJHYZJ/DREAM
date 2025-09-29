@@ -76,24 +76,26 @@ class XARM6:
         else:
             return state
 
+    def set_gripper(self, target: int = 830, wait: bool = True):
+        if not self.is_alive:
+            raise ValueError("Robot is not alive!")
+        code = self._arm.set_gripper_position(target, wait=wait)
+        if not self._check_code(code, "set_gripper_position"):
+            raise ValueError("set_gripper Error")
+        return True
+
     def open_gripper(self, wait=True, half_open=False):
         if not self.is_alive:
             raise ValueError("Robot is not alive!")
         if half_open:
-            code = self._arm.set_gripper_position(460, wait=wait)
+            self.set_gripper(460, wait=wait)
         else:
-            code = self._arm.set_gripper_position(830, wait=wait)
-        if not self._check_code(code, "set_gripper_position"):
-            raise ValueError("open_gripper Error")
-        return True
+            self.set_gripper(830, wait=wait)
 
     def close_gripper(self, wait=True):
         if not self.is_alive:
             raise ValueError("Robot is not alive!")
-        code = self._arm.set_gripper_position(0, wait=wait)
-        if not self._check_code(code, "set_gripper_position"):
-            raise ValueError("close_gripper Error")
-        return True
+        self.set_gripper(0, wait=wait)
 
     def get_gripper_state(self):
         if not self.is_alive:

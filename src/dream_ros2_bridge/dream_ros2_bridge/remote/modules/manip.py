@@ -78,9 +78,6 @@ class ManipulationClient(AbstractControlModule):
 
     def get_ee_pose(self, world_frame=False, matrix=False):
         """Get current end-effector pose from xarm controller"""
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         # Get current pose from xarm controller [x, y, z, roll, pitch, yaw]
         pose_data = self._ros_client._arm_client.get_current_pose()
         pos = np.array([pose_data[0], pose_data[1], pose_data[2]])  # mm
@@ -126,9 +123,6 @@ class ManipulationClient(AbstractControlModule):
 
     def get_joint_positions(self):
         """Get current joint positions including base x position"""
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         # Get joint states from xarm controller
         joint_state = self._ros_client._arm_client.get_joint_state()
         gripper_state = self._ros_client._arm_client.get_gripper_state()
@@ -161,9 +155,6 @@ class ManipulationClient(AbstractControlModule):
 
     def get_gripper_position(self) -> float:
         """get current gripper position as a float"""
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         gripper_state = self._ros_client._arm_client.get_gripper_state()
         return gripper_state
 
@@ -177,9 +168,6 @@ class ManipulationClient(AbstractControlModule):
         """Directly command the robot using generalized coordinates
         For xarm, we'll convert to end-effector pose and move directly
         """
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         # For xarm, we expect q to be [base_x, joint1, joint2, joint3, joint4, joint5, joint6, gripper]
         # We'll use the joint positions to move the arm
         if len(q) >= 6:
@@ -214,17 +202,11 @@ class ManipulationClient(AbstractControlModule):
     @enforce_enabled
     def home(self):
         """Move robot to home position"""
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         self._ros_client._arm_client.reset()
 
     @enforce_enabled
     def reset(self):
         """Move robot to reset position"""
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         self._ros_client._arm_client.reset()
 
     # @enforce_enabled
@@ -254,9 +236,6 @@ class ManipulationClient(AbstractControlModule):
             head_pan: Head pan angle (not used for xarm)
             gripper: Gripper position (handled separately)
         """
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         assert len(joint_positions) >= 6, "Joint position vector must be of length 6 or more."
         joint_positions = [float(x) for x in joint_positions]
 
@@ -480,9 +459,6 @@ class ManipulationClient(AbstractControlModule):
             debug: Whether to print debug information
             initial_cfg: Preferred (initial) joint state configuration
         """
-        if not self._ros_client._arm_client.is_alive:
-            raise ValueError("Robot is not alive!")
-        
         # For xarm, we can directly use the pose without complex IK
         # Convert the desired pose to xarm format
         pose = [
@@ -579,6 +555,20 @@ class ManipulationClient(AbstractControlModule):
     def close_gripper(self, wait=True):
         self._ros_client._arm_client.close_gripper(wait=wait)
 
+    def move_gripper(self, target: int = 830, wait: bool = True):
+        self._ros_client._arm_client.set_gripper(target, wait=wait)
+
+        # joint_goals = {self._ros_client.GRIPPER_FINGER: target}
+
+        # def wait_for_gripper():
+        #     rate = self._ros_client.create_rate(1 / GRIPPER_MOTION_SECS)
+        #     rate.sleep()
+
+        # self._ros_client.send_joint_goals(joint_goals)
+
+        # self._register_wait(wait_for_gripper)
+        # if blocking:
+        #     self.wait()
 
     # Helper methods
 
