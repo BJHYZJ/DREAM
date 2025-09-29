@@ -57,7 +57,7 @@ import tf2_ros
 from dream.motion.kinematics import HelloStretchIdx
 from dream.utils.pose import to_matrix, transform_to_list
 from dream.utils.geometry import angle_difference, sophus2xyt, xyt2sophus, xyt_base_to_global
-from dream_ros2_bridge.constants import ARM_JOINTS, ROBOT_JOINTS
+from dream_ros2_bridge.constants import BASE_JOINTS, ARM_JOINTS, GRIPPER_JOINTS, ROBOT_JOINTS
 from dream_ros2_bridge.ros.camera import RosCamera
 # from dream_ros2_bridge.ros.lidar import RosLidar
 from dream_ros2_bridge.ros.lidar3d import Ros3DLidar
@@ -153,13 +153,23 @@ class StretchRosInterface(Node):
         # self.arm_frc = np.zeros(self.dof)
         # self.arm_joint_status: Dict[str, float] = {}
 
+        self.arm_pos = np.zeros(len(ARM_JOINTS))
+        self.arm_vel = np.zeros(len(ARM_JOINTS))
+        self.arm_frc = np.zeros(len(ARM_JOINTS))
+        self.gripper_pos = 830  # 830 is the open position
+
         self.pos = np.zeros(self.dof)
         self.vel = np.zeros(self.dof)
         self.frc = np.zeros(self.dof)
         self.joint_status: Dict[str, float] = {}
 
-        self.se3_base: Optional[sp.SE3] = None
-        self.vel_base = np.zeros(3)
+        self.se3_base_pose: Optional[sp.SE3] = None
+        self.se3_camera_pose_in_arm: Optional[sp.SE3] = None
+        self.se3_camera_pose_in_base: Optional[sp.SE3] = None
+        self.se3_camera_pose_in_map: Optional[sp.SE3] = None
+        self.se3_ee_pose_in_map: Optional[sp.SE3] = None
+
+        self.vel_base = np.zeros(len(BASE_JOINTS))
 
         # self.se3_base_filtered: Optional[sp.SE3] = None
         # self.se3_base_odom: Optional[sp.SE3] = None
@@ -250,16 +260,17 @@ class StretchRosInterface(Node):
             # return self.pos, self.vel, self.frc
         # 只有在需要的时候才去调用get_base_in_map_pose，减少调用频率
         with self._js_lock:
-            arm_pos, arm_vel, arm_frc = self._arm_client.get_joint_state()
-            gripper_pos = self._arm_client.get_gripper_state()
-            base_x, base_y, base_theta = sophus2xyt(self.get_base_in_map_pose())
-            self.pos[:3] = [base_x, base_y, base_theta]
-            self.pos[3:9] = arm_pos[:6]
-            self.pos[9] = gripper_pos
+            self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
+            self.gripper_pos = self._arm_client.get_gripper_state()
+            # base_x, base_y, base_theta = sophus2xyt(self.get_base_in_map_pose())
+            # self.pos[:3] = [base_x, base_y, base_theta]
+            self.pos[:3] = sophus2xyt(self.get_base_in_map_pose())
+            self.pos[3:9] = self.arm_pos[:6]
+            self.pos[9] = self.gripper_pos
             self.vel[:3] = self.vel_base
-            self.vel[3:9] = arm_vel[:6]
+            self.vel[3:9] = self.arm_vel[:6]
             # self.frc[:3] = 0
-            self.frc[3:9] = arm_frc[:6]
+            self.frc[3:9] = self.arm_frc[:6]
         return self.pos, self.vel, self.frc
     
     # def get_base_in_map_pose(self):
@@ -746,52 +757,60 @@ class StretchRosInterface(Node):
         return pose_mat
 
     def get_base_in_map_pose(self):
-        base_pose_matrix = self.get_frame_pose(
+        base_pose_in_map_matrix = self.get_frame_pose(
             frame="base_link",
             base_frame="map",
             lookup_time=None, # Get latest available transform
             timeout_s=None
         )
-        if base_pose_matrix is not None:
-            return sp.SE3(base_pose_matrix)
+        if base_pose_in_map_matrix is not None:
+            se3_base_pose = sp.SE3(base_pose_in_map_matrix)
+            self.se3_base_pose = se3_base_pose
         else:
-            return None
+            self.get_logger().warn("base pose in map is None, use last known pose")
+        return self.se3_base_pose
 
     def get_camera_in_arm_pose(self):
-        camera_pose_matrix = self.get_frame_pose(
+        camera_pose_in_arm_matrix = self.get_frame_pose(
             frame="camera_color_optical_frame",
             base_frame="arm_base",
             lookup_time=None,
             timeout_s=1.0
         )
-        if camera_pose_matrix is not None:
-            return sp.SE3(camera_pose_matrix)
+        if camera_pose_in_arm_matrix is not None:
+            se3_camera_pose_in_arm = sp.SE3(camera_pose_in_arm_matrix)
+            self.se3_camera_pose_in_arm = se3_camera_pose_in_arm
         else:
-            return None
+            self.get_logger().warn("camera pose in arm is None, use last known pose")
+        return self.se3_camera_pose_in_arm
 
     def get_camera_in_base_pose(self):
-        camera_pose_matrix = self.get_frame_pose(
+        camera_pose_in_base_matrix = self.get_frame_pose(
             frame="camera_color_optical_frame",
             base_frame="base_link",
             lookup_time=None,
             timeout_s=1.0
         )
-        if camera_pose_matrix is not None:
-            return sp.SE3(camera_pose_matrix)
+        if camera_pose_in_base_matrix is not None:
+            se3_camera_pose_in_base = sp.SE3(camera_pose_in_base_matrix)
+            self.se3_camera_pose_in_base = se3_camera_pose_in_base
         else:
-            return None
+            self.get_logger().warn("camera pose in base is None, use last known pose")
+        return self.se3_camera_pose_in_base
 
     def get_camera_in_map_pose(self):
-        camera_pose_matrix = self.get_frame_pose(
+        camera_pose_in_map_matrix = self.get_frame_pose(
             frame="camera_color_optical_frame",
             base_frame="map",
             lookup_time=None,
             timeout_s=1.0
         )
-        if camera_pose_matrix is not None:
-            return sp.SE3(camera_pose_matrix)
+        if camera_pose_in_map_matrix is not None:
+            se3_camera_pose_in_map = sp.SE3(camera_pose_in_map_matrix)
+            self.se3_camera_pose_in_map = se3_camera_pose_in_map
         else:
-            return None
+            self.get_logger().warn("camera pose in map is None, use last known pose")
+        return self.se3_camera_pose_in_map
 
     def get_ee_pose_in_map(self):
         ee_pose_matrix = self.get_frame_pose(
@@ -801,9 +820,12 @@ class StretchRosInterface(Node):
             timeout_s=1.0
         )
         if ee_pose_matrix is not None:
-            return sp.SE3(ee_pose_matrix)
+            se3_ee_pose_in_map = sp.SE3(ee_pose_matrix)
+            self.se3_ee_pose_in_map = se3_ee_pose_in_map
         else:
-            return None
+            self.get_logger().warn("ee pose in map is None, use last known pose")
+        return self.se3_ee_pose_in_map
+
 
     # def _camera_pose_callback(self, msg: PoseStamped):
     #     """camera pose from CameraPosePublisher, which reads from tf"""

@@ -65,7 +65,16 @@ class XARM6:
         code, state = self._arm.get_joint_states()
         if not self._check_code(code, "get_joint_state"):
             raise ValueError("get_joint_state Error")
-        return state
+        # Return only the first 6 joints (excluding gripper)
+        # state is typically [positions, velocities, torques] with 7 elements each
+        if isinstance(state, (list, tuple)) and len(state) >= 3:
+            return [
+                state[0][:6],  # positions of first 6 joints
+                state[1][:6],  # velocities of first 6 joints  
+                state[2][:6]   # torques of first 6 joints
+            ]
+        else:
+            return state
 
     def open_gripper(self, wait=True, half_open=False):
         if not self.is_alive:

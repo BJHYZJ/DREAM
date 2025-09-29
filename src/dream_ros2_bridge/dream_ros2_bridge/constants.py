@@ -56,7 +56,8 @@ import numpy as np
 
 T_LOC_STABILIZE = 1.0
 BASE_JOINTS = ['base_x', 'base_y', 'base_theta']
-ARM_JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'gripper']
+ARM_JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
+GRIPPER_JOINTS = ['gripper']
 ROBOT_JOINTS = BASE_JOINTS + ARM_JOINTS
 
 CAMERA_POSET_TOPIC = "/robot/camera_pose"

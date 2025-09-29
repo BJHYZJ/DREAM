@@ -23,11 +23,11 @@ from dream.core.interfaces import Observations
 from dream.core.robot import AbstractRobotClient, ControlMode
 from dream.motion import RobotModel
 from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q
-from dream.motion.kinematics import HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
+from dream.motion.kinematics import DreamIdx, HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
 from dream.utils.geometry import xyt2sophus
 
 from .modules.cam import CamClient
-from .modules.manip import StretchManipulationClient
+from .modules.manip import ManipulationClient
 from .modules.mapping import StretchMappingClient
 from .modules.nav import StretchNavigationClient
 from .ros import StretchRosInterface
@@ -84,7 +84,7 @@ class StretchClient(AbstractRobotClient):
 
         # Interface modules
         self.nav = StretchNavigationClient(self._ros_client, self._robot_model)
-        self.manip = StretchManipulationClient(self._ros_client, self._robot_model)
+        self.manip = ManipulationClient(self._ros_client, self._robot_model)
         # self.head = StretchHeadClient(self._ros_client, self._robot_model)
         self.cam = CamClient(self._ros_client, self._robot_model)
         self.mapping = StretchMappingClient(self._ros_client)
@@ -239,8 +239,7 @@ class StretchClient(AbstractRobotClient):
         # If we are in manipulation mode...
         if self._base_control_mode == ControlMode.MANIPULATION:
             # ...we need to get the joint positions from the manipulator
-            # q[HelloStretchIdx.BASE_X] = self.manip.get_base_x()
-            assert 1 == 2
+            q[DreamIdx.BASE_X] = self.manip.get_base_x()
         return q, dq, eff
 
     def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
@@ -250,21 +249,23 @@ class StretchClient(AbstractRobotClient):
     def move_to_manip_posture(self):
         """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
         self.switch_to_manipulation_mode()
-        pos = self.manip._extract_joint_pos(STRETCH_PREGRASP_Q)
-        pan, tilt = self._robot_model.look_at_ee
-        print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
-        self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
-        print("- Robot switched to manipulation mode.")
+        # pos = self.manip._extract_joint_pos(STRETCH_PREGRASP_Q)
+        # # pan, tilt = self._robot_model.look_at_ee
+        # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
+        # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
+        # print("- Robot switched to manipulation mode.")
+        assert 1 == 2
 
     def move_to_nav_posture(self):
         """Move the arm and head into nav mode. The head will be looking front."""
 
         # First retract the robot's joints
         self.switch_to_manipulation_mode()
-        pan, tilt = self._robot_model.look_close
-        pos = self.manip._extract_joint_pos(STRETCH_NAVIGATION_Q)
-        print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
-        self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
+        # pan, tilt = self._robot_model.look_close
+        # pos = self.manip._extract_joint_pos(STRETCH_NAVIGATION_Q)
+        # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
+        # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
+        self.manip.reset()
         self.switch_to_navigation_mode()
         print("- Robot switched to navigation mode.")
 
