@@ -107,9 +107,13 @@ class XARM6:
 
     def reset(self):
         # This can proimise the initial position has the correct joint angle
-        self._arm.set_servo_angle(
-            angle=self.init_servo_angle, is_radian=False, wait=True
-        )
+        # self._arm.set_servo_angle(
+        #     angle=self.init_servo_angle, is_radian=False, wait=True
+        # )
+        self.set_servo_angle(self.init_servo_angle, is_radian=False, wait=True)
+
+    def set_servo_angle(self, angle, is_radian=False, wait=True):
+        self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
 
     # Register error/warn changed callback
     def _error_warn_changed_callback(self, data):

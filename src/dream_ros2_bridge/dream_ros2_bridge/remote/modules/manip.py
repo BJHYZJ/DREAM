@@ -176,6 +176,14 @@ class ManipulationClient(AbstractControlModule):
         
         return True
 
+    @enforce_enabled
+    def head_to(self, angle: np.ndarray, is_radian: bool = False, wait: bool = True):
+        """Move robot to specified head position"""
+        self._ros_client._arm_client.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+
+    def set_servo_angle(self, angle, is_radian=False, wait=True):
+        self._ros_client._arm_client.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+
     # @enforce_enabled
     # def goto(
     #     self,

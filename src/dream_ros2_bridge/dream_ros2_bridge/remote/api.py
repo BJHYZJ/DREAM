@@ -377,6 +377,10 @@ class StretchClient(AbstractRobotClient):
         """Get 3x3 matrix of camera intrisics K"""
         return torch.from_numpy(self.cam._ros_client.rgb_cam.K).float()
 
+
+    def head_to(self, angle: np.ndarray, is_radian: bool = False, wait: bool = True):
+        self.manip.head_to(angle, is_radian=is_radian, wait=wait)
+
     # def head_to(
     #     self,
     #     pan: float,
