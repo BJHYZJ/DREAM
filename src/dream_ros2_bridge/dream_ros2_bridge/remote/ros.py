@@ -171,7 +171,7 @@ class DreamRosInterface(Node):
 
         self.vel_base = np.zeros(len(BASE_JOINTS))
 
-        self.rtabmapdata = None
+        self.rtabmapdata = {}
 
         # self.se3_base_filtered: Optional[sp.SE3] = None
         # self.se3_base_odom: Optional[sp.SE3] = None
