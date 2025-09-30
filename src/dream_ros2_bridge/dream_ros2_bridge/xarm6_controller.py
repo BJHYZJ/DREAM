@@ -1,5 +1,6 @@
 from xarm import version
 from xarm.wrapper import XArmAPI
+from dream.motion.constants import look_front
 import numpy as np
 import time
 import traceback
@@ -10,7 +11,7 @@ class XARM6:
         self,
         interface="192.168.1.233",
         # The pose corresponds to the servo angle
-        init_servo_angle=[0, -45, -90, 0, 90, 0],
+        init_servo_angle=look_front,
     ):
         self.pprint("xArm-Python-SDK Version:{}".format(version.__version__))
         self.alive = True
