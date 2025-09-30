@@ -102,7 +102,7 @@ def camera_info_to_dict(ci):
         "binning_x": int(ci.binning_x), "binning_y": int(ci.binning_y),
     }
 
-class StretchRosInterface(Node):
+class DreamRosInterface(Node):
     """Interface object with ROS topics and services"""
 
     # Base of the robot
@@ -171,6 +171,8 @@ class StretchRosInterface(Node):
 
         self.vel_base = np.zeros(len(BASE_JOINTS))
 
+        self.rtabmapdata = None
+
         # self.se3_base_filtered: Optional[sp.SE3] = None
         # self.se3_base_odom: Optional[sp.SE3] = None
         # self.se3_camera_pose: Optional[sp.SE3] = None
@@ -189,7 +191,7 @@ class StretchRosInterface(Node):
         self._is_homed = True
         self._is_runstopped = False
 
-        self._pose_graph = []
+        # self._pose_graph = []
 
         # Start the thread  # publish pose visualization
         self._thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
@@ -488,6 +490,15 @@ class StretchRosInterface(Node):
         self.tf2_buffer   = tf2_ros.Buffer(cache_time=Duration(seconds=20.0))
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer, self)
 
+        while rclpy.ok():
+            try:
+                self.tf2_buffer.lookup_transform("map", "base_link", Time(), timeout=Duration(seconds=10.0))
+                self.get_logger().info(f"TF ready: map -> base_link")
+                break
+            except Exception as e:
+                self.get_logger().warn(f"Waiting for TF transform: {e}")
+                rclpy.spin_once(self, timeout_sec=0.1)
+
         # Create command publishers
         self.goal_pub = self.create_publisher(Pose, "goto_controller/goal", 1)
         self.velocity_pub = self.create_publisher(Twist, "/ranger/cmd_vel", 1)
@@ -662,43 +673,61 @@ class StretchRosInterface(Node):
     def _rtabmapdata_callback(self, msg):
         """get position or navigation mode from dream ros"""
         # pass
-        # self._pose_graph.append(p) == 1
-        frame_id = msg.header.frame_id
-        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        assert len(msg.nodes) == 1, 'only one node is supported'
-        node = msg.nodes[0]
+        # # self._pose_graph.append(p) == 1
+        # frame_id = msg.header.frame_id
+        # stamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
+        # assert len(msg.nodes) == 1, 'only one node is supported'
+        # # pose_graph = [pose_to_list(stamp, p) for p in msg.graph.poses]
         # pose_graph = {nid: pose_to_dict(p) for nid, p in zip(msg.graph.poses_id, msg.graph.poses)}
-        pose_graph = [pose_to_list(stamp, p) for p in msg.graph.poses]
-        self._pose_graph = pose_graph
+        # node = msg.nodes[0]
+        
+        
+        # # self._pose_graph = pose_graph
 
-        rgb = None
-        Depth = None
-        if node.data.left.data and node.data.left.encoding:
-            try:
-                rgb = self.bridge.imgmsg_to_cv2(node.data.left, desired_encoding='bgr8')
-            except Exception:
-                rgb = None
-        if rgb is None and node.data.left_compressed:
-            try:
-                arr = np.frombuffer(bytes(node.data.left_compressed), dtype=np.uint8)
-                rgb = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-            except Exception:
-                rgb = None
-        if node.data.right.data and node.data.right.encoding:
-            try:
-                depth = self.bridge.imgmsg_to_cv2(node.data.right)
-            except Exception:
-                depth = None
-        elif node.data.right_compressed:
-            try:
-                arr = np.frombuffer(bytes(node.data.right_compressed), dtype=np.uint8)
-                depth = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
-            except Exception:
-                depth = None
+        # rgb = node.data.left_compressed
+        # depth = node.data.right_compressed
 
-        left_ci = node.data.left_camera_info[0] if len(node.data.left_camera_info) > 0 else None
-        right_ci = node.data.right_camera_info[0] if len(node.data.right_camera_info) > 0 else None
-        ci_rec = {"left": camera_info_to_dict(left_ci), "right": camera_info_to_dict(right_ci)}
+        # left_ci = camera_info_to_dict(node.data.left_camera_info[0]) if len(node.data.left_camera_info) > 0 else None
+        # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
+        
+        # self.rtabmapdata = {
+        #     "stamp": stamp,
+        #     "pose_graph": pose_graph,
+        #     "rgb": rgb,
+        #     "depth": depth,
+        #     "left_ci": left_ci,
+        #     "right_ci": right_ci,
+        # }
+        self.rtabmapdata = msg
+
+        # rgb = None
+        # depth = None
+        # if node.data.left.data and node.data.left.encoding:
+        #     try:
+        #         rgb = self.bridge.imgmsg_to_cv2(node.data.left, desired_encoding='bgr8')
+        #     except Exception:
+        #         rgb = None
+        # if rgb is None and node.data.left_compressed:
+        #     try:
+        #         arr = np.frombuffer(bytes(node.data.left_compressed), dtype=np.uint8)
+        #         rgb = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        #     except Exception:
+        #         rgb = None
+        # if node.data.right.data and node.data.right.encoding:
+        #     try:
+        #         depth = self.bridge.imgmsg_to_cv2(node.data.right)
+        #     except Exception:
+        #         depth = None
+        # elif node.data.right_compressed:
+        #     try:
+        #         arr = np.frombuffer(bytes(node.data.right_compressed), dtype=np.uint8)
+        #         depth = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
+        #     except Exception:
+        #         depth = None
+
+        # left_ci = node.data.left_camera_info[0] if len(node.data.left_camera_info) > 0 else None
+        # right_ci = node.data.right_camera_info[0] if len(node.data.right_camera_info) > 0 else None
+        # ci_rec = {"left": camera_info_to_dict(left_ci), "right": camera_info_to_dict(right_ci)}
 
     def _rtabmapinfo_callback(self, msg):
         """get position or navigation mode from dream ros"""
@@ -709,17 +738,17 @@ class StretchRosInterface(Node):
         """get position or navigation mode from dream ros"""
         self._current_mode = msg.data
 
-    def _pose_graph_callback(self, msg):
-        self._pose_graph = []
+    # def _pose_graph_callback(self, msg):
+    #     self._pose_graph = []
 
-        for pose in msg.poses:
-            p = [
-                pose.header.stamp.sec + pose.header.stamp.nanosec / 1e9,
-                pose.pose.position.x,
-                pose.pose.position.y,
-                pose.pose.position.z,
-            ]
-            self._pose_graph.append(p)
+    #     for pose in msg.poses:
+    #         p = [
+    #             pose.header.stamp.sec + pose.header.stamp.nanosec / 1e9,
+    #             pose.pose.position.x,
+    #             pose.pose.position.y,
+    #             pose.pose.position.z,
+    #         ]
+    #         self._pose_graph.append(p)
 
     def _odom_callback(self, msg: Odometry):
         """odometry callback"""

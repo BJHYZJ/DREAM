@@ -16,7 +16,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional
-
+import array
 import numpy as np
 
 
@@ -191,6 +191,22 @@ class HybridAction(Action):
 class Pose:
     position: np.ndarray
     orientation: np.ndarray
+
+
+
+
+@dataclass
+class RtabmapData:
+    stamp: float
+    compass: np.ndarray
+    gps: np.ndarray
+    node_id: int
+    rgb_compressed: array.array
+    depth_compressed: array.array
+    laser_compressed: array.array
+    camera_K: np.ndarray
+    pose_graph: Dict[str, np.ndarray]
+    camera_pose_in_map: np.ndarray
 
 
 @dataclass

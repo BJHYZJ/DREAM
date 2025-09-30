@@ -33,7 +33,7 @@ JOINT_POS_TOL = 0.015
 JOINT_ANG_TOL = 0.05
 
 
-class ManipulationClient(AbstractControlModule):
+class DreamManipulationClient(AbstractControlModule):
     """Manages dream arm control and "manipulation mode" base motions (forward and backward)."""
 
     def __init__(self, ros_client, robot_model: RobotModel):

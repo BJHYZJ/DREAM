@@ -17,7 +17,7 @@ from nav2_msgs.srv import LoadMap, SaveMap
 from .abstract import AbstractControlModule
 
 
-class StretchMappingClient(AbstractControlModule):
+class DreamMappingClient(AbstractControlModule):
     def __init__(
         self,
         ros_client,

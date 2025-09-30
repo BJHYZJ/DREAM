@@ -13,4 +13,4 @@
 # LICENSE file in the root directory of this source tree.
 
 
-from .api import StretchClient
+from .api import DreamClient

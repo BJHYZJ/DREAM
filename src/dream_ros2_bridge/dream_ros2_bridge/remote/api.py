@@ -19,24 +19,53 @@ import numpy as np
 import torch
 import trimesh.transformations as tra
 
-from dream.core.interfaces import Observations
+from dream.core.interfaces import Observations, RtabmapData
 from dream.core.robot import AbstractRobotClient, ControlMode
 from dream.motion import RobotModel
 from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q
 from dream.motion.kinematics import DreamIdx, HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
-from dream.utils.geometry import xyt2sophus
+from dream.utils.geometry import xyt2sophus, posquat2sophus, sophus2xyt
 
-from .modules.cam import CamClient
-from .modules.manip import ManipulationClient
-from .modules.mapping import StretchMappingClient
-from .modules.nav import StretchNavigationClient
-from .ros import StretchRosInterface
+from .modules.cam import DreamCamClient
+from .modules.manip import DreamManipulationClient
+from .modules.mapping import DreamMappingClient
+from .modules.nav import DreamNavigationClient
+from .ros import DreamRosInterface
 
 JOINT_POS_TOL = 0.009
 JOINT_ANG_TOL = 0.03
 
 
-class StretchClient(AbstractRobotClient):
+def pose_to_dict(p):
+    return {
+        "tx": float(p.position.x), "ty": float(p.position.y), "tz": float(p.position.z),
+        "qx": float(p.orientation.x), "qy": float(p.orientation.y),
+        "qz": float(p.orientation.z), "qw": float(p.orientation.w)
+    }
+
+def pose_to_list(stamp, p):
+    return [
+        stamp,
+        float(p.position.x), float(p.position.y), float(p.position.z),
+        float(p.orientation.x), float(p.orientation.y), float(p.orientation.z), float(p.orientation.w)
+    ]
+
+
+def camera_info_to_dict(ci):
+    if ci is None:
+        return None
+    return {
+        "width": int(ci.width), "height": int(ci.height),
+        "distortion_model": ci.distortion_model,
+        "D": [float(x) for x in ci.d],
+        "K": [float(x) for x in ci.k],
+        "R": [float(x) for x in ci.r],
+        "P": [float(x) for x in ci.p],
+        "binning_x": int(ci.binning_x), "binning_y": int(ci.binning_y),
+    }
+
+
+class DreamClient(AbstractRobotClient):
     """Defines a ROS-based interface to the real Stretch robot. Collect observations and command the robot."""
 
     head_camera_frame = "camera_color_optical_frame"
@@ -68,7 +97,7 @@ class StretchClient(AbstractRobotClient):
 
         if camera_overrides is None:
             camera_overrides = {}
-        self._ros_client = StretchRosInterface(init_lidar=True, **camera_overrides)
+        self._ros_client = DreamRosInterface(init_lidar=True, **camera_overrides)
 
         # Robot model
         # self._robot_model = HelloStretchKinematics(
@@ -83,11 +112,10 @@ class StretchClient(AbstractRobotClient):
         self._robot_model = RangerxARMKinematics()
 
         # Interface modules
-        self.nav = StretchNavigationClient(self._ros_client, self._robot_model)
-        self.manip = ManipulationClient(self._ros_client, self._robot_model)
-        # self.head = StretchHeadClient(self._ros_client, self._robot_model)
-        self.cam = CamClient(self._ros_client, self._robot_model)
-        self.mapping = StretchMappingClient(self._ros_client)
+        self.nav = DreamNavigationClient(self._ros_client, self._robot_model)
+        self.manip = DreamManipulationClient(self._ros_client, self._robot_model)
+        self.cam = DreamCamClient(self._ros_client, self._robot_model)
+        self.mapping = DreamMappingClient(self._ros_client)
 
         # Init control mode
         self._base_control_mode = ControlMode.IDLE
@@ -178,7 +206,7 @@ class StretchClient(AbstractRobotClient):
         """return a model of the robot for planning. Overrides base class method"""
         return self._robot_model
 
-    def get_ros_client(self) -> StretchRosInterface:
+    def get_ros_client(self) -> DreamRosInterface:
         """return the internal ROS client"""
         return self._ros_client
 
@@ -314,6 +342,65 @@ class StretchClient(AbstractRobotClient):
         Move to xyt in global coordinates or relative coordinates. Cannot be used in manipulation mode.
         """
         return self.nav.move_base_to(xyt, relative=relative, blocking=blocking)
+
+    def get_full_observation(
+        self,
+        start_pose: Optional[np.ndarray] = None,
+    ) -> RtabmapData:
+        rtabmap_data = self._ros_client.rtabmapdata
+        if rtabmap_data is None:
+            return None
+        stamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
+
+        last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
+        if last_timestamp is not None and stamp <= last_timestamp:
+            # print("rtabmap data timestamp is not updated, Skipping...")
+            return None
+        else:
+            print(f"{stamp} rtabmap data timestamp is updated, Updating...")
+        self.last_rtabmap_timestamp = stamp
+
+        pose_graph = {nid: pose_to_dict(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
+        node = rtabmap_data.nodes[0]
+        node_id = node.id
+
+        rgb = node.data.left_compressed
+        depth = node.data.right_compressed
+        laser = node.data.laser_scan_compressed
+        assert len(node.data.left_camera_info) > 0
+        left_ci = camera_info_to_dict(node.data.left_camera_info[0])
+        # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
+        camera_K = np.array(left_ci['K']).reshape(3, 3)
+        
+        node_pose = pose_graph[node_id]
+        pos = np.array([node_pose['tx'], node_pose['ty'], node_pose['tz']])
+        quat = np.array([node_pose['qx'], node_pose['qy'], node_pose['qz'], node_pose['qw']])
+        current_pose = posquat2sophus(pos, quat)
+        if start_pose is not None:
+            # use sophus to get the relative translation
+            relative_pose = start_pose.inverse() * current_pose
+        else:
+            relative_pose = current_pose
+        euler_angles = relative_pose.so3().log()
+
+        compass = np.array([euler_angles[-1]])
+        # GPS in robot coordinates
+        gps = relative_pose.translation()[:2]
+
+        full_observation = RtabmapData(
+            stamp=stamp,
+            compass=compass,
+            gps=gps,
+            node_id=node_id,
+            rgb_compressed=rgb,
+            depth_compressed=depth,
+            laser_compressed=laser,
+            camera_K=camera_K,
+            pose_graph=pose_graph,
+            camera_pose_in_map=current_pose.matrix(),
+        )
+        return full_observation
+
 
     def get_observation(
         self,
@@ -459,5 +546,5 @@ if __name__ == "__main__":
     import rclpy
 
     rclpy.init()
-    client = StretchClient()
+    client = DreamClient()
     breakpoint()
