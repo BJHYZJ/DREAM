@@ -564,8 +564,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def look_front(self, blocking: bool = True, timeout: float = 10.0):
         """Let robot look to its front."""
         self.head_to(
-            constants.look_front[0],
-            constants.look_front[1],
+            angle=constants.look_front,
             blocking=blocking,
             timeout=timeout,
             reliable=True,
@@ -574,8 +573,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def look_at_ee(self, blocking: bool = True, timeout: float = 10.0):
         """Let robot look to its arm."""
         self.head_to(
-            constants.look_at_ee[0],
-            constants.look_at_ee[1],
+            angle=constants.look_front,
             blocking=blocking,
             timeout=timeout,
             reliable=True,

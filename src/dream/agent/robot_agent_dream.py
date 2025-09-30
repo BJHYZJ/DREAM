@@ -467,7 +467,7 @@ class RobotAgent(RobotAgentBase):
         # for pan in [0.6, -0.2, -1.0, -1.8]:
         #     tilt = -0.6
         for angle in [constants.look_left_1, constants.look_left_2, constants.look_right_1, constants.look_right_2]:
-            self.robot.head_to(angle, blocking=True)
+            self.robot.head_to(angle=angle, blocking=True)
             self.update()
 
     def rotate_in_place(self):
