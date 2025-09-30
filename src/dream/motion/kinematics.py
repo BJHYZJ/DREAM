@@ -116,7 +116,7 @@ class HelloStretchIdx:
 
 class RangerxARMKinematics:
     """Define motion planning structure for the robot. Exposes kinematics."""
-    ...
+    GRIPPER_OPEN = 830
 
 
 class HelloStretchKinematics:

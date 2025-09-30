@@ -167,7 +167,7 @@ class Camera(object):
 
     def depth_to_xyz(self, depth, data_type: type = np.float16):
         """get depth from numpy using simple pinhole self model"""
-        indices = np.indices((self.width, self.height), dtype=np.float32).transpose(1, 2, 0)
+        indices = np.indices((self.height, self.width), dtype=np.float32).transpose(1, 2, 0)
         z = depth
         # pixel indices start at top-left corner. for these equations, it starts at bottom-left
         x = (indices[:, :, 1] - self.px) * (z / self.fx)

@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image
 
 from dream.agent.operations import GraspObjectOperation
-from dream.agent.robot_agent_dynamem import RobotAgent
+from dream.agent.robot_agent_dream import RobotAgent
 from dream.agent.task.emote import EmoteTask
 from dream.agent.task.pickup.hand_over_task import HandOverTask
 from dream.core import AbstractRobotClient, Parameters

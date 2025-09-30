@@ -37,6 +37,7 @@ class SiglipEncoder(BaseImageTextEncoder):
         device: Optional[str] = None,
         version: Optional[str] = None,
         feature_matching_threshold: float = 0.05,
+        cache_dir: str='./checkpoints',
         **kwargs,
     ) -> None:
         if device is None:
@@ -55,9 +56,9 @@ class SiglipEncoder(BaseImageTextEncoder):
         else:
             raise ValueError(f"Invalid version {version}: must be one of 'base', 'so400m'")
 
-        self.processor = AutoProcessor.from_pretrained(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name).to(self.device)
+        self.processor = AutoProcessor.from_pretrained(model_name, cache_dir=cache_dir)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+        self.model = AutoModel.from_pretrained(model_name, cache_dir=cache_dir).to(self.device)
 
     def encode_image(
         self,

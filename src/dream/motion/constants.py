@@ -43,11 +43,21 @@ STRETCH_HEAD_CAMERA_ROTATIONS = 3  # number of counterclockwise rotations for th
 STRETCH_ARM_EXTENSION = 0.8
 STRETCH_ARM_LIFT = 0.8
 
-look_at_ee = np.array([-np.pi / 2, -np.pi / 4])
-look_front = np.array([0.0, -np.pi / 4])
-look_ahead = np.array([0.0, 0.0])
-look_close = np.array([0.0, math.radians(-45)])
-look_down = np.array([0.0, math.radians(-58)])
+# look_at_ee = np.array([-np.pi / 2, -np.pi / 4])
+# look_front = np.array([0.0, -np.pi / 4])
+# look_ahead = np.array([0.0, 0.0])
+# look_close = np.array([0.0, math.radians(-45)])
+# look_down = np.array([0.0, math.radians(-58)])
+
+# 相机安装在机械臂上，所以只能动机械臂
+look_front = np.array([0, -45, -90, 0, 110, 0])
+look_ahead = np.array([0, -45, -90, 0, 75, 0])
+look_down = np.array([0, -45, -90, 0, 135, 0])
+look_left_1 = np.array([30, -45, -90, 0, 110, 0])
+look_left_2 = np.array([30, -45, -90, 30, 110, 0])
+look_right_1 = np.array([-30, -45, -90, 0, 110, 0])
+look_right_2 = np.array([-30, -45, -90, -30, 110, 0])
+
 
 
 # Stores joint indices for the Stretch configuration space

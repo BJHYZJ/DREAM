@@ -27,6 +27,7 @@ class OwlPerception:
         version="owlv2-L-p14-ensemble",
         device: Optional[str] = None,
         confidence_threshold: Optional[float] = 0.2,
+        cache_dir: str='./checkpoints'
     ):
         """Load trained OWL model for inference.
 
@@ -48,8 +49,8 @@ class OwlPerception:
         else:
             raise ValueError("Owlv2 version not implemented yet!")
 
-        self.processor = AutoProcessor.from_pretrained(configuration)
-        self.model = Owlv2ForObjectDetection.from_pretrained(configuration).to(self.device)
+        self.processor = AutoProcessor.from_pretrained(configuration, cache_dir=cache_dir)
+        self.model = Owlv2ForObjectDetection.from_pretrained(configuration, cache_dir=cache_dir).to(self.device)
 
         print(f"Loaded owl model from {configuration}")
 

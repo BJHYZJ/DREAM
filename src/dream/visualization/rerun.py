@@ -152,20 +152,16 @@ class DreamURDFLogger(urdf_visualizer.URDFVisualizer):
         for k in DreamIdx.name_to_idx:
             cfg[k] = state[DreamIdx.name_to_idx[k]]
         lk_cfg = {
-            "joint_wrist_yaw": cfg["wrist_yaw"],
-            "joint_wrist_pitch": cfg["wrist_pitch"],
-            "joint_wrist_roll": cfg["wrist_roll"],
-            "joint_lift": cfg["lift"],
-            "joint_arm_l0": cfg["arm"] / 4,
-            "joint_arm_l1": cfg["arm"] / 4,
-            "joint_arm_l2": cfg["arm"] / 4,
-            "joint_arm_l3": cfg["arm"] / 4,
-            "joint_head_pan": cfg["head_pan"],
-            "joint_head_tilt": cfg["head_tilt"],
+            "joint1": cfg["joint1"],
+            "joint2": cfg["joint2"],
+            "joint3": cfg["joint3"],
+            "joint4": cfg["joint4"],
+            "joint5": cfg["joint5"],
+            "joint6": cfg["joint6"],
         }
-        if "gripper" in cfg.keys():
-            lk_cfg["joint_gripper_finger_left"] = cfg["gripper"]
-            lk_cfg["joint_gripper_finger_right"] = cfg["gripper"]
+        # if "gripper" in cfg.keys():
+        #     lk_cfg["joint_gripper_finger_left"] = cfg["gripper"]
+        #     lk_cfg["joint_gripper_finger_right"] = cfg["gripper"]
         t0 = timeit.default_timer()
         tms = self.get_tri_meshes(cfg=lk_cfg, use_collision=False)
         t1 = timeit.default_timer()
@@ -495,7 +491,7 @@ class RerunVisualizer:
         for k in DreamIdx.name_to_idx:
             rr.log(
                 f"robot_state/joint_pose/{k}",
-                rr.Scalar(state[DreamIdx.name_to_idx[k]]),
+                rr.Scalars(state[DreamIdx.name_to_idx[k]]),
                 static=True,
             )
 
@@ -671,17 +667,17 @@ class RerunVisualizer:
             rr.set_time_seconds("realtime", time.time())
             try:
                 t0 = timeit.default_timer()
-                self.log_robot_xyt(obs)
-                self.log_ee_frame(obs)
+                # self.log_robot_xyt(obs)
+                # self.log_ee_frame(obs)
 
                 # Cameras use the lower-res servo object
                 self.log_head_camera(servo)
                 # self.log_ee_camera(servo)
 
-                self.log_robot_state(obs)
+                # self.log_robot_state(obs)
 
-                if self.display_robot_mesh:
-                    self.log_robot_transforms(obs)
+                # if self.display_robot_mesh:
+                #     self.log_robot_transforms(obs)
                 t1 = timeit.default_timer()
                 sleep_time = self.step_delay_s - (t1 - t0)
                 if sleep_time > 0:

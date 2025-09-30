@@ -29,7 +29,7 @@ from dream.core.interfaces import ContinuousNavigationAction, Observations
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
-from dream.motion.kinematics import HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
+from dream.motion.kinematics import DreamIdx, HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
 from dream.utils.geometry import (
     angle_difference,
     posquat2sophus,
@@ -159,11 +159,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
         self._min_steps_not_moving = parameters["motion"]["min_steps_not_moving"]
 
         # Read in joint tolerances from config file
-        self._head_pan_tolerance = float(parameters["motion"]["joint_tolerance"]["head_pan"])
-        self._head_tilt_tolerance = float(parameters["motion"]["joint_tolerance"]["head_tilt"])
-        self._head_not_moving_tolerance = float(
-            parameters["motion"]["joint_thresholds"]["head_not_moving_tolerance"]
-        )
+        # self._head_pan_tolerance = float(parameters["motion"]["joint_tolerance"]["head_pan"])
+        # self._head_tilt_tolerance = float(parameters["motion"]["joint_tolerance"]["head_tilt"])
+        # self._head_not_moving_tolerance = float(
+        #     parameters["motion"]["joint_thresholds"]["head_not_moving_tolerance"]
+        # )
         self._arm_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["arm"])
         self._lift_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["lift"])
         self._base_x_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["base_x"])
@@ -235,18 +235,18 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def parameters(self) -> Parameters:
         return self._parameters
 
-    def get_ee_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get the RGB and depth images from the end effector camera.
+    # def get_ee_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
+    #     """Get the RGB and depth images from the end effector camera.
 
-        Returns:
-            Tuple[np.ndarray, np.ndarray]: The RGB and depth images
-        """
-        with self._servo_lock:
-            if self._servo is None:
-                return None, None
-            rgb = self._servo_obs["ee_rgb"]
-            depth = self._servo_obs["ee_depth"]
-        return rgb, depth
+    #     Returns:
+    #         Tuple[np.ndarray, np.ndarray]: The RGB and depth images
+    #     """
+    #     with self._servo_lock:
+    #         if self._servo is None:
+    #             return None, None
+    #         rgb = self._servo_obs["ee_rgb"]
+    #         depth = self._servo_obs["ee_depth"]
+    #     return rgb, depth
 
     def get_head_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get the RGB and depth images from the head camera.
@@ -392,19 +392,19 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     if timeit.default_timer() - t0 > timeout:
                         logger.error("Timeout waiting for state message")
                         return None
-                xyt = self._state["base_pose"]
+                xyt = self._state["base_pose_in_map"]
         return xyt
 
 
-    def get_pan_tilt(self):
-        """Get the current pan and tilt of the head.
+    # def get_pan_tilt(self):
+    #     """Get the current pan and tilt of the head.
 
-        Returns:
-            Tuple[float, float]: The pan and tilt angles
-        """
+    #     Returns:
+    #         Tuple[float, float]: The pan and tilt angles
+    #     """
 
-        joint_positions, _, _ = self.get_joint_state()
-        return joint_positions[HelloStretchIdx.HEAD_PAN], joint_positions[HelloStretchIdx.HEAD_TILT]
+    #     joint_positions, _, _ = self.get_joint_state()
+    #     return joint_positions[DreamIdx.HEAD_PAN], joint_positions[DreamIdx.HEAD_TILT]
 
     def get_gripper_position(self):
         """Get the current position of the gripper.
@@ -519,8 +519,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def head_to(
         self,
-        head_pan: float,
-        head_tilt: float,
+        # head_pan: float,
+        # head_tilt: float,
+        angle: np.array,
         blocking: bool = False,
         timeout: float = 10.0,
         reliable: bool = True,
@@ -528,34 +529,33 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """Move the head to a particular configuration.
 
         Args:
-            head_pan: The pan angle of the head
-            head_tilt: The tilt angle of the head
+            angle: The angle of the xarm6
             blocking: Whether to block until the motion is complete
             timeout: How long to wait for the motion to complete
             reliable: Whether to resend the action if it is not received
         """
-        if head_pan < self._head_pan_min or head_pan > self._head_pan_max:
-            logger.warning(
-                f"Head pan is restricted to be between {self._head_pan_min} and {self._head_pan_max} for safety: was {head_pan}"
-            )
-        if head_tilt > self._head_tilt_max or head_tilt < self._head_tilt_min:
-            logger.warning(
-                f"Head tilt is restricted to be between {self._head_tilt_min} and {self._head_tilt_max} for safety: was{head_tilt}"
-            )
-        head_pan = np.clip(head_pan, self._head_pan_min, self._head_pan_max)
-        head_tilt = np.clip(head_tilt, -np.pi / 2, 0)
-        next_action = {"head_to": [float(head_pan), float(head_tilt)], "manip_blocking": blocking}
+        # if head_pan < self._head_pan_min or head_pan > self._head_pan_max:
+        #     logger.warning(
+        #         f"Head pan is restricted to be between {self._head_pan_min} and {self._head_pan_max} for safety: was {head_pan}"
+        #     )
+        # if head_tilt > self._head_tilt_max or head_tilt < self._head_tilt_min:
+        #     logger.warning(
+        #         f"Head tilt is restricted to be between {self._head_tilt_min} and {self._head_tilt_max} for safety: was{head_tilt}"
+        #     )
+        # head_pan = np.clip(head_pan, self._head_pan_min, self._head_pan_max)
+        # head_tilt = np.clip(head_tilt, -np.pi / 2, 0)
+        next_action = {"head_to": angle, "manip_blocking": blocking}
         sent = self.send_action(next_action, timeout=timeout, reliable=reliable)
 
-        if blocking:
-            step = sent["step"]
-            whole_body_q = np.zeros(self._robot_model.dof, dtype=np.float32)
-            whole_body_q[HelloStretchIdx.HEAD_PAN] = float(head_pan)
-            whole_body_q[HelloStretchIdx.HEAD_TILT] = float(head_tilt)
+        # if blocking:
+        #     step = sent["step"]
+        #     whole_body_q = np.zeros(self._robot_model.dof, dtype=np.float32)
+            # whole_body_q[HelloStretchIdx.HEAD_PAN] = float(head_pan)
+            # whole_body_q[HelloStretchIdx.HEAD_TILT] = float(head_tilt)
 
-            time.sleep(0.1)
-            self._wait_for_head(whole_body_q, block_id=step)
-            time.sleep(0.1)
+            # time.sleep(0.1)
+            # self._wait_for_head(whole_body_q, block_id=step)
+            # time.sleep(0.1)
 
             # time.sleep(0.25)
             # self._wait_for_head(whole_body_q, block_id=step)
@@ -747,7 +747,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         assert len(_xyt) == 3, "xyt must be a vector of size 3"
         # If it's relative, compute the relative position right now - this helps handle network issues
         if relative:
-            current_xyt = self.get_base_pose()
+            current_xyt = self.get_base_in_map_pose()
             if verbose:
                 print("Current pose", current_xyt)
             _xyt = xyt_base_to_global(_xyt, current_xyt)
@@ -820,8 +820,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if joint_state is None:
                     continue
                 if verbose:
-                    print("Opening gripper:", joint_state[HelloStretchIdx.GRIPPER])
-                gripper_err = np.abs(joint_state[HelloStretchIdx.GRIPPER] - gripper_target)
+                    print("Opening gripper:", joint_state[DreamIdx.GRIPPER])
+                gripper_err = np.abs(joint_state[DreamIdx.GRIPPER] - gripper_target)
                 if gripper_err < 0.1:
                     return True
                 t1 = timeit.default_timer()
@@ -896,9 +896,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """Move the robot to the navigation posture. This is where the head is looking forward and the arm is tucked in."""
         next_action = {"posture": "navigation", "step": self._iter}
         next_action = self.send_action(next_action)
-        self._wait_for_head(constants.STRETCH_NAVIGATION_Q, resend_action=next_action)
+        # self._wait_for_head(constants.STRETCH_NAVIGATION_Q, resend_action=next_action)
         self._wait_for_mode("navigation")
-        self._wait_for_arm(constants.STRETCH_NAVIGATION_Q)
+        # self._wait_for_arm(constants.STRETCH_NAVIGATION_Q)
         assert self.in_navigation_mode()
 
     def move_to_manip_posture(self):
@@ -1145,7 +1145,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     print("waiting for obs")
                     continue
 
-            xyt = self.get_base_pose()
+            xyt = self.get_base_in_map_pose()
             pos = xyt[:2]
             ang = xyt[2]
             obs_t = timeit.default_timer()
@@ -1335,9 +1335,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
             )
             observation.joint = self._obs.get("joint", None)
             observation.joint_velocities = self._obs.get("joint_velocities", None)
-            observation.ee_pose = self._obs.get("ee_pose", None)
+            observation.ee_pose_in_map = self._obs.get("ee_pose_in_map", None)
             observation.camera_K = self._obs.get("camera_K", None)
-            observation.camera_pose = self._obs.get("camera_pose", None)
+            observation.camera_pose_in_map = self._obs.get("camera_pose_in_map", None)
+            observation.camera_pose_in_arm = self._obs.get("camera_pose_in_arm", None)
+            observation.camera_pose_in_base = self._obs.get("camera_pose_in_base", None)
             observation.seq_id = self._seq_id
 
             return observation
@@ -1451,7 +1453,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         while not self._finish:
             # Loop until we get there (or time out)
             t1 = timeit.default_timer()
-            curr = self.get_base_pose()
+            curr = self.get_base_in_map_pose()
             pos_err = np.linalg.norm(xy - curr[:2])
             rot_err = np.abs(angle_difference(curr[-1], xyt[2]))
             # TODO: code for debugging slower rotations
@@ -1624,10 +1626,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
             #     observation.ee_camera_pose = message["ee_cam/pose"]
             #     observation.ee_depth_scaling = message["ee_cam/image_scaling"]
 
-            observation.ee_pose_in_map = message["ee/pose_in_map"].matrix()  # np.ndarray
+            observation.ee_pose_in_map = message["ee/pose_in_map"]  # np.ndarray
             observation.depth_scaling = message["head_cam/depth_scaling"]
             observation.camera_K = message["head_cam/depth_camera_K"]
-            observation.camera_pose_in_map = message["head_cam/pose"].matrix()  # np.ndarray
+            observation.camera_pose_in_map = message["head_cam/pose"]  # np.ndarray
             if "is_simulation" in message:
                 observation.is_simulation = message["is_simulation"]
             else:
@@ -1833,20 +1835,20 @@ class DreamRobotZmqClient(AbstractRobotClient):
 @click.option("--local", is_flag=True, help="Run code locally on the robot.")
 @click.option("--recv_port", default=4401, help="Port to receive observations on")
 @click.option("--send_port", default=4402, help="Port to send actions to on the robot")
-@click.option("--robot_ip", default="192.168.1.15")
+@click.option("--robot_ip", default="10.33.140.226")
 def main(
     local: bool = True,
     recv_port: int = 4401,
     send_port: int = 4402,
-    robot_ip: str = "192.168.1.15",
+    robot_ip: str = "10.33.140.226",
 ):
-    client = HomeRobotZmqClient(
+    client = DreamRobotZmqClient(
         robot_ip=robot_ip,
         recv_port=recv_port,
         send_port=send_port,
         use_remote_computer=(not local),
     )
-    client.blocking_spin(verbose=True, visualize=False)
+    # client.blocking_spin(verbose=True, visualize=False)
 
 
 if __name__ == "__main__":
