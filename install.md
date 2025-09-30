@@ -73,6 +73,22 @@ cd ../..
 
 
 ```bash
+# dream 环境的构建
+# 1) 给该环境永久关闭用户 site-packages 注入
+conda activate dream
+conda env config vars set PYTHONNOUSERSITE=1
+
+# 让设置生效
+conda deactivate && conda activate dream
+
+# 2) 验证：应当看到 False，且 sys.path 里不再有 ~/.local/...
+python -c "import site, sys; print('ENABLE_USER_SITE=', site.ENABLE_USER_SITE); print('\n'.join(sys.path))"
+```
+
+
+
+
+```bash
 # Terminal 1: Start the Stretch Driver Node
 ros2 launch stretch_core stretch_driver.launch.py
 # Terminal 2: Start the realsense D435i stream.

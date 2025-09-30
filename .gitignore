@@ -8,3 +8,5 @@ __pycache__/
 .vscode/
 *.egg-info
 memory
+checkpoints
+dream_log
