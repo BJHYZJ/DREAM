@@ -421,7 +421,7 @@ class DreamClient(AbstractRobotClient):
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             joint_efforts=joint_efforts,
-            base_pose_in_map=base_in_map_pose,
+            base_pose_in_map=base_in_map_pose.matrix(),
             ee_pose_in_map=self.get_ee_pose_in_map().matrix(),
             at_goal=self.at_goal(),
             is_homed=self.is_homed,

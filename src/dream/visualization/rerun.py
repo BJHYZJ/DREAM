@@ -19,7 +19,7 @@ import rerun as rr
 import rerun.blueprint as rrb
 import torch
 
-from dream.core.interfaces import Observations, ServoObservations
+from dream.core.interfaces import Observations, ServoObservations, StateObservations
 from dream.mapping.scene_graph import SceneGraph
 from dream.mapping.voxel.voxel_map import SparseVoxelMapNavigationSpace
 from dream.motion import DreamIdx
@@ -372,8 +372,7 @@ class RerunVisualizer:
         else:
             log_to_rerun("world/camera/depth", rr.depthimage(obs.depth))
 
-        # if self.show_cameras_in_3d_view:
-        if True:
+        if self.show_cameras_in_3d_view:
             rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
             log_to_rerun(
                 "world/camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
@@ -387,11 +386,16 @@ class RerunVisualizer:
                 ),
             )
 
-    def log_robot_xyt(self, obs: Observations):
+    def log_robot_xyt(self, state: StateObservations):
         """Log robot world pose"""
-        # rr.set_time_seconds("realtime", time.time())
-        xy = obs["gps"]
-        theta = obs["compass"]
+        rr.set_time("realtime", timestamp=time.time())
+        # 直接使用base_pose_in_map，它已经包含了完整的位置和旋转信息
+        base_pose = state["base_pose_in_map"]
+        
+        # 分解变换矩阵
+        rotation_matrix = base_pose[:3, :3]
+        translation_vector = base_pose[:3, 3]
+        
         rb_arrow = rr.Arrows3D(
             origins=[0, 0, 0],
             vectors=[0.4, 0, 0],
@@ -407,11 +411,10 @@ class RerunVisualizer:
         rr.log(
             "world/robot",
             rr.Transform3D(
-                translation=[xy[0], xy[1], 0],
-                rotation=rr.RotationAxisAngle(axis=[0, 0, 1], radians=theta),
+                translation=translation_vector,
+                mat3x3=rotation_matrix,
                 axis_length=0.7,
             ),
-            static=True,
         )
 
     def log_ee_frame(self, obs):
@@ -668,11 +671,11 @@ class RerunVisualizer:
             rr.set_time("realtime", timestamp=time.time())
             try:
                 t0 = timeit.default_timer()
-                # self.log_robot_xyt(obs)
+                self.log_robot_xyt(state)
                 # self.log_ee_frame(obs)
 
                 # Cameras use the lower-res servo object
-                self.log_camera(servo)
+                # self.log_camera(servo)
                 # self.log_ee_camera(servo)
 
                 # self.log_robot_state(obs)
