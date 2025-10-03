@@ -1717,7 +1717,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def blocking_spin_rerun(self) -> None:
         """Use the rerun server so that we can visualize what is going on as the robot takes actions in the world."""
         while not self._finish:
-            self._rerun.step(self._obs, self._servo, self._state)
+            self._rerun.step(self._obs, self._state, self._servo)
 
     @property
     def is_homed(self) -> bool:

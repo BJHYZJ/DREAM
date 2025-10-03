@@ -169,7 +169,7 @@ class DreamURDFLogger(urdf_visualizer.URDFVisualizer):
         self.link_names = tms["link"]
         for link in self.link_names:
             idx = self.link_names.index(link)
-            rr.set_time_seconds("realtime", time.time())
+            rr.set_time("realtime", timestamp=time.time())
             rr.log(
                 f"world/robot/mesh/{link}",
                 rr.Transform3D(
@@ -192,7 +192,7 @@ class RerunVisualizer:
 
     def __init__(
         self,
-        display_robot_mesh: bool = True,
+        display_robot_mesh: bool = False,
         spawn_gui: bool = True,
         open_browser: bool = False,
         server_memory_limit: str = "4GB",
@@ -355,7 +355,7 @@ class RerunVisualizer:
             obs (Observations): Observation dataclass
         """
         # rr.init("Dream_robot", spawn=(not self.open_browser))
-        rr.set_time_seconds("realtime", time.time())
+        rr.set_time("realtime", timestamp=time.time())
         log_to_rerun("world/head_camera/rgb", rr.Image(obs.rgb))
 
         if self.show_camera_point_clouds:
@@ -436,7 +436,7 @@ class RerunVisualizer:
         Args:
             servo (Servo): Servo observation dataclass
         """
-        rr.set_time_seconds("realtime", time.time())
+        rr.set_time("realtime", timestamp=time.time())
 
         if servo.ee_rgb is None or servo.ee_depth is None or servo.ee_camera_pose is None:
             return
@@ -486,7 +486,7 @@ class RerunVisualizer:
 
     def log_robot_state(self, obs):
         """Log robot joint states"""
-        rr.set_time_seconds("realtime", time.time())
+        rr.set_time("realtime", timestamp=time.time())
         state = obs["joint"]
         for k in DreamIdx.name_to_idx:
             rr.log(
@@ -513,7 +513,7 @@ class RerunVisualizer:
         Args:
             space (SparseVoxelMapNavigationSpace): Voxel map object
         """
-        rr.set_time_seconds("realtime", time.time())
+        rr.set_time("realtime", timestamp=time.time())
 
         t0 = timeit.default_timer()
         points, _, _, rgb = space.voxel_map.voxel_pcd.get_pointcloud()
@@ -588,7 +588,7 @@ class RerunVisualizer:
             semantic_sensor (OvmmPerception): Semantic sensor object
         """
         if semantic_sensor:
-            rr.set_time_seconds("realtime", time.time())
+            rr.set_time("realtime", timestamp=time.time())
             centers = []
             labels = []
             bounds = []
@@ -647,7 +647,7 @@ class RerunVisualizer:
             goal (np.ndarray): Goal coordinates
         """
         ts = time.time()
-        rr.set_time_seconds("realtime", ts)
+        rr.set_time("realtime", timestamp=ts)
         log_to_rerun("world/xyt_goal", rr.Points3D([0, 0, 0], colors=[0, 255, 0, 50], radii=0.1))
         log_to_rerun(
             "world/xyt_goal",
@@ -661,10 +661,10 @@ class RerunVisualizer:
         # log_to_rerun("world/xyt_goal", rr.Clear(recursive=True))
         # rr.set_time_seconds("realtime", ts)
 
-    def step(self, obs, servo):
+    def step(self, obs, state, servo):
         """Log all the data"""
         if obs and servo:
-            rr.set_time_seconds("realtime", time.time())
+            rr.set_time("realtime", timestamp=time.time())
             try:
                 t0 = timeit.default_timer()
                 # self.log_robot_xyt(obs)
