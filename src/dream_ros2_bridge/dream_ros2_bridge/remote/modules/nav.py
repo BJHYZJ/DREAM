@@ -27,7 +27,7 @@ from dream_ros2_bridge.ros.utils import matrix_to_pose_msg
 from .abstract import AbstractControlModule, enforce_enabled
 
 
-class StretchNavigationClient(AbstractControlModule):
+class DreamNavigationClient(AbstractControlModule):
     block_spin_rate = 10
 
     def __init__(self, ros_client, robot_model: RobotModel):

@@ -25,7 +25,7 @@ MIN_DEPTH_REPLACEMENT_VALUE = 10000
 MAX_DEPTH_REPLACEMENT_VALUE = 10001
 
 # our robot just has one camera, so we use this class to control it
-class CamClient(AbstractControlModule):
+class DreamCamClient(AbstractControlModule):
     min_depth_val = 0.1
     max_depth_val = 4.0
     camera_frame = "camera_color_optical_frame"

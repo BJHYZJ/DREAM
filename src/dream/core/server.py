@@ -197,6 +197,7 @@ class BaseZmqServer(CommsNode, ABC):
 
             # Skip if no data - could not access camera yet
             if data is None:
+                # print("No data received, Skipping...")
                 continue
 
             if steps == 0:
