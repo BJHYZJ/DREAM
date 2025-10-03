@@ -122,53 +122,52 @@ class ZmqServer(BaseZmqServer):
 
     @override
     def get_state_message(self) -> Dict[str, Any]:
-        """Get the state message for the robot."""
-        q, dq, eff = self.client.get_joint_state()
+        obs = self.client.get_state_observation()
+        # """Get the state message for the robot."""
+        # q, dq, eff = self.client.get_joint_state()
         message = {
-            "base_pose_in_map": self.client.get_base_in_map_pose(),
-            "ee_pose_in_map": self.client.get_ee_pose_in_map().matrix(),
-            "joint_positions": q,
-            "joint_velocities": dq,
-            "joint_efforts": eff,
+            "gps": obs.gps,
+            "compass": obs.compass,
+            "base_pose_in_map": obs.base_pose_in_map,
+            "ee_pose_in_map": obs.ee_pose_in_map,
+            "joint_positions": obs.joint_positions,
+            "joint_velocities": obs.joint_velocities,
+            "joint_efforts": obs.joint_efforts,
+            "at_goal": obs.at_goal,
+            "is_homed": obs.is_homed,
+            "is_runstopped": obs.is_runstopped,
             "control_mode": self.get_control_mode(),
-            "at_goal": self.client.at_goal(),
-            "is_homed": self.client.is_homed,
-            "is_runstopped": self.client.is_runstopped,
             "step": self._last_step,
         }
         return message
 
 
     def get_servo_message(self) -> Dict[str, Any]:
-        # if self.use_d405:
-        #     d405_output = self._get_ee_cam_message()
-        # else:
-        #     d405_output = {}
-
-        obs = self.client.get_observation(compute_xyz=False)
-        head_color_image, head_depth_image = self._rescale_color_and_depth(
+        obs = self.client.get_servo_observation()
+        color_image, depth_image = self._rescale_color_and_depth(
             obs.rgb, obs.depth, self.image_scaling
         )
-        head_depth_image = (head_depth_image * 1000).astype(np.uint16)
-        compressed_head_depth_image = compression.to_jp2(head_depth_image)
-        compressed_head_color_image = compression.to_jpg(head_color_image)
-
+        depth_image = (depth_image * 1000).astype(np.uint16)
+        compressed_color_image = compression.to_jpg(color_image)
+        compressed_depth_image = compression.to_jp2(depth_image)
+        
         message = {
-            "ee/pose_in_map": self.client.get_ee_pose_in_map().matrix(),
-            "head_cam/color_camera_K": scale_camera_matrix(
+            "ee_pose_in_map": obs.ee_pose_in_map,
+            "camera_pose_in_map": obs.camera_pose_in_map,
+            "color_camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),
-            "head_cam/depth_camera_K": scale_camera_matrix(
+            "depth_camera_K": scale_camera_matrix(
                 self.client.dpt_cam.get_K(), self.image_scaling
             ),
-            "head_cam/color_image": compressed_head_color_image,
-            "head_cam/depth_image": compressed_head_depth_image,
-            "head_cam/color_image/shape": head_color_image.shape,
-            "head_cam/depth_image/shape": head_depth_image.shape,
-            "head_cam/image_scaling": self.image_scaling,
-            "head_cam/depth_scaling": self.depth_scaling,
-            "head_cam/pose": self.client.get_head_camera_pose_in_map().matrix(),
-            "robot/config": obs.joint,
+            "color_image": compressed_color_image,
+            "depth_image": compressed_depth_image,
+            "color_shape": color_image.shape,
+            "depth_shape": depth_image.shape,
+            "image_scaling": self.image_scaling,
+            "depth_scaling": self.depth_scaling,
+            "joint_positions": obs.joint_positions,
+            "joint_velocities": obs.joint_velocities,
             "step": self._last_step,
         }
         # message.update(d405_output)

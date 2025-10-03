@@ -208,6 +208,33 @@ class RtabmapData:
     pose_graph: Dict[str, np.ndarray]
     camera_pose_in_map: np.ndarray
 
+@dataclass
+class StateObservations:
+    """State observations."""
+    gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
+    compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
+    joint_positions: np.ndarray
+    joint_velocities: np.ndarray
+    joint_efforts: np.ndarray
+    base_pose_in_map: np.ndarray
+    ee_pose_in_map: np.ndarray
+    at_goal: bool
+    is_homed: bool
+    is_runstopped: bool
+
+
+@dataclass
+class ServoObservations:
+    """Sensor observations."""
+    rgb: np.ndarray
+    depth: np.ndarray
+    camera_K: np.ndarray
+    depth_K: np.ndarray
+    joint_positions: np.ndarray
+    joint_velocities: np.ndarray
+    ee_pose_in_map: np.ndarray
+    camera_pose_in_map: np.ndarray
+
 
 @dataclass
 class Observations:
@@ -275,7 +302,7 @@ class Observations:
     lidar_timestamp: Optional[int] = None
 
     # Proprioreception
-    joint: Optional[np.ndarray] = None  # joint positions of the robot
+    joint_positions: Optional[np.ndarray] = None  # joint positions of the robot
     joint_velocities: Optional[np.ndarray] = None  # joint velocities of the robot
     relative_resting_position: Optional[
         np.ndarray
@@ -370,6 +397,11 @@ class Observations:
             semantic=data.get("semantic"),
             camera_K=data.get("camera_K"),
             camera_pose=data.get("camera_pose"),
+            image_scaling=data.get("image_scaling"),
+            depth_scaling=data.get("depth_scaling"),
+            camera_pose_in_arm=data.get("camera_pose_in_arm"),
+            camera_pose_in_base=data.get("camera_pose_in_base"),
+            camera_pose_in_map=data.get("camera_pose_in_map"),
             ee_rgb=data.get("ee_rgb"),
             ee_depth=data.get("ee_depth"),
             ee_xyz=data.get("ee_xyz"),
@@ -377,11 +409,13 @@ class Observations:
             ee_camera_K=data.get("ee_camera_K"),
             ee_camera_pose=data.get("ee_camera_pose"),
             ee_pose=data.get("ee_pose"),
+            ee_pose_in_map=data.get("ee_pose_in_map"),
             instance=data.get("instance"),
             third_person_image=data.get("third_person_image"),
             lidar_points=data.get("lidar_points"),
             lidar_timestamp=data.get("lidar_timestamp"),
-            joint=data.get("joint"),
+            joint_positions=data.get("joint_positions"),
+            joint_velocities=data.get("joint_velocities"),
             relative_resting_position=data.get("relative_resting_position"),
             is_holding=data.get("is_holding"),
             task_observations=data.get("task_observations"),

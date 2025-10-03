@@ -14,12 +14,13 @@ import time
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 from typing import Dict, Iterable, List, Optional
+from typing_extensions import Self
 
 import numpy as np
 import torch
 import trimesh.transformations as tra
 
-from dream.core.interfaces import Observations, RtabmapData
+from dream.core.interfaces import Observations, RtabmapData, ServoObservations, StateObservations
 from dream.core.robot import AbstractRobotClient, ControlMode
 from dream.motion import RobotModel
 from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q
@@ -249,13 +250,13 @@ class DreamClient(AbstractRobotClient):
     def dpt_cam(self):
         return self._ros_client.dpt_cam
 
-    @property
-    def ee_dpt_cam(self):
-        return self._ros_client.ee_dpt_cam
+    # @property
+    # def ee_dpt_cam(self):
+    #     return self._ros_client.ee_dpt_cam
 
-    @property
-    def ee_rgb_cam(self):
-        return self._ros_client.ee_rgb_cam
+    # @property
+    # def ee_rgb_cam(self):
+    #     return self._ros_client.ee_rgb_cam
 
     @property
     def lidar(self):
@@ -299,12 +300,12 @@ class DreamClient(AbstractRobotClient):
 
     def get_base_in_map_pose(self) -> np.ndarray:
         """Get the robot's base pose as XYT."""
-        return self.nav.get_base_in_map_pose()
+        return self._ros_client.get_base_in_map_pose()
     
     def get_ee_pose_in_map(self):
-        return self._ros_client.get_base_in_map_pose()
+        return self._ros_client.get_ee_pose_in_map()
 
-    def get_head_camera_pose_in_map(self):
+    def get_camera_pose_in_map(self):
         return self._ros_client.get_camera_in_map_pose()
 
     def get_pose_graph(self) -> np.ndarray:  # TODO (zhijie, may need edit)
@@ -401,6 +402,50 @@ class DreamClient(AbstractRobotClient):
         )
         return full_observation
 
+    def get_state_observation(
+        self,
+        start_pose: Optional[np.ndarray] = None
+    ) -> StateObservations:
+        joint_positions, joint_velocities, joint_efforts = self.get_joint_state()
+        base_in_map_pose = self.get_base_in_map_pose()
+        if start_pose is not None:
+            relative_pose = start_pose.inverse() * base_in_map_pose
+        else:
+            relative_pose = base_in_map_pose
+        euler_angles = relative_pose.so3().log()
+        theta = euler_angles[-1]
+        gps = relative_pose.translation()[:2]
+        return StateObservations(
+            gps=gps,
+            compass=np.array([theta]),
+            joint_positions=joint_positions,
+            joint_velocities=joint_velocities,
+            joint_efforts=joint_efforts,
+            base_pose_in_map=base_in_map_pose,
+            ee_pose_in_map=self.get_ee_pose_in_map(),
+            at_goal=self.at_goal(),
+            is_homed=self.is_homed,
+            is_runstopped=self.is_runstopped,
+        )
+
+    def get_servo_observation(self) -> ServoObservations:
+        rgb, depth = self.cam.get_images(compute_xyz=False)
+        camera_K = self.rgb_cam.get_K()
+        depth_K = self.dpt_cam.get_K()
+        joint_positions, joint_velocities, _ = self.get_joint_state()
+        ee_pose_in_map = self.get_ee_pose_in_map()
+        camera_pose_in_map = self.get_camera_pose_in_map()
+        
+        return ServoObservations(
+            rgb=rgb,
+            depth=depth,
+            camera_K=camera_K,
+            depth_K=depth_K,
+            joint_positions=joint_positions,
+            joint_velocities=joint_velocities,
+            ee_pose_in_map=ee_pose_in_map,
+            camera_pose_in_map=camera_pose_in_map,
+        )
 
     def get_observation(
         self,
@@ -421,7 +466,7 @@ class DreamClient(AbstractRobotClient):
             rgb, depth = self.cam.get_images(compute_xyz=False)
             xyz = None
 
-        current_pose = xyt2sophus(self.nav.get_base_in_map_pose())
+        current_pose = xyt2sophus(self.get_base_in_map_pose())
 
         if start_pose is not None:
             # use sophus to get the relative translation
@@ -452,7 +497,7 @@ class DreamClient(AbstractRobotClient):
             camera_pose_in_arm=self._ros_client.get_camera_in_arm_pose(),
             camera_pose_in_base=self._ros_client.get_camera_in_base_pose(),
             ee_pose_in_map=self._ros_client.get_ee_pose_in_map(),
-            joint=joint_positions,
+            joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             camera_K=self.get_camera_intrinsics(),
             lidar_points=lidar_points,
