@@ -769,7 +769,7 @@ class DreamRosInterface(Node):
         if lookup_time is None:
             lookup_time = Time()
         if timeout_s is None:
-            timeout_ros = Duration(seconds=0.1)
+            timeout_ros = Duration(seconds=1)
         else:
             timeout_ros = Duration(seconds=timeout_s)
         if base_frame is None:
