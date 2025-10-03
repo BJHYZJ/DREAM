@@ -9,7 +9,7 @@
 
 import io
 from typing import Optional, Tuple, Union
-
+import array
 import cv2
 import liblzfse
 import numpy as np
@@ -107,6 +107,15 @@ def from_jpg(compressed_image: Union[bytes, np.ndarray]) -> np.ndarray:
         compressed_image = np.frombuffer(compressed_image, dtype=np.uint8)
     return cv2.imdecode(compressed_image, cv2.IMREAD_COLOR)
 
+def from_array(compressed_image: array.array, is_rgb: bool = True) -> np.ndarray:
+    """Convert compressed image to numpy array"""
+    # return cv2.imdecode(compressed_image, cv2.IMREAD_COLOR)
+    arr = np.frombuffer(bytes(compressed_image), dtype=np.uint8)
+    if is_rgb:
+        rgb = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    else:
+        rgb = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
+    return rgb
 
 def from_jp2(compressed_image: Union[bytes, np.ndarray]) -> np.ndarray:
     """Convert compressed image to numpy array"""

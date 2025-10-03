@@ -1556,14 +1556,14 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 continue
 
             self._seq_id += 1
-            output["rgb"] = compression.from_jpg(output["rgb"])
-            compressed_depth = output["depth"]
-            depth = compression.from_jp2(compressed_depth) / 1000
-            output["depth"] = depth
+            output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
+            output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
+
+            rgb_height, rgb_width = output["rgb"].shape[:2]
 
             if camera is None:
                 camera = Camera.from_K(
-                    output["camera_K"], output["rgb_height"], output["rgb_width"]
+                    output["camera_K"], width=rgb_width, height=rgb_height
                 )
 
             output["xyz"] = camera.depth_to_xyz(output["depth"])
@@ -1717,7 +1717,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def blocking_spin_rerun(self) -> None:
         """Use the rerun server so that we can visualize what is going on as the robot takes actions in the world."""
         while not self._finish:
-            self._rerun.step(self._obs, self._servo)
+            self._rerun.step(self._obs, self._servo, self._state)
 
     @property
     def is_homed(self) -> bool:
