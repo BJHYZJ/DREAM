@@ -228,12 +228,14 @@ class ServoObservations:
     """Sensor observations."""
     rgb: np.ndarray
     depth: np.ndarray
-    camera_K: np.ndarray
-    depth_K: np.ndarray
-    joint_positions: np.ndarray
-    joint_velocities: np.ndarray
-    ee_pose_in_map: np.ndarray
-    camera_pose_in_map: np.ndarray
+    camera_K: Optional[np.ndarray] = None
+    depth_K: Optional[np.ndarray] = None
+    image_scaling: Optional[float] = None
+    depth_scaling: Optional[float] = None
+    joint_positions: Optional[np.ndarray] = None
+    joint_velocities: Optional[np.ndarray] = None
+    ee_pose_in_map: Optional[np.ndarray] = None
+    camera_pose_in_map: Optional[np.ndarray] = None
 
 
 @dataclass

@@ -25,7 +25,7 @@ from termcolor import colored
 import dream.motion.constants as constants
 import dream.motion.conversions as conversions
 import dream.utils.compression as compression
-from dream.core.interfaces import ContinuousNavigationAction, Observations
+from dream.core.interfaces import ContinuousNavigationAction, Observations, ServoObservations
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
@@ -249,7 +249,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     #     return rgb, depth
 
     def get_head_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
-        """Get the RGB and depth images from the head camera.
+        """Get the RGB and depth images from camera.
 
         Returns:
             Tuple[np.ndarray, np.ndarray]: The RGB and depth images
@@ -1600,21 +1600,17 @@ class DreamRobotZmqClient(AbstractRobotClient):
         #     image_scaling = None
 
         # Get head information from the message as well
-        head_color_image = compression.from_jpg(message["head_cam/color_image"])
-        head_depth_image = compression.from_jp2(message["head_cam/depth_image"]) / 1000
-        head_image_scaling = message["head_cam/image_scaling"]
-        joint = message["robot/config"]
+        color_image = compression.from_jpg(message["color_image"])
+        depth_image = compression.from_jp2(message["depth_image"]) / 1000
+        joint_positions = message["joint_positions"]
+        
         with self._servo_lock and self._state_lock:
-            observation = Observations(
-                gps=self._state["base_pose_in_map"][:2],
-                compass=self._state["base_pose_in_map"][2],
-                rgb=head_color_image,
-                depth=head_depth_image,
-                xyz=None,
-                # ee_rgb=color_image,
-                # ee_depth=depth_image,
-                # ee_xyz=None,
-                joint=joint,
+            servo_observation = ServoObservations(
+                # gps=self._state["base_pose_in_map"][:2],
+                # compass=self._state["base_pose_in_map"][2],
+                rgb=color_image,
+                depth=depth_image,
+                joint_positions=joint_positions,
             )
 
             # We may not have the camera information yet
@@ -1624,21 +1620,21 @@ class DreamRobotZmqClient(AbstractRobotClient):
             #     observation.ee_camera_pose = message["ee_cam/pose"]
             #     observation.ee_depth_scaling = message["ee_cam/image_scaling"]
 
-            observation.ee_pose_in_map = message["ee/pose_in_map"]  # np.ndarray
-            observation.depth_scaling = message["head_cam/depth_scaling"]
-            observation.camera_K = message["head_cam/depth_camera_K"]
-            observation.camera_pose_in_map = message["head_cam/pose"]  # np.ndarray
+            servo_observation.ee_pose_in_map = message["ee_pose_in_map"]  # np.ndarray
+            servo_observation.depth_scaling = message["depth_scaling"]
+            servo_observation.camera_K = message["depth_camera_K"]
+            servo_observation.camera_pose_in_map = message["pose"]  # np.ndarray
             if "is_simulation" in message:
-                observation.is_simulation = message["is_simulation"]
+                servo_observation.is_simulation = message["is_simulation"]
             else:
-                observation.is_simulation = False
-            self._servo = observation
+                servo_observation.is_simulation = False
+            self._servo = servo_observation
 
     def get_servo_observation(self):
         """Get the current servo observation.
 
         Returns:
-            Observations: the current servo observation
+            ServoObservations: the current servo observation
         """
         with self._servo_lock:
             return self._servo
