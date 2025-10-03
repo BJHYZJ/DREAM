@@ -388,10 +388,13 @@ class RerunVisualizer:
 
     def log_robot_xyt(self, state: StateObservations):
         """Log robot world pose"""
-        rr.set_time("realtime", timestamp=time.time())
         # 直接使用base_pose_in_map，它已经包含了完整的位置和旋转信息
         base_pose = state["base_pose_in_map"]
         
+        # 检查是否是历史数据（通过检查时间戳或添加调试信息）
+        # print(f"Base pose timestamp: {time.time()}")
+        print(f"Base pose position: {base_pose[:3, 3]}")
+        print(base_pose)
         # 分解变换矩阵
         rotation_matrix = base_pose[:3, :3]
         translation_vector = base_pose[:3, 3]
