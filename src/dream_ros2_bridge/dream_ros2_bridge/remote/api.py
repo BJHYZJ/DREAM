@@ -422,7 +422,7 @@ class DreamClient(AbstractRobotClient):
             joint_velocities=joint_velocities,
             joint_efforts=joint_efforts,
             base_pose_in_map=base_in_map_pose,
-            ee_pose_in_map=self.get_ee_pose_in_map(),
+            ee_pose_in_map=self.get_ee_pose_in_map().matrix(),
             at_goal=self.at_goal(),
             is_homed=self.is_homed,
             is_runstopped=self.is_runstopped,
@@ -433,8 +433,8 @@ class DreamClient(AbstractRobotClient):
         camera_K = self.rgb_cam.get_K()
         depth_K = self.dpt_cam.get_K()
         joint_positions, joint_velocities, _ = self.get_joint_state()
-        ee_pose_in_map = self.get_ee_pose_in_map()
-        camera_pose_in_map = self.get_camera_pose_in_map()
+        ee_pose_in_map = self.get_ee_pose_in_map().matrix()
+        camera_pose_in_map = self.get_camera_pose_in_map().matrix()
         
         return ServoObservations(
             rgb=rgb,
@@ -493,10 +493,10 @@ class DreamClient(AbstractRobotClient):
             xyz=xyz,
             gps=gps,
             compass=np.array([theta]),
-            camera_pose_in_map=self._ros_client.get_camera_in_map_pose(),
-            camera_pose_in_arm=self._ros_client.get_camera_in_arm_pose(),
-            camera_pose_in_base=self._ros_client.get_camera_in_base_pose(),
-            ee_pose_in_map=self._ros_client.get_ee_pose_in_map(),
+            camera_pose_in_map=self._ros_client.get_camera_in_map_pose().matrix(),
+            camera_pose_in_arm=self._ros_client.get_camera_in_arm_pose().matrix(),
+            camera_pose_in_base=self._ros_client.get_camera_in_base_pose().matrix(),
+            ee_pose_in_map=self._ros_client.get_ee_pose_in_map().matrix(),
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             camera_K=self.get_camera_intrinsics(),
