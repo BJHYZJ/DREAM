@@ -1602,7 +1602,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         # Get head information from the message as well
         color_image = compression.from_jpg(message["color_image"])
         depth_image = compression.from_jp2(message["depth_image"]) / 1000
-        joint_positions = message["joint_positions"]
         
         with self._servo_lock and self._state_lock:
             servo_observation = ServoObservations(
@@ -1610,7 +1609,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 # compass=self._state["base_pose_in_map"][2],
                 rgb=color_image,
                 depth=depth_image,
-                joint_positions=joint_positions,
             )
 
             # We may not have the camera information yet
@@ -1620,10 +1618,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
             #     observation.ee_camera_pose = message["ee_cam/pose"]
             #     observation.ee_depth_scaling = message["ee_cam/image_scaling"]
 
+            servo_observation.joint_positions = message["joint_positions"]
             servo_observation.ee_pose_in_map = message["ee_pose_in_map"]  # np.ndarray
             servo_observation.depth_scaling = message["depth_scaling"]
             servo_observation.camera_K = message["depth_camera_K"]
-            servo_observation.camera_pose_in_map = message["pose"]  # np.ndarray
+            servo_observation.camera_pose_in_map = message["camera_pose_in_map"]  # np.ndarray
             if "is_simulation" in message:
                 servo_observation.is_simulation = message["is_simulation"]
             else:

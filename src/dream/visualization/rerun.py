@@ -19,7 +19,7 @@ import rerun as rr
 import rerun.blueprint as rrb
 import torch
 
-from dream.core.interfaces import Observations
+from dream.core.interfaces import Observations, ServoObservations
 from dream.mapping.scene_graph import SceneGraph
 from dream.mapping.voxel.voxel_map import SparseVoxelMapNavigationSpace
 from dream.motion import DreamIdx
@@ -260,8 +260,8 @@ class RerunVisualizer:
         main = rrb.Horizontal(
             rrb.Spatial3DView(name="3D View", origin="world"),
             rrb.Vertical(
-                rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
-                rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
+                rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
+                # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
             ),
             column_shares=[3, 1],
         )
@@ -348,37 +348,38 @@ class RerunVisualizer:
             ),
         )
 
-    def log_head_camera(self, obs: Observations):
-        """Log head camera pose and images
+    def log_camera(self, obs: ServoObservations):
+        """Log camera pose and images
 
         Args:
             obs (Observations): Observation dataclass
         """
         # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.set_time("realtime", timestamp=time.time())
-        log_to_rerun("world/head_camera/rgb", rr.Image(obs.rgb))
+        log_to_rerun("world/camera/rgb", rr.Image(obs.rgb))
 
         if self.show_camera_point_clouds:
-            head_xyz = obs.get_xyz_in_world_frame().reshape(-1, 3)
-            head_rgb = obs.rgb.reshape(-1, 3)
+            xyz = obs.get_xyz_in_world_frame().reshape(-1, 3)
+            rgb = obs.rgb.reshape(-1, 3)
             log_to_rerun(
-                "world/head_camera/points",
+                "world/camera/points",
                 rr.Points3D(
-                    positions=head_xyz,
-                    radii=np.ones(head_xyz.shape[:2]) * self.camera_point_radius,
-                    colors=np.int64(head_rgb),
+                    positions=xyz,
+                    radii=np.ones(xyz.shape[:2]) * self.camera_point_radius,
+                    colors=np.int64(rgb),
                 ),
             )
         else:
-            log_to_rerun("world/head_camera/depth", rr.depthimage(obs.head_depth))
+            log_to_rerun("world/camera/depth", rr.depthimage(obs.depth))
 
-        if self.show_cameras_in_3d_view:
-            rot, trans = decompose_homogeneous_matrix(obs.camera_pose)
+        # if self.show_cameras_in_3d_view:
+        if True:
+            rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
             log_to_rerun(
-                "world/head_camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
+                "world/camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
             )
             log_to_rerun(
-                "world/head_camera",
+                "world/camera",
                 rr.Pinhole(
                     resolution=[obs.rgb.shape[1], obs.rgb.shape[0]],
                     image_from_camera=obs.camera_K,
@@ -431,58 +432,58 @@ class RerunVisualizer:
         # log_to_rerun("world/ee/arrow", ee_arrow)
         rr.log("world/ee", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3))
 
-    def log_ee_camera(self, servo):
-        """Log end effector camera pose and images
-        Args:
-            servo (Servo): Servo observation dataclass
-        """
-        rr.set_time("realtime", timestamp=time.time())
+    # def log_ee_camera(self, servo):
+    #     """Log end effector camera pose and images
+    #     Args:
+    #         servo (Servo): Servo observation dataclass
+    #     """
+    #     rr.set_time("realtime", timestamp=time.time())
 
-        if servo.ee_rgb is None or servo.ee_depth is None or servo.ee_camera_pose is None:
-            return
+    #     if servo.ee_rgb is None or servo.ee_depth is None or servo.ee_camera_pose is None:
+    #         return
 
-        # EE Camera
-        log_to_rerun("world/ee_camera/rgb", rr.Image(servo.ee_rgb))
+    #     # EE Camera
+    #     log_to_rerun("world/ee_camera/rgb", rr.Image(servo.ee_rgb))
 
-        if self.show_camera_point_clouds:
-            ee_xyz = servo.get_ee_xyz_in_world_frame().reshape(-1, 3)
-            ee_rgb = servo.ee_rgb.reshape(-1, 3)
-            # Remove points below z = 0
-            # and where distance from camera > 2 meters
-            idx_depth = servo.ee_depth.reshape(-1) < 2
-            idx_z = np.where(ee_xyz[:, 2] > 0)
-            idx = np.intersect1d(idx_depth, idx_z)
-            ee_xyz = ee_xyz[idx]
-            ee_rgb = ee_rgb[idx]
-            if self.max_displayed_points_per_camera > 0:
-                idx = np.arange(ee_xyz.shape[0])
-                np.random.shuffle(idx)
-                ee_xyz = ee_xyz[idx[: self.max_displayed_points_per_camera]]
-                ee_rgb = ee_rgb[idx[: self.max_displayed_points_per_camera]]
-            log_to_rerun(
-                "world/ee_camera/points",
-                rr.Points3D(
-                    positions=ee_xyz,
-                    radii=np.ones(ee_xyz.shape[:2]) * self.camera_point_radius,
-                    colors=np.int64(ee_rgb),
-                ),
-            )
-        else:
-            log_to_rerun("world/ee_camera/depth", rr.depthimage(servo.ee_depth))
+    #     if self.show_camera_point_clouds:
+    #         ee_xyz = servo.get_ee_xyz_in_world_frame().reshape(-1, 3)
+    #         ee_rgb = servo.ee_rgb.reshape(-1, 3)
+    #         # Remove points below z = 0
+    #         # and where distance from camera > 2 meters
+    #         idx_depth = servo.ee_depth.reshape(-1) < 2
+    #         idx_z = np.where(ee_xyz[:, 2] > 0)
+    #         idx = np.intersect1d(idx_depth, idx_z)
+    #         ee_xyz = ee_xyz[idx]
+    #         ee_rgb = ee_rgb[idx]
+    #         if self.max_displayed_points_per_camera > 0:
+    #             idx = np.arange(ee_xyz.shape[0])
+    #             np.random.shuffle(idx)
+    #             ee_xyz = ee_xyz[idx[: self.max_displayed_points_per_camera]]
+    #             ee_rgb = ee_rgb[idx[: self.max_displayed_points_per_camera]]
+    #         log_to_rerun(
+    #             "world/ee_camera/points",
+    #             rr.Points3D(
+    #                 positions=ee_xyz,
+    #                 radii=np.ones(ee_xyz.shape[:2]) * self.camera_point_radius,
+    #                 colors=np.int64(ee_rgb),
+    #             ),
+    #         )
+    #     else:
+    #         log_to_rerun("world/ee_camera/depth", rr.depthimage(servo.ee_depth))
 
-        if self.show_cameras_in_3d_view:
-            rot, trans = decompose_homogeneous_matrix(servo.ee_camera_pose)
-            log_to_rerun(
-                "world/ee_camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
-            )
-            log_to_rerun(
-                "world/ee_camera",
-                rr.Pinhole(
-                    resolution=[servo.ee_rgb.shape[1], servo.ee_rgb.shape[0]],
-                    image_from_camera=servo.ee_camera_K,
-                    image_plane_distance=0.15,
-                ),
-            )
+    #     if self.show_cameras_in_3d_view:
+    #         rot, trans = decompose_homogeneous_matrix(servo.ee_camera_pose)
+    #         log_to_rerun(
+    #             "world/ee_camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
+    #         )
+    #         log_to_rerun(
+    #             "world/ee_camera",
+    #             rr.Pinhole(
+    #                 resolution=[servo.ee_rgb.shape[1], servo.ee_rgb.shape[0]],
+    #                 image_from_camera=servo.ee_camera_K,
+    #                 image_plane_distance=0.15,
+    #             ),
+    #         )
 
     def log_robot_state(self, obs):
         """Log robot joint states"""
@@ -663,7 +664,7 @@ class RerunVisualizer:
 
     def step(self, obs, state, servo):
         """Log all the data"""
-        if obs and servo:
+        if obs and state and servo:
             rr.set_time("realtime", timestamp=time.time())
             try:
                 t0 = timeit.default_timer()
@@ -671,7 +672,7 @@ class RerunVisualizer:
                 # self.log_ee_frame(obs)
 
                 # Cameras use the lower-res servo object
-                self.log_head_camera(servo)
+                self.log_camera(servo)
                 # self.log_ee_camera(servo)
 
                 # self.log_robot_state(obs)

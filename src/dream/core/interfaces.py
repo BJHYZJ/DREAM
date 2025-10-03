@@ -15,9 +15,10 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 import array
 import numpy as np
+import sophuspy as sp
 
 
 class GeneralTaskState(Enum):
@@ -193,6 +194,55 @@ class Pose:
     orientation: np.ndarray
 
 
+class BaseObservations:
+    """Base class for all observation types with common methods."""
+    xyz: Optional[np.ndarray] = None
+    camera_pose_in_map: Optional[np.ndarray] = None
+    depth: Optional[np.ndarray] = None
+    camera_K: Optional[np.ndarray] = None
+
+    
+    def compute_xyz(self, scaling: float = 1e-3) -> Optional[np.ndarray]:
+        """Compute xyz from depth and camera intrinsics."""
+        if self.depth is not None and self.camera_K is not None:
+            self.xyz = self.depth_to_xyz(self.depth * scaling, self.camera_K)
+        return self.xyz
+
+    def depth_to_xyz(self, depth, camera_K) -> np.ndarray:
+        """Convert depth image to xyz point cloud."""
+        # Get the camera intrinsics
+        fx, fy, cx, cy = camera_K[0, 0], camera_K[1, 1], camera_K[0, 2], camera_K[1, 2]
+        # Get the image size
+        h, w = depth.shape
+        # Create the grid
+        x = np.tile(np.arange(w), (h, 1))
+        y = np.tile(np.arange(h).reshape(-1, 1), (1, w))
+        # Compute the xyz
+        x = (x - cx) * depth / fx
+        y = (y - cy) * depth / fy
+        return np.stack([x, y, depth], axis=-1)
+
+    def get_xyz_in_world_frame(self, scaling: float = 1.0) -> Optional[np.ndarray]:
+        """Get the xyz in world frame.
+
+        Args:
+            scaling: scaling factor for xyz"""
+        if self.xyz is None:
+            self.compute_xyz(scaling=scaling)
+        if self.xyz is not None and self.camera_pose_in_map is not None:
+            return self.transform_points(self.xyz, self.camera_pose_in_map)
+        return None
+
+    def transform_points(self, points: np.ndarray, pose: Union[np.ndarray, sp.SE3]):
+        """Transform points to world frame.
+        Args:
+            points: points in camera frame
+            pose: pose of the camera"""
+        if isinstance(pose, sp.SE3):
+            pose = pose.matrix()
+        assert points.shape[-1] == 3, "Points should be in 3D"
+        assert pose.shape == (4, 4), "Pose should be a 4x4 matrix"
+        return np.dot(points, pose[:3, :3].T) + pose[:3, 3]
 
 
 @dataclass
@@ -207,6 +257,7 @@ class RtabmapData:
     camera_K: np.ndarray
     pose_graph: Dict[str, np.ndarray]
     camera_pose_in_map: np.ndarray
+
 
 @dataclass
 class StateObservations:
@@ -224,8 +275,8 @@ class StateObservations:
 
 
 @dataclass
-class ServoObservations:
-    """Sensor observations."""
+class ServoObservations(BaseObservations):
+    """Servo observations for visual servoing."""
     rgb: np.ndarray
     depth: np.ndarray
     camera_K: Optional[np.ndarray] = None
@@ -236,156 +287,28 @@ class ServoObservations:
     joint_velocities: Optional[np.ndarray] = None
     ee_pose_in_map: Optional[np.ndarray] = None
     camera_pose_in_map: Optional[np.ndarray] = None
+    is_simulation: bool = False
 
 
 @dataclass
-class Observations:
-    """Sensor observations."""
-
-    # --------------------------------------------------------
-    # Typed observations
-    # --------------------------------------------------------
-
-    # Joint states
-    # joint_positions: np.ndarray
-
-    # Pose
-    # TODO: add these instead of gps + compass
-    # base_pose: Pose
-    # ee_pose: Pose
-
-    # Pose
-    gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
-    compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
-
-    # Camera
-    rgb: np.ndarray  # (camera_height, camera_width, 3) in [0, 255]
-    depth: np.ndarray  # (camera_height, camera_width) in meters
-    xyz: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in camera coordinates
-    semantic: Optional[
-        np.ndarray
-    ] = None  # (camera_height, camera_width) in [0, num_sem_categories - 1]
-    camera_K: Optional[np.ndarray] = None  # (3, 3) camera intrinsics matrix
-
-    image_scaling: Optional[float] = None
-    depth_scaling: Optional[float] = None
-
-    # Pose of the camera in world coordinates
-    # camera_pose: Optional[np.ndarray] = None
-    camera_pose_in_arm: Optional[np.ndarray] = None
-    camera_pose_in_base: Optional[np.ndarray] = None
+class Observations(BaseObservations):
+    """Full sensor observations with all data."""
+    # Core data
+    gps: np.ndarray
+    compass: np.ndarray
+    rgb: np.ndarray
+    depth: np.ndarray
+    xyz: Optional[np.ndarray] = None
+    camera_K: Optional[np.ndarray] = None
     camera_pose_in_map: Optional[np.ndarray] = None
-
-    # End effector camera
-    # ee_rgb: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in [0, 255]
-    # # ee_depth: Optional[np.ndarray] = None  # (camera_height, camera_width) in meters
-    # ee_xyz: Optional[np.ndarray] = None  # (camera_height, camera_width, 3) in camera coordinates
-    # ee_semantic: Optional[
-    #     np.ndarray
-    # ] = None  # (camera_height, camera_width) in [0, num_sem_categories - 1]
-    # ee_camera_K: Optional[np.ndarray] = None  # (3, 3) camera intrinsics matrix
-
-    # Pose of the end effector camera in world coordinates
-    # ee_camera_pose: Optional[np.ndarray] = None
-
-    # Pose of the end effector grasp center in world coordinates
+    joint_positions: Optional[np.ndarray] = None
+    joint_velocities: Optional[np.ndarray] = None
     ee_pose_in_map: Optional[np.ndarray] = None
-
-    # Instance IDs per observation frame
-    # Size: (camera_height, camera_width)
-    # Range: 0 to max int
-    instance: Optional[np.ndarray] = None
-
-    # Optional third-person view from simulation
-    third_person_image: Optional[np.ndarray] = None
-
-    # lidar
     lidar_points: Optional[np.ndarray] = None
     lidar_timestamp: Optional[int] = None
-
-    # Proprioreception
-    joint_positions: Optional[np.ndarray] = None  # joint positions of the robot
-    joint_velocities: Optional[np.ndarray] = None  # joint velocities of the robot
-    relative_resting_position: Optional[
-        np.ndarray
-    ] = None  # end-effector position relative to the desired resting position
-    is_holding: Optional[np.ndarray] = None  # whether the agent is holding the object
-    # --------------------------------------------------------
-    # Untyped task-specific observations
-    # --------------------------------------------------------
-
-    task_observations: Optional[Dict[str, Any]] = None
-
-    # Sequence number - which message was this?
     seq_id: int = -1
-
-    # True if in simulation
     is_simulation: bool = False
 
-    # True if matched with a pose graph node
-    is_pose_graph_node: bool = False
-
-    # Timestamp of matched pose graph node
-    pose_graph_timestamp: Optional[int] = None
-
-    # Initial pose graph pose. GPS and compass.
-    initial_pose_graph_gps: Optional[np.ndarray] = None
-    initial_pose_graph_compass: Optional[np.ndarray] = None
-
-    def compute_xyz(self, scaling: float = 1e-3) -> Optional[np.ndarray]:
-        """Compute xyz from depth and camera intrinsics."""
-        if self.depth is not None and self.camera_K is not None:
-            self.xyz = self.depth_to_xyz(self.depth * scaling, self.camera_K)
-        return self.xyz
-
-    def compute_ee_xyz(self, scaling: float = 1e-3) -> Optional[np.ndarray]:
-        """Compute xyz from depth and camera intrinsics."""
-        if self.ee_depth is not None and self.ee_camera_K is not None:
-            self.ee_xyz = self.depth_to_xyz(self.ee_depth * scaling, self.ee_camera_K)
-        return self.ee_xyz
-
-    def depth_to_xyz(self, depth, camera_K) -> np.ndarray:
-        """Convert depth image to xyz point cloud."""
-        # Get the camera intrinsics
-        fx, fy, cx, cy = camera_K[0, 0], camera_K[1, 1], camera_K[0, 2], camera_K[1, 2]
-        # Get the image size
-        h, w = depth.shape
-        # Create the grid
-        x = np.tile(np.arange(w), (h, 1))
-        y = np.tile(np.arange(h).reshape(-1, 1), (1, w))
-        # Compute the xyz
-        x = (x - cx) * depth / fx
-        y = (y - cy) * depth / fy
-        return np.stack([x, y, depth], axis=-1)
-
-    def get_ee_xyz_in_world_frame(self, scaling: float = 1.0) -> Optional[np.ndarray]:
-        """Get the end effector xyz in world frame."""
-        if self.ee_xyz is None:
-            self.compute_ee_xyz(scaling=scaling)
-        if self.ee_xyz is not None and self.ee_camera_pose is not None:
-            return self.transform_points(self.ee_xyz, self.ee_camera_pose)
-        return None
-
-    def get_xyz_in_world_frame(self, scaling: float = 1.0) -> Optional[np.ndarray]:
-        """Get the xyz in world frame.
-
-        Args:
-            scaling: scaling factor for xyz"""
-        if self.xyz is None:
-            self.compute_xyz(scaling=scaling)
-        if self.xyz is not None and self.camera_pose_in_map is not None:
-            return self.transform_points(self.xyz, self.camera_pose_in_map)
-        return None
-
-    def transform_points(self, points: np.ndarray, pose: np.ndarray):
-        """Transform points to world frame.
-
-        Args:
-            points: points in camera frame
-            pose: pose of the camera"""
-        assert points.shape[-1] == 3, "Points should be in 3D"
-        assert pose.shape == (4, 4), "Pose should be a 4x4 matrix"
-        return np.dot(points, pose[:3, :3].T) + pose[:3, 3]
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Observations":
