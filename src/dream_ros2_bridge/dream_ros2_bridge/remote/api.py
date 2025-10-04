@@ -200,6 +200,12 @@ class DreamClient(AbstractRobotClient):
         self.nav.disable()
         self.manip.disable()
         self._base_control_mode = ControlMode.IDLE
+    
+    def shutdown(self):
+        """优雅关闭ROS客户端"""
+        # 让内部的 ROS 接口优雅收尾
+        if hasattr(self, "_ros_client") and hasattr(self._ros_client, "shutdown"):
+            self._ros_client.shutdown()
 
     # Other interfaces
 
@@ -592,4 +598,15 @@ if __name__ == "__main__":
 
     rclpy.init()
     client = DreamClient()
-    breakpoint()
+    
+    print("DreamClient initialized. Running without sleep for performance testing.")
+    print("Press Ctrl+C to exit.")
+    
+    try:
+        # Performance testing mode - no sleep for maximum performance
+        while rclpy.ok():
+            pass  # Busy waiting loop - no sleep for performance testing
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+    finally:
+        rclpy.shutdown()

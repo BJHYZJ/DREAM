@@ -10,6 +10,7 @@
 
 # (c) 2024 Hello Robot, under MIT license
 
+import time
 from typing import Any, Dict
 
 import click
@@ -300,12 +301,36 @@ def main(
     local: bool = False,
 ):
     rclpy.init()
+    
     server = ZmqServer(
         send_port=send_port,
         recv_port=recv_port,
         use_remote_computer=(not local),
     )
-    server.start()
+    
+    try:
+        server.start()  # 一般是起若干线程后立即返回（非阻塞）
+
+        # 关键：主线程不要退出，定期让出 GIL
+        while getattr(server, "is_running", True) and rclpy.ok():
+            time.sleep(0.05)
+
+    except KeyboardInterrupt:
+        print("Shutting down...")
+
+    finally:
+        # 1) 先让 ROS 上下文停，解除 spin() 的阻塞
+        try:
+            rclpy.shutdown()
+        except Exception:
+            pass
+
+        # 2) 再关掉你的客户端（里面 join spin 线程等）
+        try:
+            if hasattr(server, "client") and hasattr(server.client, "shutdown"):
+                server.client.shutdown()
+        except Exception as e:
+            print("client.shutdown() failed:", e)
 
 
 if __name__ == "__main__":

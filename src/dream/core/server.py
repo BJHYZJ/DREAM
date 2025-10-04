@@ -214,8 +214,8 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.report_steps == 0:
                 print(f"[SEND FULL STATE] time taken = {dt} avg = {sum_time/steps}")
 
-            # time.sleep(1e-4)
-            time.sleep(1)
+            time.sleep(1e-4)
+            # time.sleep(1)
             t0 = timeit.default_timer()
 
     def spin_recv(self):
@@ -275,6 +275,8 @@ class BaseZmqServer(CommsNode, ABC):
             # Skip if no message - could not access or other core information yet
             if message is None:
                 continue
+
+            logger.info(f"[SEND MINIMAL STATE] message keys: {message['base_pose_in_map']}")
 
             if steps == 0:
                 logger.info(f"[SEND MINIMAL STATE] message keys: {message.keys()}")

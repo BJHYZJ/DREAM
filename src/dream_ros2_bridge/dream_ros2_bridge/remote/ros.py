@@ -34,6 +34,10 @@ from rclpy.clock import ClockType
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.time import Time
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+from rclpy.qos import qos_profile_sensor_data
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool, Empty, Float32, Float64MultiArray, String
 from std_srvs.srv import SetBool, Trigger
@@ -143,6 +147,34 @@ class DreamRosInterface(Node):
         # Verbosity for the ROS client
         self.verbose = verbose
 
+        # QoS设置
+        self.reliable_qos = QoSProfile(
+            depth=10,
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            durability=DurabilityPolicy.VOLATILE,
+        )
+
+        # self.best_effort_qos = QoSProfile(
+        #     depth=10,
+        #     reliability=ReliabilityPolicy.BEST_EFFORT,
+        #     history=HistoryPolicy.KEEP_LAST,
+        #     durability=DurabilityPolicy.VOLATILE,
+        # )
+
+        self._executor = MultiThreadedExecutor(num_threads=4)
+        self._executor.add_node(self)
+        self._spin_thread = threading.Thread(target=self._spin_forever, daemon=True)
+        self._spin_thread.start()
+        # Start the thread  # publish pose visualization
+        # self._thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
+        # self._thread.start()
+
+
+        # Create the tf2 buffer first, used in camera init
+        self.tf2_buffer   = tf2_ros.Buffer(cache_time=Duration(seconds=20.0))
+        self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer, self)
+
         # Initialize caches
         self.current_mode: Optional[str] = None
 
@@ -192,10 +224,6 @@ class DreamRosInterface(Node):
         self._is_runstopped = False
 
         # self._pose_graph = []
-
-        # Start the thread  # publish pose visualization
-        self._thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
-        self._thread.start()
 
         # Initialize ros communication
         self._create_pubs_subs()
@@ -248,8 +276,45 @@ class DreamRosInterface(Node):
         #     self._has_wrist = False
         #     self.Idx = get_Idx("tool_stretch_gripper")
 
+    def _spin_forever(self):
+        """带异常保护的spin方法"""
+        try:
+            self._executor.spin()
+        except RuntimeError as e:
+            # 例如线程池已关闭时的竞态，这里吞掉即可
+            self.get_logger().warn(f"spin stopped: {e}")
+        except Exception as e:
+            self.get_logger().error(f"Unexpected error in spin: {e}")
+
+    def shutdown(self):
+        """按正确顺序优雅关闭ROS接口"""
+        try:
+            # b) 此时应当已经调用了 rclpy.shutdown()（在外层 main 里），
+            #    这样 spin() 会自然返回。等它退出：
+            if hasattr(self, "_spin_thread") and self._spin_thread.is_alive():
+                self.get_logger().info("Waiting for spin thread to exit...")
+                self._spin_thread.join(timeout=3.0)
+                if self._spin_thread.is_alive():
+                    self.get_logger().warn("Spin thread did not exit within timeout")
+
+            # c) 再关 executor 的线程池（避免"关了线程池再 submit"的竞态）
+            if hasattr(self, "_executor") and not self._executor._shutdown:
+                self.get_logger().info("Shutting down executor...")
+                self._executor.shutdown(timeout_sec=2.0)
+
+            # d) 最后销毁节点
+            self.get_logger().info("Destroying node...")
+            self.destroy_node()
+            
+        except Exception as e:
+            self.get_logger().error(f"Error during shutdown: {e}")
+
     def __del__(self):
-        self._thread.join()
+        """析构函数 - 确保资源清理"""
+        self.shutdown()
+
+    # def __del__(self):
+    #     self._thread.join()
 
     # Interfaces
 
@@ -486,18 +551,12 @@ class DreamRosInterface(Node):
 
     def _create_pubs_subs(self):
         """create ROS publishers and subscribers - only call once"""
-        # Create the tf2 buffer first, used in camera init
-        self.tf2_buffer   = tf2_ros.Buffer(cache_time=Duration(seconds=20.0))
-        self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer, self)
 
-        while rclpy.ok():
-            try:
-                self.tf2_buffer.lookup_transform("map", "base_link", Time(), timeout=Duration(seconds=10.0))
-                self.get_logger().info(f"TF ready: map -> base_link")
-                break
-            except Exception as e:
-                self.get_logger().warn(f"Waiting for TF transform: {e}")
-                rclpy.spin_once(self, timeout_sec=0.1)
+        if self.tf2_buffer.can_transform("map", "base_link", Time(), Duration(seconds=0.0)):
+            self.get_logger().info("TF ready: map -> base_link")
+        else:
+            self.get_logger().warn("TF not ready yet; will check later.")
+
 
         # Create command publishers
         self.goal_pub = self.create_publisher(Pose, "goto_controller/goal", 1)
@@ -506,26 +565,26 @@ class DreamRosInterface(Node):
         self.grasp_ready = None
         self.grasp_complete = None
         self.grasp_enable_pub = self.create_publisher(Empty, "grasp_point/enable", 1)
-        self.grasp_ready_sub = self.create_subscription(Empty, "grasp_point/ready", self._grasp_ready_callback, 10)  # Had to check qos_profile
+        self.grasp_ready_sub = self.create_subscription(Empty, "grasp_point/ready", self._grasp_ready_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
         self.grasp_disable_pub = self.create_publisher(Empty, "grasp_point/disable", 1)
         self.grasp_trigger_pub = self.create_publisher(PointStamped, "grasp_point/trigger_grasp_point", 1)
-        self.grasp_result_sub = self.create_subscription(Float32, "grasp_point/result", self._grasp_result_callback, 10)  # Had to check qos_profile
+        self.grasp_result_sub = self.create_subscription(Float32, "grasp_point/result", self._grasp_result_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
 
         # Check if robot is homed and runstopped
         # self._is_homed_sub = self.create_subscription(Bool, "/is_homed", self._is_homed_cb, 1)
-        self._is_runstopped_sub = self.create_subscription(Bool, "/is_runstopped", self._is_runstopped_cb, 1)
+        self._is_runstopped_sub = self.create_subscription(Bool, "/is_runstopped", self._is_runstopped_cb, 1, callback_group=MutuallyExclusiveCallbackGroup())
 
         self.place_ready = None
         self.place_complete = None
         self.location_above_surface_m = None
         self.place_enable_pub = self.create_publisher(Float32, "place_point/enable", 1)
-        self.place_ready_sub = self.create_subscription(Empty, "place_point/ready", self._place_ready_callback, 10)  # Had to check qos_profile
+        self.place_ready_sub = self.create_subscription(Empty, "place_point/ready", self._place_ready_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
         self.place_disable_pub = self.create_publisher(Empty, "place_point/disable", 1)
         self.place_trigger_pub = self.create_publisher(PointStamped, "place_point/trigger_place_point", 1)
-        self.place_result_sub = self.create_subscription(Empty, "place_point/result", self._place_result_callback, 10)  # Had to check qos_profile
+        self.place_result_sub = self.create_subscription(Empty, "place_point/result", self._place_result_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
 
         # Create subscribers
-        self._odom_sub = self.create_subscription(Odometry, "/ranger/odom", self._odom_callback, 1)
+        self._odom_sub = self.create_subscription(Odometry, "/ranger/odom", self._odom_callback, qos_profile_sensor_data, callback_group=MutuallyExclusiveCallbackGroup())
 
         # self._base_state_sub = self.create_subscription(
         #     PoseStamped, "state_estimator/pose_filtered", self._base_state_callback, 1
@@ -535,16 +594,16 @@ class DreamRosInterface(Node):
         #     PoseStamped, "camera_pose", self._camera_pose_callback, 1
         # )
 
-        self._at_goal_sub = self.create_subscription(Bool, "goto_controller/at_goal", self._at_goal_callback, 1)
-        self._mode_sub = self.create_subscription(String, "mode", self._mode_callback, 1)
+        self._at_goal_sub = self.create_subscription(Bool, "goto_controller/at_goal", self._at_goal_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self._mode_sub = self.create_subscription(String, "mode", self._mode_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
 
         # self._pose_graph_sub = self.create_subscription(
         #     Path, "slam_toolbox/pose_graph", self._pose_graph_callback, 1
         # )
         # zhijie added
-        self._rtabmapdata_sub = self.create_subscription(MapData, "/rtabmap/mapData", self._rtabmapdata_callback, 1)
+        self._rtabmapdata_sub = self.create_subscription(MapData, "/rtabmap/mapData", self._rtabmapdata_callback, self.reliable_qos, callback_group=MutuallyExclusiveCallbackGroup())
 
-        self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, 1)
+        self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=MutuallyExclusiveCallbackGroup())
 
         # Create trajectory client with which we can control the robot
         # self.trajectory_client = ActionClient(
@@ -699,6 +758,14 @@ class DreamRosInterface(Node):
         #     "right_ci": right_ci,
         # }
         self.rtabmapdata = msg
+        
+        # 检查Node ID顺序，但不要抛出异常
+        current_node_id = msg.nodes[0].id
+        if getattr(self, '_last_node_id', None) is not None and current_node_id <= self._last_node_id:
+            self.get_logger().warn(f"RTABMap Node ID out of order: {current_node_id} <= {self._last_node_id}")
+        
+        self.get_logger().info(f"RTABMap data received: Node ID {current_node_id}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
+        self._last_node_id = current_node_id
 
         # rgb = None
         # depth = None
@@ -764,26 +831,48 @@ class DreamRosInterface(Node):
     #     self.curr_visualizer(self.se3_base_filtered.matrix())
 
 
+    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None, timeout_s=None):
+    #     """look up a particular frame in base coords (or some other coordinate frame)."""
+    #     if lookup_time is None:
+    #         lookup_time = Time()
+    #     if timeout_s is None:
+    #         timeout_ros = Duration(seconds=1)
+    #     else:
+    #         timeout_ros = Duration(seconds=timeout_s)
+    #     if base_frame is None:
+    #         base_frame = self.base_link
+    #     try:
+    #         stamped_transform = self.tf2_buffer.lookup_transform(
+    #             base_frame, frame, lookup_time, timeout_ros
+    #         )
+    #         trans, rot = transform_to_list(stamped_transform)
+    #         pose_mat = to_matrix(trans, rot)
+    #     except Exception as e:
+    #         print("!!! Lookup failed from", base_frame, "to", frame, "!!!", f"repr(e): {repr(e)}")
+    #         return None
+    #     return pose_mat
+
     def get_frame_pose(self, frame, base_frame=None, lookup_time=None, timeout_s=None):
-        """look up a particular frame in base coords (or some other coordinate frame)."""
         if lookup_time is None:
             lookup_time = Time()
-        if timeout_s is None:
-            timeout_ros = Duration(seconds=1)
-        else:
-            timeout_ros = Duration(seconds=timeout_s)
         if base_frame is None:
             base_frame = self.base_link
+        if timeout_s is None:
+            timeout_ros = Duration(seconds=0.1)
+        else:
+            timeout_ros = Duration(seconds=float(timeout_s))
+        if not self.tf2_buffer.can_transform(base_frame, frame, lookup_time, timeout_ros):
+            return None
         try:
             stamped_transform = self.tf2_buffer.lookup_transform(
                 base_frame, frame, lookup_time, timeout_ros
             )
             trans, rot = transform_to_list(stamped_transform)
-            pose_mat = to_matrix(trans, rot)
+            return to_matrix(trans, rot)
         except Exception as e:
-            print("!!! Lookup failed from", base_frame, "to", frame, "!!!", f"repr(e): {repr(e)}")
+            self.get_logger().warn(f"TF lookup failed {base_frame}<-{frame}: {repr(e)}")
             return None
-        return pose_mat
+
 
     def get_base_in_map_pose(self):
         base_pose_in_map_matrix = self.get_frame_pose(

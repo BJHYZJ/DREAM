@@ -96,7 +96,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'map_frame_id': 'map',
     'odom_frame_id': 'camera_init',  # FAST-LIO's odometry frame
     
-    'Rtabmap/DetectionRate': '1.0', 
+    'Rtabmap/DetectionRate': '5.0', 
 
     # RTAB-Map's internal parameters are strings:
     'RGBD/ProximityMaxGraphDepth': '0',
