@@ -671,9 +671,22 @@ class RerunVisualizer:
     def step(self, obs, state, servo):
         """Log all the data"""
         if obs and state and servo:
-            rr.set_time("realtime", timestamp=time.time())
+            # Use the actual data timestamp if available, otherwise fall back to current time
+            # data_timestamp = time.time()
+            # if obs and "timestamp" in obs:
+            #     data_timestamp = obs["timestamp"]
+            # elif state and "timestamp" in state:
+            #     data_timestamp = state["timestamp"]
+            
+            # # Check if we have recent data (within last 5 seconds) to avoid stale data
+            # current_time = time.time()
+            # if current_time - data_timestamp > 5.0:
+            #     logger.warning(f"Using stale data: timestamp {data_timestamp}, current {current_time}")
+            #     return
+            
+            # rr.set_time("realtime", timestamp=data_timestamp)
             try:
-                t0 = timeit.default_timer()
+                # t0 = timeit.default_timer()
                 self.log_robot_xyt(state)
                 # self.log_ee_frame(obs)
 
