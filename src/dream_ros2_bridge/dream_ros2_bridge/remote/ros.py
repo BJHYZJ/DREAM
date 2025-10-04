@@ -7,7 +7,7 @@
 # Some code may be adapted from other open-source works with their respective licenses. Original
 # license information maybe found below, if so.
 
-from ast import List
+from typing import Tuple
 import os
 import time
 # Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -202,11 +202,11 @@ class DreamRosInterface(Node):
         self.frc = np.zeros(self.dof)
         self.joint_status: Dict[str, float] = {}
 
-        self.se3_base_pose: List[sp.SE3, float] = None
-        self.se3_camera_pose_in_arm: List[sp.SE3, float] = None
-        self.se3_camera_pose_in_base: List[sp.SE3, float] = None
-        self.se3_camera_pose_in_map: List[sp.SE3, float] = None
-        self.se3_ee_pose_in_map: List[sp.SE3, float] = None
+        self.se3_base_pose: Optional[sp.SE3] = None
+        self.se3_camera_pose_in_arm: Optional[sp.SE3] = None
+        self.se3_camera_pose_in_base: Optional[sp.SE3] = None
+        self.se3_camera_pose_in_map: Optional[sp.SE3] = None
+        self.se3_ee_pose_in_map: Optional[sp.SE3] = None
 
         self.vel_base = np.zeros(len(BASE_JOINTS))
 
@@ -321,7 +321,7 @@ class DreamRosInterface(Node):
         with self._js_lock:
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
             self.gripper_pos = self._arm_client.get_gripper_state()
-            self.pos[:3] = sophus2xyt(self.get_base_in_map_pose()[0])  # TODO may has bug when base_in_map_pose is None
+            self.pos[:3] = sophus2xyt(self.get_base_in_map_pose())  # TODO may has bug when base_in_map_pose is None
             self.pos[3:9] = self.arm_pos[:6]
             self.pos[9] = self.gripper_pos
             self.vel[:3] = self.vel_base
@@ -797,7 +797,9 @@ class DreamRosInterface(Node):
                     )
                     trans, rot = transform_to_list(tr)
                     timestamp = tr.header.stamp.sec + tr.header.stamp.nanosec / 1e9
-                    setattr(self, key, [sp.SE3(to_matrix(trans, rot)), timestamp])
+                    timestamp_now = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec / 1e9
+                    self.get_logger().info(f"TF delay: {timestamp_now - timestamp}")
+                    setattr(self, key, sp.SE3(to_matrix(trans, rot)))
                 except Exception as e:
                     self.get_logger().debug(f"TF lookup failed {base}<-{frame}: {e!r}")
             self._tf_stop_evt.wait(self.tf_delay_t)

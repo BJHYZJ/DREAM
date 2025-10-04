@@ -412,7 +412,7 @@ class DreamClient(AbstractRobotClient):
         start_pose: Optional[np.ndarray] = None
     ) -> StateObservations:
         joint_positions, joint_velocities, joint_efforts = self.get_joint_state()
-        base_in_map_pose, timestamp = self.get_base_in_map_pose()
+        base_in_map_pose = self.get_base_in_map_pose()
         if start_pose is not None:
             relative_pose = start_pose.inverse() * base_in_map_pose
         else:
@@ -421,14 +421,13 @@ class DreamClient(AbstractRobotClient):
         theta = euler_angles[-1]
         gps = relative_pose.translation()[:2]
         return StateObservations(
-            timestamp=timestamp,
             gps=gps,
             compass=np.array([theta]),
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             joint_efforts=joint_efforts,
             base_pose_in_map=base_in_map_pose.matrix(),
-            ee_pose_in_map=self.get_ee_pose_in_map()[0].matrix(),
+            ee_pose_in_map=self.get_ee_pose_in_map().matrix(),
             at_goal=self.at_goal(),
             is_homed=self.is_homed,
             is_runstopped=self.is_runstopped,
@@ -439,11 +438,10 @@ class DreamClient(AbstractRobotClient):
         camera_K = self.rgb_cam.get_K()
         depth_K = self.dpt_cam.get_K()
         joint_positions, joint_velocities, _ = self.get_joint_state()
-        ee_pose_in_map, timestamp0 = self.get_ee_pose_in_map()
-        camera_pose_in_map, timestamp1 = self.get_camera_pose_in_map()
+        ee_pose_in_map = self.get_ee_pose_in_map()
+        camera_pose_in_map = self.get_camera_pose_in_map()
         
         return ServoObservations(
-            timestamp=timestamp0,
             rgb=rgb,
             depth=depth,
             camera_K=camera_K,
