@@ -295,8 +295,6 @@ class DreamRosInterface(Node):
         self.shutdown()
 
 
-    # Interfaces
-
     def get_joint_state(self):
         with self._js_lock:
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()

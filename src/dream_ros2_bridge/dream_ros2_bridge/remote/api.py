@@ -362,8 +362,8 @@ class DreamClient(AbstractRobotClient):
         if last_timestamp is not None and stamp <= last_timestamp:
             # print("rtabmap data timestamp is not updated, Skipping...")
             return None
-        else:
-            print(f"{stamp} rtabmap data timestamp is updated, Updating...")
+        # else:
+        #     print(f"{stamp} rtabmap data timestamp is updated, Updating...")
         self.last_rtabmap_timestamp = stamp
 
         pose_graph = {nid: pose_to_dict(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
