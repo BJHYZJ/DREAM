@@ -36,7 +36,7 @@ class BaseZmqServer(CommsNode, ABC):
     # How often should we print out info about our performance
     report_steps = 1000
     fast_report_steps = 10000
-    servo_report_steps = 1000
+    servo_report_steps = 100
     skip_duplicate_steps: bool = True
 
     def __init__(
@@ -260,7 +260,7 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.fast_report_steps == 0:
                 logger.info(f"[RECV] time taken = {dt} avg = {sum_time/steps}")
 
-            time.sleep(1e-4)
+            time.sleep(1e-2)
             t0 = timeit.default_timer()
 
     def spin_send_state(self):
@@ -276,7 +276,7 @@ class BaseZmqServer(CommsNode, ABC):
             if message is None:
                 continue
 
-            logger.info(f"[SEND MINIMAL STATE] message keys: {message['base_pose_in_map']}")
+            # logger.info(f"{message['base_pose_in_map']}")
 
             if steps == 0:
                 logger.info(f"[SEND MINIMAL STATE] message keys: {message.keys()}")
@@ -292,7 +292,7 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.fast_report_steps == 0:
                 logger.info(f"[SEND FAST STATE] time taken = {dt} avg = {sum_time/steps}")
 
-            time.sleep(1e-2)
+            time.sleep(1e-2)  # 提高发送频率到10Hz，让base_pose_in_map更实时
             t0 = timeit.default_timer()
 
     def spin_send_servo(self):

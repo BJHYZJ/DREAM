@@ -103,7 +103,7 @@ class ZmqServer(BaseZmqServer):
             # "lidar_timestamp": obs.lidar_timestamp,
             # "pose_graph": self.client.get_pose_graph(),
 
-            "timestamp": obs.stamp,
+            "timestamp": obs.timestamp,
             "compass": obs.compass,
             "gps": obs.gps,
             "node_id": obs.node_id,
@@ -128,6 +128,7 @@ class ZmqServer(BaseZmqServer):
         # """Get the state message for the robot."""
         # q, dq, eff = self.client.get_joint_state()
         message = {
+            "timestamp": obs.timestamp,
             "gps": obs.gps,
             "compass": obs.compass,
             "base_pose_in_map": obs.base_pose_in_map,

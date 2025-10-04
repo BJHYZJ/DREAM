@@ -356,15 +356,15 @@ class DreamClient(AbstractRobotClient):
         rtabmap_data = self._ros_client.rtabmapdata
         if rtabmap_data is None:
             return None
-        stamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
+        timestamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
 
         last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
-        if last_timestamp is not None and stamp <= last_timestamp:
+        if last_timestamp is not None and timestamp <= last_timestamp:
             # print("rtabmap data timestamp is not updated, Skipping...")
             return None
         # else:
-        #     print(f"{stamp} rtabmap data timestamp is updated, Updating...")
-        self.last_rtabmap_timestamp = stamp
+        #     print(f"{rtabmap_data.nodes[0].id} {timestamp} rtabmap data timestamp is updated, Updating...")
+        self.last_rtabmap_timestamp = timestamp
 
         pose_graph = {nid: pose_to_dict(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
         node = rtabmap_data.nodes[0]
@@ -394,7 +394,7 @@ class DreamClient(AbstractRobotClient):
         gps = relative_pose.translation()[:2]
 
         full_observation = RtabmapData(
-            stamp=stamp,
+            timestamp=timestamp,
             compass=compass,
             gps=gps,
             node_id=node_id,
@@ -412,7 +412,7 @@ class DreamClient(AbstractRobotClient):
         start_pose: Optional[np.ndarray] = None
     ) -> StateObservations:
         joint_positions, joint_velocities, joint_efforts = self.get_joint_state()
-        base_in_map_pose = self.get_base_in_map_pose()
+        base_in_map_pose, timestamp = self.get_base_in_map_pose()
         if start_pose is not None:
             relative_pose = start_pose.inverse() * base_in_map_pose
         else:
@@ -421,13 +421,14 @@ class DreamClient(AbstractRobotClient):
         theta = euler_angles[-1]
         gps = relative_pose.translation()[:2]
         return StateObservations(
+            timestamp=timestamp,
             gps=gps,
             compass=np.array([theta]),
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             joint_efforts=joint_efforts,
             base_pose_in_map=base_in_map_pose.matrix(),
-            ee_pose_in_map=self.get_ee_pose_in_map().matrix(),
+            ee_pose_in_map=self.get_ee_pose_in_map()[0].matrix(),
             at_goal=self.at_goal(),
             is_homed=self.is_homed,
             is_runstopped=self.is_runstopped,
@@ -438,10 +439,11 @@ class DreamClient(AbstractRobotClient):
         camera_K = self.rgb_cam.get_K()
         depth_K = self.dpt_cam.get_K()
         joint_positions, joint_velocities, _ = self.get_joint_state()
-        ee_pose_in_map = self.get_ee_pose_in_map().matrix()
-        camera_pose_in_map = self.get_camera_pose_in_map().matrix()
+        ee_pose_in_map, timestamp0 = self.get_ee_pose_in_map()
+        camera_pose_in_map, timestamp1 = self.get_camera_pose_in_map()
         
         return ServoObservations(
+            timestamp=timestamp0,
             rgb=rgb,
             depth=depth,
             camera_K=camera_K,
@@ -452,63 +454,63 @@ class DreamClient(AbstractRobotClient):
             camera_pose_in_map=camera_pose_in_map,
         )
 
-    def get_observation(
-        self,
-        # rotate_head_pts=False,
-        start_pose: Optional[np.ndarray] = None,
-        compute_xyz: bool = True,
-    ) -> Observations:
-        """Get an observation from the current robot.
+    # def get_observation(
+    #     self,
+    #     # rotate_head_pts=False,
+    #     start_pose: Optional[np.ndarray] = None,
+    #     compute_xyz: bool = True,
+    # ) -> Observations:
+    #     """Get an observation from the current robot.
 
-        Parameters:
-            rotate_head_pts: this is true to put things into the same format as Habitat; generally we do not want to do this
-        """
+    #     Parameters:
+    #         rotate_head_pts: this is true to put things into the same format as Habitat; generally we do not want to do this
+    #     """
 
-        # Computing XYZ is expensive, we do not always needd to do it
-        if compute_xyz:
-            rgb, depth, xyz = self.cam.get_images(compute_xyz=True)
-        else:
-            rgb, depth = self.cam.get_images(compute_xyz=False)
-            xyz = None
+    #     # Computing XYZ is expensive, we do not always needd to do it
+    #     if compute_xyz:
+    #         rgb, depth, xyz = self.cam.get_images(compute_xyz=True)
+    #     else:
+    #         rgb, depth = self.cam.get_images(compute_xyz=False)
+    #         xyz = None
 
-        current_pose = xyt2sophus(self.get_base_in_map_pose())
+    #     current_pose = xyt2sophus(self.get_base_in_map_pose())
 
-        if start_pose is not None:
-            # use sophus to get the relative translation
-            relative_pose = start_pose.inverse() * current_pose
-        else:
-            relative_pose = current_pose
-        euler_angles = relative_pose.so3().log()
-        theta = euler_angles[-1]
+    #     if start_pose is not None:
+    #         # use sophus to get the relative translation
+    #         relative_pose = start_pose.inverse() * current_pose
+    #     else:
+    #         relative_pose = current_pose
+    #     euler_angles = relative_pose.so3().log()
+    #     theta = euler_angles[-1]
 
-        # GPS in robot coordinates
-        gps = relative_pose.translation()[:2]
+    #     # GPS in robot coordinates
+    #     gps = relative_pose.translation()[:2]
 
-        # Get joint state information
-        joint_positions, joint_velocities, _ = self.get_joint_state()
+    #     # Get joint state information
+    #     joint_positions, joint_velocities, _ = self.get_joint_state()
 
-        # Get lidar points and timestamp
-        lidar_points = self.lidar.get()
-        lidar_timestamp = self.lidar.get_time().nanoseconds / 1e9
+    #     # Get lidar points and timestamp
+    #     lidar_points = self.lidar.get()
+    #     lidar_timestamp = self.lidar.get_time().nanoseconds / 1e9
 
-        # Create the observation
-        obs = Observations(
-            rgb=rgb,
-            depth=depth,
-            xyz=xyz,
-            gps=gps,
-            compass=np.array([theta]),
-            camera_pose_in_map=self._ros_client.get_camera_in_map_pose().matrix(),
-            camera_pose_in_arm=self._ros_client.get_camera_in_arm_pose().matrix(),
-            camera_pose_in_base=self._ros_client.get_camera_in_base_pose().matrix(),
-            ee_pose_in_map=self._ros_client.get_ee_pose_in_map().matrix(),
-            joint_positions=joint_positions,
-            joint_velocities=joint_velocities,
-            camera_K=self.get_camera_intrinsics(),
-            lidar_points=lidar_points,
-            lidar_timestamp=lidar_timestamp,
-        )
-        return obs
+    #     # Create the observation
+    #     obs = Observations(
+    #         rgb=rgb,
+    #         depth=depth,
+    #         xyz=xyz,
+    #         gps=gps,
+    #         compass=np.array([theta]),
+    #         camera_pose_in_map=self._ros_client.get_camera_in_map_pose().matrix(),
+    #         camera_pose_in_arm=self._ros_client.get_camera_in_arm_pose().matrix(),
+    #         camera_pose_in_base=self._ros_client.get_camera_in_base_pose().matrix(),
+    #         ee_pose_in_map=self._ros_client.get_ee_pose_in_map().matrix(),
+    #         joint_positions=joint_positions,
+    #         joint_velocities=joint_velocities,
+    #         camera_K=self.get_camera_intrinsics(),
+    #         lidar_points=lidar_points,
+    #         lidar_timestamp=lidar_timestamp,
+    #     )
+    #     return obs
 
     def get_camera_intrinsics(self) -> torch.Tensor:
         """Get 3x3 matrix of camera intrisics K"""

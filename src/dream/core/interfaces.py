@@ -247,7 +247,7 @@ class BaseObservations:
 
 @dataclass
 class RtabmapData:
-    stamp: float
+    timestamp: float
     compass: np.ndarray
     gps: np.ndarray
     node_id: int
@@ -262,6 +262,7 @@ class RtabmapData:
 @dataclass
 class StateObservations:
     """State observations."""
+    timestamp: float
     gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
     joint_positions: np.ndarray
@@ -277,6 +278,7 @@ class StateObservations:
 @dataclass
 class ServoObservations(BaseObservations):
     """Servo observations for visual servoing."""
+    timestamp: float
     rgb: np.ndarray
     depth: np.ndarray
     camera_K: Optional[np.ndarray] = None
