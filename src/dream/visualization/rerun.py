@@ -393,8 +393,8 @@ class RerunVisualizer:
         
         # 检查是否是历史数据（通过检查时间戳或添加调试信息）
         # print(f"Base pose timestamp: {time.time()}")
-        print(f"Base pose position: {base_pose[:3, 3]}")
-        print(base_pose)
+        # print(f"Base pose position: {base_pose[:3, 3]}")
+        # print(base_pose)
         # 分解变换矩阵
         rotation_matrix = base_pose[:3, :3]
         translation_vector = base_pose[:3, 3]
@@ -672,6 +672,9 @@ class RerunVisualizer:
         """Log all the data"""
         if obs and state and servo:
             # Use the actual data timestamp if available, otherwise fall back to current time
+            now_timestamp = time.time()
+            data_timestamp = obs["timestamp"]
+            logger.info(f"now_timestamp - data_timestamp: {now_timestamp - data_timestamp}")
             # data_timestamp = time.time()
             # if obs and "timestamp" in obs:
             #     data_timestamp = obs["timestamp"]
