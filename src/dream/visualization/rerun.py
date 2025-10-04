@@ -673,7 +673,7 @@ class RerunVisualizer:
         if obs and state and servo:
             # Use the actual data timestamp if available, otherwise fall back to current time
             now_timestamp = time.time()
-            data_timestamp = obs["timestamp"]
+            data_timestamp = state["timestamp"]
             logger.info(f"now_timestamp - data_timestamp: {now_timestamp - data_timestamp}")
             # data_timestamp = time.time()
             # if obs and "timestamp" in obs:
@@ -687,7 +687,7 @@ class RerunVisualizer:
             #     logger.warning(f"Using stale data: timestamp {data_timestamp}, current {current_time}")
             #     return
             
-            # rr.set_time("realtime", timestamp=data_timestamp)
+            rr.set_time("realtime", timestamp=now_timestamp)
             try:
                 # t0 = timeit.default_timer()
                 self.log_robot_xyt(state)
