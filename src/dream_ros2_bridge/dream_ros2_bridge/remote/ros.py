@@ -277,76 +277,38 @@ class DreamRosInterface(Node):
         #     self.Idx = get_Idx("tool_stretch_gripper")
 
     def _spin_forever(self):
-        """带异常保护的spin方法"""
         try:
             self._executor.spin()
         except RuntimeError as e:
-            # 例如线程池已关闭时的竞态，这里吞掉即可
             self.get_logger().warn(f"spin stopped: {e}")
         except Exception as e:
             self.get_logger().error(f"Unexpected error in spin: {e}")
 
     def shutdown(self):
-        """按正确顺序优雅关闭ROS接口"""
-        try:
-            # b) 此时应当已经调用了 rclpy.shutdown()（在外层 main 里），
-            #    这样 spin() 会自然返回。等它退出：
-            if hasattr(self, "_spin_thread") and self._spin_thread.is_alive():
-                self.get_logger().info("Waiting for spin thread to exit...")
-                self._spin_thread.join(timeout=3.0)
-                if self._spin_thread.is_alive():
-                    self.get_logger().warn("Spin thread did not exit within timeout")
-
-            # c) 再关 executor 的线程池（避免"关了线程池再 submit"的竞态）
-            if hasattr(self, "_executor") and not self._executor._shutdown:
-                self.get_logger().info("Shutting down executor...")
-                self._executor.shutdown(timeout_sec=2.0)
-
-            # d) 最后销毁节点
-            self.get_logger().info("Destroying node...")
-            self.destroy_node()
-            
-        except Exception as e:
-            self.get_logger().error(f"Error during shutdown: {e}")
+        """关闭ROS接口"""
+        if hasattr(self, "_spin_thread") and self._spin_thread.is_alive():
+            self._spin_thread.join(timeout=3.0)
+        if hasattr(self, "_executor"):
+            self._executor.shutdown(timeout_sec=2.0)
 
     def __del__(self):
-        """析构函数 - 确保资源清理"""
         self.shutdown()
 
-    # def __del__(self):
-    #     self._thread.join()
 
     # Interfaces
 
-    # def get_joint_state(self):
-    #     with self._js_lock:
-    #         return self.pos, self.vel, self.frc
-
     def get_joint_state(self):
-        # with self._js_lock:
-            # return self.pos, self.vel, self.frc
-        # 只有在需要的时候才去调用get_base_in_map_pose，减少调用频率
         with self._js_lock:
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
             self.gripper_pos = self._arm_client.get_gripper_state()
-            # base_x, base_y, base_theta = sophus2xyt(self.get_base_in_map_pose())
-            # self.pos[:3] = [base_x, base_y, base_theta]
             self.pos[:3] = sophus2xyt(self.get_base_in_map_pose())
             self.pos[3:9] = self.arm_pos[:6]
             self.pos[9] = self.gripper_pos
             self.vel[:3] = self.vel_base
             self.vel[3:9] = self.arm_vel[:6]
-            # self.frc[:3] = 0
             self.frc[3:9] = self.arm_frc[:6]
         return self.pos, self.vel, self.frc
     
-    # def get_base_in_map_pose(self):
-    #     return self.pos
-
-    # def get_arm_joint_state(self):
-    #     # with self._js_lock:
-    #         # return self.arm_pos, self.arm_vel, self.arm_frc
-    #     return self.arm_pos, self.arm_vel, self.arm_frc
 
     # def _process_joint_status(self, j_status) -> np.ndarray:
     #     """Get joint status from ROS joint state message and convert it into the form we use for streaming position commands."""
@@ -730,71 +692,17 @@ class DreamRosInterface(Node):
             self._goal_reset_t = self.get_clock().now()
 
     def _rtabmapdata_callback(self, msg):
-        """get position or navigation mode from dream ros"""
-        # pass
-        # # self._pose_graph.append(p) == 1
-        # frame_id = msg.header.frame_id
-        # stamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        # assert len(msg.nodes) == 1, 'only one node is supported'
-        # # pose_graph = [pose_to_list(stamp, p) for p in msg.graph.poses]
-        # pose_graph = {nid: pose_to_dict(p) for nid, p in zip(msg.graph.poses_id, msg.graph.poses)}
-        # node = msg.nodes[0]
-        
-        
-        # # self._pose_graph = pose_graph
-
-        # rgb = node.data.left_compressed
-        # depth = node.data.right_compressed
-
-        # left_ci = camera_info_to_dict(node.data.left_camera_info[0]) if len(node.data.left_camera_info) > 0 else None
-        # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
-        
-        # self.rtabmapdata = {
-        #     "stamp": stamp,
-        #     "pose_graph": pose_graph,
-        #     "rgb": rgb,
-        #     "depth": depth,
-        #     "left_ci": left_ci,
-        #     "right_ci": right_ci,
-        # }
+        """处理RTABMap数据"""
         self.rtabmapdata = msg
         
-        # 检查Node ID顺序，但不要抛出异常
+        # 检查Node ID顺序
         current_node_id = msg.nodes[0].id
         if getattr(self, '_last_node_id', None) is not None and current_node_id <= self._last_node_id:
-            self.get_logger().warn(f"RTABMap Node ID out of order: {current_node_id} <= {self._last_node_id}")
+            # self.get_logger().error(f"RTABMap Node ID out of order: {current_node_id} <= {self._last_node_id}")
+            raise RuntimeError(f"RTABMap Node ID sequence error: received {current_node_id} but expected > {self._last_node_id}")
         
-        self.get_logger().info(f"RTABMap data received: Node ID {current_node_id}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
+        # self.get_logger().info(f"RTABMap data received: Node ID {current_node_id}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
         self._last_node_id = current_node_id
-
-        # rgb = None
-        # depth = None
-        # if node.data.left.data and node.data.left.encoding:
-        #     try:
-        #         rgb = self.bridge.imgmsg_to_cv2(node.data.left, desired_encoding='bgr8')
-        #     except Exception:
-        #         rgb = None
-        # if rgb is None and node.data.left_compressed:
-        #     try:
-        #         arr = np.frombuffer(bytes(node.data.left_compressed), dtype=np.uint8)
-        #         rgb = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-        #     except Exception:
-        #         rgb = None
-        # if node.data.right.data and node.data.right.encoding:
-        #     try:
-        #         depth = self.bridge.imgmsg_to_cv2(node.data.right)
-        #     except Exception:
-        #         depth = None
-        # elif node.data.right_compressed:
-        #     try:
-        #         arr = np.frombuffer(bytes(node.data.right_compressed), dtype=np.uint8)
-        #         depth = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
-        #     except Exception:
-        #         depth = None
-
-        # left_ci = node.data.left_camera_info[0] if len(node.data.left_camera_info) > 0 else None
-        # right_ci = node.data.right_camera_info[0] if len(node.data.right_camera_info) > 0 else None
-        # ci_rec = {"left": camera_info_to_dict(left_ci), "right": camera_info_to_dict(right_ci)}
 
     def _rtabmapinfo_callback(self, msg):
         """get position or navigation mode from dream ros"""

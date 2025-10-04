@@ -202,8 +202,7 @@ class DreamClient(AbstractRobotClient):
         self._base_control_mode = ControlMode.IDLE
     
     def shutdown(self):
-        """优雅关闭ROS客户端"""
-        # 让内部的 ROS 接口优雅收尾
+        """关闭ROS客户端"""
         if hasattr(self, "_ros_client") and hasattr(self._ros_client, "shutdown"):
             self._ros_client.shutdown()
 

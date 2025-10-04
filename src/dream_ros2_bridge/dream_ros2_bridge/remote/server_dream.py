@@ -12,7 +12,8 @@
 
 import time
 from typing import Any, Dict
-
+import threading
+import os
 import click
 import numpy as np
 import rclpy
@@ -309,28 +310,29 @@ def main(
     )
     
     try:
-        server.start()  # 一般是起若干线程后立即返回（非阻塞）
-
-        # 关键：主线程不要退出，定期让出 GIL
-        while getattr(server, "is_running", True) and rclpy.ok():
-            time.sleep(0.05)
+        server.start()
+        try:
+            while getattr(server, "is_running", True) and rclpy.ok():
+                time.sleep(0.05)
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt caught in main loop")
+            raise
 
     except KeyboardInterrupt:
         print("Shutting down...")
 
     finally:
-        # 1) 先让 ROS 上下文停，解除 spin() 的阻塞
-        try:
+        server._done = True
+        for thread_name in ["_send_thread", "_recv_thread", "_send_state_thread", "_send_servo_thread"]:
+            if hasattr(server, thread_name) and getattr(server, thread_name).is_alive():
+                getattr(server, thread_name).join(timeout=1.0)
+        if hasattr(server, "client") and hasattr(server.client, "shutdown"):
+            server.client.shutdown()
+        if rclpy.ok():
             rclpy.shutdown()
-        except Exception:
-            pass
-
-        # 2) 再关掉你的客户端（里面 join spin 线程等）
-        try:
-            if hasattr(server, "client") and hasattr(server.client, "shutdown"):
-                server.client.shutdown()
-        except Exception as e:
-            print("client.shutdown() failed:", e)
+        non_main_threads = [t for t in threading.enumerate() if t.name != 'MainThread']
+        if non_main_threads:
+            os._exit(0)
 
 
 if __name__ == "__main__":
