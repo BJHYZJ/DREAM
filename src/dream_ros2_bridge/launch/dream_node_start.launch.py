@@ -192,6 +192,14 @@ def launch_setup(context, *args, **kwargs):
     #     ],
     # )
 
+    tf_pose_publisher_node = Node(
+        package='dream_ros2_bridge',
+        executable='tf_pose_publisher',
+        output='screen',
+        parameters=[
+            {'use_sim_time': use_sim_time}
+        ]
+    )
 
     # controller
     goto_controller_node = Node(
@@ -228,6 +236,7 @@ def launch_setup(context, *args, **kwargs):
         robot_state_publisher_node,
         joint_state_publisher_node,
         # odom_transform_node,
+        tf_pose_publisher_node,
         goto_controller_node,
         rviz_node,
     ]

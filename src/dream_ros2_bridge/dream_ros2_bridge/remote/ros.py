@@ -42,11 +42,7 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool, Empty, Float32, Float64MultiArray, String
 from std_srvs.srv import SetBool, Trigger
-from tf2_ros import TransformException
-from tf2_ros.buffer import Buffer
-from tf2_ros.transform_listener import TransformListener
 from trajectory_msgs.msg import JointTrajectoryPoint
-import tf2_ros
 
 # from dream.motion.constants import (
 #     ROS_ARM_JOINTS,
@@ -71,6 +67,7 @@ from dream_ros2_bridge.ros.utils import matrix_from_pose_msg
 from dream_ros2_bridge.ros.visualizer import Visualizer
 from rtabmap_msgs.msg import MapData, Info
 from dream_ros2_bridge.xarm6_controller import XARM6
+from geometry_msgs.msg import PoseStamped
 
 DEFAULT_COLOR_TOPIC = "/camera/color"
 DEFAULT_DEPTH_TOPIC = "/camera/aligned_depth_to_color"
@@ -107,6 +104,7 @@ def camera_info_to_dict(ci):
         "binning_x": int(ci.binning_x), "binning_y": int(ci.binning_y),
     }
 
+
 class DreamRosInterface(Node):
     """Interface object with ROS topics and services"""
 
@@ -115,8 +113,6 @@ class DreamRosInterface(Node):
 
     goal_time_tolerance = 1.0
     msg_delay_t = 0.1
-
-    tf_delay_t = 0.02  # 50Hz
 
     # 3 for base position + rotation, 2 for lift + extension, 3 for rpy, 1 for gripper, 2 for head
     # dof = 3 + 2 + 3 + 1 + 2
@@ -165,22 +161,13 @@ class DreamRosInterface(Node):
         #     durability=DurabilityPolicy.VOLATILE,
         # )
 
-        self._executor = MultiThreadedExecutor(num_threads=4)
+        self._executor = MultiThreadedExecutor(num_threads=8)
         self._executor.add_node(self)
         self._spin_thread = threading.Thread(target=self._spin_forever, daemon=True)
         self._spin_thread.start()
         # Start the thread  # publish pose visualization
         # self._thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
         # self._thread.start()
-
-
-        # Create the tf2 buffer first, used in camera init
-        self.tf2_buffer   = tf2_ros.Buffer(cache_time=Duration(seconds=1.0))
-        self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer, self)
-
-        self._tf_stop_evt = threading.Event()
-        self._tf_update_thread = threading.Thread(target=self._tf_update_loop, daemon=True)
-        self._tf_update_thread.start()
 
         # Initialize caches
         self.current_mode: Optional[str] = None
@@ -202,12 +189,6 @@ class DreamRosInterface(Node):
         self.frc = np.zeros(self.dof)
         self.joint_status: Dict[str, float] = {}
 
-        self.se3_base_pose: Optional[sp.SE3] = None
-        self.se3_camera_pose_in_arm: Optional[sp.SE3] = None
-        self.se3_camera_pose_in_base: Optional[sp.SE3] = None
-        self.se3_camera_pose_in_map: Optional[sp.SE3] = None
-        self.se3_ee_pose_in_map: Optional[sp.SE3] = None
-
         self.vel_base = np.zeros(len(BASE_JOINTS))
 
         self.rtabmapdata = None
@@ -215,6 +196,13 @@ class DreamRosInterface(Node):
         # self.se3_base_filtered: Optional[sp.SE3] = None
         # self.se3_base_odom: Optional[sp.SE3] = None
         # self.se3_camera_pose: Optional[sp.SE3] = None
+
+        self.se3_base: Optional[sp.SE3] = None
+        self.se3_camera_in_map_pose: Optional[sp.SE3] = None
+        self.se3_camera_in_base_pose: Optional[sp.SE3] = None
+        self.se3_camera_in_arm_pose: Optional[sp.SE3] = None
+        self.se3_ee_in_map_pose: Optional[sp.SE3] = None
+
         self.at_goal: bool = False
 
         # self.last_odom_update_timestamp = Time(clock_type=ClockType.ROS_TIME)
@@ -275,6 +263,7 @@ class DreamRosInterface(Node):
             self._lidar = Ros3DLidar(self, self._lidar_topic)
             self._lidar.wait_for_scan()
 
+        
         # if self.get_has_wrist():
         #     # Get indexer
         #     self._has_wrist = True
@@ -300,8 +289,6 @@ class DreamRosInterface(Node):
 
     def shutdown(self):
         """关闭ROS接口"""
-        if hasattr(self, "_tf_stop_evt"):
-            self._tf_stop_evt.set()
         if hasattr(self, "_executor"):
             try:
                 self._executor.shutdown(timeout_sec=2.0)
@@ -309,8 +296,6 @@ class DreamRosInterface(Node):
                 pass
         if hasattr(self, "_spin_thread") and self._spin_thread.is_alive():
             self._spin_thread.join(timeout=3.0)
-        if hasattr(self, "_tf_update_thread") and self._tf_update_thread.is_alive():
-            self._tf_update_thread.join(timeout=3.0)
 
 
     def __del__(self):
@@ -321,7 +306,8 @@ class DreamRosInterface(Node):
         with self._js_lock:
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
             self.gripper_pos = self._arm_client.get_gripper_state()
-            self.pos[:3] = sophus2xyt(self.get_base_in_map_pose())  # TODO may has bug when base_in_map_pose is None
+            base_pose = self.get_base_in_map_pose()
+            self.pos[:3] = sophus2xyt(base_pose)
             self.pos[3:9] = self.arm_pos[:6]
             self.pos[9] = self.gripper_pos
             self.vel[:3] = self.vel_base
@@ -534,12 +520,6 @@ class DreamRosInterface(Node):
     def _create_pubs_subs(self):
         """create ROS publishers and subscribers - only call once"""
 
-        if self.tf2_buffer.can_transform("map", "base_link", Time(), Duration(seconds=0.0)):
-            self.get_logger().info("TF ready: map -> base_link")
-        else:
-            self.get_logger().warn("TF not ready yet; will check later.")
-
-
         # Create command publishers
         self.goal_pub = self.create_publisher(Pose, "goto_controller/goal", 1)
         self.velocity_pub = self.create_publisher(Twist, "/ranger/cmd_vel", 1)
@@ -586,6 +566,13 @@ class DreamRosInterface(Node):
         self._rtabmapdata_sub = self.create_subscription(MapData, "/rtabmap/mapData", self._rtabmapdata_callback, self.reliable_qos, callback_group=MutuallyExclusiveCallbackGroup())
 
         self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=MutuallyExclusiveCallbackGroup())
+
+        # tf pose publisher
+        self._tf_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_pose", self._tf_base_pose_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self._tf_camera_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_map", self._tf_camera_pose_in_map_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
 
         # Create trajectory client with which we can control the robot
         # self.trajectory_client = ActionClient(
@@ -721,7 +708,7 @@ class DreamRosInterface(Node):
             self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
             # raise RuntimeError(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
         
-        # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
+        self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
         self._last_node_id = nid
 
     def _rtabmapinfo_callback(self, msg):
@@ -752,166 +739,45 @@ class DreamRosInterface(Node):
         # self._last_odom_update_timestamp = msg.header.stamp
         # self.se3_base_odom = sp.SE3(matrix_from_pose_msg(msg.pose.pose))
 
-    # def _base_state_callback(self, msg: PoseStamped):
-    #     """base state updates from SLAM system"""
-    #     self._last_base_update_timestamp = msg.header.stamp
-    #     self.se3_base_filtered = sp.SE3(matrix_from_pose_msg(msg.pose))
-    #     self.curr_visualizer(self.se3_base_filtered.matrix())
+    def _tf_base_pose_callback(self, msg: PoseStamped):
+        """base pose callback"""
+        timestamp_now = self.get_clock().now().to_msg()
+        timestamp_tf = msg.header.stamp
+        delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
+        self.get_logger().info(f"TF delay: {delay}")
+        self.se3_base = sp.SE3(matrix_from_pose_msg(msg.pose))
 
+    def _tf_camera_pose_in_map_callback(self, msg: PoseStamped):
+        """camera pose in map callback"""
+        self.se3_camera_in_map_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
 
-    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None, timeout_s=None):
-    #     """look up a particular frame in base coords (or some other coordinate frame)."""
-    #     if lookup_time is None:
-    #         lookup_time = Time()
-    #     if timeout_s is None:
-    #         timeout_ros = Duration(seconds=1)
-    #     else:
-    #         timeout_ros = Duration(seconds=timeout_s)
-    #     if base_frame is None:
-    #         base_frame = self.base_link
-    #     try:
-    #         stamped_transform = self.tf2_buffer.lookup_transform(
-    #             base_frame, frame, lookup_time, timeout_ros
-    #         )
-    #         trans, rot = transform_to_list(stamped_transform)
-    #         pose_mat = to_matrix(trans, rot)
-    #     except Exception as e:
-    #         print("!!! Lookup failed from", base_frame, "to", frame, "!!!", f"repr(e): {repr(e)}")
-    #         return None
-    #     return pose_mat
-
-
-    def _tf_update_loop(self):
-        tf_mapping = {
-            "se3_base_pose": ["base_link", "map"],
-            "se3_camera_pose_in_arm": ["camera_color_optical_frame", "arm_base"],
-            "se3_camera_pose_in_base": ["camera_color_optical_frame", "base_link"],
-            "se3_camera_pose_in_map": ["camera_color_optical_frame", "map"],
-            "se3_ee_pose_in_map": ["link_eef", "map"],
-        }
-        while not self._tf_stop_evt.is_set():
-            for key, (frame, base) in tf_mapping.items():
-                try:
-                    tr = self.tf2_buffer.lookup_transform(
-                        base, frame, Time(), Duration(seconds=0.0)
-                    )
-                    trans, rot = transform_to_list(tr)
-                    timestamp = tr.header.stamp.sec + tr.header.stamp.nanosec / 1e9
-                    timestamp_now = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec / 1e9
-                    self.get_logger().info(f"TF delay: {timestamp_now - timestamp}")
-                    setattr(self, key, sp.SE3(to_matrix(trans, rot)))
-                except Exception as e:
-                    self.get_logger().debug(f"TF lookup failed {base}<-{frame}: {e!r}")
-            self._tf_stop_evt.wait(self.tf_delay_t)
-
-    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None, timeout_s=None):
-    #     if lookup_time is None:
-    #         lookup_time = Time()
-    #     if base_frame is None:
-    #         base_frame = self.base_link
-    #     if timeout_s is None:
-    #         timeout_ros = Duration(seconds=0.1)
-    #     else:
-    #         timeout_ros = Duration(seconds=float(timeout_s))
-    #     if not self.tf2_buffer.can_transform(base_frame, frame, lookup_time, timeout_ros):
-    #         return None
-    #     try:
-    #         stamped_transform = self.tf2_buffer.lookup_transform(
-    #             base_frame, frame, lookup_time, timeout_ros
-    #         )
-    #         trans, rot = transform_to_list(stamped_transform)
-    #         return to_matrix(trans, rot)
-    #     except Exception as e:
-    #         self.get_logger().warn(f"TF lookup failed {base_frame}<-{frame}: {repr(e)}")
-    #         return None
-
-    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None, timeout_s=None):
-    #     if base_frame is None:
-    #         base_frame = self.base_link
-    #     if lookup_time is None:
-    #         lookup_time = Time()  # 最新
-    #     try:
-    #         tr = self.tf2_buffer.lookup_transform(
-    #             base_frame, frame, lookup_time,
-    #             Duration(seconds=0.0 if timeout_s is None else float(timeout_s))
-    #         )
-    #         trans, rot = transform_to_list(tr)
-    #         return to_matrix(trans, rot)
-    #     except Exception as e:
-    #         self.get_logger().debug(f"TF lookup failed {base_frame}<-{frame}: {e!r}")
-    #         return None
-
-
+    def _tf_camera_pose_in_base_callback(self, msg: PoseStamped):
+        """camera pose in base callback"""
+        self.se3_camera_in_base_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
+    
+    def _tf_camera_pose_in_arm_callback(self, msg: PoseStamped):
+        """camera pose in arm callback"""
+        self.se3_camera_in_arm_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
+    
+    def _tf_ee_pose_in_map_callback(self, msg: PoseStamped):
+        """ee pose in map callback"""
+        self.se3_ee_in_map_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
 
     def get_base_in_map_pose(self):
-        # base_pose_in_map_matrix = self.get_frame_pose(
-        #     frame="base_link",
-        #     base_frame="map",
-        #     lookup_time=None, # Get latest available transform
-        #     timeout_s=None
-        # )
-        # if base_pose_in_map_matrix is not None:
-        #     se3_base_pose = sp.SE3(base_pose_in_map_matrix)
-        #     self.se3_base_pose = se3_base_pose
-        # else:
-        #     self.get_logger().warn("base pose in map is None, use last known pose")
-        return self.se3_base_pose
-
-    def get_camera_in_arm_pose(self):
-        # camera_pose_in_arm_matrix = self.get_frame_pose(
-        #     frame="camera_color_optical_frame",
-        #     base_frame="arm_base",
-        #     lookup_time=None,
-        #     timeout_s=1.0
-        # )
-        # if camera_pose_in_arm_matrix is not None:
-        #     se3_camera_pose_in_arm = sp.SE3(camera_pose_in_arm_matrix)
-        #     self.se3_camera_pose_in_arm = se3_camera_pose_in_arm
-        # else:
-        #     self.get_logger().warn("camera pose in arm is None, use last known pose")
-        return self.se3_camera_pose_in_arm
-
-    def get_camera_in_base_pose(self):
-        # camera_pose_in_base_matrix = self.get_frame_pose(
-        #     frame="camera_color_optical_frame",
-        #     base_frame="base_link",
-        #     lookup_time=None,
-        #     timeout_s=1.0
-        # )
-        # if camera_pose_in_base_matrix is not None:
-        #     se3_camera_pose_in_base = sp.SE3(camera_pose_in_base_matrix)
-        #     self.se3_camera_pose_in_base = se3_camera_pose_in_base
-        # else:
-        #     self.get_logger().warn("camera pose in base is None, use last known pose")
-        return self.se3_camera_pose_in_base
+        return self.se3_base
 
     def get_camera_in_map_pose(self):
-        # camera_pose_in_map_matrix = self.get_frame_pose(
-        #     frame="camera_color_optical_frame",
-        #     base_frame="map",
-        #     lookup_time=None,
-        #     timeout_s=1.0
-        # )
-        # if camera_pose_in_map_matrix is not None:
-        #     se3_camera_pose_in_map = sp.SE3(camera_pose_in_map_matrix)
-        #     self.se3_camera_pose_in_map = se3_camera_pose_in_map
-        # else:
-        #     self.get_logger().warn("camera pose in map is None, use last known pose")
-        return self.se3_camera_pose_in_map
+        return self.se3_camera_in_map_pose
 
-    def get_ee_pose_in_map(self):
-        # ee_pose_matrix = self.get_frame_pose(
-        #     frame="link_eef",
-        #     base_frame="map",
-        #     lookup_time=None,
-        #     timeout_s=1.0
-        # )
-        # if ee_pose_matrix is not None:
-        #     se3_ee_pose_in_map = sp.SE3(ee_pose_matrix)
-        #     self.se3_ee_pose_in_map = se3_ee_pose_in_map
-        # else:
-        #     self.get_logger().warn("ee pose in map is None, use last known pose")
-        return self.se3_ee_pose_in_map
+    def get_camera_in_base_pose(self):
+        return self.se3_camera_in_base_pose
+
+    def get_camera_in_arm_pose(self):
+        return self.se3_camera_in_arm_pose
+    
+    def get_ee_in_map_pose(self):
+        return self.se3_ee_in_map_pose
+
 
 
     # def _camera_pose_callback(self, msg: PoseStamped):
@@ -1065,3 +931,11 @@ class DreamRosInterface(Node):
         self.place_ready = None
         self.place_complete = None
         return
+
+
+if __name__ == "__main__":
+    rclpy.init()
+    ros_interface = DreamRosInterface()
+    rclpy.spin(ros_interface)
+    ros_interface.destroy_node()
+    rclpy.shutdown()

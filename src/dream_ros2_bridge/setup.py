@@ -53,6 +53,7 @@ setup(
             "state_estimator = dream_ros2_bridge.nodes.state_estimator:main",
             "goto_controller = dream_ros2_bridge.nodes.goto_controller:main",
             "odom_tf_publisher = dream_ros2_bridge.nodes.odom_tf_publisher:main",
+            "tf_pose_publisher = dream_ros2_bridge.nodes.tf_pose_publisher:main",
             "orbslam3 = dream_ros2_bridge.nodes.orbslam3:main",
             'd435i_accel_correction = dream_ros2_bridge.nodes.d435i_accel_correction:main',
             "server = dream_ros2_bridge.remote.server:main",

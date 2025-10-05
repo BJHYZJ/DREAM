@@ -112,7 +112,7 @@ class ZmqServer(BaseZmqServer):
             "lidar_points": obs.laser_compressed,
             "camera_K": obs.camera_K,
             "pose_graph": obs.pose_graph,
-            "camera_pose_in_map": obs.camera_pose_in_map,
+            "camera_in_map_pose": obs.camera_in_map_pose,
 
 
             # "last_motion_failed": self.client.last_motion_failed(),
@@ -130,8 +130,8 @@ class ZmqServer(BaseZmqServer):
         message = {
             "gps": obs.gps,
             "compass": obs.compass,
-            "base_pose_in_map": obs.base_pose_in_map,
-            "ee_pose_in_map": obs.ee_pose_in_map,
+            "base_in_map_pose": obs.base_in_map_pose,
+            "ee_in_map_pose": obs.ee_in_map_pose,
             "joint_positions": obs.joint_positions,
             "joint_velocities": obs.joint_velocities,
             "joint_efforts": obs.joint_efforts,
@@ -154,8 +154,8 @@ class ZmqServer(BaseZmqServer):
         compressed_depth_image = compression.to_jp2(depth_image)
         
         message = {
-            "ee_pose_in_map": obs.ee_pose_in_map,
-            "camera_pose_in_map": obs.camera_pose_in_map,
+            "ee_in_map_pose": obs.ee_in_map_pose,
+            "camera_in_map_pose": obs.camera_in_map_pose,
             "color_camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),

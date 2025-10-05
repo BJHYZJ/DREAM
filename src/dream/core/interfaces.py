@@ -256,7 +256,7 @@ class RtabmapData:
     laser_compressed: array.array
     camera_K: np.ndarray
     pose_graph: Dict[str, np.ndarray]
-    camera_pose_in_map: np.ndarray
+    camera_in_map_pose: np.ndarray
 
 
 @dataclass
@@ -267,8 +267,8 @@ class StateObservations:
     joint_positions: np.ndarray
     joint_velocities: np.ndarray
     joint_efforts: np.ndarray
-    base_pose_in_map: np.ndarray
-    ee_pose_in_map: np.ndarray
+    base_in_map_pose: np.ndarray
+    ee_in_map_pose: np.ndarray
     at_goal: bool
     is_homed: bool
     is_runstopped: bool
@@ -285,8 +285,8 @@ class ServoObservations(BaseObservations):
     depth_scaling: Optional[float] = None
     joint_positions: Optional[np.ndarray] = None
     joint_velocities: Optional[np.ndarray] = None
-    ee_pose_in_map: Optional[np.ndarray] = None
-    camera_pose_in_map: Optional[np.ndarray] = None
+    ee_in_map_pose: Optional[np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None
     is_simulation: bool = False
 
 
@@ -300,10 +300,10 @@ class Observations(BaseObservations):
     depth: np.ndarray
     xyz: Optional[np.ndarray] = None
     camera_K: Optional[np.ndarray] = None
-    camera_pose_in_map: Optional[np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None
+    ee_in_map_pose: Optional[np.ndarray] = None
     joint_positions: Optional[np.ndarray] = None
     joint_velocities: Optional[np.ndarray] = None
-    ee_pose_in_map: Optional[np.ndarray] = None
     lidar_points: Optional[np.ndarray] = None
     lidar_timestamp: Optional[int] = None
     seq_id: int = -1

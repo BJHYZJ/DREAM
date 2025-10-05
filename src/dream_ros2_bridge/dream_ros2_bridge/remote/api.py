@@ -276,9 +276,9 @@ class DreamClient(AbstractRobotClient):
             q[DreamIdx.BASE_X] = self.manip.get_base_x()
         return q, dq, eff
 
-    def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
-        """look up a particular frame in base coords"""
-        return self._ros_client.get_frame_pose(frame, base_frame, lookup_time)
+    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
+    #     """look up a particular frame in base coords"""
+    #     return self._ros_client.get_frame_pose(frame, base_frame, lookup_time)
 
     def move_to_manip_posture(self):
         """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
@@ -307,10 +307,10 @@ class DreamClient(AbstractRobotClient):
         """Get the robot's base pose as XYT."""
         return self._ros_client.get_base_in_map_pose()
     
-    def get_ee_pose_in_map(self):
-        return self._ros_client.get_ee_pose_in_map()
+    def get_ee_in_map_pose(self):
+        return self._ros_client.get_ee_in_map_pose()
 
-    def get_camera_pose_in_map(self):
+    def get_camera_in_map_pose(self):
         return self._ros_client.get_camera_in_map_pose()
 
     def get_pose_graph(self) -> np.ndarray:  # TODO (zhijie, may need edit)
@@ -403,7 +403,7 @@ class DreamClient(AbstractRobotClient):
             laser_compressed=laser,
             camera_K=camera_K,
             pose_graph=pose_graph,
-            camera_pose_in_map=current_pose.matrix(),
+            camera_in_map_pose=current_pose.matrix(),
         )
         return full_observation
 
@@ -426,8 +426,8 @@ class DreamClient(AbstractRobotClient):
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             joint_efforts=joint_efforts,
-            base_pose_in_map=base_in_map_pose.matrix(),
-            ee_pose_in_map=self.get_ee_pose_in_map().matrix(),
+            base_in_map_pose=base_in_map_pose.matrix(),
+            ee_in_map_pose=self.get_ee_in_map_pose().matrix(),
             at_goal=self.at_goal(),
             is_homed=self.is_homed,
             is_runstopped=self.is_runstopped,
@@ -438,8 +438,8 @@ class DreamClient(AbstractRobotClient):
         camera_K = self.rgb_cam.get_K()
         depth_K = self.dpt_cam.get_K()
         joint_positions, joint_velocities, _ = self.get_joint_state()
-        ee_pose_in_map = self.get_ee_pose_in_map()
-        camera_pose_in_map = self.get_camera_pose_in_map()
+        ee_in_map_pose = self.get_ee_in_map_pose()
+        camera_in_map_pose = self.get_camera_in_map_pose()
         
         return ServoObservations(
             rgb=rgb,
@@ -448,8 +448,8 @@ class DreamClient(AbstractRobotClient):
             depth_K=depth_K,
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
-            ee_pose_in_map=ee_pose_in_map,
-            camera_pose_in_map=camera_pose_in_map,
+            ee_in_map_pose=ee_in_map_pose,
+            camera_in_map_pose=camera_in_map_pose,
         )
 
     # def get_observation(
