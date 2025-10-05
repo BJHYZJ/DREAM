@@ -689,7 +689,7 @@ class RerunVisualizer:
             
             rr.set_time("realtime", timestamp=now_timestamp)
             try:
-                # t0 = timeit.default_timer()
+                t0 = timeit.default_timer()
                 self.log_robot_xyt(state)
                 # self.log_ee_frame(servo)
 
@@ -701,10 +701,10 @@ class RerunVisualizer:
 
                 # if self.display_robot_mesh:
                 #     self.log_robot_transforms(obs)
-                # t1 = timeit.default_timer()
-                # sleep_time = self.step_delay_s - (t1 - t0)
-                # if sleep_time > 0:
-                #     time.sleep(sleep_time)
+                t1 = timeit.default_timer()
+                sleep_time = self.step_delay_s - (t1 - t0)
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
 
             except Exception as e:
                 logger.error(e)
