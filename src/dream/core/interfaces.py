@@ -279,8 +279,8 @@ class ServoObservations(BaseObservations):
     """Servo observations for visual servoing."""
     rgb: np.ndarray
     depth: np.ndarray
-    camera_K: Optional[np.ndarray] = None
-    depth_K: Optional[np.ndarray] = None
+    color_camera_K: Optional[np.ndarray] = None
+    depth_camera_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None
     depth_scaling: Optional[float] = None
     joint_positions: Optional[np.ndarray] = None

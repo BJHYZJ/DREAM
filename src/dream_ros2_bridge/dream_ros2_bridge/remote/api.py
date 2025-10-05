@@ -435,8 +435,6 @@ class DreamClient(AbstractRobotClient):
 
     def get_servo_observation(self) -> ServoObservations:
         rgb, depth = self.cam.get_images(compute_xyz=False)
-        camera_K = self.rgb_cam.get_K()
-        depth_K = self.dpt_cam.get_K()
         joint_positions, joint_velocities, _ = self.get_joint_state()
         ee_in_map_pose = self.get_ee_in_map_pose()
         camera_in_map_pose = self.get_camera_in_map_pose()
@@ -444,8 +442,6 @@ class DreamClient(AbstractRobotClient):
         return ServoObservations(
             rgb=rgb,
             depth=depth,
-            camera_K=camera_K,
-            depth_K=depth_K,
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             ee_in_map_pose=ee_in_map_pose,
