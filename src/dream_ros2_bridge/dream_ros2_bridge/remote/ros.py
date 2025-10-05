@@ -707,8 +707,11 @@ class DreamRosInterface(Node):
         if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
             self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
             # raise RuntimeError(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
-        
-        self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
+        timestamp_now = self.get_clock().now().to_msg()
+        timestamp_tf = msg.header.stamp
+        delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
+        self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}, Delay {delay}")
+        # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
         self._last_node_id = nid
 
     def _rtabmapinfo_callback(self, msg):
