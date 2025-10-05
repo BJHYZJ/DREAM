@@ -1619,10 +1619,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
             #     observation.ee_depth_scaling = message["ee_cam/image_scaling"]
 
             servo_observation.joint_positions = message["joint_positions"]
-            servo_observation.ee_pose_in_map = message["ee_pose_in_map"]  # np.ndarray
+            servo_observation.ee_in_map_pose = message["ee_in_map_pose"]  # np.ndarray
+            servo_observation.camera_in_map_pose = message["camera_in_map_pose"]  # np.ndarray
             servo_observation.depth_scaling = message["depth_scaling"]
             servo_observation.camera_K = message["depth_camera_K"]
-            servo_observation.camera_pose_in_map = message["camera_pose_in_map"]  # np.ndarray
+            
             if "is_simulation" in message:
                 servo_observation.is_simulation = message["is_simulation"]
             else:

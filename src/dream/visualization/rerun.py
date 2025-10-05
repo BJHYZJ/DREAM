@@ -389,7 +389,7 @@ class RerunVisualizer:
     def log_robot_xyt(self, state: StateObservations):
         """Log robot world pose"""
         # 直接使用base_pose_in_map，它已经包含了完整的位置和旋转信息
-        base_pose = state["base_pose_in_map"]
+        base_pose = state["base_in_map_pose"]
         
         # 检查是否是历史数据（通过检查时间戳或添加调试信息）
         # print(f"Base pose timestamp: {time.time()}")
@@ -673,8 +673,8 @@ class RerunVisualizer:
         if obs and state and servo:
             # Use the actual data timestamp if available, otherwise fall back to current time
             now_timestamp = time.time()
-            data_timestamp = state["timestamp"]
-            logger.info(f"now_timestamp - data_timestamp: {now_timestamp - data_timestamp}")
+            # data_timestamp = state["timestamp"]
+            # logger.info(f"now_timestamp - data_timestamp: {now_timestamp - data_timestamp}")
             # data_timestamp = time.time()
             # if obs and "timestamp" in obs:
             #     data_timestamp = obs["timestamp"]
