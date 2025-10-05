@@ -148,7 +148,7 @@ class DreamRosInterface(Node):
 
         # QoS设置
         self.reliable_qos = QoSProfile(
-            depth=1,
+            depth=10,
             reliability=ReliabilityPolicy.RELIABLE,
             history=HistoryPolicy.KEEP_LAST,
             durability=DurabilityPolicy.VOLATILE,
@@ -161,13 +161,21 @@ class DreamRosInterface(Node):
         #     durability=DurabilityPolicy.VOLATILE,
         # )
 
-        self._executor = MultiThreadedExecutor(num_threads=8)
+        self._executor = MultiThreadedExecutor(num_threads=4)
         self._executor.add_node(self)
         self._spin_thread = threading.Thread(target=self._spin_forever, daemon=True)
         self._spin_thread.start()
         # Start the thread  # publish pose visualization
         # self._thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
         # self._thread.start()
+
+        self.cb_rtabmapdata_group = MutuallyExclusiveCallbackGroup()
+        # self.cb_rtabmapinfo_group = MutuallyExclusiveCallbackGroup()
+        self.cb_grasp_group = MutuallyExclusiveCallbackGroup()
+        self.cb_place_group = MutuallyExclusiveCallbackGroup()
+        self.cb_tf_group = ReentrantCallbackGroup()
+        self.cb_state_group = ReentrantCallbackGroup()
+        self.cb_odom_group = ReentrantCallbackGroup()
 
         # Initialize caches
         self.current_mode: Optional[str] = None
@@ -219,6 +227,14 @@ class DreamRosInterface(Node):
         self._is_runstopped = False
 
         # self._pose_graph = []
+
+
+        self._lock_js = threading.Lock()
+        self._lock_tf = threading.Lock()
+        self._lock_odom = threading.Lock()
+        self._lock_rtab = threading.Lock() 
+        self._lock_goal = threading.Lock()
+
 
         # Initialize ros communication
         self._create_pubs_subs()
@@ -303,10 +319,11 @@ class DreamRosInterface(Node):
 
 
     def get_joint_state(self):
-        with self._js_lock:
+        with self._lock_js:
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
-            self.gripper_pos = self._arm_client.get_gripper_state()
-            base_pose = self.get_base_in_map_pose()
+            
+        self.gripper_pos = self._arm_client.get_gripper_state()
+        base_pose = self.get_base_in_map_pose()
 
         if base_pose is None:
             return None
@@ -353,7 +370,7 @@ class DreamRosInterface(Node):
     #     # Wait until self.joint_status is populated
     #     rate = self.create_rate(10)
     #     while rclpy.ok():
-    #         with self._js_lock:
+    #         with self._lock_js:
     #             print("Waiting for joint status...", self.joint_status.keys())
     #             if ROS_LIFT_JOINT in self.joint_status:
     #                 break
@@ -366,7 +383,7 @@ class DreamRosInterface(Node):
     # ):
     #     """Send joint goals to the robot. Goals are a dictionary of joint names and strings. Can optionally provide velicities as well."""
 
-    #     # with self._js_lock:
+    #     # with self._lock_js:
     #         # joint_pose = self._process_joint_status(self.joint_status)
     #     joint_pose = self._process_joint_status(self.joint_status)
 
@@ -505,9 +522,9 @@ class DreamRosInterface(Node):
         # self.save_map_service.wait_for_service()
         # self.load_map_service.wait_for_service()
 
-    # def _is_homed_cb(self, msg) -> None:
-    #     """Update this variable"""
-    #     self._is_homed = bool(msg.data)
+    def _is_homed_cb(self, msg) -> None:
+        """Update this variable"""
+        self._is_homed = bool(msg.data)
 
     @property
     def is_homed(self) -> bool:
@@ -527,30 +544,32 @@ class DreamRosInterface(Node):
         # Create command publishers
         self.goal_pub = self.create_publisher(Pose, "goto_controller/goal", 1)
         self.velocity_pub = self.create_publisher(Twist, "/ranger/cmd_vel", 1)
+        self._at_goal_sub = self.create_subscription(Bool, "goto_controller/at_goal", self._at_goal_callback, 1, callback_group=self.cb_state_group)
+
+        # Check if robot is homed and runstopped
+        self._is_homed_sub = self.create_subscription(Bool, "/is_homed", self._is_homed_cb, 1, callback_group=self.cb_state_group)
+        self._is_runstopped_sub = self.create_subscription(Bool, "/is_runstopped", self._is_runstopped_cb, 1, callback_group=self.cb_state_group)
+        # self._mode_sub = self.create_subscription(String, "mode", self._mode_callback, 1, callback_group=self.cb_state_group)
 
         self.grasp_ready = None
         self.grasp_complete = None
         self.grasp_enable_pub = self.create_publisher(Empty, "grasp_point/enable", 1)
-        self.grasp_ready_sub = self.create_subscription(Empty, "grasp_point/ready", self._grasp_ready_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
         self.grasp_disable_pub = self.create_publisher(Empty, "grasp_point/disable", 1)
         self.grasp_trigger_pub = self.create_publisher(PointStamped, "grasp_point/trigger_grasp_point", 1)
-        self.grasp_result_sub = self.create_subscription(Float32, "grasp_point/result", self._grasp_result_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
-
-        # Check if robot is homed and runstopped
-        # self._is_homed_sub = self.create_subscription(Bool, "/is_homed", self._is_homed_cb, 1)
-        self._is_runstopped_sub = self.create_subscription(Bool, "/is_runstopped", self._is_runstopped_cb, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self.grasp_ready_sub = self.create_subscription(Empty, "grasp_point/ready", self._grasp_ready_callback, 10, callback_group=self.cb_grasp_group)  # Had to check qos_profile
+        self.grasp_result_sub = self.create_subscription(Float32, "grasp_point/result", self._grasp_result_callback, 10, callback_group=self.cb_grasp_group)  # Had to check qos_profile
 
         self.place_ready = None
         self.place_complete = None
         self.location_above_surface_m = None
         self.place_enable_pub = self.create_publisher(Float32, "place_point/enable", 1)
-        self.place_ready_sub = self.create_subscription(Empty, "place_point/ready", self._place_ready_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
         self.place_disable_pub = self.create_publisher(Empty, "place_point/disable", 1)
         self.place_trigger_pub = self.create_publisher(PointStamped, "place_point/trigger_place_point", 1)
-        self.place_result_sub = self.create_subscription(Empty, "place_point/result", self._place_result_callback, 10, callback_group=MutuallyExclusiveCallbackGroup())  # Had to check qos_profile
+        self.place_ready_sub = self.create_subscription(Empty, "place_point/ready", self._place_ready_callback, 10, callback_group=self.cb_place_group)  # Had to check qos_profile
+        self.place_result_sub = self.create_subscription(Empty, "place_point/result", self._place_result_callback, 10, callback_group=self.cb_place_group)  # Had to check qos_profile
 
         # Create subscribers
-        self._odom_sub = self.create_subscription(Odometry, "/ranger/odom", self._odom_callback, qos_profile_sensor_data, callback_group=MutuallyExclusiveCallbackGroup())
+        self._odom_sub = self.create_subscription(Odometry, "/ranger/odom", self._odom_callback, qos_profile_sensor_data, callback_group=self.cb_odom_group)
 
         # self._base_state_sub = self.create_subscription(
         #     PoseStamped, "state_estimator/pose_filtered", self._base_state_callback, 1
@@ -560,30 +579,27 @@ class DreamRosInterface(Node):
         #     PoseStamped, "camera_pose", self._camera_pose_callback, 1
         # )
 
-        self._at_goal_sub = self.create_subscription(Bool, "goto_controller/at_goal", self._at_goal_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self._mode_sub = self.create_subscription(String, "mode", self._mode_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
 
         # self._pose_graph_sub = self.create_subscription(
         #     Path, "slam_toolbox/pose_graph", self._pose_graph_callback, 1
         # )
         # zhijie added
-        self._rtabmapdata_sub = self.create_subscription(MapData, "/rtabmap/mapData", self._rtabmapdata_callback, self.reliable_qos, callback_group=MutuallyExclusiveCallbackGroup())
+        self._rtabmapdata_sub = self.create_subscription(MapData, "/rtabmap/mapData", self._rtabmapdata_callback, self.reliable_qos, callback_group=self.cb_rtabmapdata_group)
 
-        self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=MutuallyExclusiveCallbackGroup())
+        # self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=self.cb_rtabmapinfo_group)
 
         # tf pose publisher
-        self._tf_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_pose", self._tf_base_pose_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self._tf_camera_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_map", self._tf_camera_pose_in_map_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
-        self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, 1, callback_group=MutuallyExclusiveCallbackGroup())
+        self._tf_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_pose", self._tf_base_pose_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
+        self._tf_camera_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_map", self._tf_camera_pose_in_map_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
+        self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
+        self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
+        self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
 
         # Create trajectory client with which we can control the robot
         # self.trajectory_client = ActionClient(
         #     self, FollowJointTrajectory, "/stretch_controller/follow_joint_trajectory"
         # )  # Doubt action type
 
-        self._js_lock = threading.Lock()  # store latest joint state message - lock for access
 
         # This callback group is used to ensure that the joint goal publisher is reentrant
         # TODO: notes on what this is for?
@@ -696,7 +712,8 @@ class DreamRosInterface(Node):
     def _at_goal_callback(self, msg):
         """Is the velocity controller done moving; is it at its goal?"""
         # self.get_logger().info(f"at goal listennign {self.at_goal}")
-        self.at_goal = msg.data
+        with self._lock_goal:
+            self.at_goal = msg.data
         if not self.at_goal:
             self._goal_reset_t = None
         elif self._goal_reset_t is None:
@@ -704,7 +721,8 @@ class DreamRosInterface(Node):
 
     def _rtabmapdata_callback(self, msg):
         """处理RTABMap数据"""
-        self.rtabmapdata = msg
+        with self._lock_rtab:
+            self.rtabmapdata = msg
         
         # 检查Node ID顺序
         nid = msg.nodes[0].id
@@ -723,9 +741,9 @@ class DreamRosInterface(Node):
         # self._rtabmapinfo = msg
         assert 1 == 1
 
-    def _mode_callback(self, msg):
-        """get position or navigation mode from dream ros"""
-        self._current_mode = msg.data
+    # def _mode_callback(self, msg):
+    #     """get position or navigation mode from dream ros"""
+    #     self._current_mode = msg.data
 
     # def _pose_graph_callback(self, msg):
     #     self._pose_graph = []
@@ -742,7 +760,8 @@ class DreamRosInterface(Node):
     def _odom_callback(self, msg: Odometry):
         """odometry callback"""
         # self.vel_base = [msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z]
-        self.vel_base = np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z])
+        with self._lock_odom:
+            self.vel_base = np.array([msg.twist.twist.linear.x, msg.twist.twist.linear.y, msg.twist.twist.angular.z])
         # self._last_odom_update_timestamp = msg.header.stamp
         # self.se3_base_odom = sp.SE3(matrix_from_pose_msg(msg.pose.pose))
 
@@ -752,38 +771,53 @@ class DreamRosInterface(Node):
         timestamp_tf = msg.header.stamp
         delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
         self.get_logger().info(f"TF delay: {delay}")
-        self.se3_base = sp.SE3(matrix_from_pose_msg(msg.pose))
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_base = se3
 
     def _tf_camera_pose_in_map_callback(self, msg: PoseStamped):
         """camera pose in map callback"""
-        self.se3_camera_in_map_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_camera_in_map_pose = se3
 
     def _tf_camera_pose_in_base_callback(self, msg: PoseStamped):
         """camera pose in base callback"""
-        self.se3_camera_in_base_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_camera_in_base_pose = se3
     
     def _tf_camera_pose_in_arm_callback(self, msg: PoseStamped):
         """camera pose in arm callback"""
-        self.se3_camera_in_arm_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_camera_in_arm_pose = se3
     
     def _tf_ee_pose_in_map_callback(self, msg: PoseStamped):
         """ee pose in map callback"""
-        self.se3_ee_in_map_pose = sp.SE3(matrix_from_pose_msg(msg.pose))
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_ee_in_map_pose = se3
 
     def get_base_in_map_pose(self):
-        return self.se3_base
+        with self._lock_tf:
+            return self.se3_base
 
     def get_camera_in_map_pose(self):
-        return self.se3_camera_in_map_pose
+        with self._lock_tf:
+            return self.se3_camera_in_map_pose
 
     def get_camera_in_base_pose(self):
-        return self.se3_camera_in_base_pose
+        with self._lock_tf:
+            return self.se3_camera_in_base_pose
 
     def get_camera_in_arm_pose(self):
-        return self.se3_camera_in_arm_pose
+        with self._lock_tf:
+            return self.se3_camera_in_arm_pose
     
     def get_ee_in_map_pose(self):
-        return self.se3_ee_in_map_pose
+        with self._lock_tf:
+            return self.se3_ee_in_map_pose
 
 
 
@@ -807,7 +841,7 @@ class DreamRosInterface(Node):
     #             vel[joint_idx] = v
     #             trq[joint_idx] = e
         
-    #     # with self._js_lock:
+    #     # with self._lock_js:
     #         # self.arm_pos, self.arm_vel, self.arm_frc = pos, vel, trq
     #         # self.arm_joint_status = joint_status
     #     self.arm_pos, self.arm_vel, self.arm_frc = pos, vel, trq
@@ -943,6 +977,6 @@ class DreamRosInterface(Node):
 if __name__ == "__main__":
     rclpy.init()
     ros_interface = DreamRosInterface()
-    rclpy.spin(ros_interface)
+    # rclpy.spin(ros_interface)
     ros_interface.destroy_node()
     rclpy.shutdown()
