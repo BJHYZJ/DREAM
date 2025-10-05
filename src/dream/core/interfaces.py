@@ -197,7 +197,7 @@ class Pose:
 class BaseObservations:
     """Base class for all observation types with common methods."""
     xyz: Optional[np.ndarray] = None
-    camera_pose_in_map: Optional[np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None
     depth: Optional[np.ndarray] = None
     camera_K: Optional[np.ndarray] = None
 
@@ -229,8 +229,8 @@ class BaseObservations:
             scaling: scaling factor for xyz"""
         if self.xyz is None:
             self.compute_xyz(scaling=scaling)
-        if self.xyz is not None and self.camera_pose_in_map is not None:
-            return self.transform_points(self.xyz, self.camera_pose_in_map)
+        if self.xyz is not None and self.camera_in_map_pose is not None:
+            return self.transform_points(self.xyz, self.camera_in_map_pose)
         return None
 
     def transform_points(self, points: np.ndarray, pose: Union[np.ndarray, sp.SE3]):
@@ -243,6 +243,35 @@ class BaseObservations:
         assert points.shape[-1] == 3, "Points should be in 3D"
         assert pose.shape == (4, 4), "Pose should be a 4x4 matrix"
         return np.dot(points, pose[:3, :3].T) + pose[:3, 3]
+
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "BaseObservations":
+        """Create observations from dictionary.
+        
+        This method dynamically extracts only the fields that exist in the target class,
+        making it compatible with all subclasses (ServoObservations, Observations, etc.).
+        
+        Args:
+            data: Dictionary containing observation data
+            
+        Returns:
+            Instance of the calling class with data from the dictionary
+        """
+        import inspect
+        
+        # Get the signature of the class constructor
+        sig = inspect.signature(cls.__init__)
+        kwargs = {}
+        
+        # Extract only the parameters that exist in the target class
+        for param_name in sig.parameters:
+            if param_name == 'self':
+                continue
+            if param_name in data:
+                kwargs[param_name] = data[param_name]
+        
+        return cls(**kwargs)
 
 
 @dataclass
@@ -308,46 +337,3 @@ class Observations(BaseObservations):
     lidar_timestamp: Optional[int] = None
     seq_id: int = -1
     is_simulation: bool = False
-
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Observations":
-        """Create observations from dictionary."""
-        return cls(
-            gps=data.get("gps"),
-            compass=data.get("compass"),
-            rgb=data.get("rgb"),
-            depth=data.get("depth"),
-            xyz=data.get("xyz"),
-            semantic=data.get("semantic"),
-            camera_K=data.get("camera_K"),
-            camera_pose=data.get("camera_pose"),
-            image_scaling=data.get("image_scaling"),
-            depth_scaling=data.get("depth_scaling"),
-            camera_pose_in_arm=data.get("camera_pose_in_arm"),
-            camera_pose_in_base=data.get("camera_pose_in_base"),
-            camera_pose_in_map=data.get("camera_pose_in_map"),
-            ee_rgb=data.get("ee_rgb"),
-            ee_depth=data.get("ee_depth"),
-            ee_xyz=data.get("ee_xyz"),
-            ee_semantic=data.get("ee_semantic"),
-            ee_camera_K=data.get("ee_camera_K"),
-            ee_camera_pose=data.get("ee_camera_pose"),
-            ee_pose=data.get("ee_pose"),
-            ee_pose_in_map=data.get("ee_pose_in_map"),
-            instance=data.get("instance"),
-            third_person_image=data.get("third_person_image"),
-            lidar_points=data.get("lidar_points"),
-            lidar_timestamp=data.get("lidar_timestamp"),
-            joint_positions=data.get("joint_positions"),
-            joint_velocities=data.get("joint_velocities"),
-            relative_resting_position=data.get("relative_resting_position"),
-            is_holding=data.get("is_holding"),
-            task_observations=data.get("task_observations"),
-            seq_id=data.get("seq_id"),
-            is_simulation=data.get("is_simulation"),
-            is_pose_graph_node=data.get("is_pose_graph_node"),
-            pose_graph_timestamp=data.get("pose_graph_timestamp"),
-            initial_pose_graph_gps=data.get("initial_pose_graph_gps"),
-            initial_pose_graph_compass=data.get("initial_pose_graph_compass"),
-        )

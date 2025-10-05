@@ -348,7 +348,7 @@ class RerunVisualizer:
             ),
         )
 
-    def log_camera(self, obs: ServoObservations):
+    def log_camera(self, servoobs: ServoObservations):
         """Log camera pose and images
 
         Args:
@@ -356,11 +356,11 @@ class RerunVisualizer:
         """
         # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.set_time("realtime", timestamp=time.time())
-        log_to_rerun("world/camera/rgb", rr.Image(obs.rgb))
+        log_to_rerun("world/camera/rgb", rr.Image(servoobs.rgb))
 
         if self.show_camera_point_clouds:
-            xyz = obs.get_xyz_in_world_frame().reshape(-1, 3)
-            rgb = obs.rgb.reshape(-1, 3)
+            xyz = servoobs.get_xyz_in_world_frame().reshape(-1, 3)
+            rgb = servoobs.rgb.reshape(-1, 3)
             log_to_rerun(
                 "world/camera/points",
                 rr.Points3D(
@@ -370,18 +370,18 @@ class RerunVisualizer:
                 ),
             )
         else:
-            log_to_rerun("world/camera/depth", rr.depthimage(obs.depth))
+            log_to_rerun("world/camera/depth", rr.depthimage(servoobs.depth))
 
         if self.show_cameras_in_3d_view:
-            rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
+            rot, trans = decompose_homogeneous_matrix(servoobs.camera_pose_in_map)
             log_to_rerun(
                 "world/camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
             )
             log_to_rerun(
                 "world/camera",
                 rr.Pinhole(
-                    resolution=[obs.rgb.shape[1], obs.rgb.shape[0]],
-                    image_from_camera=obs.camera_K,
+                    resolution=[servoobs.rgb.shape[1], servoobs.rgb.shape[0]],
+                    image_from_camera=servoobs.camera_K,
                     image_plane_distance=0.15,
                 ),
             )
@@ -420,23 +420,23 @@ class RerunVisualizer:
             ),
         )
 
-    def log_ee_frame(self, obs):
-        """log end effector pose
-        Args:
-            obs (Observations): Observation dataclass
-        """
-        # rr.set_time_seconds("realtime", time.time())
-        # EE Frame
-        if not "ee_pose_in_map" in obs:
-            return
-        if obs["ee_pose_in_map"] is None:
-            return
-        rot, trans = decompose_homogeneous_matrix(obs["ee_pose_in_map"])
-        ee_arrow = rr.Arrows3D(
-            origins=[0, 0, 0], vectors=[0.2, 0, 0], radii=0.02, labels="ee", colors=[0, 255, 0, 255]
-        )
-        # log_to_rerun("world/ee/arrow", ee_arrow)
-        rr.log("world/ee", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3))
+    # def log_ee_frame(self, obs):
+    #     """log end effector pose
+    #     Args:
+    #         obs (Observations): Observation dataclass
+    #     """
+    #     # rr.set_time_seconds("realtime", time.time())
+    #     # EE Frame
+    #     if not "ee_in_map_pose" in obs:
+    #         return
+    #     if obs["ee_in_map_pose"] is None:
+    #         return
+    #     rot, trans = decompose_homogeneous_matrix(obs["ee_in_map_pose"])
+    #     ee_arrow = rr.Arrows3D(
+    #         origins=[0, 0, 0], vectors=[0.2, 0, 0], radii=0.02, labels="ee", colors=[0, 255, 0, 255]
+    #     )
+    #     # log_to_rerun("world/ee/arrow", ee_arrow)
+    #     rr.log("world/ee", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3))
 
     # def log_ee_camera(self, servo):
     #     """Log end effector camera pose and images
@@ -691,10 +691,10 @@ class RerunVisualizer:
             try:
                 # t0 = timeit.default_timer()
                 self.log_robot_xyt(state)
-                # self.log_ee_frame(obs)
+                # self.log_ee_frame(servo)
 
                 # Cameras use the lower-res servo object
-                # self.log_camera(servo)
+                self.log_camera(servo)
                 # self.log_ee_camera(servo)
 
                 # self.log_robot_state(obs)
