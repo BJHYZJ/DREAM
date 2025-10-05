@@ -156,10 +156,10 @@ class ZmqServer(BaseZmqServer):
         message = {
             "ee_in_map_pose": obs.ee_in_map_pose,
             "camera_in_map_pose": obs.camera_in_map_pose,
-            "color_camera_K": scale_camera_matrix(
+            "camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),
-            "depth_camera_K": scale_camera_matrix(
+            "camera_K": scale_camera_matrix(
                 self.client.dpt_cam.get_K(), self.image_scaling
             ),
             "color_image": compressed_color_image,
