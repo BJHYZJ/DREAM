@@ -307,7 +307,6 @@ class DreamRosInterface(Node):
     #         self._executor.shutdown(timeout_sec=2.0)
 
     def shutdown(self):
-        """关闭ROS接口"""
         if hasattr(self, "_executor"):
             try:
                 self._executor.shutdown(timeout_sec=2.0)
