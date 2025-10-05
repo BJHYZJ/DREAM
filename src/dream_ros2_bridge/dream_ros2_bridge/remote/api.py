@@ -269,12 +269,15 @@ class DreamClient(AbstractRobotClient):
 
     def get_joint_state(self):
         """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
-        q, dq, eff = self._ros_client.get_joint_state()
+        joint_state = self._ros_client.get_joint_state()
+        if joint_state is None:
+            return None
+        q, dq, eff = joint_state[0], joint_state[1], joint_state[2]
         # If we are in manipulation mode...
         if self._base_control_mode == ControlMode.MANIPULATION:
             # ...we need to get the joint positions from the manipulator
             q[DreamIdx.BASE_X] = self.manip.get_base_x()
-        return q, dq, eff
+        return [q, dq, eff]
 
     # def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
     #     """look up a particular frame in base coords"""
@@ -411,8 +414,13 @@ class DreamClient(AbstractRobotClient):
         self,
         start_pose: Optional[np.ndarray] = None
     ) -> StateObservations:
-        joint_positions, joint_velocities, joint_efforts = self.get_joint_state()
+        joint_state = self.get_joint_state()
         base_in_map_pose = self.get_base_in_map_pose()
+        if joint_state is None or base_in_map_pose is None:
+            print("get_state_observation: joint_state is None or base_in_map_pose is None")
+            return None
+        
+        joint_positions, joint_velocities, joint_efforts = joint_state[0], joint_state[1], joint_state[2]
         if start_pose is not None:
             relative_pose = start_pose.inverse() * base_in_map_pose
         else:
@@ -434,10 +442,17 @@ class DreamClient(AbstractRobotClient):
         )
 
     def get_servo_observation(self) -> ServoObservations:
-        rgb, depth = self.cam.get_images(compute_xyz=False)
-        joint_positions, joint_velocities, _ = self.get_joint_state()
+        images = self.cam.get_images(compute_xyz=False)
+        joint_state = self.get_joint_state()
         ee_in_map_pose = self.get_ee_in_map_pose()
         camera_in_map_pose = self.get_camera_in_map_pose()
+
+        if images is None or joint_state is None or ee_in_map_pose is None or camera_in_map_pose is None:
+            print("get_servo_observation: images is None or joint_state is None or ee_in_map_pose is None or camera_in_map_pose is None")
+            return None
+
+        rgb, depth = images[0], images[1]
+        joint_positions, joint_velocities = joint_state[0], joint_state[1]
         
         return ServoObservations(
             rgb=rgb,

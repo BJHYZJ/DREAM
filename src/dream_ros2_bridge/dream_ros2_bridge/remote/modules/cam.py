@@ -105,13 +105,15 @@ class DreamCamClient(AbstractControlModule):
         else:
             dpt = self._process_depth(self._ros_client.dpt_cam.get())
 
+        if rgb is None or dpt is None:
+            return None
+
         # Compute point cloud from depth image
         if compute_xyz:
             xyz = self.depth_to_xyz(dpt)
             imgs = [rgb, dpt, xyz]
         else:
-            imgs = [rgb, dpt]
-            xyz = None
+            imgs = [rgb, dpt, None]
 
         return imgs
 

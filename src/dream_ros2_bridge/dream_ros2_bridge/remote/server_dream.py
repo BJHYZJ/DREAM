@@ -125,6 +125,8 @@ class ZmqServer(BaseZmqServer):
     @override
     def get_state_message(self) -> Dict[str, Any]:
         obs = self.client.get_state_observation()
+        if obs is None:
+            return None
         # """Get the state message for the robot."""
         # q, dq, eff = self.client.get_joint_state()
         message = {
@@ -146,6 +148,8 @@ class ZmqServer(BaseZmqServer):
 
     def get_servo_message(self) -> Dict[str, Any]:
         obs = self.client.get_servo_observation()
+        if obs is None:
+            return None
         color_image, depth_image = self._rescale_color_and_depth(
             obs.rgb, obs.depth, self.image_scaling
         )

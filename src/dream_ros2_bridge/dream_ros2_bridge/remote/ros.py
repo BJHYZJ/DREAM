@@ -307,13 +307,17 @@ class DreamRosInterface(Node):
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
             self.gripper_pos = self._arm_client.get_gripper_state()
             base_pose = self.get_base_in_map_pose()
-            self.pos[:3] = sophus2xyt(base_pose)
-            self.pos[3:9] = self.arm_pos[:6]
-            self.pos[9] = self.gripper_pos
-            self.vel[:3] = self.vel_base
-            self.vel[3:9] = self.arm_vel[:6]
-            self.frc[3:9] = self.arm_frc[:6]
-        return self.pos, self.vel, self.frc
+
+        if base_pose is None:
+            return None
+            
+        self.pos[:3] = sophus2xyt(base_pose)
+        self.pos[3:9] = self.arm_pos[:6]
+        self.pos[9] = self.gripper_pos
+        self.vel[:3] = self.vel_base
+        self.vel[3:9] = self.arm_vel[:6]
+        self.frc[3:9] = self.arm_frc[:6]
+        return [self.pos, self.vel, self.frc]
     
 
     # def _process_joint_status(self, j_status) -> np.ndarray:
@@ -744,10 +748,10 @@ class DreamRosInterface(Node):
 
     def _tf_base_pose_callback(self, msg: PoseStamped):
         """base pose callback"""
-        # timestamp_now = self.get_clock().now().to_msg()
-        # timestamp_tf = msg.header.stamp
-        # delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
-        # self.get_logger().info(f"TF delay: {delay}")
+        timestamp_now = self.get_clock().now().to_msg()
+        timestamp_tf = msg.header.stamp
+        delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
+        self.get_logger().info(f"TF delay: {delay}")
         self.se3_base = sp.SE3(matrix_from_pose_msg(msg.pose))
 
     def _tf_camera_pose_in_map_callback(self, msg: PoseStamped):
