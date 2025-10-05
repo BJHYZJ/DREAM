@@ -7,13 +7,16 @@
 # Some code may be adapted from other open-source works with their respective licenses. Original
 # license information maybe found below, if so.
 
-from typing import Tuple
-import os
-import time
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 #
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
+
+from typing import Tuple
+import os
+import time
+import atexit, signal
+
 import sys
 import threading
 from typing import Dict, Optional
@@ -146,6 +149,8 @@ class DreamRosInterface(Node):
         # Verbosity for the ROS client
         self.verbose = verbose
 
+        self._arm_client = XARM6()
+
         # QoS设置
         self.reliable_qos = QoSProfile(
             depth=10,
@@ -163,7 +168,7 @@ class DreamRosInterface(Node):
 
         self._executor = MultiThreadedExecutor(num_threads=4)
         self._executor.add_node(self)
-        self._spin_thread = threading.Thread(target=self._spin_forever, daemon=True)
+        self._spin_thread = threading.Thread(target=self._spin_forever, daemon=False)
         self._spin_thread.start()
         # Start the thread  # publish pose visualization
         # self._thread = threading.Thread(target=rclpy.spin, args=(self,), daemon=True)
@@ -179,8 +184,6 @@ class DreamRosInterface(Node):
 
         # Initialize caches
         self.current_mode: Optional[str] = None
-
-        self._arm_client = XARM6()
 
         # self.arm_pos = np.zeros(self.dof)
         # self.arm_vel = np.zeros(self.dof)
@@ -321,8 +324,8 @@ class DreamRosInterface(Node):
     def get_joint_state(self):
         with self._lock_js:
             self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
-            
-        self.gripper_pos = self._arm_client.get_gripper_state()
+            self.gripper_pos = self._arm_client.get_gripper_state()
+
         base_pose = self.get_base_in_map_pose()
 
         if base_pose is None:
@@ -720,7 +723,7 @@ class DreamRosInterface(Node):
             self._goal_reset_t = self.get_clock().now()
 
     def _rtabmapdata_callback(self, msg):
-        """处理RTABMap数据"""
+
         with self._lock_rtab:
             self.rtabmapdata = msg
         
@@ -729,10 +732,10 @@ class DreamRosInterface(Node):
         if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
             self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
             # raise RuntimeError(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
-        timestamp_now = self.get_clock().now().to_msg()
-        timestamp_tf = msg.header.stamp
-        delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
-        self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}, Delay {delay}")
+        # timestamp_now = self.get_clock().now().to_msg()
+        # timestamp_tf = msg.header.stamp
+        # delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
+        # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}, Delay {delay}")
         # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
         self._last_node_id = nid
 
@@ -977,6 +980,6 @@ class DreamRosInterface(Node):
 if __name__ == "__main__":
     rclpy.init()
     ros_interface = DreamRosInterface()
-    # rclpy.spin(ros_interface)
+    rclpy.spin(ros_interface)
     ros_interface.destroy_node()
     rclpy.shutdown()

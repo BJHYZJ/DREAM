@@ -163,7 +163,7 @@ class ZmqServer(BaseZmqServer):
             "camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),
-            "camera_K": scale_camera_matrix(
+            "depth_K": scale_camera_matrix(
                 self.client.dpt_cam.get_K(), self.image_scaling
             ),
             "color_image": compressed_color_image,
@@ -305,38 +305,27 @@ def main(
     recv_port: int = 4402,
     local: bool = False,
 ):
-    rclpy.init()
-    
-    server = ZmqServer(
-        send_port=send_port,
-        recv_port=recv_port,
-        use_remote_computer=(not local),
-    )
-    
     try:
+        rclpy.init()
+        server = ZmqServer(
+            send_port=send_port,
+            recv_port=recv_port,
+            use_remote_computer=(not local),
+        )
         server.start()
         try:
-            while getattr(server, "is_running", True) and rclpy.ok():
-                time.sleep(0.05)
+            while rclpy.ok() and server.running:
+                time.sleep(1.0)
         except KeyboardInterrupt:
-            print("KeyboardInterrupt caught in main loop")
-            raise
-
-    except KeyboardInterrupt:
-        print("Shutting down...")
-
+            print("\nReceived interrupt signal, shutting down...")
+        finally:
+            server.shutdown()
+            
+    except Exception as e:
+        print(f"Error in main: {e}")
     finally:
-        server._done = True
-        for thread_name in ["_send_thread", "_recv_thread", "_send_state_thread", "_send_servo_thread"]:
-            if hasattr(server, thread_name) and getattr(server, thread_name).is_alive():
-                getattr(server, thread_name).join(timeout=1.0)
-        if hasattr(server, "client") and hasattr(server.client, "shutdown"):
-            server.client.shutdown()
         if rclpy.ok():
             rclpy.shutdown()
-        non_main_threads = [t for t in threading.enumerate() if t.name != 'MainThread']
-        if non_main_threads:
-            os._exit(0)
 
 
 if __name__ == "__main__":
