@@ -230,7 +230,7 @@ class DreamRosInterface(Node):
         self._is_homed = True
         self._is_runstopped = False
 
-        # self._pose_graph = []
+        self._pose_graph = None
 
 
         self._lock_js = threading.Lock()
@@ -238,6 +238,7 @@ class DreamRosInterface(Node):
         self._lock_odom = threading.Lock()
         self._lock_rtab = threading.Lock() 
         self._lock_goal = threading.Lock()
+        self._lock_pose_graph = threading.Lock()
 
 
         # Initialize ros communication
@@ -724,29 +725,32 @@ class DreamRosInterface(Node):
 
     def _rtabmapdata_callback(self, msg):
 
-        nid = msg.nodes[0].id
-
-        timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
-        last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
-        if last_timestamp is not None and timestamp <= last_timestamp:
-            print("rtabmap data timestamp is not updated, Skipping...")
-            return
-        # else:
-        #     print(f"{rtabmap_data.nodes[0].id} {timestamp} rtabmap data timestamp is updated, Updating...")
-        self.last_rtabmap_timestamp = timestamp
-        
-        if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
-            self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
-            return
-            # raise RuntimeError(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
-        # timestamp_now = self.get_clock().now().to_msg()
-        # timestamp_tf = msg.header.stamp
-        # delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
-        # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}, Delay {delay}")
-        # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
-        self._last_node_id = nid
         with self._lock_rtab:
             self.rtabmapdata = msg
+
+        # nid = msg.nodes[0].id
+
+        # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
+        # last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
+        # if last_timestamp is not None and timestamp <= last_timestamp:
+        #     print("rtabmap data timestamp is not updated, Skipping...")
+        #     return
+        # # else:
+        # #     print(f"{rtabmap_data.nodes[0].id} {timestamp} rtabmap data timestamp is updated, Updating...")
+        # self.last_rtabmap_timestamp = timestamp
+        
+        # if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
+        #     self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
+        #     return
+        #     # raise RuntimeError(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
+        # # timestamp_now = self.get_clock().now().to_msg()
+        # # timestamp_tf = msg.header.stamp
+        # # delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
+        # # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}, Delay {delay}")
+        # # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
+        # self._last_node_id = nid
+        # with self._lock_rtab:
+        #     self.rtabmapdata = msg
 
     def _rtabmapinfo_callback(self, msg):
         """get position or navigation mode from dream ros"""
@@ -831,6 +835,9 @@ class DreamRosInterface(Node):
         with self._lock_tf:
             return self.se3_ee_in_map_pose
 
+    def get_rtabmapdata(self):
+        with self._lock_rtab:
+            return self.rtabmapdata
 
 
     # def _camera_pose_callback(self, msg: PoseStamped):
@@ -942,9 +949,28 @@ class DreamRosInterface(Node):
     def _place_result_callback(self, msg):
         self.place_complete = True
 
-    def get_pose_graph(self) -> list:
+    def get_pose_graph(self):
         """Get robot's pose graph"""
-        return self._pose_graph
+        with self._lock_pose_graph:
+            return self._pose_graph
+
+    def update_pose_graph(self, new_poses):
+        """Thread-safe update of pose graph
+        
+        Args:
+            new_poses: Dictionary of node_id -> pose_dict
+        """
+        with self._lock_pose_graph:
+            if self._pose_graph is None:
+                self._pose_graph = {}
+            for nid, p in new_poses.items():
+                self._pose_graph[nid] = p
+
+    def _ensure_pose_graph_initialized(self):
+        """Ensure pose graph is initialized (thread-safe)"""
+        with self._lock_pose_graph:
+            if self._pose_graph is None:
+                self._pose_graph = {}
 
     def trigger_placement(self, x, y, z):
         """Calls FUNMAP based placement"""

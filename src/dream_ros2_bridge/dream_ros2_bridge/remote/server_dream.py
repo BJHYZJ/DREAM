@@ -126,6 +126,7 @@ class ZmqServer(BaseZmqServer):
             "lidar_points": obs.laser_compressed,
             "camera_K": obs.camera_K,
             "pose_graph": obs.pose_graph,
+            "base_in_map_pose": obs.base_in_map_pose,
             "camera_in_map_pose": obs.camera_in_map_pose,
 
 

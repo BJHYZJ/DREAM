@@ -285,6 +285,7 @@ class RtabmapData:
     laser_compressed: array.array
     camera_K: np.ndarray
     pose_graph: Dict[str, np.ndarray]
+    base_in_map_pose: np.ndarray
     camera_in_map_pose: np.ndarray
 
 

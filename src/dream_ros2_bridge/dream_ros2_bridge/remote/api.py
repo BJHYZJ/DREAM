@@ -44,6 +44,25 @@ def pose_to_dict(p):
         "qz": float(p.orientation.z), "qw": float(p.orientation.w)
     }
 
+def pose_to_sophus(p):
+    pos = np.array([float(p.position.x), float(p.position.y), float(p.position.z)])
+    quat = np.array([float(p.orientation.x), float(p.orientation.y), 
+                     float(p.orientation.z), float(p.orientation.w)])
+    return posquat2sophus(pos, quat)
+
+def transform_to_dict(tf):
+    return {
+        "tx": float(tf.translation.x), "ty": float(tf.translation.y), "tz": float(tf.translation.z),
+        "qx": float(tf.rotation.x), "qy": float(tf.rotation.y),
+        "qz": float(tf.rotation.z), "qw": float(tf.rotation.w)
+    }
+
+def transform_to_sophus(tf):
+    pos = np.array([float(tf.translation.x), float(tf.translation.y), float(tf.translation.z)])
+    quat = np.array([float(tf.rotation.x), float(tf.rotation.y), 
+                     float(tf.rotation.z), float(tf.rotation.w)])
+    return posquat2sophus(pos, quat)
+
 def pose_to_list(stamp, p):
     return [
         stamp,
@@ -361,10 +380,27 @@ class DreamClient(AbstractRobotClient):
         self,
         start_pose: Optional[np.ndarray] = None,
     ) -> RtabmapData:
-        rtabmap_data = self._ros_client.rtabmapdata
+        
+        rtabmap_data = self._ros_client.get_rtabmapdata()
         if rtabmap_data is None:
             return None
+        
         timestamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
+        last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
+        if last_timestamp is not None and timestamp <= last_timestamp:
+            # print("rtabmap data timestamp is not updated, Skipping...")
+            return
+
+        self.last_rtabmap_timestamp = timestamp
+        
+        nid = rtabmap_data.nodes[0].id
+
+        if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
+            print(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
+            print("Loop closure detected, need processing...")
+
+        self._last_node_id = nid
+
 
         node = rtabmap_data.nodes[0]
         node_id = node.id
@@ -376,17 +412,20 @@ class DreamClient(AbstractRobotClient):
         #     print("get_full_observation: rgb is None or len(rgb) == 0 or depth is None or len(depth) == 0 or laser is None or len(laser) == 0")
         #     return None
 
-        pose_graph = {nid: pose_to_dict(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
+        pose_graph_now = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
+
+        # Thread-safe update of pose graph
+        self._ros_client.update_pose_graph(pose_graph_now)
+        pose_graph = self._ros_client.get_pose_graph()
 
         assert len(node.data.left_camera_info) > 0
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
         # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
         camera_K = np.array(left_ci['K']).reshape(3, 3)
         
-        node_pose = pose_graph[node_id]
-        pos = np.array([node_pose['tx'], node_pose['ty'], node_pose['tz']])
-        quat = np.array([node_pose['qx'], node_pose['qy'], node_pose['qz'], node_pose['qw']])
-        current_pose = posquat2sophus(pos, quat)
+        current_pose = pose_graph[node_id]
+        local_tf = transform_to_sophus(node.data.local_transform[0])
+
         if start_pose is not None:
             # use sophus to get the relative translation
             relative_pose = start_pose.inverse() * current_pose
@@ -408,7 +447,8 @@ class DreamClient(AbstractRobotClient):
             laser_compressed=laser,
             camera_K=camera_K,
             pose_graph=pose_graph,
-            camera_in_map_pose=current_pose.matrix(),
+            base_in_map_pose=current_pose.matrix(),
+            camera_in_map_pose=current_pose.matrix() @ local_tf.matrix(),
         )
         return full_observation
 
