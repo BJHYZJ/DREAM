@@ -334,6 +334,6 @@ class Observations(BaseObservations):
     joint_positions: Optional[np.ndarray] = None
     joint_velocities: Optional[np.ndarray] = None
     lidar_points: Optional[np.ndarray] = None
-    lidar_timestamp: Optional[int] = None
+    timestamp: Optional[int] = None
     seq_id: int = -1
     is_simulation: bool = False
