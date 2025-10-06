@@ -1326,8 +1326,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             if self._obs is None:
                 return None
             observation = Observations(
-                time
-
+                timestamp=self._obs["timestamp"],
                 gps=self._obs["gps"],
                 compass=self._obs["compass"],
                 rgb=self._obs["rgb"],
