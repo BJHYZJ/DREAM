@@ -26,6 +26,7 @@ from dream.motion import DreamIdx
 from dream.perception.wrapper import OvmmPerception
 from dream.utils.logger import Logger
 from dream.visualization import urdf_visualizer
+from dream.utils.geometry import xyt2sophus
 
 logger = Logger(__name__)
 
@@ -649,6 +650,9 @@ class RerunVisualizer:
                 print("Time to log scene graph objects: ", t1 - t0)
 
     def update_nav_goal(self, goal, timeout=10):
+        se3_goal = xyt2sophus(goal).matrix()
+        translation = se3_goal[:3, 3]
+        rotation = se3_goal[:3, :3]
         """Log navigation goal
         Args:
             goal (np.ndarray): Goal coordinates
@@ -659,9 +663,9 @@ class RerunVisualizer:
         log_to_rerun(
             "world/xyt_goal",
             rr.Transform3D(
-                translation=[goal[0], goal[1], 0],
-                rotation=rr.RotationAxisAngle(axis=[0, 0, 1], radians=goal[2]),
-                axis_length=0.5,
+                translation=translation,
+                mat3x3=rotation,
+                axis_length=0.7,
             ),
         )
         # rr.set_time_seconds("realtime", ts + timeout)

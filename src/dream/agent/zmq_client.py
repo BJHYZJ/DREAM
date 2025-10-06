@@ -1524,9 +1524,9 @@ class HomeRobotZmqClient(AbstractRobotClient):
                 continue
 
             self._seq_id += 1
-            output["rgb"] = compression.from_jpg(output["rgb"])
+            output["rgb"] = compression.from_array(output["rgb"])  # rgb and depth compressed by rtabmap, so we need to decompress them by from array
             compressed_depth = output["depth"]
-            depth = compression.from_jp2(compressed_depth) / 1000
+            depth = compression.from_array(compressed_depth) / 1000
             output["depth"] = depth
 
             if camera is None:
