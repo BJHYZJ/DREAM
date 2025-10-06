@@ -319,21 +319,21 @@ class ServoObservations(BaseObservations):
     is_simulation: bool = False
 
 
-# @dataclass
-# class Observations(BaseObservations):
-#     """Full sensor observations with all data."""
-#     # Core data
-#     gps: np.ndarray
-#     compass: np.ndarray
-#     rgb: np.ndarray
-#     depth: np.ndarray
-#     xyz: Optional[np.ndarray] = None
-#     camera_K: Optional[np.ndarray] = None
-#     camera_in_map_pose: Optional[np.ndarray] = None
-#     ee_in_map_pose: Optional[np.ndarray] = None
-#     joint_positions: Optional[np.ndarray] = None
-#     joint_velocities: Optional[np.ndarray] = None
-#     lidar_points: Optional[np.ndarray] = None
-#     lidar_timestamp: Optional[int] = None
-#     seq_id: int = -1
-#     is_simulation: bool = False
+@dataclass
+class Observations(BaseObservations):
+    """Full sensor observations with all data."""
+    # Core data
+    gps: np.ndarray
+    compass: np.ndarray
+    rgb: np.ndarray
+    depth: np.ndarray
+    xyz: Optional[np.ndarray] = None
+    camera_K: Optional[np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None
+    ee_in_map_pose: Optional[np.ndarray] = None
+    joint_positions: Optional[np.ndarray] = None
+    joint_velocities: Optional[np.ndarray] = None
+    lidar_points: Optional[np.ndarray] = None
+    lidar_timestamp: Optional[int] = None
+    seq_id: int = -1
+    is_simulation: bool = False
