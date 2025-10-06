@@ -723,14 +723,12 @@ class DreamRosInterface(Node):
             self._goal_reset_t = self.get_clock().now()
 
     def _rtabmapdata_callback(self, msg):
-
-        with self._lock_rtab:
-            self.rtabmapdata = msg
         
         # 检查Node ID顺序
         nid = msg.nodes[0].id
         if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
             self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
+            return
             # raise RuntimeError(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
         # timestamp_now = self.get_clock().now().to_msg()
         # timestamp_tf = msg.header.stamp
@@ -738,6 +736,8 @@ class DreamRosInterface(Node):
         # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}, Delay {delay}")
         # self.get_logger().info(f"RTABMap data received: Node ID {nid}, Timestamp {msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9}")
         self._last_node_id = nid
+        with self._lock_rtab:
+            self.rtabmapdata = msg
 
     def _rtabmapinfo_callback(self, msg):
         """get position or navigation mode from dream ros"""

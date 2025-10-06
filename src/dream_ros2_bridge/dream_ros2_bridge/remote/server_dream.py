@@ -47,6 +47,20 @@ class ZmqServer(BaseZmqServer):
         # Map saver - write and load map information from SLAM
         # self.map_saver = MapSerializerDeserializer()
 
+    def shutdown(self):
+        """Shutdown the server and clean up resources"""
+        print("Shutting down server...")
+        
+        # Shutdown the client (ROS interface)
+        if hasattr(self, 'client') and hasattr(self.client, 'shutdown'):
+            self.client.shutdown()
+        
+        # Call parent shutdown if it exists
+        if hasattr(super(), 'shutdown'):
+            super().shutdown()
+        
+        print("Server shutdown complete")
+
     @override
     def is_running(self) -> bool:
         return self.is_running and rclpy.ok()

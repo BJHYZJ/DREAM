@@ -240,10 +240,10 @@ class GotoVelocityControllerNode(Node):
         if self.active and self.xyt_goal is not None:
             # Get current pose from TF tree
             pose_available = self.get_pose_from_tf()
-            self.get_logger().info(f"pose_available {pose_available}, {'🛑' if not pose_available else '✅'}")
+            # self.get_logger().info(f"pose_available {pose_available}, {'🛑' if not pose_available else '✅'}")
             
             if not pose_available:
-                self.get_logger().warn("Could not get pose from TF, skipping control loop")
+                self.get_logger().warn("🛑 Could not get pose from TF, skipping control loop")
                 return
             
             # Compute control

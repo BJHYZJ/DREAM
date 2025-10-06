@@ -25,7 +25,7 @@ from dream.core.robot import AbstractRobotClient, ControlMode
 from dream.motion import RobotModel
 from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q
 from dream.motion.kinematics import DreamIdx, HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
-from dream.utils.geometry import xyt2sophus, posquat2sophus, sophus2xyt
+from dream.utils.geometry import xyt2sophus, posquat2sophus, sophus2xyt, pose2sophus
 
 from .modules.cam import DreamCamClient
 from .modules.manip import DreamManipulationClient
@@ -310,6 +310,11 @@ class DreamClient(AbstractRobotClient):
         """Get the robot's base pose as XYT."""
         return self._ros_client.get_base_in_map_pose()
     
+    def get_base_in_map_xyt(self) -> np.ndarray:
+        """Get the robot's base pose as XYT (required by AbstractRobotClient)."""
+        base_in_map_pose = self.get_base_in_map_pose()
+        return sophus2xyt(pose2sophus(base_in_map_pose))
+    
     def get_ee_in_map_pose(self):
         return self._ros_client.get_ee_in_map_pose()
 
@@ -369,13 +374,18 @@ class DreamClient(AbstractRobotClient):
         #     print(f"{rtabmap_data.nodes[0].id} {timestamp} rtabmap data timestamp is updated, Updating...")
         self.last_rtabmap_timestamp = timestamp
 
-        pose_graph = {nid: pose_to_dict(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
         node = rtabmap_data.nodes[0]
         node_id = node.id
 
         rgb = node.data.left_compressed
         depth = node.data.right_compressed
         laser = node.data.laser_scan_compressed
+        # if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
+        #     print("get_full_observation: rgb is None or len(rgb) == 0 or depth is None or len(depth) == 0 or laser is None or len(laser) == 0")
+        #     return None
+
+        pose_graph = {nid: pose_to_dict(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
+
         assert len(node.data.left_camera_info) > 0
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
         # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
