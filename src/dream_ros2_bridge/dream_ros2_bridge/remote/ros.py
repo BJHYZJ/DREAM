@@ -769,10 +769,10 @@ class DreamRosInterface(Node):
 
     def _tf_base_pose_callback(self, msg: PoseStamped):
         """base pose callback"""
-        timestamp_now = self.get_clock().now().to_msg()
-        timestamp_tf = msg.header.stamp
-        delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
-        self.get_logger().info(f"TF delay: {delay}")
+        # timestamp_now = self.get_clock().now().to_msg()
+        # timestamp_tf = msg.header.stamp
+        # delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
+        # self.get_logger().info(f"TF delay: {delay}")
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
         with self._lock_tf:
             self.se3_base = se3
