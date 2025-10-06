@@ -41,6 +41,15 @@ def matrix_from_pose_msg(msg):
     return T
 
 
+def matrix_from_transform_msg(msg):
+    """Convert geometry_msgs Transform to 4x4 transformation matrix"""
+    T = tra.quaternion_matrix(
+        [msg.rotation.w, msg.rotation.x, msg.rotation.y, msg.rotation.z]
+    )
+    T[:3, 3] = np.array([msg.translation.x, msg.translation.y, msg.translation.z])
+    return T
+
+
 def matrix_to_pose_msg(matrix):
     pose = Pose()
     w, x, y, z = tra.quaternion_from_matrix(matrix)
