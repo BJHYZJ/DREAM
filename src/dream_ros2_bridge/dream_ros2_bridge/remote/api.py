@@ -366,14 +366,6 @@ class DreamClient(AbstractRobotClient):
             return None
         timestamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
 
-        last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
-        if last_timestamp is not None and timestamp <= last_timestamp:
-            # print("rtabmap data timestamp is not updated, Skipping...")
-            return None
-        # else:
-        #     print(f"{rtabmap_data.nodes[0].id} {timestamp} rtabmap data timestamp is updated, Updating...")
-        self.last_rtabmap_timestamp = timestamp
-
         node = rtabmap_data.nodes[0]
         node_id = node.id
 

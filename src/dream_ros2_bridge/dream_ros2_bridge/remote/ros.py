@@ -723,9 +723,18 @@ class DreamRosInterface(Node):
             self._goal_reset_t = self.get_clock().now()
 
     def _rtabmapdata_callback(self, msg):
-        
-        # 检查Node ID顺序
+
         nid = msg.nodes[0].id
+
+        timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
+        last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
+        if last_timestamp is not None and timestamp <= last_timestamp:
+            print("rtabmap data timestamp is not updated, Skipping...")
+            return
+        # else:
+        #     print(f"{rtabmap_data.nodes[0].id} {timestamp} rtabmap data timestamp is updated, Updating...")
+        self.last_rtabmap_timestamp = timestamp
+        
         if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
             self.get_logger().warn(f"RTABMap Node ID out-of-order: {nid} <= {self._last_node_id}")
             return

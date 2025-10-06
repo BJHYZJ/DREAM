@@ -320,7 +320,7 @@ class ServoObservations(BaseObservations):
 
 
 @dataclass
-class Observations(BaseObservations):
+class Observations:
     """Full sensor observations with all data."""
     # Core data
     timestamp: float
