@@ -181,6 +181,7 @@ class DreamRosInterface(Node):
         self.cb_tf_group = ReentrantCallbackGroup()
         self.cb_state_group = ReentrantCallbackGroup()
         self.cb_odom_group = ReentrantCallbackGroup()
+        self.cb_srv_group = ReentrantCallbackGroup()
 
         # Initialize caches
         self.current_mode: Optional[str] = None
@@ -514,9 +515,9 @@ class DreamRosInterface(Node):
         # self.save_map_service = self.create_client(SaveMap, "save_map")
         # self.load_map_service = self.create_client(LoadMap, "load_map")
 
-        self.goto_on_service = self.create_client(Trigger, "goto_controller/enable")
-        self.goto_off_service = self.create_client(Trigger, "goto_controller/disable")
-        self.set_yaw_service = self.create_client(SetBool, "goto_controller/set_yaw_tracking")
+        self.goto_on_service = self.create_client(Trigger, "goto_controller/enable", callback_group=self.cb_srv_group)
+        self.goto_off_service = self.create_client(Trigger, "goto_controller/disable", callback_group=self.cb_srv_group)
+        self.set_yaw_service = self.create_client(SetBool, "goto_controller/set_yaw_tracking", callback_group=self.cb_srv_group)
         # print("Wait for mode service...")
         # self.pos_mode_service.wait_for_service()
 
