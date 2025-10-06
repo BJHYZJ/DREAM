@@ -112,7 +112,9 @@ def from_array(compressed_image: array.array, is_rgb: bool = True) -> np.ndarray
     # return cv2.imdecode(compressed_image, cv2.IMREAD_COLOR)
     arr = np.frombuffer(bytes(compressed_image), dtype=np.uint8)
     if is_rgb:
-        rgb = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        # Convert BGR to RGB for proper color display
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
     else:
         rgb = cv2.imdecode(arr, cv2.IMREAD_UNCHANGED)
     return rgb
