@@ -275,8 +275,9 @@ class RobotAgent(RobotAgentBase):
                 rrb.Spatial2DView(name="image", origin="/observation_similar_to_text"),
             ),
             rrb.Vertical(
-                rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
-                rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
+                # rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
+                # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
+                rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
             ),
             column_shares=[2, 1, 1],
         )
