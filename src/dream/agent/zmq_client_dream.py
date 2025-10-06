@@ -25,7 +25,7 @@ from termcolor import colored
 import dream.motion.constants as constants
 import dream.motion.conversions as conversions
 import dream.utils.compression as compression
-from dream.core.interfaces import ContinuousNavigationAction, RtabmapData, ServoObservations
+from dream.core.interfaces import ContinuousNavigationAction, Observations, ServoObservations
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
@@ -1325,7 +1325,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._obs_lock:
             if self._obs is None:
                 return None
-            observation = RtabmapData(
+            observation = Observations(
                 gps=self._obs["gps"],
                 compass=self._obs["compass"],
                 rgb=self._obs["rgb"],
@@ -1554,7 +1554,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
         while not self._finish:
 
-            output = self.recv_socket.recv_pyobj()
+            output = self.recv_socket.recv_pyobj()  # RtabmapData
             if output is None:
                 continue
 
