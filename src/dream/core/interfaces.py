@@ -326,16 +326,16 @@ class Observations:
     timestamp: float
     compass: np.ndarray
     gps: np.ndarray
-    node_id: int
     rgb: array.array
     depth: array.array
+    xyz: np.ndarray
     lidar_points: array.array
-    camera_K: np.ndarray
-    pose_graph: Dict[str, np.ndarray]
-    camera_in_map_pose: np.ndarray
-    recv_address: str
-    step: int
-    at_goal: bool
+    node_id: Optional[int] = None
+    camera_K: Optional[np.ndarray] = None
+    pose_graph: Dict[str, np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None
+    recv_address: Optional[str] = None
+    step: Optional[int] = None
+    at_goal: Optional[bool] = None
     seq_id: int = -1
-    xyz: np.ndarray = None
-    is_simulation: bool = False
+    is_simulation: Optional[bool] = False

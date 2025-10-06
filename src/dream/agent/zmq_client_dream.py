@@ -1327,13 +1327,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 return None
             observation = Observations(
                 timestamp=self._obs["timestamp"],
-                gps=self._obs["gps"],
                 compass=self._obs["compass"],
+                gps=self._obs["gps"],
                 rgb=self._obs["rgb"],
                 depth=self._obs["depth"],
                 xyz=self._obs["xyz"],
-                lidar_points=self._obs["lidar_points"],
-                timestamp=self._obs["timestamp"],
+                lidar_points=self._obs["lidar_points"]
             )
             observation.camera_K = self._obs.get("camera_K", None)
             observation.camera_in_map_pose = self._obs.get("camera_in_map_pose", None)
