@@ -451,8 +451,8 @@ class RobotAgent(RobotAgentBase):
         # time.sleep(0.3)
         obs = self.robot.get_observation()
         self.obs_count += 1
-        rgb, depth, K, camera_pose_in_map = obs.rgb, obs.depth, obs.camera_K, obs.camera_pose_in_map
-        self.voxel_map.process_rgbd_images(rgb, depth, K, camera_pose_in_map)
+        rgb, depth, K, camera_in_map_pose = obs.rgb, obs.depth, obs.camera_K, obs.camera_in_map_pose
+        self.voxel_map.process_rgbd_images(rgb, depth, K, camera_in_map_pose)
         if self.voxel_map.voxel_pcd._points is not None:
             self.rerun_visualizer.update_voxel_map(space=self.space)
         if self.voxel_map.semantic_memory._points is not None:

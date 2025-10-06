@@ -323,17 +323,19 @@ class ServoObservations(BaseObservations):
 class Observations(BaseObservations):
     """Full sensor observations with all data."""
     # Core data
-    gps: np.ndarray
+    timestamp: float
     compass: np.ndarray
-    rgb: np.ndarray
-    depth: np.ndarray
-    xyz: Optional[np.ndarray] = None
-    camera_K: Optional[np.ndarray] = None
-    camera_in_map_pose: Optional[np.ndarray] = None
-    ee_in_map_pose: Optional[np.ndarray] = None
-    joint_positions: Optional[np.ndarray] = None
-    joint_velocities: Optional[np.ndarray] = None
-    lidar_points: Optional[np.ndarray] = None
-    timestamp: Optional[int] = None
+    gps: np.ndarray
+    node_id: int
+    rgb: array.array
+    depth: array.array
+    lidar_points: array.array
+    camera_K: np.ndarray
+    pose_graph: Dict[str, np.ndarray]
+    camera_in_map_pose: np.ndarray
+    recv_address: str
+    step: int
+    at_goal: bool
     seq_id: int = -1
+    xyz: np.ndarray = None
     is_simulation: bool = False

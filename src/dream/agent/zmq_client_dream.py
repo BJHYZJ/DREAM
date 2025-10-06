@@ -1326,6 +1326,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
             if self._obs is None:
                 return None
             observation = Observations(
+                time
+
                 gps=self._obs["gps"],
                 compass=self._obs["compass"],
                 rgb=self._obs["rgb"],
@@ -1334,13 +1336,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 lidar_points=self._obs["lidar_points"],
                 timestamp=self._obs["timestamp"],
             )
-            observation.joint = self._obs.get("joint", None)
-            observation.joint_velocities = self._obs.get("joint_velocities", None)
-            observation.ee_pose_in_map = self._obs.get("ee_pose_in_map", None)
             observation.camera_K = self._obs.get("camera_K", None)
-            observation.camera_pose_in_map = self._obs.get("camera_pose_in_map", None)
-            observation.camera_pose_in_arm = self._obs.get("camera_pose_in_arm", None)
-            observation.camera_pose_in_base = self._obs.get("camera_pose_in_base", None)
+            observation.camera_in_map_pose = self._obs.get("camera_in_map_pose", None)
+            observation.recv_address = self._obs.get("recv_address", None)
+            observation.step = self._obs.get("step", None)
+            observation.at_goal = self._obs.get("at_goal", None)
             observation.seq_id = self._seq_id
 
             return observation
