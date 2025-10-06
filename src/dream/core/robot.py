@@ -111,7 +111,7 @@ class AbstractRobotClient(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_base_in_map_pose(self) -> np.ndarray:
+    def get_base_in_map_xyt(self) -> np.ndarray:
         """Get the current pose of the base"""
         raise NotImplementedError()
 

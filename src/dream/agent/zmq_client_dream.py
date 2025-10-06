@@ -25,7 +25,7 @@ from termcolor import colored
 import dream.motion.constants as constants
 import dream.motion.conversions as conversions
 import dream.utils.compression as compression
-from dream.core.interfaces import ContinuousNavigationAction, Observations, ServoObservations
+from dream.core.interfaces import ContinuousNavigationAction, RtabmapData, ServoObservations
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
@@ -40,6 +40,7 @@ from dream.utils.image import Camera
 from dream.utils.logger import Logger
 from dream.utils.memory import lookup_address
 from dream.utils.point_cloud import show_point_cloud
+from dream.utils.geometry import pose2sophus, sophus2xyt
 
 logger = Logger(__name__)
 
@@ -364,7 +365,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     #             xyt = self._state["base_pose"]
     #     return xyt
 
-    def get_base_in_map_pose(self, timeout: float = 5.0) -> np.ndarray:
+    def get_base_in_map_xyt(self, timeout: float = 5.0) -> np.ndarray:
         """Get the current pose of the base.
 
         Args:
@@ -392,7 +393,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     if timeit.default_timer() - t0 > timeout:
                         logger.error("Timeout waiting for state message")
                         return None
-                xyt = self._state["base_pose_in_map"]
+                base_in_map_pose = self._state["base_in_map_pose"]
+                xyt = sophus2xyt(pose2sophus(base_in_map_pose))
+
         return xyt
 
 
@@ -745,7 +748,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         assert len(_xyt) == 3, "xyt must be a vector of size 3"
         # If it's relative, compute the relative position right now - this helps handle network issues
         if relative:
-            current_xyt = self.get_base_in_map_pose()
+            current_xyt = self.get_base_in_map_xyt()
             if verbose:
                 print("Current pose", current_xyt)
             _xyt = xyt_base_to_global(_xyt, current_xyt)
@@ -1143,7 +1146,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     print("waiting for obs")
                     continue
 
-            xyt = self.get_base_in_map_pose()
+            xyt = self.get_base_in_map_xyt()
             pos = xyt[:2]
             ang = xyt[2]
             obs_t = timeit.default_timer()
@@ -1322,14 +1325,14 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._obs_lock:
             if self._obs is None:
                 return None
-            observation = Observations(
+            observation = RtabmapData(
                 gps=self._obs["gps"],
                 compass=self._obs["compass"],
                 rgb=self._obs["rgb"],
                 depth=self._obs["depth"],
                 xyz=self._obs["xyz"],
                 lidar_points=self._obs["lidar_points"],
-                lidar_timestamp=self._obs["lidar_timestamp"],
+                timestamp=self._obs["timestamp"],
             )
             observation.joint = self._obs.get("joint", None)
             observation.joint_velocities = self._obs.get("joint_velocities", None)
@@ -1451,7 +1454,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         while not self._finish:
             # Loop until we get there (or time out)
             t1 = timeit.default_timer()
-            curr = self.get_base_in_map_pose()
+            curr = self.get_base_in_map_xyt()
             pos_err = np.linalg.norm(xy - curr[:2])
             rot_err = np.abs(angle_difference(curr[-1], xyt[2]))
             # TODO: code for debugging slower rotations

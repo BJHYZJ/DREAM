@@ -473,7 +473,7 @@ class RobotAgent(RobotAgentBase):
 
     def rotate_in_place(self):
         print("*" * 10, "Rotate in place", "*" * 10)
-        xyt = self.robot.get_base_in_map_pose()
+        xyt = self.robot.get_base_in_map_xyt()
         # self.robot.head_to(head_pan=0, head_tilt=-0.6, blocking=True)
         for i in range(8):
             xyt[2] += 2 * np.pi / 8
@@ -493,7 +493,7 @@ class RobotAgent(RobotAgentBase):
 
         self.robot.switch_to_navigation_mode()
 
-        start = self.robot.get_base_in_map_pose()
+        start = self.robot.get_base_in_map_xyt()
         res = self.process_text(text, start)
         if len(res) == 0 and text != "" and text is not None:
             res = self.process_text("", start)
