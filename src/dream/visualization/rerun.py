@@ -254,7 +254,14 @@ class RerunVisualizer:
         
         # Memory management
         self._frame_count = 0
-        self._cleanup_interval = 1000  # Clear old data every 1000 frames
+        self._cleanup_interval = 500  # Clear old data every 500 frames
+        self._last_cleanup_time = time.time()
+        self._cleanup_time_interval = 30.0  # Also cleanup every 30 seconds
+        
+        # Adaptive cleanup based on memory usage
+        self._memory_threshold = 80.0  # Trigger cleanup if memory > 80%
+        self._last_memory_check = time.time()
+        self._memory_check_interval = 10.0  # Check memory every 10 seconds
 
     def setup_blueprint(self, collapse_panels: bool):
         """Setup the blueprint for the visualizer
@@ -712,8 +719,22 @@ class RerunVisualizer:
                 
                 # Memory cleanup
                 self._frame_count += 1
-                if self._frame_count % self._cleanup_interval == 0:
+                current_time = time.time()
+                
+                # Check memory usage periodically
+                memory_high = False
+                if (current_time - self._last_memory_check) > self._memory_check_interval:
+                    memory_high = self._check_memory_usage()
+                    self._last_memory_check = current_time
+                
+                should_cleanup = (
+                    self._frame_count % self._cleanup_interval == 0 or
+                    (current_time - self._last_cleanup_time) > self._cleanup_time_interval or
+                    memory_high
+                )
+                if should_cleanup:
                     self._cleanup_old_data()
+                    self._last_cleanup_time = current_time
                 
                 t1 = timeit.default_timer()
                 sleep_time = self.step_delay_s - (t1 - t0)
@@ -727,10 +748,35 @@ class RerunVisualizer:
     def _cleanup_old_data(self):
         """Clean up old data to prevent memory accumulation"""
         try:
-            # Clear old camera point clouds
+            # Clear old camera point clouds and other heavy data
             rr.log("world/camera/points", rr.Clear(recursive=True))
-            # Clear old voxel map data
             rr.log("world/voxel_map", rr.Clear(recursive=True))
+            rr.log("world/semantic_memory", rr.Clear(recursive=True))
+            
+            # Clear old instance data
+            rr.log("world/instances", rr.Clear(recursive=True))
+            
+            # Clear old trajectory data (keep only recent)
+            rr.log("world/robot/trajectory", rr.Clear(recursive=True))
+            
             logger.info(f"Cleaned up old data at frame {self._frame_count}")
         except Exception as e:
             logger.warning(f"Failed to cleanup old data: {e}")
+    
+    def _check_memory_usage(self) -> bool:
+        """Check if memory usage is above threshold"""
+        try:
+            import psutil
+            process = psutil.Process()
+            memory_percent = process.memory_percent()
+            
+            if memory_percent > self._memory_threshold:
+                logger.warning(f"High memory usage detected: {memory_percent:.1f}%")
+                return True
+            return False
+        except ImportError:
+            # psutil not available, skip memory checking
+            return False
+        except Exception as e:
+            logger.warning(f"Failed to check memory usage: {e}")
+            return False
