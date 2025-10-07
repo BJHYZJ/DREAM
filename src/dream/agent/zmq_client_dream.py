@@ -547,7 +547,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         #     )
         # head_pan = np.clip(head_pan, self._head_pan_min, self._head_pan_max)
         # head_tilt = np.clip(head_tilt, -np.pi / 2, 0)
-        next_action = {"head_to": angle, "manip_blocking": blocking}
+        next_action = {"head_to": angle, "wait": blocking}
         sent = self.send_action(next_action, timeout=timeout, reliable=reliable)
 
         # if blocking:
