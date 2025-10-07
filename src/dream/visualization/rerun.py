@@ -196,6 +196,7 @@ class RerunVisualizer:
         display_robot_mesh: bool = False,
         spawn_gui: bool = True,
         open_browser: bool = False,
+        memory_limit: str = "6GB",
         server_memory_limit: str = "4GB",
         collapse_panels: bool = True,
         show_cameras_in_3d_view: bool = False,
@@ -209,6 +210,7 @@ class RerunVisualizer:
             server_memory_limit (str): Server memory limit E.g. 2GB or 20%
             collapse_panels (bool): Set to false to have customizable rerun panels
         """
+        assert not (spawn_gui and open_browser), "spawn_gui and open_browser cannot be True at the same time"
         self.open_browser = open_browser
         if spawn_gui or open_browser:
             # Check environment variables to see if this is docker
@@ -216,13 +218,26 @@ class RerunVisualizer:
                 spawn_gui = False
                 open_browser = True
                 logger.warning("Docker environment detected. Disabling GUI.")
+
         rr.init("Dream_robot", spawn=spawn_gui)
+        if hasattr(rr, "spawn"):
+            rr.spawn(
+                memory_limit=memory_limit,
+                server_memory_limit=server_memory_limit,
+            )
 
         if output_path is not None:
             rr.save(output_path / "rerun_log.rrd")
         # open_browser = True
         if open_browser:
-            rr.serve(open_browser=open_browser, server_memory_limit=server_memory_limit)
+            server_uri = rr.serve_grpc(
+                server_memory_limit=server_memory_limit, 
+                newest_first=True, 
+            )
+            rr.serve_web_viewer(
+                open_browser=open_browser, 
+                connect_to=server_uri,
+            )
 
         self.display_robot_mesh = display_robot_mesh
         self.show_cameras_in_3d_view = show_cameras_in_3d_view
@@ -251,17 +266,6 @@ class RerunVisualizer:
         self.bbox_colors_memory = {}
         self.step_delay_s = 0.3
         self.setup_blueprint(collapse_panels)
-        
-        # Memory management
-        self._frame_count = 0
-        self._cleanup_interval = 500  # Clear old data every 500 frames
-        self._last_cleanup_time = time.time()
-        self._cleanup_time_interval = 30.0  # Also cleanup every 30 seconds
-        
-        # Adaptive cleanup based on memory usage
-        self._memory_threshold = 80.0  # Trigger cleanup if memory > 80%
-        self._last_memory_check = time.time()
-        self._memory_check_interval = 10.0  # Check memory every 10 seconds
 
     def setup_blueprint(self, collapse_panels: bool):
         """Setup the blueprint for the visualizer
@@ -299,7 +303,6 @@ class RerunVisualizer:
             identity_name (str): rerun identity name
             img (2D or 3D array): the 2d image you want to log into rerun
         """
-        # rr.init("Dream_robot", spawn=(not self.open_browser))
         log_to_rerun(identity_name, rr.Image(img))
 
     def log_text(self, identity_name: str, text: str):
@@ -309,7 +312,6 @@ class RerunVisualizer:
             identity_name (str): rerun identity name
             text (str): Markdown codes you want to log in rerun
         """
-        # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.log(identity_name, rr.TextDocument(text, media_type=rr.MediaType.MARKDOWN))
 
     def log_arrow3D(
@@ -329,7 +331,6 @@ class RerunVisualizer:
             colors (a N x 3 array): RGB colors of all 3D arrows
             radii (float): size of the arrows
         """
-        # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.log(
             identity_name,
             rr.Arrows3D(origins=origins, vectors=vectors, colors=colors, radii=radii),
@@ -350,7 +351,6 @@ class RerunVisualizer:
             colors (a N x 3 array): RGB colors of all 3D points
             radii (float): size of the arrows
         """
-        # rr.init("Dream_robot", spawn=(not self.open_browser))
         log_to_rerun(
             identity_name,
             rr.Points3D(
@@ -360,40 +360,39 @@ class RerunVisualizer:
             ),
         )
 
-    def log_camera(self, servoobs: ServoObservations):
+    def log_camera(self, obs: Observations):
         """Log camera pose and images
 
         Args:
             obs (Observations): Observation dataclass
         """
-        # rr.init("Dream_robot", spawn=(not self.open_browser))
         rr.set_time("realtime", timestamp=time.time())
-        log_to_rerun("world/camera/rgb", rr.Image(servoobs.rgb))
+        log_to_rerun("world/camera/rgb", rr.Image(obs.rgb))
 
         if self.show_camera_point_clouds:
-            xyz = servoobs.get_xyz_in_world_frame().reshape(-1, 3)
-            rgb = servoobs.rgb.reshape(-1, 3)
+            xyz = obs.get_xyz_in_world_frame().reshape(-1, 3)
+            rgb = obs.rgb.reshape(-1, 3)
             log_to_rerun(
                 "world/camera/points",
                 rr.Points3D(
                     positions=xyz,
                     radii=np.ones(xyz.shape[:2]) * self.camera_point_radius,
-                    colors=np.int64(rgb),
+                    colors=np.uint8(rgb),
                 ),
             )
         else:
-            log_to_rerun("world/camera/depth", rr.depthimage(servoobs.depth))
+            log_to_rerun("world/camera/depth", rr.depthimage(obs.depth))
 
         if self.show_cameras_in_3d_view:
-            rot, trans = decompose_homogeneous_matrix(servoobs.camera_pose_in_map)
+            rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
             log_to_rerun(
                 "world/camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
             )
             log_to_rerun(
                 "world/camera",
                 rr.Pinhole(
-                    resolution=[servoobs.rgb.shape[1], servoobs.rgb.shape[0]],
-                    image_from_camera=servoobs.camera_K,
+                    resolution=[obs.rgb.shape[1], obs.rgb.shape[0]],
+                    image_from_camera=obs.camera_K,
                     image_plane_distance=0.15,
                 ),
             )
@@ -483,7 +482,7 @@ class RerunVisualizer:
     #             rr.Points3D(
     #                 positions=ee_xyz,
     #                 radii=np.ones(ee_xyz.shape[:2]) * self.camera_point_radius,
-    #                 colors=np.int64(ee_rgb),
+    #                 colors=np.uint8(ee_rgb),
     #             ),
     #         )
     #     else:
@@ -542,7 +541,7 @@ class RerunVisualizer:
         log_to_rerun(
             "world/point_cloud",
             rr.Points3D(
-                positions=points, radii=np.ones(rgb.shape[0]) * world_radius, colors=np.int64(rgb)
+                positions=points, radii=np.ones(rgb.shape[0]) * world_radius, colors=np.uint8(rgb)
             ),
         )
 
@@ -634,7 +633,7 @@ class RerunVisualizer:
                 pcd_rgb = instance.point_cloud_rgb
                 log_to_rerun(
                     f"world/{instance.id}_{name}" if name is not None else f"world/{instance.id}",
-                    rr.Points3D(positions=point_cloud_rgb, colors=np.int64(pcd_rgb)),
+                    rr.Points3D(positions=point_cloud_rgb, colors=np.uint8(pcd_rgb)),
                     static=True,
                 )
                 half_sizes = [(b[0] - b[1]) / 2 for b in bbox_bounds]
@@ -709,32 +708,13 @@ class RerunVisualizer:
                 # self.log_ee_frame(servo)
 
                 # Cameras use the lower-res servo object
-                self.log_camera(servo)
+                self.log_camera(obs)
                 # self.log_ee_camera(servo)
 
                 # self.log_robot_state(obs)
 
                 # if self.display_robot_mesh:
                 #     self.log_robot_transforms(obs)
-                
-                # Memory cleanup
-                self._frame_count += 1
-                current_time = time.time()
-                
-                # Check memory usage periodically
-                memory_high = False
-                if (current_time - self._last_memory_check) > self._memory_check_interval:
-                    memory_high = self._check_memory_usage()
-                    self._last_memory_check = current_time
-                
-                should_cleanup = (
-                    self._frame_count % self._cleanup_interval == 0 or
-                    (current_time - self._last_cleanup_time) > self._cleanup_time_interval or
-                    memory_high
-                )
-                if should_cleanup:
-                    self._cleanup_old_data()
-                    self._last_cleanup_time = current_time
                 
                 t1 = timeit.default_timer()
                 sleep_time = self.step_delay_s - (t1 - t0)
@@ -744,39 +724,3 @@ class RerunVisualizer:
             except Exception as e:
                 logger.error(e)
                 raise e
-    
-    def _cleanup_old_data(self):
-        """Clean up old data to prevent memory accumulation"""
-        try:
-            # Clear old camera point clouds and other heavy data
-            rr.log("world/camera/points", rr.Clear(recursive=True))
-            rr.log("world/voxel_map", rr.Clear(recursive=True))
-            rr.log("world/semantic_memory", rr.Clear(recursive=True))
-            
-            # Clear old instance data
-            rr.log("world/instances", rr.Clear(recursive=True))
-            
-            # Clear old trajectory data (keep only recent)
-            rr.log("world/robot/trajectory", rr.Clear(recursive=True))
-            
-            logger.info(f"Cleaned up old data at frame {self._frame_count}")
-        except Exception as e:
-            logger.warning(f"Failed to cleanup old data: {e}")
-    
-    def _check_memory_usage(self) -> bool:
-        """Check if memory usage is above threshold"""
-        try:
-            import psutil
-            process = psutil.Process()
-            memory_percent = process.memory_percent()
-            
-            if memory_percent > self._memory_threshold:
-                logger.warning(f"High memory usage detected: {memory_percent:.1f}%")
-                return True
-            return False
-        except ImportError:
-            # psutil not available, skip memory checking
-            return False
-        except Exception as e:
-            logger.warning(f"Failed to check memory usage: {e}")
-            return False

@@ -196,10 +196,10 @@ class Pose:
 
 class BaseObservations:
     """Base class for all observation types with common methods."""
-    xyz: Optional[np.ndarray] = None
-    camera_in_map_pose: Optional[np.ndarray] = None
-    depth: Optional[np.ndarray] = None
-    camera_K: Optional[np.ndarray] = None
+    # xyz: Optional[np.ndarray] = None
+    # camera_in_map_pose: Optional[np.ndarray] = None
+    # depth: Optional[np.ndarray] = None
+    # camera_K: Optional[np.ndarray] = None
 
     
     def compute_xyz(self, scaling: float = 1e-3) -> Optional[np.ndarray]:
@@ -275,7 +275,7 @@ class BaseObservations:
 
 
 @dataclass
-class RtabmapData:
+class RtabmapData(BaseObservations):
     timestamp: float
     compass: np.ndarray
     gps: np.ndarray
@@ -292,7 +292,7 @@ class RtabmapData:
 
 
 @dataclass
-class StateObservations:
+class StateObservations(BaseObservations):
     """State observations."""
     gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
@@ -323,7 +323,7 @@ class ServoObservations(BaseObservations):
 
 
 @dataclass
-class Observations:
+class Observations(BaseObservations):
     """Full sensor observations with all data."""
     # Core data
     timestamp: float

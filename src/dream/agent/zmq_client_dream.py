@@ -383,8 +383,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     if timeit.default_timer() - t0 > timeout:
                         logger.error("Timeout waiting for observation")
                         return None
-                gps = self._obs["gps"]
-                compass = self._obs["compass"]
+                gps = self._obs.gps
+                compass = self._obs.compass
                 xyt = np.concatenate([gps, compass], axis=-1)
         else:
             with self._state_lock:
@@ -1225,24 +1225,16 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """return a model of the robot for planning"""
         return self._robot_model
 
-    def _update_obs(self, obs):
-        """Update observation internally with lock"""
-        with self._obs_lock:
-            self._obs = obs
-            self._last_step = obs["step"]
-            if self._iter <= 0:
-                self._iter = max(self._last_step, self._iter)
-
     def is_up_to_date(self, no_action=False):
         """Check if the robot is up to date with the latest observation"""
         with self._obs_lock:
             if no_action:
-                obs_ok = self._obs is not None and self._obs["step"] >= self._last_step
+                obs_ok = self._obs is not None and self._obs.step >= self._last_step
             else:
                 obs_ok = (
                     self._obs is not None
-                    and self._obs["step"] >= self._last_step
-                    and self._obs["step"] >= self._iter - 1
+                    and self._obs.step >= self._last_step
+                    and self._obs.step >= self._iter - 1
                 )
         return obs_ok
 
@@ -1251,38 +1243,16 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._send_lock:
             self.send_socket.send_pyobj(message)
 
-    def _update_pose_graph(self, obs):
-        """Update internal pose graph"""
-        with self._obs_lock:
-            if "pose_graph" in obs:
-                self._pose_graph = obs["pose_graph"]
 
     def out_of_date(self):
         """Check if the robot is out of date with the latest observation. This is used to determine if we should wait for the robot to catch up."""
         with self._obs_lock:
-            obs_ood = self._obs is not None and self._obs["step"] < self._last_step
+            obs_ood = self._obs is not None and self._obs.step < self._last_step
         with self._state_lock:
             state_ood = self._state is not None and self._state["step"] < self._last_step
         return obs_ood or state_ood
 
-    def _update_state(self, state: dict) -> None:
-        """Update state internally with lock. This is expected to be much more responsive than using full observations, which should be reserved for higher level control.
 
-        Args:
-            state (dict): state message from the robot
-        """
-        with self._state_lock:
-            if "step" in state:
-                self._last_step = max(self._last_step, state["step"])
-                if state["step"] < self._last_step:
-                    if self._warning_on_out_of_date_state < state["step"]:
-                        logger.warning(
-                            f"Dropping out-of-date state message: {state['step']} < {self._last_step}"
-                        )
-                        self._warning_on_out_of_date_state = state["step"]
-            self._state = state
-            self._control_mode = state["control_mode"]
-            self._at_goal = state["at_goal"]
 
     def at_goal(self) -> bool:
         """Check if the robot is at the goal.
@@ -1325,23 +1295,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._obs_lock:
             if self._obs is None:
                 return None
-            observation = Observations(
-                timestamp=self._obs["timestamp"],
-                compass=self._obs["compass"],
-                gps=self._obs["gps"],
-                rgb=self._obs["rgb"],
-                depth=self._obs["depth"],
-                xyz=self._obs["xyz"],
-                lidar_points=self._obs["lidar_points"]
-            )
-            observation.camera_K = self._obs.get("camera_K", None)
-            observation.camera_in_map_pose = self._obs.get("camera_in_map_pose", None)
-            observation.recv_address = self._obs.get("recv_address", None)
-            observation.step = self._obs.get("step", None)
-            observation.at_goal = self._obs.get("at_goal", None)
-            observation.seq_id = self._seq_id
 
-            return observation
+            return self._obs
 
     def get_images(self, compute_xyz=False):
         """Get the current RGB and depth images from the robot.
@@ -1562,6 +1517,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             self._seq_id += 1
             output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
             output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
+            output["seq_id"] = self._seq_id
 
             rgb_height, rgb_width = output["rgb"].shape[:2]
 
@@ -1588,7 +1544,90 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 print(f"time taken = {dt} avg = {sum_time/steps} keys={[k for k in output.keys()]}")
             t0 = timeit.default_timer()
 
-    def update_servo(self, message):
+    def blocking_spin_state(self, verbose: bool = False):
+        """Listen for incoming observations and update internal state"""
+
+        sum_time = 0.0
+        steps = 0
+        t0 = timeit.default_timer()
+
+        while not self._finish:
+            output = self.recv_state_socket.recv_pyobj()
+            self._update_state(output)
+
+            t1 = timeit.default_timer()
+            dt = t1 - t0
+            sum_time += dt
+            steps += 1
+            if verbose and steps % self.num_state_report_steps == 1:
+                print("[STATE] Control mode:", self._control_mode)
+                print(
+                    f"[STATE] time taken = {dt} avg = {sum_time/steps} keys={[k for k in output.keys()]}"
+                )
+            t0 = timeit.default_timer()
+
+    def blocking_spin_servo(self, verbose: bool = False):
+        """Listen for servo messages coming from the robot, i.e. low res images for ML state. This is intended to be run in a separate thread.
+
+        Args:
+            verbose (bool): whether to print out debug information
+        """
+        sum_time = 0.0
+        steps = 0
+        t0 = timeit.default_timer()
+        while not self._finish:
+            t1 = timeit.default_timer()
+            dt = t1 - t0
+            output = self.recv_servo_socket.recv_pyobj()
+            self._update_servo(output)
+            sum_time += dt
+            steps += 1
+            if verbose and steps % self.num_state_report_steps == 1:
+                print(
+                    f"[SERVO] time taken = {dt} avg = {sum_time/steps} keys={[k for k in output.keys()]}"
+                )
+            t0 = timeit.default_timer()
+
+    def blocking_spin_rerun(self) -> None:
+        """Use the rerun server so that we can visualize what is going on as the robot takes actions in the world."""
+        while not self._finish:
+            self._rerun.step(self._obs, self._state, self._servo)
+
+    def _update_obs(self, obs: dict):
+        """Update observation internally with lock"""
+        with self._obs_lock:
+            # Convert dictionary to Observations object for consistency
+            self._obs = Observations.from_dict(obs)
+            self._last_step = obs["step"]
+            if self._iter <= 0:
+                self._iter = max(self._last_step, self._iter)
+
+    def _update_pose_graph(self, obs):
+        """Update internal pose graph"""
+        with self._obs_lock:
+            if "pose_graph" in obs:
+                self._pose_graph = obs["pose_graph"]
+
+    def _update_state(self, state: dict) -> None:
+        """Update state internally with lock. This is expected to be much more responsive than using full observations, which should be reserved for higher level control.
+
+        Args:
+            state (dict): state message from the robot
+        """
+        with self._state_lock:
+            if "step" in state:
+                self._last_step = max(self._last_step, state["step"])
+                if state["step"] < self._last_step:
+                    if self._warning_on_out_of_date_state < state["step"]:
+                        logger.warning(
+                            f"Dropping out-of-date state message: {state['step']} < {self._last_step}"
+                        )
+                        self._warning_on_out_of_date_state = state["step"]
+            self._state = state
+            self._control_mode = state["control_mode"]
+            self._at_goal = state["at_goal"]
+
+    def _update_servo(self, message):
         """Servo messages"""
         if message is None or self._state is None:
             return
@@ -1643,27 +1682,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._servo_lock:
             return self._servo
 
-    def blocking_spin_servo(self, verbose: bool = False):
-        """Listen for servo messages coming from the robot, i.e. low res images for ML state. This is intended to be run in a separate thread.
-
-        Args:
-            verbose (bool): whether to print out debug information
-        """
-        sum_time = 0.0
-        steps = 0
-        t0 = timeit.default_timer()
-        while not self._finish:
-            t1 = timeit.default_timer()
-            dt = t1 - t0
-            output = self.recv_servo_socket.recv_pyobj()
-            self.update_servo(output)
-            sum_time += dt
-            steps += 1
-            if verbose and steps % self.num_state_report_steps == 1:
-                print(
-                    f"[SERVO] time taken = {dt} avg = {sum_time/steps} keys={[k for k in output.keys()]}"
-                )
-            t0 = timeit.default_timer()
 
     @property
     def running(self) -> bool:
@@ -1692,32 +1710,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         next_action = {"say_sync": text}
         self.send_action(next_action)
 
-    def blocking_spin_state(self, verbose: bool = False):
-        """Listen for incoming observations and update internal state"""
-
-        sum_time = 0.0
-        steps = 0
-        t0 = timeit.default_timer()
-
-        while not self._finish:
-            output = self.recv_state_socket.recv_pyobj()
-            self._update_state(output)
-
-            t1 = timeit.default_timer()
-            dt = t1 - t0
-            sum_time += dt
-            steps += 1
-            if verbose and steps % self.num_state_report_steps == 1:
-                print("[STATE] Control mode:", self._control_mode)
-                print(
-                    f"[STATE] time taken = {dt} avg = {sum_time/steps} keys={[k for k in output.keys()]}"
-                )
-            t0 = timeit.default_timer()
-
-    def blocking_spin_rerun(self) -> None:
-        """Use the rerun server so that we can visualize what is going on as the robot takes actions in the world."""
-        while not self._finish:
-            self._rerun.step(self._obs, self._state, self._servo)
 
     @property
     def is_homed(self) -> bool:
