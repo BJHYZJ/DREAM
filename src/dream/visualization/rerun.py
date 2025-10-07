@@ -251,6 +251,10 @@ class RerunVisualizer:
         self.bbox_colors_memory = {}
         self.step_delay_s = 0.3
         self.setup_blueprint(collapse_panels)
+        
+        # Memory management
+        self._frame_count = 0
+        self._cleanup_interval = 1000  # Clear old data every 1000 frames
 
     def setup_blueprint(self, collapse_panels: bool):
         """Setup the blueprint for the visualizer
@@ -705,6 +709,12 @@ class RerunVisualizer:
 
                 # if self.display_robot_mesh:
                 #     self.log_robot_transforms(obs)
+                
+                # Memory cleanup
+                self._frame_count += 1
+                if self._frame_count % self._cleanup_interval == 0:
+                    self._cleanup_old_data()
+                
                 t1 = timeit.default_timer()
                 sleep_time = self.step_delay_s - (t1 - t0)
                 if sleep_time > 0:
@@ -713,3 +723,14 @@ class RerunVisualizer:
             except Exception as e:
                 logger.error(e)
                 raise e
+    
+    def _cleanup_old_data(self):
+        """Clean up old data to prevent memory accumulation"""
+        try:
+            # Clear old camera point clouds
+            rr.log("world/camera/points", rr.Clear(recursive=True))
+            # Clear old voxel map data
+            rr.log("world/voxel_map", rr.Clear(recursive=True))
+            logger.info(f"Cleaned up old data at frame {self._frame_count}")
+        except Exception as e:
+            logger.warning(f"Failed to cleanup old data: {e}")

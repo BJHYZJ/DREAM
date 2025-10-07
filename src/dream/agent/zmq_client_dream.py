@@ -1556,6 +1556,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
             if output is None:
                 continue
 
+            if output["is_history_node"]:  # TODO (zhijie), loop detection is not working
+                continue
+
             self._seq_id += 1
             output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
             output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
