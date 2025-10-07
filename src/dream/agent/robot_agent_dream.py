@@ -671,7 +671,7 @@ class RobotAgent(RobotAgentBase):
         return traj
 
     def navigate(self, text, max_step=10):
-        rr.init("Stretch_robot", recording_id=uuid4(), spawn=True)
+        rr.init("Dream_robot", recording_id=uuid4(), spawn=True)
         finished = False
         step = 0
         end_point = None
