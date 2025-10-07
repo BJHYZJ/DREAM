@@ -298,6 +298,8 @@ class ZmqServer(BaseZmqServer):
             # This will send head without anything else
             if self.verbose or True:
                 print(f"Moving head to {action['head_to']}")
+            if not self.client.in_manipulation_mode():
+                self.client.switch_to_manipulation_mode()
             self.client.head_to(
                 angle=action["head_to"],
                 wait=action['wait']
