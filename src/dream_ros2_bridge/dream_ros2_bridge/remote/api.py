@@ -394,10 +394,10 @@ class DreamClient(AbstractRobotClient):
         self.last_rtabmap_timestamp = timestamp
         
         nid = rtabmap_data.nodes[0].id
-
+        is_history_node = False
         if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
-            print(f"RTABMap Node ID sequence error: received {nid} but expected > {self._last_node_id}")
-            print("Loop closure detected, need processing...")
+            print("[warning] 🛑 received history node")
+            is_history_node = True
 
         self._last_node_id = nid
 
@@ -408,23 +408,25 @@ class DreamClient(AbstractRobotClient):
         rgb = node.data.left_compressed
         depth = node.data.right_compressed
         laser = node.data.laser_scan_compressed
-        # if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
-        #     print("get_full_observation: rgb is None or len(rgb) == 0 or depth is None or len(depth) == 0 or laser is None or len(laser) == 0")
-        #     return None
+        if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
+            print("get_full_observation: rgb is None or len(rgb) == 0 or depth is None or len(depth) == 0 or laser is None or len(laser) == 0")
 
         pose_graph_now = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
 
         # Thread-safe update of pose graph
         self._ros_client.update_pose_graph(pose_graph_now)
         pose_graph = self._ros_client.get_pose_graph()
+        
+        local_tf = transform_to_sophus(node.data.local_transform[0])
+        self._ros_client.update_local_tf_graph(node_id, local_tf)
+        local_tf_graph = self._ros_client.get_local_tf_graph()
+
+        current_pose = pose_graph[node_id]
 
         assert len(node.data.left_camera_info) > 0
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
         # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
         camera_K = np.array(left_ci['K']).reshape(3, 3)
-        
-        current_pose = pose_graph[node_id]
-        local_tf = transform_to_sophus(node.data.local_transform[0])
 
         if start_pose is not None:
             # use sophus to get the relative translation
@@ -442,11 +444,13 @@ class DreamClient(AbstractRobotClient):
             compass=compass,
             gps=gps,
             node_id=node_id,
+            is_history_node=is_history_node,
             rgb_compressed=rgb,
             depth_compressed=depth,
             laser_compressed=laser,
             camera_K=camera_K,
             pose_graph=pose_graph,
+            local_tf_graph=local_tf_graph,
             base_in_map_pose=current_pose.matrix(),
             camera_in_map_pose=current_pose.matrix() @ local_tf.matrix(),
         )

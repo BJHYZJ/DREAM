@@ -121,11 +121,13 @@ class ZmqServer(BaseZmqServer):
             "compass": obs.compass,
             "gps": obs.gps,
             "node_id": obs.node_id,
+            "is_history_node": obs.is_history_node,
             "rgb": obs.rgb_compressed,
             "depth": obs.depth_compressed,
             "lidar_points": obs.laser_compressed,
             "camera_K": obs.camera_K,
             "pose_graph": obs.pose_graph,
+            "local_tf_graph": obs.local_tf_graph,
             "base_in_map_pose": obs.base_in_map_pose,
             "camera_in_map_pose": obs.camera_in_map_pose,
 
@@ -297,9 +299,8 @@ class ZmqServer(BaseZmqServer):
             if self.verbose or True:
                 print(f"Moving head to {action['head_to']}")
             self.client.head_to(
-                action["head_to"][0],
-                action["head_to"][1],
-                blocking=True,
+                angle=action["head_to"],
+                wait=action['wait']
             )
         elif "gripper" in action and "joint" not in action:
             if self.verbose or True:

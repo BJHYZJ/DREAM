@@ -231,6 +231,7 @@ class DreamRosInterface(Node):
         self._is_runstopped = False
 
         self._pose_graph = None
+        self._local_tf_graph = None
 
 
         self._lock_js = threading.Lock()
@@ -238,8 +239,6 @@ class DreamRosInterface(Node):
         self._lock_odom = threading.Lock()
         self._lock_rtab = threading.Lock() 
         self._lock_goal = threading.Lock()
-        self._lock_pose_graph = threading.Lock()
-
 
         # Initialize ros communication
         self._create_pubs_subs()
@@ -951,8 +950,7 @@ class DreamRosInterface(Node):
 
     def get_pose_graph(self):
         """Get robot's pose graph"""
-        with self._lock_pose_graph:
-            return self._pose_graph
+        return self._pose_graph
 
     def update_pose_graph(self, new_poses):
         """Thread-safe update of pose graph
@@ -960,17 +958,20 @@ class DreamRosInterface(Node):
         Args:
             new_poses: Dictionary of node_id -> pose_dict
         """
-        with self._lock_pose_graph:
-            if self._pose_graph is None:
-                self._pose_graph = {}
-            for nid, p in new_poses.items():
-                self._pose_graph[nid] = p
+        if self._pose_graph is None:
+            self._pose_graph = {}
+        for nid, p in new_poses.items():
+            self._pose_graph[nid] = p
 
-    def _ensure_pose_graph_initialized(self):
-        """Ensure pose graph is initialized (thread-safe)"""
-        with self._lock_pose_graph:
-            if self._pose_graph is None:
-                self._pose_graph = {}
+    def get_local_tf_graph(self):
+        return self._local_tf_graph
+
+    def update_local_tf_graph(self, node_id, new_tf):
+        if self._local_tf_graph is None:
+            self._local_tf_graph = {}
+        self._local_tf_graph[node_id] = new_tf
+
+
 
     def trigger_placement(self, x, y, z):
         """Calls FUNMAP based placement"""

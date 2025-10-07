@@ -280,11 +280,13 @@ class RtabmapData:
     compass: np.ndarray
     gps: np.ndarray
     node_id: int
+    is_history_node: bool
     rgb_compressed: array.array
     depth_compressed: array.array
     laser_compressed: array.array
     camera_K: np.ndarray
     pose_graph: Dict[str, np.ndarray]
+    local_tf_graph: Dict[str, np.ndarray]
     base_in_map_pose: np.ndarray
     camera_in_map_pose: np.ndarray
 
