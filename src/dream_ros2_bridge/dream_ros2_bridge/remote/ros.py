@@ -112,7 +112,7 @@ class DreamRosInterface(Node):
     """Interface object with ROS topics and services"""
 
     # Base of the robot
-    base_link = "base_footprint"
+    base_link = "base_link"
 
     goal_time_tolerance = 1.0
     msg_delay_t = 0.1

@@ -31,9 +31,9 @@ class TFPosePublisher(Node):
         
         # TF pose configuration - maps pose keys to frame pairs
         self.tf_poses = {
-            "base_pose": ["base_footprint", "map"],
+            "base_pose": ["base_link", "map"],
             "camera_pose_in_arm": ["camera_color_optical_frame", "arm_base"],
-            "camera_pose_in_base": ["camera_color_optical_frame", "base_footprint"],
+            "camera_pose_in_base": ["camera_color_optical_frame", "base_link"],
             "camera_pose_in_map": ["camera_color_optical_frame", "map"],
             "ee_pose_in_map": ["link_eef", "map"],
         }

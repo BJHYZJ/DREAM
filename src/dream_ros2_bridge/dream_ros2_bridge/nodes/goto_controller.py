@@ -87,7 +87,7 @@ class GotoVelocityControllerNode(Node):
         self.track_yaw = True
         self.goal_set_t = Time(clock_type=ClockType.ROS_TIME)
 
-        # TF buffer and listener for getting map->base_footprint transform
+        # TF buffer and listener for getting map->base_link transform
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
@@ -115,12 +115,12 @@ class GotoVelocityControllerNode(Node):
     #         self.controller.update_pose_feedback(self.xyt_filtered)
 
     def get_pose_from_tf(self):
-        """Get current robot pose from TF tree (map->base_footprint)"""
+        """Get current robot pose from TF tree (map->base_link)"""
         try:
-            # Get the transform from map to base_footprint
+            # Get the transform from map to base_link
             transform = self.tf_buffer.lookup_transform(
                 'map',
-                'base_footprint',
+                'base_link',
                 rclpy.time.Time(),  # Get latest available transform
                 timeout=rclpy.duration.Duration(seconds=0.1)
             )
