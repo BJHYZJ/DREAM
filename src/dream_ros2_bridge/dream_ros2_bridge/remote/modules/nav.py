@@ -43,7 +43,8 @@ class DreamNavigationClient(AbstractControlModule):
         """Called when interface is enabled."""
         # result = self._ros_client.nav_mode_service.call(Trigger.Request())
         # self._ros_client.get_logger().info(result.message)
-        self._ros_client.get_logger().info("Switching to navigation mode")
+        # self._ros_client.get_logger().info("Switching to navigation mode")
+        print("Switching to navigation mode")
         return True
 
     def _disable_hook(self) -> bool:
@@ -117,7 +118,8 @@ class DreamNavigationClient(AbstractControlModule):
                 return True
             t1 = self._ros_client.get_clock().now()
             if ((t1 - t0).nanoseconds * 1e-9) > timeout:
-                self._ros_client.get_logger().info("Could not reach goal in time: " + str(xyt))
+                # self._ros_client.get_logger().info("Could not reach goal in time: " + str(xyt))
+                print("Could not reach goal in time: " + str(xyt))
                 return False
             _rate.sleep()
         return False
@@ -180,10 +182,12 @@ class DreamNavigationClient(AbstractControlModule):
         if avoid_obstacles:
             raise NotImplementedError("Obstacle avoidance unavailable.")
 
-        self._ros_client.get_logger().info("Setting yaw service")
+        # self._ros_client.get_logger().info("Setting yaw service")
+        print("Setting yaw service")
         # Set yaw tracking
         self._ros_client.set_yaw_service.call(SetBool.Request(data=(not position_only)))
-        self._ros_client.get_logger().info("Yaw service set")
+        # self._ros_client.get_logger().info("Yaw service set")
+        print("Yaw service set")
 
         # Compute absolute goal
         if relative:
@@ -191,7 +195,8 @@ class DreamNavigationClient(AbstractControlModule):
             xyt_goal = xyt_base_to_global(xyt, xyt_base)
         else:
             xyt_goal = xyt
-        self._ros_client.get_logger().info(f"Sending XYT Goal {xyt_goal=}")
+        # self._ros_client.get_logger().info(f"Sending XYT Goal {xyt_goal=}")
+        print(f"Sending XYT Goal {xyt_goal=}")
 
         # Clear self.at_goal
         self._ros_client.at_goal = False
@@ -227,7 +232,8 @@ class DreamNavigationClient(AbstractControlModule):
             if self._ros_client.get_base_in_map_pose() is not None:
                 break
             rate.sleep()
-        self._ros_client.get_logger().info("Pose estimated")
+        # self._ros_client.get_logger().info("Pose estimated")
+        print("Pose Received...")
 
     def _wait_for_goal_reached(self, verbose: bool = False):
         """Wait until goal is reached"""

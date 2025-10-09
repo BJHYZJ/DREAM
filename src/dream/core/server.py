@@ -35,8 +35,8 @@ class BaseZmqServer(CommsNode, ABC):
 
     # How often should we print out info about our performance
     report_steps = 100
-    fast_report_steps = 100
-    servo_report_steps = 100
+    fast_report_steps = 1000
+    servo_report_steps = 1000
     skip_duplicate_steps: bool = True
 
     def __init__(

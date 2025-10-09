@@ -50,7 +50,8 @@ class DreamManipulationClient(AbstractControlModule):
         """Called when interface is enabled."""
         # # Switch interface mode & print messages
         # result = self._ros_client.pos_mode_service.call(Trigger.Request())
-        self._ros_client.get_logger().info("Switching to manipulation mode")
+        # self._ros_client.get_logger().info("Switching to manipulation mode")
+        print("Switching to manipulation mode")
         self._init_base_pose = self._ros_client.get_base_in_map_pose()
 
         # return result.success

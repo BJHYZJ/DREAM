@@ -165,7 +165,6 @@ class DreamClient(AbstractRobotClient):
         """Switch dream to navigation control
         Robot base is now controlled via continuous velocity feedback.
         """
-        print(time.time(), "Switching to navigation mode begin")
         result_pre = True
         if self.manip.is_enabled:
             result_pre = self.manip.disable()
@@ -173,7 +172,6 @@ class DreamClient(AbstractRobotClient):
         result_post = self.nav.enable()
 
         self._base_control_mode = ControlMode.NAVIGATION
-        print(time.time(), "Switching to navigation mode end")
         return result_pre and result_post
 
     @property
