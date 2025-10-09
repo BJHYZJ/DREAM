@@ -407,7 +407,7 @@ class RobotAgent(RobotAgentBase):
             self.voxel_map.process_rgbd_images(obs.rgb, obs.depth, obs.camera_K, obs.camera_pose)
 
         robot_center = np.zeros(3)
-        robot_center[:2] = self.robot.get_base_pose()[:2]
+        robot_center[:2] = self.robot.get_base_in_map_xyt()[:2]
 
         t4 = timeit.default_timer()
         # print(f"Done updating voxel map. Time: {t4 - t3}")

@@ -211,16 +211,14 @@ class RerunVisualizer:
             collapse_panels (bool): Set to false to have customizable rerun panels
         """
         assert not (spawn_gui and open_browser), "spawn_gui and open_browser cannot be True at the same time"
+        
         self.open_browser = open_browser
-        if spawn_gui or open_browser:
-            # Check environment variables to see if this is docker
-            if "DOCKER" in os.environ:
-                spawn_gui = False
-                open_browser = True
-                logger.warning("Docker environment detected. Disabling GUI.")
+        self.spawn_gui = spawn_gui
 
-        rr.init("Dream_robot", spawn=spawn_gui)
-        if hasattr(rr, "spawn"):
+        rr.init("Dream_robot", spawn=False)
+        
+        # Only spawn GUI if spawn_gui is True
+        if spawn_gui and hasattr(rr, "spawn"):
             rr.spawn(
                 memory_limit=memory_limit,
                 server_memory_limit=server_memory_limit,
@@ -228,7 +226,8 @@ class RerunVisualizer:
 
         if output_path is not None:
             rr.save(output_path / "rerun_log.rrd")
-        # open_browser = True
+        
+        # Serve web viewer if open_browser is True
         if open_browser:
             server_uri = rr.serve_grpc(
                 server_memory_limit=server_memory_limit, 
