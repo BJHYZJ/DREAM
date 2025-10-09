@@ -55,7 +55,7 @@ class TFPosePublisher(Node):
         # QoS settings
         qos_profile = QoSProfile(
             depth=1,
-            reliability=ReliabilityPolicy.RELIABLE,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
             durability=DurabilityPolicy.VOLATILE,
         )

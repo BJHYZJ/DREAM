@@ -159,12 +159,12 @@ class DreamRosInterface(Node):
             durability=DurabilityPolicy.VOLATILE,
         )
 
-        # self.best_effort_qos = QoSProfile(
-        #     depth=10,
-        #     reliability=ReliabilityPolicy.BEST_EFFORT,
-        #     history=HistoryPolicy.KEEP_LAST,
-        #     durability=DurabilityPolicy.VOLATILE,
-        # )
+        self.best_effort_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            durability=DurabilityPolicy.VOLATILE,
+        )
 
         self._executor = MultiThreadedExecutor(num_threads=4)
         self._executor.add_node(self)
@@ -573,7 +573,7 @@ class DreamRosInterface(Node):
         self.place_result_sub = self.create_subscription(Empty, "place_point/result", self._place_result_callback, 10, callback_group=self.cb_place_group)  # Had to check qos_profile
 
         # Create subscribers
-        self._odom_sub = self.create_subscription(Odometry, "/ranger/odom", self._odom_callback, qos_profile_sensor_data, callback_group=self.cb_odom_group)
+        self._odom_sub = self.create_subscription(Odometry, "/ranger/odom", self._odom_callback, self.best_effort_qos, callback_group=self.cb_odom_group)
 
         # self._base_state_sub = self.create_subscription(
         #     PoseStamped, "state_estimator/pose_filtered", self._base_state_callback, 1
@@ -593,11 +593,11 @@ class DreamRosInterface(Node):
         # self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=self.cb_rtabmapinfo_group)
 
         # tf pose publisher
-        self._tf_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_pose", self._tf_base_pose_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
-        self._tf_camera_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_map", self._tf_camera_pose_in_map_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
-        self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
-        self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
-        self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, qos_profile_sensor_data, callback_group=self.cb_tf_group)
+        self._tf_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_pose", self._tf_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_camera_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_map", self._tf_camera_pose_in_map_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
 
         # Create trajectory client with which we can control the robot
         # self.trajectory_client = ActionClient(
