@@ -221,12 +221,13 @@ class DreamNavigationClient(AbstractControlModule):
 
     def _wait_for_pose(self):
         """wait until we have an accurate pose estimate"""
-        rate = self._ros_client.create_rate(10)
+        rate = self._ros_client.create_rate(20)
         while rclpy.ok():
             # if self._ros_client.se3_base_filtered is not None:
             if self._ros_client.get_base_in_map_pose() is not None:
                 break
             rate.sleep()
+        self._ros_client.get_logger().info("Pose estimated")
 
     def _wait_for_goal_reached(self, verbose: bool = False):
         """Wait until goal is reached"""

@@ -153,7 +153,7 @@ class DreamRosInterface(Node):
 
         # QoS设置
         self.reliable_qos = QoSProfile(
-            depth=10,
+            depth=1,
             reliability=ReliabilityPolicy.RELIABLE,
             history=HistoryPolicy.KEEP_LAST,
             durability=DurabilityPolicy.VOLATILE,
@@ -275,15 +275,16 @@ class DreamRosInterface(Node):
 
         self.rgb_cam: RosCamera = None
         self.dpt_cam: RosCamera = None
+        self.lidar: Ros3DLidar = None
         if init_cameras:
             # self._create_cameras(use_d405=d405)
             self._create_cameras()
             self._wait_for_cameras()
         if init_lidar:
-            self._lidar = Ros3DLidar(self, self._lidar_topic)
-            self._lidar.wait_for_scan()
+            self._create_lidar()
+            self._wait_for_lidar()
 
-        
+        print("..done.")
         # if self.get_has_wrist():
         #     # Get indexer
         #     self._has_wrist = True
@@ -661,10 +662,17 @@ class DreamRosInterface(Node):
         #     self.ee_rgb_cam = None
         #     self.ee_dpt_cam = None
         self.filter_depth = self._depth_buffer_size is not None
+    
+    def _create_lidar(self):
+        if self.lidar is not None:
+            raise RuntimeError("Already created lidar")
+        print("Creating lidar...")
+        self.lidar = Ros3DLidar(self, self._lidar_topic)
 
     def _wait_for_lidar(self):
         """wait until lidar has a message"""
-        self._lidar.wait_for_scan()
+        print("Waiting for lidar scan...")
+        self.lidar.wait_for_scan()
 
     def _wait_for_cameras(self):
         if self.rgb_cam is None or self.dpt_cam is None:
@@ -679,7 +687,7 @@ class DreamRosInterface(Node):
         # if self.ee_dpt_cam is not None:
         #     print("Waiting for end effector depth camera images...")
         #     self.ee_dpt_cam.wait_for_image()
-        print("..done.")
+        
         if self.verbose:
             print("rgb frame =", self.rgb_cam.get_frame())
             print("dpt frame =", self.dpt_cam.get_frame())
@@ -726,6 +734,11 @@ class DreamRosInterface(Node):
 
         with self._lock_rtab:
             self.rtabmapdata = msg
+        
+        # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
+        # now_timestamp = self.get_clock().now().to_msg()
+        # now_timestamp = now_timestamp.sec + now_timestamp.nanosec / 1e9
+        # self.get_logger().info(f"rtabmapdata timestamp: {timestamp}, now_timestamp: {now_timestamp}, diff: {now_timestamp - timestamp}")
 
         # nid = msg.nodes[0].id
 
@@ -793,6 +806,9 @@ class DreamRosInterface(Node):
     def _tf_camera_pose_in_map_callback(self, msg: PoseStamped):
         """camera pose in map callback"""
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
+        # now_timestamp = time.time()
+        # self.get_logger().info(f"tf_camera_pose_in_map timestamp: {timestamp}, now_timestamp: {now_timestamp}, diff: {now_timestamp - timestamp}")
         with self._lock_tf:
             self.se3_camera_in_map_pose = se3
 
