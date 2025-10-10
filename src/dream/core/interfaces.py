@@ -283,7 +283,7 @@ class RtabmapData(BaseObservations):
     is_history_node: bool
     rgb_compressed: array.array
     depth_compressed: array.array
-    laser_compressed: array.array
+    # laser_compressed: array.array
     camera_K: np.ndarray
     pose_graph: Dict[str, np.ndarray]
     local_tf_graph: Dict[str, np.ndarray]
