@@ -59,6 +59,51 @@ look_right_1 = [-45, -45, -90, 0, 135, 0]
 look_right_2 = [-45, -45, -90, -30, 110, 0]
 
 
+T_LOC_STABILIZE = 1.0
+BASE_JOINTS = ['base_x', 'base_y', 'base_theta']
+ARM_JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
+GRIPPER_JOINTS = ['gripper']
+ROBOT_JOINTS = BASE_JOINTS + ARM_JOINTS + GRIPPER_JOINTS
+
+CAMERA_POSET_TOPIC = "/robot/camera_pose"
+
+
+# ROS_ARM_JOINTS = ["joint_arm_l0", "joint_arm_l1", "joint_arm_l2", "joint_arm_l3"]
+# ROS_LIFT_JOINT = "joint_lift"
+# ROS_GRIPPER_FINGER = "joint_gripper_finger_left"
+# # ROS_GRIPPER_FINGER2 = "joint_gripper_finger_right"
+# ROS_HEAD_PAN = "joint_head_pan"
+# ROS_HEAD_TILT = "joint_head_tilt"
+# ROS_WRIST_YAW = "joint_wrist_yaw"
+# ROS_WRIST_PITCH = "joint_wrist_pitch"
+# ROS_WRIST_ROLL = "joint_wrist_roll"
+
+
+# ROS_TO_CONFIG: Dict[str, HelloStretchIdx] = {
+#     ROS_LIFT_JOINT: HelloStretchIdx.LIFT,
+#     ROS_GRIPPER_FINGER: HelloStretchIdx.GRIPPER,
+#     # ROS_GRIPPER_FINGER2: HelloStretchIdx.GRIPPER,
+#     ROS_WRIST_YAW: HelloStretchIdx.WRIST_YAW,
+#     ROS_WRIST_PITCH: HelloStretchIdx.WRIST_PITCH,
+#     ROS_WRIST_ROLL: HelloStretchIdx.WRIST_ROLL,
+#     ROS_HEAD_PAN: HelloStretchIdx.HEAD_PAN,
+#     ROS_HEAD_TILT: HelloStretchIdx.HEAD_TILT,
+# }
+
+# CONFIG_TO_ROS: Dict[HelloStretchIdx, List[str]] = {}
+# for k, v in ROS_TO_CONFIG.items():
+#     if v not in CONFIG_TO_ROS:
+#         CONFIG_TO_ROS[v] = []
+#     CONFIG_TO_ROS[v].append(k)
+# CONFIG_TO_ROS[HelloStretchIdx.ARM] = ROS_ARM_JOINTS
+# # ROS_JOINT_NAMES += ROS_ARM_JOINTS
+
+# T_LOC_STABILIZE = 1.0
+
+
+# # Relative resting pose for creating observations
+# relative_resting_position = np.array([0.3878479, 0.12924957, 0.4224413])
+
 
 # Stores joint indices for the Stretch configuration space
 class HelloStretchIdx:
