@@ -250,7 +250,7 @@ def generate_launch_description():
       description='Quality of Service: 0=system default, 1=reliable, 2=best effort.'),
 
     DeclareLaunchArgument(
-      'force3dof', default_value="false",
+      'force3dof', default_value="true",
       description='Force 3 degrees-of-freedom transform (3Dof: x,y and yaw). Parameters z, roll and pitch will be set to 0'),
 
     OpaqueFunction(function=launch_setup),
