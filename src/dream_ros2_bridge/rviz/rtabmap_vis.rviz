@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
+        - /TF1
         - /MapGraph1
         - /MapCloud_RGBD1
         - /MapCloud_SCAN1
@@ -30,7 +31,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: MapCloud_SCAN
 Visualization Manager:
   Class: ""
   Displays:
@@ -65,7 +66,8 @@ Visualization Manager:
         Value: /robot_description
       Enabled: true
       Links:
-        All Links Enabled: true
+        All Links Enabled:
+          {}
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
@@ -78,62 +80,50 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         fl_steering_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         fl_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         fr_steering_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         fr_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link1:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link3:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link4:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link5:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link6:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link_base:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         link_eef:
           Alpha: 1
           Show Axes: false
@@ -142,22 +132,18 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         rl_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         rr_steering_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
         rr_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
@@ -199,9 +185,9 @@ Visualization Manager:
           Value: true
         camera_imu_optical_frame:
           Value: true
-        camera_link:
+        camera_init:
           Value: true
-        fast_lio2_odom:
+        camera_link:
           Value: true
         fl_steering_wheel_link:
           Value: true
@@ -239,14 +225,57 @@ Visualization Manager:
           Value: true
         rr_wheel_link:
           Value: true
-      Marker Scale: 1
+      Marker Scale: 0.5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
         map:
-          {}
+          camera_init:
+            body:
+              livox_frame:
+                base_link:
+                  arm_base:
+                    link_base:
+                      link1:
+                        link2:
+                          link3:
+                            link4:
+                              link5:
+                                link6:
+                                  camera_link:
+                                    camera_accel_frame:
+                                      camera_accel_optical_frame:
+                                        {}
+                                    camera_color_frame:
+                                      camera_color_optical_frame:
+                                        {}
+                                    camera_depth_frame:
+                                      camera_depth_optical_frame:
+                                        {}
+                                    camera_gyro_frame:
+                                      camera_gyro_optical_frame:
+                                        {}
+                                      camera_imu_frame:
+                                        camera_imu_optical_frame:
+                                          {}
+                                  link_eef:
+                                    {}
+                  base_footprint:
+                    {}
+                  fl_steering_wheel_link:
+                    fl_wheel_link:
+                      {}
+                  fr_steering_wheel_link:
+                    fr_wheel_link:
+                      {}
+                  rl_steering_wheel_link:
+                    rl_wheel_link:
+                      {}
+                  rr_steering_wheel_link:
+                    rr_wheel_link:
+                      {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -336,7 +365,7 @@ Visualization Manager:
       Filter floor (m): 0
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 188
+      Max Intensity: 171
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: MapCloud_SCAN
@@ -424,25 +453,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 10.558454513549805
+      Distance: 8.847737312316895
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -3.505507230758667
-        Y: 0.07037054747343063
-        Z: -1.3532311916351318
+        X: -0.7986469268798828
+        Y: 0.8481802940368652
+        Z: -1.0532424449920654
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0497969388961792
+      Pitch: 0.7947965264320374
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.620492458343506
+      Yaw: 3.5455029010772705
     Saved: ~
 Window Geometry:
   Camera:

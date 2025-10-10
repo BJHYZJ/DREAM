@@ -150,11 +150,11 @@ ros2 topic bw /rtabmap_ranger_xarm/mapData
 
 
 # 只看节点数量
-ros2 topic echo /rtabmap_ranger_xarm/mapData --once | grep -c "id:"
+ros2 topic echo /rtabmap/mapData --once | grep -c "id:"
 # 只看 graph 的部分
-ros2 topic echo /rtabmap_ranger_xarm/mapData --once --field graph
+ros2 topic echo /rtabmap_rangerrtabmap_xarm/mapData --once --field graph
 # 只看 nodes 数组的长度（ROS 2 Iron 之后的 colcon-extensions支持 --field，更早版本要写脚本）
-ros2 topic echo /rtabmap_ranger_xarm/mapData --once --field nodes[0].id
+ros2 topic echo /rtabmap/mapData --once --field nodes[0].id
 
 # 用 ros2 interface查看节点结构
 ros2 interface show rtabmap_msgs/msg/MapData

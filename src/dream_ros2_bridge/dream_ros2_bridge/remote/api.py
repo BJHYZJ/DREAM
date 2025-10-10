@@ -407,8 +407,15 @@ class DreamClient(AbstractRobotClient):
         rgb = node.data.left_compressed
         depth = node.data.right_compressed
         laser = node.data.laser_scan_compressed
+        if rgb is None or len(rgb) == 0:
+            print("get_full_observation: rgb is None or len(rgb) == 0")
+        if depth is None or len(depth) == 0:
+            print("get_full_observation: depth is None or len(depth) == 0")
+        if laser is None or len(laser) == 0:
+            print("get_full_observation: laser is None or len(laser) == 0")
+        
         if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
-            print("get_full_observation: rgb is None or len(rgb) == 0 or depth is None or len(depth) == 0 or laser is None or len(laser) == 0")
+            print("=" * 32)
 
         pose_graph_now = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
 
@@ -446,7 +453,7 @@ class DreamClient(AbstractRobotClient):
             is_history_node=is_history_node,
             rgb_compressed=rgb,
             depth_compressed=depth,
-            laser_compressed=laser,
+            # laser_compressed=laser,
             camera_K=camera_K,
             pose_graph=pose_graph,
             local_tf_graph=local_tf_graph,

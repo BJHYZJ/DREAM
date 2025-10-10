@@ -166,7 +166,7 @@ class DreamRosInterface(Node):
             durability=DurabilityPolicy.VOLATILE,
         )
 
-        self._executor = MultiThreadedExecutor(num_threads=4)
+        self._executor = MultiThreadedExecutor(num_threads=8)
         self._executor.add_node(self)
         self._spin_thread = threading.Thread(target=self._spin_forever, daemon=False)
         self._spin_thread.start()
@@ -738,7 +738,8 @@ class DreamRosInterface(Node):
         # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
         # now_timestamp = self.get_clock().now().to_msg()
         # now_timestamp = now_timestamp.sec + now_timestamp.nanosec / 1e9
-        # self.get_logger().info(f"rtabmapdata timestamp: {timestamp}, now_timestamp: {now_timestamp}, diff: {now_timestamp - timestamp}")
+        # # self.get_logger().info(f"rtabmapdata timestamp: {timestamp}, now_timestamp: {now_timestamp}, diff: {now_timestamp - timestamp}")
+        # print(f"rtabmapdata timestamp: {timestamp}, now_timestamp: {now_timestamp}, diff: {now_timestamp - timestamp}")
 
         # nid = msg.nodes[0].id
 

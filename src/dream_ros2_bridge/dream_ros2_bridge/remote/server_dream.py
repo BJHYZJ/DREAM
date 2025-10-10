@@ -124,7 +124,7 @@ class ZmqServer(BaseZmqServer):
             "is_history_node": obs.is_history_node,
             "rgb": obs.rgb_compressed,
             "depth": obs.depth_compressed,
-            "lidar_points": obs.laser_compressed,
+            # "lidar_points": obs.laser_compressed,
             "camera_K": obs.camera_K,
             "pose_graph": obs.pose_graph,
             "local_tf_graph": obs.local_tf_graph,

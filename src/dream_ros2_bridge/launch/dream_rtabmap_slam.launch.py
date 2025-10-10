@@ -96,7 +96,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'map_frame_id': 'map',
     'odom_frame_id': 'camera_init',  # FAST-LIO's odometry frame
     
-    'Rtabmap/DetectionRate': '1.0', 
+    'Rtabmap/DetectionRate': '3.0', 
 
     # RTAB-Map's internal parameters are strings:
     'RGBD/ProximityMaxGraphDepth': '0',
@@ -202,7 +202,7 @@ def generate_launch_description():
       description='Use rtabmap_viz'),
 
     DeclareLaunchArgument(
-      'frame_id', default_value='base_footprint',
+      'frame_id', default_value='base_link',
       description='Base frame of the robot.'),
     
     DeclareLaunchArgument(
@@ -250,7 +250,7 @@ def generate_launch_description():
       description='Quality of Service: 0=system default, 1=reliable, 2=best effort.'),
 
     DeclareLaunchArgument(
-      'force3dof', default_value="true",
+      'force3dof', default_value="false",
       description='Force 3 degrees-of-freedom transform (3Dof: x,y and yaw). Parameters z, roll and pitch will be set to 0'),
 
     OpaqueFunction(function=launch_setup),
