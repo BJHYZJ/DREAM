@@ -13,7 +13,7 @@ import pinocchio as pin
 # from urdf_parser_py.urdf import URDF
 from scipy.spatial.transform import Rotation as R
 
-from dream.motion.kinematics import HelloStretchIdx
+from dream.motion.kinematics import DreamIdx
 
 OVERRIDE_STATES: dict[str, float] = {}
 

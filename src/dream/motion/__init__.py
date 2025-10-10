@@ -14,5 +14,5 @@ from .constants import (
     STRETCH_GRASP_FRAME,
     STRETCH_HEAD_CAMERA_ROTATIONS,
 )
-from .kinematics import DreamIdx, HelloStretchIdx
+from .kinematics import DreamIdx
 from .robot import Footprint, RobotModel

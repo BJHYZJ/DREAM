@@ -31,7 +31,7 @@ import dream.motion.constants as constants
 from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
     DreamManipulationWrapper as ManipulationWrapper,
 )
-from dream.agent.manipulation.dynamem_manipulation.grasper_utils import (
+from dream.agent.manipulation.dream_manipulation.grasper_utils import (
     capture_and_process_image,
     move_to_point,
     pickup,
@@ -43,10 +43,8 @@ from dream.core.interfaces import Observations
 from dream.core.parameters import Parameters
 from dream.core.robot import AbstractGraspClient, AbstractRobotClient
 from dream.mapping.instance import Instance
-from dream.mapping.voxel import SparseVoxelMapDynamem as SparseVoxelMap
-from dream.mapping.voxel import (
-    SparseVoxelMapNavigationSpaceDynamem as SparseVoxelMapNavigationSpace,
-)
+from dream.mapping.voxel import SparseVoxelMapDream
+from dream.mapping.voxel import SparseVoxelMapNavigationSpaceDream
 from dream.mapping.voxel import SparseVoxelMapProxy
 from dream.motion.algo.a_star import AStar
 from dream.perception.detection.owl import OwlPerception
@@ -72,7 +70,7 @@ class RobotAgent(RobotAgentBase):
         parameters: Union[Parameters, Dict[str, Any]],
         semantic_sensor: Optional[OvmmPerception] = None,
         grasp_client: Optional[AbstractGraspClient] = None,
-        voxel_map: Optional[SparseVoxelMap] = None,
+        voxel_map: Optional[SparseVoxelMapDream] = None,
         debug_instances: bool = True,
         show_instances_detected: bool = False,
         use_instance_memory: bool = False,
@@ -232,13 +230,15 @@ class RobotAgent(RobotAgentBase):
             )
             semantic_memory_resolution = 0.05
             image_shape = (480, 360)
-        self.voxel_map = SparseVoxelMap(
+        self.voxel_map = SparseVoxelMapDream(
             resolution=parameters["voxel_size"],
             semantic_memory_resolution=semantic_memory_resolution,
             local_radius=parameters["local_radius"],
             obs_min_height=parameters["obs_min_height"],
             obs_max_height=parameters["obs_max_height"],
             obs_min_density=parameters["obs_min_density"],
+            neg_obs_height=parameters["neg_obs_height"],
+            use_negative_obstacles=parameters["use_negative_obstacles"],
             grid_resolution=0.1,
             min_depth=parameters["min_depth"],
             max_depth=parameters["max_depth"],
@@ -259,7 +259,8 @@ class RobotAgent(RobotAgentBase):
             log=self.log,
             mllm=self.mllm,
         )
-        self.space = SparseVoxelMapNavigationSpace(
+        self.space = SparseVoxelMapNavigationSpaceDream(
+            self.robot,
             self.voxel_map,
             rotation_step_size=parameters.get("motion_planner/rotation_step_size", 0.2),
             dilate_frontier_size=parameters.get("motion_planner/frontier/dilate_frontier_size", 2),
@@ -404,7 +405,7 @@ class RobotAgent(RobotAgentBase):
         self._obs_history_lock.release()
 
         if obs is not None and self.robot.in_navigation_mode():
-            self.voxel_map.process_rgbd_images(obs.rgb, obs.depth, obs.camera_K, obs.camera_pose)
+            self.voxel_map.process_rgbd_images(obs.rgb, obs.depth, obs.camera_K, obs.camera_in_map_pose)
 
         robot_center = np.zeros(3)
         robot_center[:2] = self.robot.get_base_in_map_xyt()[:2]
@@ -467,7 +468,7 @@ class RobotAgent(RobotAgentBase):
         print("*" * 10, "Look around to check", "*" * 10)
         # for pan in [0.6, -0.2, -1.0, -1.8]:
         #     tilt = -0.6
-        for angle in [constants.look_left_1, constants.look_left_2, constants.look_right_1, constants.look_right_2]:
+        for angle in [constants.look_down, constants.look_left_1, constants.look_left_2, constants.look_right_1, constants.look_right_2]:
             self.robot.head_to(angle=angle, blocking=True)
             self.update()
 
@@ -671,7 +672,7 @@ class RobotAgent(RobotAgentBase):
         return traj
 
     def navigate(self, text, max_step=10):
-        rr.init("Dream_robot", recording_id=uuid4(), spawn=True)
+        # rr.init("Dream_robot", recording_id=uuid4(), spawn=True)
         finished = False
         step = 0
         end_point = None

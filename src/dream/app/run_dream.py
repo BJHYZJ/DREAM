@@ -132,7 +132,10 @@ def main(
     parameters = get_parameters("dream_config.yaml")
 
     print("- Create robot client")
-    robot = DreamRobotZmqClient(robot_ip=robot_ip)
+    robot = DreamRobotZmqClient(
+        robot_ip=robot_ip,
+        parameters=parameters,
+    )
 
     print("- Create task executor")
     executor = DreamTaskExecutor(

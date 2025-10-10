@@ -129,7 +129,7 @@ class DreamTaskExecutor:
             return None
         cv2.imwrite(target_object + ".jpg", self.robot.get_observation().rgb[:, :, [2, 1, 0]])
         self.robot.switch_to_navigation_mode()
-        xyt = self.robot.get_base_pose()
+        xyt = self.robot.get_base_in_map_xyt()
         xyt[2] = xyt[2] + np.pi / 2
         self.robot.move_base_to(xyt, blocking=True)
         return point

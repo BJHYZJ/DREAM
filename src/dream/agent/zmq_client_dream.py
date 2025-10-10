@@ -29,7 +29,7 @@ from dream.core.interfaces import ContinuousNavigationAction, Observations, Serv
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
-from dream.motion.kinematics import DreamIdx, HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
+from dream.motion.kinematics import DreamIdx, RangerxARMKinematics
 from dream.utils.geometry import (
     angle_difference,
     posquat2sophus,
@@ -1331,7 +1331,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             head_pose (np.ndarray): the head pose as a SE(3) matrix [R | t]
         """
         obs = self.get_observation()
-        return obs.camera_pose
+        return obs.camera_in_map_pose
 
     def execute_trajectory(
         self,
@@ -1512,7 +1512,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 continue
 
             if output["is_history_node"]:  # TODO (zhijie), loop detection is not working
-                continue
+                if len(output["rgb"]) == 0:
+                    continue
 
             self._seq_id += 1
             output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)

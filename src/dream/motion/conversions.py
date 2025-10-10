@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
-from dream.motion import HelloStretchIdx
+from dream.motion import DreamIdx
 
 HelloStretchManipIdx: Dict[str, int] = {
     "BASE_X": 0,

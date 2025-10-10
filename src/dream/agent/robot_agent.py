@@ -31,7 +31,7 @@ from dream.mapping.scene_graph import SceneGraph
 from dream.mapping.voxel import SparseVoxelMap, SparseVoxelMapNavigationSpace, SparseVoxelMapProxy
 from dream.motion import ConfigurationSpace, Planner, PlanResult
 from dream.motion.algo import Shortcut, SimplifyXYT, get_planner
-from dream.motion.kinematics import HelloStretchIdx
+from dream.motion.kinematics import DreamIdx
 from dream.perception.encoders import BaseImageTextEncoder, get_encoder
 from dream.perception.wrapper import OvmmPerception
 from dream.utils.geometry import angle_difference, xyt_base_to_global

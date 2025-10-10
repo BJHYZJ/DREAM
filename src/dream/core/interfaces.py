@@ -332,7 +332,7 @@ class Observations(BaseObservations):
     rgb: array.array
     depth: array.array
     xyz: np.ndarray
-    lidar_points: array.array
+    # lidar_points: array.array
     node_id: Optional[int] = None
     camera_K: Optional[np.ndarray] = None
     pose_graph: Dict[str, np.ndarray] = None
