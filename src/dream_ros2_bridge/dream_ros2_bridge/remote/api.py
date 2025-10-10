@@ -24,7 +24,7 @@ from dream.core.interfaces import Observations, RtabmapData, ServoObservations, 
 from dream.core.robot import AbstractRobotClient, ControlMode
 from dream.motion import RobotModel
 from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q
-from dream.motion.kinematics import DreamIdx, HelloStretchIdx, HelloStretchKinematics, RangerxARMKinematics
+from dream.motion.kinematics import DreamIdx, RangerxARMKinematics
 from dream.utils.geometry import xyt2sophus, posquat2sophus, sophus2xyt, pose2sophus
 
 from .modules.cam import DreamCamClient

@@ -58,7 +58,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 #     ROS_WRIST_YAW,
 #     STRETCH_HEAD_CAMERA_ROTATIONS,
 # )
-from dream.motion.kinematics import HelloStretchIdx
+from dream.motion.kinematics import DreamIdx
 from dream.utils.pose import to_matrix, transform_to_list
 from dream.utils.geometry import angle_difference, sophus2xyt, xyt2sophus, xyt_base_to_global
 from dream_ros2_bridge.constants import BASE_JOINTS, ARM_JOINTS, GRIPPER_JOINTS, ROBOT_JOINTS

@@ -16,7 +16,7 @@ from typing import Optional, Tuple
 import numpy as np
 import trimesh.transformations as tra
 
-from dream.motion.kinematics import HelloStretchIdx
+from dream.motion.kinematics import DreamIdx
 from dream.motion.robot import RobotModel
 
 from .abstract import AbstractControlModule
