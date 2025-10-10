@@ -19,9 +19,8 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 
 from dream.utils.pose import to_matrix, transform_to_list
+from dream.utils.constants import CAMERA_POSET_TOPIC
 from dream_ros2_bridge.ros.utils import matrix_to_pose_msg
-from dream_ros2_bridge.constants import CAMERA_POSET_TOPIC
-
 
 class CameraPosePublisher(Node):
     """Node that publishes camera pose transform [map -> camer_frame]"""
