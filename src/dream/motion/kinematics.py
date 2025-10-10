@@ -118,6 +118,12 @@ class RangerxARMKinematics:
     """Define motion planning structure for the robot. Exposes kinematics."""
     GRIPPER_OPEN = 830
 
+    def get_footprint(self) -> Footprint:
+        """Return footprint for the robot. This is expected to be a mask."""
+        # Note: close to the actual measurements
+        return Footprint(width=0.50, length=0.74, width_offset=0.0, length_offset=0.1)
+        # return Footprint(width=0.4, length=0.5, width_offset=0.0, length_offset=0.1)
+        # return Footprint(width=0.2, length=0.2, width_offset=0.0, length_offset=0.1)
 
 class HelloStretchKinematics:
     """Define motion planning structure for the robot. Exposes kinematics."""
