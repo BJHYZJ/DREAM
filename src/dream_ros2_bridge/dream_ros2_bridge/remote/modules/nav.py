@@ -21,7 +21,7 @@ from std_srvs.srv import SetBool, Trigger
 
 from dream.motion.robot import RobotModel
 from dream.utils.geometry import angle_difference, sophus2xyt, xyt2sophus, xyt_base_to_global
-from dream.utils.constants import T_LOC_STABILIZE
+from dream.motion.constants import T_LOC_STABILIZE
 from dream_ros2_bridge.ros.utils import matrix_to_pose_msg
 
 from .abstract import AbstractControlModule, enforce_enabled
