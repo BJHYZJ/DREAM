@@ -151,6 +151,7 @@ class ZmqServer(BaseZmqServer):
             "compass": obs.compass,
             "base_in_map_pose": obs.base_in_map_pose,
             "ee_in_map_pose": obs.ee_in_map_pose,
+            "arm_position": obs.arm_position,
             "joint_positions": obs.joint_positions,
             "joint_velocities": obs.joint_velocities,
             "joint_efforts": obs.joint_efforts,
@@ -175,22 +176,23 @@ class ZmqServer(BaseZmqServer):
         compressed_depth_image = compression.to_jp2(depth_image)
         
         message = {
-            "ee_in_map_pose": obs.ee_in_map_pose,
-            "camera_in_map_pose": obs.camera_in_map_pose,
+            "rgb": compressed_color_image,
+            "depth": compressed_depth_image,
             "camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),
             "depth_K": scale_camera_matrix(
                 self.client.dpt_cam.get_K(), self.image_scaling
             ),
-            "color_image": compressed_color_image,
-            "depth_image": compressed_depth_image,
-            "color_shape": color_image.shape,
-            "depth_shape": depth_image.shape,
             "image_scaling": self.image_scaling,
             "depth_scaling": self.depth_scaling,
+            "color_shape": color_image.shape,
+            "depth_shape": depth_image.shape,
+            "arm_position": obs.arm_position,
             "joint_positions": obs.joint_positions,
             "joint_velocities": obs.joint_velocities,
+            "ee_in_map_pose": obs.ee_in_map_pose,
+            "camera_in_map_pose": obs.camera_in_map_pose,
             "step": self._last_step,
         }
         # message.update(d405_output)
@@ -275,10 +277,10 @@ class ZmqServer(BaseZmqServer):
                 gripper_cmd = action["gripper"]
             else:
                 gripper_cmd = None
-            if "head_to" in action:
-                head_pan_cmd, head_tilt_cmd = action["head_to"]
+            if "target_point" in action:
+                target_point = action["target_point"]
             else:
-                head_pan_cmd, head_tilt_cmd = None, None
+                target_point = None
 
             # I found currently the blocking in arm to does not
             # serve any actual purpose so maybe we should use this line instead
@@ -290,8 +292,7 @@ class ZmqServer(BaseZmqServer):
             self.client.arm_to(
                 action["joint"],
                 gripper=gripper_cmd,
-                head_pan=head_pan_cmd,
-                head_tilt=head_tilt_cmd,
+                target_point=target_point,
                 blocking=_is_blocking,
             )
         elif "head_to" in action:

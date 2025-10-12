@@ -297,6 +297,9 @@ class DreamClient(AbstractRobotClient):
             q[DreamIdx.BASE_X] = self.manip.get_base_x()
         return [q, dq, eff]
 
+    def get_arm_position(self):
+        return self._ros_client.get_arm_position()
+
     # def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
     #     """look up a particular frame in base coords"""
     #     return self._ros_client.get_frame_pose(frame, base_frame, lookup_time)
@@ -467,6 +470,7 @@ class DreamClient(AbstractRobotClient):
         start_pose: Optional[np.ndarray] = None
     ) -> StateObservations:
         joint_state = self.get_joint_state()
+        arm_position = self.get_arm_position()
         base_in_map_pose = self.get_base_in_map_pose()
         if joint_state is None or base_in_map_pose is None:
             print("get_state_observation: joint_state is None or base_in_map_pose is None")
@@ -483,6 +487,7 @@ class DreamClient(AbstractRobotClient):
         return StateObservations(
             gps=gps,
             compass=np.array([theta]),
+            arm_position=arm_position,
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             joint_efforts=joint_efforts,
@@ -496,6 +501,7 @@ class DreamClient(AbstractRobotClient):
     def get_servo_observation(self) -> ServoObservations:
         images = self.cam.get_images(compute_xyz=False)
         joint_state = self.get_joint_state()
+        arm_position = self.get_arm_position()
         ee_in_map_pose = self.get_ee_in_map_pose()
         camera_in_map_pose = self.get_camera_in_map_pose()
 
@@ -509,6 +515,7 @@ class DreamClient(AbstractRobotClient):
         return ServoObservations(
             rgb=rgb,
             depth=depth,
+            arm_position=arm_position,
             joint_positions=joint_positions,
             joint_velocities=joint_velocities,
             ee_in_map_pose=ee_in_map_pose,

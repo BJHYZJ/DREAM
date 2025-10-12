@@ -296,14 +296,18 @@ class StateObservations(BaseObservations):
     """State observations."""
     gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
+    base_in_map_pose: np.ndarray
+    ee_in_map_pose: np.ndarray
+    arm_position: np.ndarray
     joint_positions: np.ndarray
     joint_velocities: np.ndarray
     joint_efforts: np.ndarray
-    base_in_map_pose: np.ndarray
-    ee_in_map_pose: np.ndarray
     at_goal: bool
     is_homed: bool
     is_runstopped: bool
+    control_mode: Optional[str] = None
+    step: Optional[int] = None
+    is_simulation: Optional[bool] = False
 
 
 @dataclass
@@ -315,6 +319,9 @@ class ServoObservations(BaseObservations):
     depth_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None
     depth_scaling: Optional[float] = None
+    color_shape: Optional[tuple] = None
+    depth_shape: Optional[tuple] = None
+    arm_position: Optional[np.ndarray] = None
     joint_positions: Optional[np.ndarray] = None
     joint_velocities: Optional[np.ndarray] = None
     ee_in_map_pose: Optional[np.ndarray] = None

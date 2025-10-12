@@ -194,6 +194,7 @@ class DreamRosInterface(Node):
         self.arm_pos = np.zeros(len(ARM_JOINTS))
         self.arm_vel = np.zeros(len(ARM_JOINTS))
         self.arm_frc = np.zeros(len(ARM_JOINTS))
+        self.arm_position = np.zeros(6)
         self.gripper_pos = 830  # 830 is the open position
 
         self.pos = np.zeros(self.dof)
@@ -339,7 +340,11 @@ class DreamRosInterface(Node):
         self.vel[3:9] = self.arm_vel[:6]
         self.frc[3:9] = self.arm_frc[:6]
         return [self.pos, self.vel, self.frc]
-    
+
+    def get_arm_position(self):
+        with self._lock_js:
+            self.arm_pos = self._arm_client.get_current_pose()
+        return self.arm_pos
 
     # def _process_joint_status(self, j_status) -> np.ndarray:
     #     """Get joint status from ROS joint state message and convert it into the form we use for streaming position commands."""
