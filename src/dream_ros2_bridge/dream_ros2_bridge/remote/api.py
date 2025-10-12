@@ -581,6 +581,12 @@ class DreamClient(AbstractRobotClient):
     def head_to(self, angle: np.ndarray, is_radian: bool = False, wait: bool = True):
         self.manip.head_to(angle, is_radian=is_radian, wait=wait)
 
+    def set_servo_angle(self, angle, is_radian=False, wait=True):
+        self.manip.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+
+    def get_servo_angle(self):
+        return self.manip.get_servo_angle()
+
     # def head_to(
     #     self,
     #     pan: float,

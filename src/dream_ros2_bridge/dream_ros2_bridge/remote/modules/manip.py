@@ -185,6 +185,10 @@ class DreamManipulationClient(AbstractControlModule):
     def set_servo_angle(self, angle, is_radian=False, wait=True):
         self._ros_client._arm_client.set_servo_angle(angle, is_radian=is_radian, wait=wait)
 
+    def get_servo_angle(self, is_radian=False, is_real=False):
+        return self._ros_client._arm_client.get_servo_angle(is_radian=is_radian, is_real=is_real)
+
+
     # @enforce_enabled
     # def goto(
     #     self,

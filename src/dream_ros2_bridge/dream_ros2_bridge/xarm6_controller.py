@@ -116,6 +116,9 @@ class XARM6:
     def set_servo_angle(self, angle, is_radian=False, wait=True):
         self._arm.set_servo_angle(angle=angle, is_radian=is_radian, wait=wait)
 
+    def get_servo_angle(self, is_radian=False, is_real=False):
+        return self._arm.get_servo_angle(is_radian=is_radian, is_real=is_real)
+
     # Register error/warn changed callback
     def _error_warn_changed_callback(self, data):
         if data and data["error_code"] != 0:
