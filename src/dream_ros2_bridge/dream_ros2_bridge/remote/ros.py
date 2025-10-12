@@ -69,7 +69,6 @@ from dream_ros2_bridge.ros.streaming_activator import StreamingActivator
 from dream_ros2_bridge.ros.utils import matrix_from_pose_msg
 from dream_ros2_bridge.ros.visualizer import Visualizer
 from rtabmap_msgs.msg import MapData, Info
-from dream_ros2_bridge.xarm6_controller import XARM6
 from geometry_msgs.msg import PoseStamped
 
 DEFAULT_COLOR_TOPIC = "/camera/color"
@@ -149,8 +148,6 @@ class DreamRosInterface(Node):
         # Verbosity for the ROS client
         self.verbose = verbose
 
-        self._arm_client = XARM6()
-
         # QoS设置
         self.reliable_qos = QoSProfile(
             depth=1,
@@ -191,16 +188,10 @@ class DreamRosInterface(Node):
         # self.arm_frc = np.zeros(self.dof)
         # self.arm_joint_status: Dict[str, float] = {}
 
-        self.arm_pos = np.zeros(len(ARM_JOINTS))
-        self.arm_vel = np.zeros(len(ARM_JOINTS))
-        self.arm_frc = np.zeros(len(ARM_JOINTS))
-        self.arm_position = np.zeros(6)
-        self.gripper_pos = 830  # 830 is the open position
-
-        self.pos = np.zeros(self.dof)
-        self.vel = np.zeros(self.dof)
-        self.frc = np.zeros(self.dof)
-        self.joint_status: Dict[str, float] = {}
+        # self.state = np.zeros(self.dof)
+        # self.velocity = np.zeros(self.dof)
+        # self.force = np.zeros(self.dof)
+        # self.position = np.zeros(self.dof)
 
         self.vel_base = np.zeros(len(BASE_JOINTS))
 
@@ -323,28 +314,24 @@ class DreamRosInterface(Node):
         self.shutdown()
 
 
-    def get_joint_state(self):
-        with self._lock_js:
-            self.arm_pos, self.arm_vel, self.arm_frc = self._arm_client.get_joint_state()
-            self.gripper_pos = self._arm_client.get_gripper_state()
+    # def get_joint_state(self):
+    #     with self._lock_js:
+    #         arm_state, arm_velocity, arm_force = self._arm_client.get_joint_state()
+    #         gripper_pos = self._arm_client.get_gripper_state()
 
-        base_pose = self.get_base_in_map_pose()
+    #     base_pose = self.get_base_in_map_pose()
 
-        if base_pose is None:
-            return None
+    #     if base_pose is None:
+    #         return None
             
-        self.pos[:3] = sophus2xyt(base_pose)
-        self.pos[3:9] = self.arm_pos[:6]
-        self.pos[9] = self.gripper_pos
-        self.vel[:3] = self.vel_base
-        self.vel[3:9] = self.arm_vel[:6]
-        self.frc[3:9] = self.arm_frc[:6]
-        return [self.pos, self.vel, self.frc]
+    #     self.pos[:3] = sophus2xyt(base_pose)
+    #     self.pos[3:9] = self.arm_pos[:6]
+    #     self.pos[9] = self.gripper_pos
+    #     self.vel[:3] = self.vel_base
+    #     self.vel[3:9] = self.arm_vel[:6]
+    #     self.frc[3:9] = self.arm_frc[:6]
+    #     return [self.pos, self.vel, self.frc]
 
-    def get_arm_position(self):
-        with self._lock_js:
-            self.arm_pos = self._arm_client.get_current_pose()
-        return self.arm_pos
 
     # def _process_joint_status(self, j_status) -> np.ndarray:
     #     """Get joint status from ROS joint state message and convert it into the form we use for streaming position commands."""
@@ -860,6 +847,9 @@ class DreamRosInterface(Node):
         with self._lock_rtab:
             return self.rtabmapdata
 
+    def get_vel_base(self):
+        with self._lock_odom:
+            return self.vel_base
 
     # def _camera_pose_callback(self, msg: PoseStamped):
     #     """camera pose from CameraPosePublisher, which reads from tf"""

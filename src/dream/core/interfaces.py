@@ -298,10 +298,10 @@ class StateObservations(BaseObservations):
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
     base_in_map_pose: np.ndarray
     ee_in_map_pose: np.ndarray
-    arm_position: np.ndarray
-    joint_positions: np.ndarray
-    joint_velocities: np.ndarray
-    joint_efforts: np.ndarray
+    joint_state: np.ndarray  # joint radians or degrees 
+    joint_velocity: np.ndarray
+    joint_force: np.ndarray
+    joint_position: np.ndarray
     at_goal: bool
     is_homed: bool
     is_runstopped: bool
@@ -321,9 +321,6 @@ class ServoObservations(BaseObservations):
     depth_scaling: Optional[float] = None
     color_shape: Optional[tuple] = None
     depth_shape: Optional[tuple] = None
-    arm_position: Optional[np.ndarray] = None
-    joint_positions: Optional[np.ndarray] = None
-    joint_velocities: Optional[np.ndarray] = None
     ee_in_map_pose: Optional[np.ndarray] = None
     camera_in_map_pose: Optional[np.ndarray] = None
     is_simulation: bool = False

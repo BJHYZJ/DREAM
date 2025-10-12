@@ -26,6 +26,8 @@ from dream.motion import RobotModel
 from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q
 from dream.motion.kinematics import DreamIdx, RangerxARMKinematics
 from dream.utils.geometry import xyt2sophus, posquat2sophus, sophus2xyt, pose2sophus
+from dream.motion.constants import ROBOT_JOINTS
+from dream.motion.constants import BASE_INDEX, ARM_INDEX, GRIPPER_INDEX
 
 from .modules.cam import DreamCamClient
 from .modules.manip import DreamManipulationClient
@@ -285,24 +287,6 @@ class DreamClient(AbstractRobotClient):
     def lidar(self):
         return self._ros_client._lidar
 
-    def get_joint_state(self):
-        """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
-        joint_state = self._ros_client.get_joint_state()
-        if joint_state is None:
-            return None
-        q, dq, eff = joint_state[0], joint_state[1], joint_state[2]
-        # If we are in manipulation mode...
-        if self._base_control_mode == ControlMode.MANIPULATION:
-            # ...we need to get the joint positions from the manipulator
-            q[DreamIdx.BASE_X] = self.manip.get_base_x()
-        return [q, dq, eff]
-
-    def get_arm_position(self):
-        return self._ros_client.get_arm_position()
-
-    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
-    #     """look up a particular frame in base coords"""
-    #     return self._ros_client.get_frame_pose(frame, base_frame, lookup_time)
 
     def move_to_manip_posture(self):
         """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
@@ -327,6 +311,19 @@ class DreamClient(AbstractRobotClient):
         self.switch_to_navigation_mode()
         print("- Robot switched to navigation mode.")
 
+
+    def get_arm_state(self):
+        arm_state, arm_velocity, arm_force = self.manip._arm.get_joint_state()
+        return arm_state, arm_velocity, arm_force
+    
+    def get_gripper_state(self):
+        gripper_pos = self.manip._arm.get_gripper_state()
+        return gripper_pos
+
+    def get_arm_position(self):
+        arm_position = self.manip._arm.get_current_pose()
+        return arm_position
+
     def get_base_in_map_pose(self) -> np.ndarray:
         """Get the robot's base pose as XYT."""
         return self._ros_client.get_base_in_map_pose()
@@ -341,6 +338,64 @@ class DreamClient(AbstractRobotClient):
 
     def get_camera_in_map_pose(self):
         return self._ros_client.get_camera_in_map_pose()
+
+
+    # def get_joint_state(self):
+    #     """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
+    #     joint_state = self._ros_client.get_joint_state()
+    #     if joint_state is None:
+    #         return None
+    #     q, dq, eff = joint_state[0], joint_state[1], joint_state[2]
+    #     # If we are in manipulation mode...
+    #     if self._base_control_mode == ControlMode.MANIPULATION:
+    #         # ...we need to get the joint positions from the manipulator
+    #         q[DreamIdx.BASE_X] = self.manip.get_base_x()
+    #     return [q, dq, eff]
+
+
+    def get_join_information(self):
+        joint_state = np.zeros(len(ROBOT_JOINTS))
+        joint_velocity = np.zeros(len(ROBOT_JOINTS))
+        joint_force = np.zeros(len(ROBOT_JOINTS))
+        joint_position = np.zeros(len(ROBOT_JOINTS))
+
+        base_pose = self.get_base_in_map_pose()
+
+        if base_pose is None:
+            return None
+
+        arm_state, arm_velocity, arm_force = self.get_arm_state()
+        vel_base = self._ros_client.get_vel_base()
+        
+        arm_position = self.get_arm_position()
+        gripper_position = self.get_gripper_state()
+
+        joint_state[ARM_INDEX] = arm_state
+
+        joint_velocity[BASE_INDEX] = vel_base
+        joint_velocity[ARM_INDEX] = arm_velocity
+
+        joint_force[ARM_INDEX] = arm_force
+
+        joint_position[BASE_INDEX] = sophus2xyt(base_pose)
+        joint_position[ARM_INDEX] = arm_position
+        joint_position[GRIPPER_INDEX] = gripper_position
+        
+        # If we are in manipulation mode...
+        if self._base_control_mode == ControlMode.MANIPULATION:
+            # ...we need to get the joint positions from the manipulator
+            joint_position[DreamIdx.BASE_X] = self.manip.get_base_x()
+
+        return joint_state, joint_velocity, joint_force, joint_position
+
+    # def get_arm_position(self):
+    #     return self._ros_client.get_arm_position()
+
+    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
+    #     """look up a particular frame in base coords"""
+    #     return self._ros_client.get_frame_pose(frame, base_frame, lookup_time)
+
+
 
     def get_pose_graph(self) -> np.ndarray:  # TODO (zhijie, may need edit)
         """Get SLAM pose graph as a numpy array"""
@@ -469,17 +524,16 @@ class DreamClient(AbstractRobotClient):
         self,
         start_pose: Optional[np.ndarray] = None
     ) -> StateObservations:
-        joint_state = self.get_joint_state()
-        arm_position = self.get_arm_position()
+        joint_information = self.get_join_information()
         base_in_map_pose = self.get_base_in_map_pose()
-        if joint_state is None or base_in_map_pose is None:
+        if joint_information is None or base_in_map_pose is None:
             print("get_state_observation: joint_state is None or base_in_map_pose is None")
             return None
         
-        joint_positions, joint_velocities, joint_efforts = joint_state[0], joint_state[1], joint_state[2]
+        joint_state, joint_velocity, joint_force, joint_position = joint_information
         if start_pose is not None:
             relative_pose = start_pose.inverse() * base_in_map_pose
-        else:
+        else: 
             relative_pose = base_in_map_pose
         euler_angles = relative_pose.so3().log()
         theta = euler_angles[-1]
@@ -487,12 +541,12 @@ class DreamClient(AbstractRobotClient):
         return StateObservations(
             gps=gps,
             compass=np.array([theta]),
-            arm_position=arm_position,
-            joint_positions=joint_positions,
-            joint_velocities=joint_velocities,
-            joint_efforts=joint_efforts,
             base_in_map_pose=base_in_map_pose.matrix(),
             ee_in_map_pose=self.get_ee_in_map_pose().matrix(),
+            joint_state=joint_state,
+            joint_velocity=joint_velocity,
+            joint_force=joint_force,
+            joint_position=joint_position,
             at_goal=self.at_goal(),
             is_homed=self.is_homed,
             is_runstopped=self.is_runstopped,
@@ -500,24 +554,18 @@ class DreamClient(AbstractRobotClient):
 
     def get_servo_observation(self) -> ServoObservations:
         images = self.cam.get_images(compute_xyz=False)
-        joint_state = self.get_joint_state()
-        arm_position = self.get_arm_position()
         ee_in_map_pose = self.get_ee_in_map_pose()
         camera_in_map_pose = self.get_camera_in_map_pose()
 
-        if images is None or joint_state is None or ee_in_map_pose is None or camera_in_map_pose is None:
-            print("get_servo_observation: images is None or joint_state is None or ee_in_map_pose is None or camera_in_map_pose is None")
+        if images is None or ee_in_map_pose is None or camera_in_map_pose is None:
+            print("get_servo_observation: images is None or ee_in_map_pose is None or camera_in_map_pose is None")
             return None
 
         rgb, depth = images[0], images[1]
-        joint_positions, joint_velocities = joint_state[0], joint_state[1]
         
         return ServoObservations(
             rgb=rgb,
             depth=depth,
-            arm_position=arm_position,
-            joint_positions=joint_positions,
-            joint_velocities=joint_velocities,
             ee_in_map_pose=ee_in_map_pose,
             camera_in_map_pose=camera_in_map_pose,
         )
