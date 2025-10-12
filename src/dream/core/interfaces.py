@@ -298,10 +298,10 @@ class StateObservations(BaseObservations):
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
     base_in_map_pose: np.ndarray
     ee_in_map_pose: np.ndarray
-    joint_state: np.ndarray  # joint radians or degrees 
-    joint_velocity: np.ndarray
-    joint_force: np.ndarray
-    joint_position: np.ndarray
+    joint_states: np.ndarray  # joint radians or degrees 
+    joint_velocities: np.ndarray
+    joint_forces: np.ndarray
+    joint_positions: np.ndarray
     at_goal: bool
     is_homed: bool
     is_runstopped: bool

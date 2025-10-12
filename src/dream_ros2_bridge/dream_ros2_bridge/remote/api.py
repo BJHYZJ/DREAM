@@ -354,10 +354,10 @@ class DreamClient(AbstractRobotClient):
 
 
     def get_join_information(self):
-        joint_state = np.zeros(len(ROBOT_JOINTS))
-        joint_velocity = np.zeros(len(ROBOT_JOINTS))
-        joint_force = np.zeros(len(ROBOT_JOINTS))
-        joint_position = np.zeros(len(ROBOT_JOINTS))
+        joint_states = np.zeros(len(ROBOT_JOINTS))
+        joint_velocities = np.zeros(len(ROBOT_JOINTS))
+        joint_forces = np.zeros(len(ROBOT_JOINTS))
+        joint_positions = np.zeros(len(ROBOT_JOINTS))
 
         base_pose = self.get_base_in_map_pose()
 
@@ -370,23 +370,23 @@ class DreamClient(AbstractRobotClient):
         arm_position = self.get_arm_position()
         gripper_position = self.get_gripper_state()
 
-        joint_state[ARM_INDEX] = arm_state
+        joint_states[ARM_INDEX] = arm_state
 
-        joint_velocity[BASE_INDEX] = vel_base
-        joint_velocity[ARM_INDEX] = arm_velocity
+        joint_velocities[BASE_INDEX] = vel_base
+        joint_velocities[ARM_INDEX] = arm_velocity
 
-        joint_force[ARM_INDEX] = arm_force
+        joint_forces[ARM_INDEX] = arm_force
 
-        joint_position[BASE_INDEX] = sophus2xyt(base_pose)
-        joint_position[ARM_INDEX] = arm_position
-        joint_position[GRIPPER_INDEX] = gripper_position
+        joint_positions[BASE_INDEX] = sophus2xyt(base_pose)
+        joint_positions[ARM_INDEX] = arm_position
+        joint_positions[GRIPPER_INDEX] = gripper_position
         
         # If we are in manipulation mode...
         if self._base_control_mode == ControlMode.MANIPULATION:
             # ...we need to get the joint positions from the manipulator
-            joint_position[DreamIdx.BASE_X] = self.manip.get_base_x()
+            joint_positions[DreamIdx.BASE_X] = self.manip.get_base_x()
 
-        return joint_state, joint_velocity, joint_force, joint_position
+        return joint_states, joint_velocities, joint_forces, joint_positions
 
     # def get_arm_position(self):
     #     return self._ros_client.get_arm_position()
@@ -527,10 +527,10 @@ class DreamClient(AbstractRobotClient):
         joint_information = self.get_join_information()
         base_in_map_pose = self.get_base_in_map_pose()
         if joint_information is None or base_in_map_pose is None:
-            print("get_state_observation: joint_state is None or base_in_map_pose is None")
+            print("get_state_observation: joint_states is None or base_in_map_pose is None")
             return None
         
-        joint_state, joint_velocity, joint_force, joint_position = joint_information
+        joint_states, joint_velocities, joint_forces, joint_positions = joint_information
         if start_pose is not None:
             relative_pose = start_pose.inverse() * base_in_map_pose
         else: 
@@ -543,10 +543,10 @@ class DreamClient(AbstractRobotClient):
             compass=np.array([theta]),
             base_in_map_pose=base_in_map_pose.matrix(),
             ee_in_map_pose=self.get_ee_in_map_pose().matrix(),
-            joint_state=joint_state,
-            joint_velocity=joint_velocity,
-            joint_force=joint_force,
-            joint_position=joint_position,
+            joint_states=joint_states,
+            joint_velocities=joint_velocities,
+            joint_forces=joint_forces,
+            joint_positions=joint_positions,
             at_goal=self.at_goal(),
             is_homed=self.is_homed,
             is_runstopped=self.is_runstopped,
