@@ -269,7 +269,7 @@ class DreamManipulationClient(AbstractControlModule):
     def get_ee_pose(self, world_frame=False, matrix=False):
         """Get current end-effector pose from xarm controller"""
         # Get current pose from xarm controller [x, y, z, roll, pitch, yaw]
-        pose_data = self._ros_client._arm_client.get_current_pose()
+        pose_data = self._arm.get_current_pose()
         pos = np.array([pose_data[0], pose_data[1], pose_data[2]])  # mm
         # Convert euler angles to quaternion
         # xarm returns [x, y, z, roll, pitch, yaw] where roll, pitch, yaw are in degrees
@@ -311,23 +311,23 @@ class DreamManipulationClient(AbstractControlModule):
     #     else:
     #         return pos, quat
 
-    def get_joint_positions(self):
-        """Get current joint positions including base x position"""
-        # Get joint states from xarm controller
-        joint_state = self._ros_client._arm_client.get_joint_state()
-        gripper_state = self._ros_client._arm_client.get_gripper_state()
-        base_x = self.get_base_x()
+    # def get_joint_positions(self):
+    #     """Get current joint positions including base x position"""
+    #     # Get joint states from xarm controller
+    #     joint_state = self._arm.get_joint_state()
+    #     gripper_state = self._arm.get_gripper_state()
+    #     base_x = self.get_base_x()
         
-        return [
-            base_x,
-            joint_state[0],  # joint1
-            joint_state[1],  # joint2  
-            joint_state[2],  # joint3
-            joint_state[3],  # joint4
-            joint_state[4],  # joint5
-            joint_state[5],  # joint6
-            gripper_state,   # gripper
-        ]
+    #     return [
+    #         base_x,
+    #         joint_state[0],  # joint1
+    #         joint_state[1],  # joint2  
+    #         joint_state[2],  # joint3
+    #         joint_state[3],  # joint4
+    #         joint_state[4],  # joint5
+    #         joint_state[5],  # joint6
+    #         gripper_state,   # gripper
+    #     ]
 
     # def get_joint_positions(self):
     #     q, _, _ = self._ros_client.get_joint_state()
@@ -345,7 +345,7 @@ class DreamManipulationClient(AbstractControlModule):
 
     def get_gripper_position(self) -> float:
         """get current gripper position as a float"""
-        gripper_state = self._ros_client._arm_client.get_gripper_state()
+        gripper_state = self._arm.get_gripper_state()
         return gripper_state
 
     # def get_gripper_position(self) -> float:
@@ -362,20 +362,20 @@ class DreamManipulationClient(AbstractControlModule):
         # We'll use the joint positions to move the arm
         if len(q) >= 6:
             joint_positions = q[1:7]  # Skip base_x, get joint positions
-            return self._ros_client._arm_client.move_to_pose(joint_positions, wait=wait)
+            return self._arm.move_to_pose(joint_positions, wait=wait)
         
         return True
 
     @enforce_enabled
     def head_to(self, angle: np.ndarray, is_radian: bool = False, wait: bool = True):
         """Move robot to specified head position"""
-        self._ros_client._arm_client.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+        self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
 
     def set_servo_angle(self, angle, is_radian=False, wait=True):
-        self._ros_client._arm_client.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+        self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
 
     def get_servo_angle(self, is_radian=False, is_real=False):
-        return self._ros_client._arm_client.get_servo_angle(is_radian=is_radian, is_real=is_real)
+        return self._arm.get_servo_angle(is_radian=is_radian, is_real=is_real)
 
 
     # @enforce_enabled
@@ -404,12 +404,12 @@ class DreamManipulationClient(AbstractControlModule):
     @enforce_enabled
     def home(self):
         """Move robot to home position"""
-        self._ros_client._arm_client.reset()
+        self._arm.reset()
 
     @enforce_enabled
     def reset(self):
         """Move robot to reset position"""
-        self._ros_client._arm_client.reset()
+        self._arm.reset()
 
     # @enforce_enabled
     # def home(self):
@@ -460,14 +460,14 @@ class DreamManipulationClient(AbstractControlModule):
         ]
 
         # Move to pose
-        success = self._ros_client._arm_client.move_to_pose(pose, wait=blocking)
+        success = self._arm.move_to_pose(pose, wait=blocking)
 
         # Handle gripper separately if specified
         if gripper is not None:
             if gripper > 0.5:  # Threshold for open/close
-                self._ros_client._arm_client.open_gripper(wait=blocking)
+                self._arm.open_gripper(wait=blocking)
             else:
-                self._ros_client._arm_client.close_gripper(wait=blocking)
+                self._arm.close_gripper(wait=blocking)
 
         # Debug print
         if debug:
@@ -676,11 +676,11 @@ class DreamManipulationClient(AbstractControlModule):
             pose.extend([euler_angles[2], euler_angles[1], euler_angles[0]])  # [roll, pitch, yaw]
         else:
             # Use current orientation if not specified
-            current_pose = self._ros_client._arm_client.get_current_pose()
+            current_pose = self._arm.get_current_pose()
             pose.extend(current_pose[3:6])
         
         # Move to pose
-        success = self._ros_client._arm_client.move_to_pose(pose, wait=blocking)
+        success = self._arm.move_to_pose(pose, wait=blocking)
 
         # Debug print
         if debug and blocking:
@@ -752,13 +752,13 @@ class DreamManipulationClient(AbstractControlModule):
     #     return self.goto_ee_pose([0, 0, 0], quat_desired, relative=True, **kwargs)
 
     def open_gripper(self, wait=True, half_open=False):
-        self._ros_client._arm_client.open_gripper(wait=wait, half_open=half_open)
+        self._arm.open_gripper(wait=wait, half_open=half_open)
 
     def close_gripper(self, wait=True):
-        self._ros_client._arm_client.close_gripper(wait=wait)
+        self._arm.close_gripper(wait=wait)
 
     def move_gripper(self, target: int = 830, wait: bool = True):
-        self._ros_client._arm_client.set_gripper(target, wait=wait)
+        self._arm.set_gripper(target, wait=wait)
 
         # joint_goals = {self._ros_client.GRIPPER_FINGER: target}
 
