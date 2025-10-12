@@ -28,18 +28,18 @@ from dream.utils.logger import Logger
 logger = Logger(__name__)
 
 
-def compute_tilt(camera_xyz, target_xyz):
-    """
-    a util function for computing robot head tilts so the robot can look at the target object after navigation
-    - camera_xyz: estimated (x, y, z) coordinates of camera
-    - target_xyz: estimated (x, y, z) coordinates of the target object
-    """
-    if not isinstance(camera_xyz, np.ndarray):
-        camera_xyz = np.array(camera_xyz)
-    if not isinstance(target_xyz, np.ndarray):
-        target_xyz = np.array(target_xyz)
-    vector = camera_xyz - target_xyz
-    return -np.arctan2(vector[2], np.linalg.norm(vector[:2]))
+# def compute_tilt(camera_xyz, target_xyz):
+#     """
+#     a util function for computing robot head tilts so the robot can look at the target object after navigation
+#     - camera_xyz: estimated (x, y, z) coordinates of camera
+#     - target_xyz: estimated (x, y, z) coordinates of the target object
+#     """
+#     if not isinstance(camera_xyz, np.ndarray):
+#         camera_xyz = np.array(camera_xyz)
+#     if not isinstance(target_xyz, np.ndarray):
+#         target_xyz = np.array(target_xyz)
+#     vector = camera_xyz - target_xyz
+#     return -np.arctan2(vector[2], np.linalg.norm(vector[:2]))
 
 
 class DreamTaskExecutor:
@@ -127,11 +127,11 @@ class DreamTaskExecutor:
         if point is None:
             logger.error("Navigation Failure: Could not find the object {}".format(target_object))
             return None
-        cv2.imwrite(target_object + ".jpg", self.robot.get_observation().rgb[:, :, [2, 1, 0]])
-        self.robot.switch_to_navigation_mode()
-        xyt = self.robot.get_base_in_map_xyt()
-        xyt[2] = xyt[2] + np.pi / 2
-        self.robot.move_base_to(xyt, blocking=True)
+        cv2.imwrite(self.agent.voxel_map.log + "/" + target_object + ".jpg", self.robot.get_observation().rgb[:, :, [2, 1, 0]])
+        # self.robot.switch_to_navigation_mode()
+        # xyt = self.robot.get_base_in_map_xyt()
+        # xyt[2] = xyt[2] + np.pi / 2
+        # self.robot.move_base_to(xyt, blocking=True)
         return point
 
     def _pickup(
@@ -146,18 +146,18 @@ class DreamTaskExecutor:
             target_object: The object to pick up.
         """
         self.robot.switch_to_manipulation_mode()
-        camera_xyz = self.robot.get_head_pose()[:3, 3]
-        if point is not None:
-            theta = compute_tilt(camera_xyz, point)
-        else:
-            theta = -0.6
+        # camera_xyz = self.robot.get_head_pose()[:3, 3]
+        # if point is not None:
+        #     theta = compute_tilt(camera_xyz, point)
+        # else:
+        #     theta = -0.6
 
         # Grasp the object using operation if it's available
         if self.grasp_object is not None:
             self.robot.say("Grasping the " + str(target_object) + ".")
             print("Using operation to grasp object:", target_object)
             print(" - Point:", point)
-            print(" - Theta:", theta)
+            # print(" - Theta:", theta)
             state = self.robot.get_six_joints()
             state[1] = 1.0
             self.robot.arm_to(state, blocking=True)
@@ -175,7 +175,7 @@ class DreamTaskExecutor:
             # Otherwise, use the self.agent's manipulation method
             # This is from OK Robot
             print("Using self.agent to grasp object:", target_object)
-            self.agent.manipulate(target_object, theta, skip_confirmation=skip_confirmations)
+            self.agent.manipulate(target_object, point=point, skip_confirmation=skip_confirmations)
         self.robot.look_front()
 
     def _take_picture(self, channel=None) -> None:
@@ -215,11 +215,11 @@ class DreamTaskExecutor:
             target_receptacle: The receptacle to place the object in.
         """
         self.robot.switch_to_manipulation_mode()
-        camera_xyz = self.robot.get_head_pose()[:3, 3]
-        if point is not None:
-            theta = compute_tilt(camera_xyz, point)
-        else:
-            theta = -0.6
+        # camera_xyz = self.robot.get_head_pose()[:3, 3]
+        # if point is not None:
+        #     theta = compute_tilt(camera_xyz, point)
+        # else:
+        #     theta = -0.6
 
         self.robot.say("Placing object on the " + str(target_receptacle) + ".")
         # If you run this stack with visual servo, run it locally
@@ -290,7 +290,8 @@ class DreamTaskExecutor:
                     and input("Do you want to run navigation? [Y/n]: ").upper() != "N"
                 ):
                     self.robot.move_to_nav_posture()
-                    point = self._find(args)
+                    # point = self._find(args)
+                    point = [0.0, 0.0, 1.8885841369628906]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None

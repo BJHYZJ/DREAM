@@ -14,6 +14,7 @@ import pinocchio as pin
 from scipy.spatial.transform import Rotation as R
 
 from dream.motion.kinematics import DreamIdx
+from dream.motion import constants
 
 OVERRIDE_STATES: dict[str, float] = {}
 
@@ -36,36 +37,39 @@ class DreamManipulationWrapper:
         self,
         robot,
         gripper_threshold=7.0,
-        stretch_gripper_max=0.64,
-        stretch_gripper_min=0,
-        end_link="link_gripper_s3_body",
+        gripper_max=830,
+        gripper_min=0,
+        end_link="gripper",
     ):
-        self.STRETCH_GRIPPER_MAX = stretch_gripper_max
-        self.STRETCH_GRIPPER_MIN = stretch_gripper_min
+        self.GRIPPER_MAX = gripper_max
+        self.GRIPPER_MIN = gripper_min
         self.joints_pin = {"joint_fake": 0}
 
         self.GRIPPER_THRESHOLD = gripper_threshold
 
         print("dream robot starting")
-        self.head_joint_list = ["joint_fake", "joint_head_pan", "joint_head_tilt"]
-        self.init_joint_list = [
-            "joint_fake",
-            "joint_lift",
-            "3",
-            "2",
-            "1",
-            "0",
-            "joint_wrist_yaw",
-            "joint_wrist_pitch",
-            "joint_wrist_roll",
-            "joint_gripper_finger_left",
-        ]
+        self.base_joint_list = constants.BASE_JOINTS
+        self.arm_joint_list = constants.ARM_JOINTS
+        self.gripper_joint_list = constants.GRIPPER_JOINTS
+        # self.head_joint_list = ["joint_fake", "joint_head_pan", "joint_head_tilt"]
+        # self.init_joint_list = [
+        #     "joint_fake",
+        #     "joint_lift",
+        #     "3",
+        #     "2",
+        #     "1",
+        #     "0",
+        #     "joint_wrist_yaw",
+        #     "joint_wrist_pitch",
+        #     "joint_wrist_roll",
+        #     "joint_gripper_finger_left",
+        # ]
 
         # end_link is the frame of reference node
         self.end_link = end_link
-        self.joint_list = self.init_joint_list[:-1]
+        self.joint_list = self.base_joint_list + self.arm_joint_list + self.gripper_joint_list
 
-        # Initialize StretchClient controller
+        # Initialize Client controller
         self.robot = robot
         # self.robot.switch_to_manipulation_mode()
         # time.sleep(2)
@@ -75,13 +79,8 @@ class DreamManipulationWrapper:
         # self.pan, self.tilt = self.robot.get_pan_tilt()
 
     def get_joints(self):
-        """
-        Returns all the joint names and values involved in forward kinematics of head and gripper
-        """
-        ## Names of all 13 joints
-        joint_names = (
-            self.init_joint_list + ["joint_gripper_finger_right"] + self.head_joint_list[1:]
-        )
+
+        joint_names = self.joint_list
         self.updateJoints()
         joint_values = list(self.joints.values()) + [0] + list(self.head_joints.values())[1:]
 
@@ -89,68 +88,47 @@ class DreamManipulationWrapper:
 
     def move_to_position(
         self,
-        lift_pos=None,
-        arm_pos=None,
-        base_trans=0.0,
-        wrist_yaw=None,
-        wrist_pitch=None,
-        wrist_roll=None,
+        joint1=None,
+        joint2=None,
+        joint3=None,
+        joint4=None,
+        joint5=None,
+        joint6=None,
         gripper_pos=None,
-        base_theta=None,
-        head_tilt=None,
-        head_pan=None,
+        target_point=None,
         blocking=True,
     ):
         """
-        Moves the robots, base, arm, lift, wrist and head to a desired position.
+        Moves the robots, base, arm, gripper, head to a desired position.
         """
-        if base_theta is not None:
-            self.robot.navigate_to([0, 0, base_theta], relative=True, blocking=True)
-            return
 
-        # Base, arm and lift state update
-        target_state = self.robot.get_six_joints()
-        if not gripper_pos is None:
-            self.CURRENT_STATE = (
-                gripper_pos * (self.STRETCH_GRIPPER_MAX - self.STRETCH_GRIPPER_MIN)
-                + self.STRETCH_GRIPPER_MIN
-            )
+        # Base, arm and gripper state update
+        target_state = self.robot.get_seven_joints()
+
+        if not joint1 is None:
+            target_state[0] = joint1
+        if not joint2 is None:
+            target_state[1] = joint2
+        if not joint3 is None:
+            target_state[2] = joint3
+        if not joint4 is None:
+            target_state[3] = joint4
+        if not joint5 is None:
+            target_state[4] = joint5
+        if not joint6 is None:
+            target_state[5] = joint6
+
+        if gripper_pos is not None:
+            self.CURRENT_STATE = gripper_pos
             self.robot.gripper_to(self.CURRENT_STATE, blocking=blocking)
-        if not arm_pos is None:
-            target_state[2] = arm_pos
-        if not lift_pos is None:
-            target_state[1] = lift_pos
-        if base_trans is None:
-            base_trans = 0
-        target_state[0] = base_trans + target_state[0]
-
-        # Wrist state update
-        if not wrist_yaw is None:
-            target_state[3] = wrist_yaw
-        if not wrist_pitch is None:
-            target_state[4] = min(wrist_pitch, 0.1)
-        if not wrist_roll is None:
-            target_state[5] = wrist_roll
 
         self.robot.arm_to(
-            target_state, blocking=blocking, head=np.array([self.pan, self.tilt]), reliable=False
+            joint_angles=target_state[:6], 
+            gripper=target_state[6], 
+            target_point=target_point,
+            blocking=blocking, 
+            reliable=False
         )
-
-        # It is very important to remember head pan and head tilt for inverse kinematics
-        # As we need to transform the gripper pose in robot head coordinate to robot gripper coordinate
-        # So you always need to remember in which pan and tilt the robot generates the gripper pose.
-        if head_tilt is not None:
-            target_head_tilt = head_tilt
-            self.tilt = head_tilt
-        else:
-            target_head_tilt = self.tilt
-        if head_pan is not None:
-            target_head_pan = head_pan
-            self.pan = head_pan
-        else:
-            target_head_pan = self.pan
-
-        self.robot.head_to(head_tilt=target_head_tilt, head_pan=target_head_pan, blocking=blocking)
 
     def pickup(self, width):
         """
@@ -160,10 +138,10 @@ class DreamManipulationWrapper:
         next_gripper_pos = width
         while True:
             self.robot.gripper_to(
-                max(next_gripper_pos * self.STRETCH_GRIPPER_MAX, -0.2), blocking=True
+                max(next_gripper_pos * self.GRIPPER_MAX, -0.2), blocking=True
             )
             curr_gripper_pose = self.robot.get_gripper_position()
-            # print('Robot means to move gripper to', next_gripper_pos * self.STRETCH_GRIPPER_MAX)
+            # print('Robot means to move gripper to', next_gripper_pos * self.GRIPPER_MAX)
             # print('Robot actually moves gripper to', curr_gripper_pose)
             if next_gripper_pos == -1:
                 break
@@ -177,7 +155,7 @@ class DreamManipulationWrapper:
         """
         update all the current positions of joints
         """
-        state = self.robot.get_six_joints()
+        state = self.robot.get_seven_joints()
         origin_dist = state[0]
 
         # Head Joints
@@ -203,7 +181,7 @@ class DreamManipulationWrapper:
         """
         Given the desired joints movement this function will the joints accordingly
         """
-        state = self.robot.get_six_joints()
+        state = self.robot.get_seven_joints()
 
         # clamp rotational joints between -1.57 to 1.57
         joints["joint_wrist_pitch"] = (joints["joint_wrist_pitch"] + 1.57) % 3.14 - 1.57
@@ -262,8 +240,8 @@ class DreamManipulationWrapper:
         self.updateJoints()
 
         q = self.robot.get_joint_positions()
-        q[HelloStretchIdx.WRIST_PITCH] = OVERRIDE_STATES.get(
-            "wrist_pitch", q[HelloStretchIdx.WRIST_PITCH]
+        q[DreamIdx.GRIPPER] = OVERRIDE_STATES.get(
+            "gripper", q[DreamIdx.GRIPPER]
         )
         pin_pose = self.robot.get_ee_pose(matrix=True, link_name=self.end_link, q=q)
         pin_rotation, pin_translation = pin_pose[:3, :3], pin_pose[:3, 3]

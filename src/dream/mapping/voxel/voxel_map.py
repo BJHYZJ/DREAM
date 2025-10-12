@@ -301,27 +301,71 @@ class SparseVoxelMapNavigationSpace(XYT):
 
         valid = bool((not collision) and is_safe)
         if debug:
+        # if True:
             if collision:
                 print("- state in collision")
             if not is_safe:
                 print("- not safe")
 
             print(f"{valid=}")
-            obs = obstacles.cpu().numpy().copy()
-            exp = explored.cpu().numpy().copy()
-            obs[x0:x1, y0:y1] = 1
-            plt.subplot(321)
-            plt.imshow(obs)
-            plt.subplot(322)
-            plt.imshow(exp)
-            plt.subplot(323)
-            plt.imshow(crop_obs.cpu().numpy())
-            plt.title("obstacles")
-            plt.subplot(324)
-            plt.imshow(crop_exp.cpu().numpy())
-            plt.title("explored")
-            plt.subplot(325)
-            plt.imshow(mask.cpu().numpy())
+            
+            crop_margin = dim * 15
+            cx0 = max(0, x0 - crop_margin)
+            cx1 = min(obstacles.shape[0], x1 + crop_margin)
+            cy0 = max(0, y0 - crop_margin)
+            cy1 = min(obstacles.shape[1], y1 + crop_margin)
+            
+            obs_crop_large = obstacles[cx0:cx1, cy0:cy1].cpu().numpy().astype(float)
+            exp_crop_large = explored[cx0:cx1, cy0:cy1].cpu().numpy().astype(float)
+            
+            robot_x0 = x0 - cx0
+            robot_x1 = robot_x0 + dim
+            robot_y0 = y0 - cy0
+            robot_y1 = robot_y0 + dim
+            
+            obs_vis = obs_crop_large.copy()
+            if robot_x0 >= 0 and robot_y0 >= 0 and robot_x1 <= obs_vis.shape[0] and robot_y1 <= obs_vis.shape[1]:
+                obs_vis[robot_x0, robot_y0:robot_y1] = 0.5
+                obs_vis[robot_x1-1, robot_y0:robot_y1] = 0.5
+                obs_vis[robot_x0:robot_x1, robot_y0] = 0.5
+                obs_vis[robot_x0:robot_x1, robot_y1-1] = 0.5
+            
+            plt.figure(figsize=(15, 10))
+            plt.subplot(231)
+            plt.imshow(obs_vis, cmap='hot')
+            plt.title(f"Obstacles (zoomed)\nRobot at center (gray box)")
+            plt.colorbar()
+            
+            plt.subplot(232)
+            plt.imshow(exp_crop_large, cmap='Blues')
+            plt.title(f"Explored (zoomed)\nSize: {obs_crop_large.shape}")
+            plt.colorbar()
+            
+            plt.subplot(233)
+            plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
+            plt.title(f"Obstacles (cropped {dim}x{dim})")
+            plt.colorbar()
+            
+            plt.subplot(234)
+            plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
+            plt.title(f"Explored (cropped {dim}x{dim})")
+            plt.colorbar()
+            
+            plt.subplot(235)
+            plt.imshow(mask.cpu().numpy(), cmap='gray')
+            plt.title("Robot Footprint Mask")
+            plt.colorbar()
+            
+            # 显示碰撞叠加结果
+            plt.subplot(236)
+            collision_vis = (crop_obs & mask).cpu().numpy().astype(float)
+            safe_vis = (crop_exp & mask).cpu().numpy().astype(float) * 0.5
+            overlay = np.maximum(collision_vis, safe_vis)
+            plt.imshow(overlay, cmap='RdYlGn_r')
+            plt.title(f"Collision Check\n(collision={collision}, safe={p_is_safe:.2f})")
+            plt.colorbar()
+            
+            plt.tight_layout()
             plt.show()
 
         return valid
@@ -329,13 +373,15 @@ class SparseVoxelMapNavigationSpace(XYT):
     def _get_conservative_2d_map(self, obstacles, explored):
         """Get a conservative 2d map from the voxel map"""
         # Extract edges from our explored mask
-        obstacles = binary_dilation(
-            obstacles.float().unsqueeze(0).unsqueeze(0), self.dilate_obstacles_kernel
-        )[0, 0].bool()
-        less_explored = binary_erosion(
-            explored.float().unsqueeze(0).unsqueeze(0), self.dilate_explored_kernel
-        )[0, 0]
-        return obstacles, less_explored
+        if self.dilate_obstacles_kernel is not None:
+            obstacles = binary_dilation(
+                obstacles.float().unsqueeze(0).unsqueeze(0), self.dilate_obstacles_kernel
+            )[0, 0].bool()
+        if self.dilate_explored_kernel is not None:
+            explored = binary_erosion(
+                explored.float().unsqueeze(0).unsqueeze(0), self.dilate_explored_kernel
+            )[0, 0]
+        return obstacles, explored
 
     def sample_near_mask(
         self,

@@ -399,7 +399,7 @@ class RerunVisualizer:
     def log_robot_xyt(self, state: StateObservations):
         """Log robot world pose"""
         # 直接使用base_pose_in_map，它已经包含了完整的位置和旋转信息
-        base_pose = state["base_in_map_pose"]
+        base_pose = state.base_in_map_pose
         
         # 检查是否是历史数据（通过检查时间戳或添加调试信息）
         # print(f"Base pose timestamp: {time.time()}")

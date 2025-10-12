@@ -48,7 +48,7 @@ from dream.mapping.voxel import SparseVoxelMapNavigationSpaceDream
 from dream.mapping.voxel import SparseVoxelMapProxy
 from dream.motion.algo.a_star import AStar
 from dream.perception.detection.owl import OwlPerception
-from dream.perception.encoders import MaskSiglipEncoder
+from dream.perception.encoders.siglip_encoder import MaskSiglipEncoder
 from dream.perception.wrapper import OvmmPerception
 
 # Manipulation hyperparameters
@@ -76,7 +76,7 @@ class RobotAgent(RobotAgentBase):
         use_instance_memory: bool = False,
         realtime_updates: bool = False,
         obs_sub_port: int = 4450,
-        re: int = 3,
+        # re: int = 3,
         manip_port: int = 5557,
         log: Optional[str] = None,
         server_ip: Optional[str] = "127.0.0.1",
@@ -125,10 +125,6 @@ class RobotAgent(RobotAgentBase):
             self.log = "dream_log/" + log
 
         self.create_obstacle_map(parameters)
-
-        # Create voxel map information for multithreaded access
-        self._voxel_map_lock = Lock()
-        self.voxel_map_proxy = SparseVoxelMapProxy(self.voxel_map, self._voxel_map_lock)
 
         # ==============================================
         self.obs_count = 0
@@ -180,21 +176,22 @@ class RobotAgent(RobotAgentBase):
         self.manip_socket = context.socket(zmq.REQ)
         self.manip_socket.connect("tcp://" + server_ip + ":" + str(manip_port))
 
-        if re == 1 or re == 2:
-            stretch_gripper_max = 0.3
-            end_link = "link_straight_gripper"
-        else:
-            stretch_gripper_max = 0.64
-            end_link = "link_gripper_s3_body"
+        # if re == 1 or re == 2:
+        #     stretch_gripper_max = 0.3
+        #     end_link = "link_straight_gripper"
+        # else:
+        #     stretch_gripper_max = 0.64
+        #     end_link = "link_gripper_s3_body"
+        end_link = "gripper"
         self.transform_node = end_link
         self.manip_wrapper = ManipulationWrapper(
-            self.robot, stretch_gripper_max=stretch_gripper_max, end_link=end_link
+            self.robot, gripper_max=830, end_link=end_link
         )
         self.robot.move_to_nav_posture()
 
         self.reset_object_plans()
 
-        self.re = re
+        # self.re = re
 
         # Store the current scene graph computed from detected objects
         self.scene_graph = None
@@ -207,10 +204,20 @@ class RobotAgent(RobotAgentBase):
         self._start_threads()
 
     def create_obstacle_map(self, parameters):
+        """
+        This function creates the MaskSiglipEncoder, Owlv2 detector, voxel map util class and voxel map navigation space util class
+        """
+
+        # Initialize the encoder in different ways depending on the configuration
         if self.manipulation_only:
             self.encoder = None
         else:
-            self.encoder = MaskSiglipEncoder(device=self.device, version="so400m")
+            # Use SIGLip-so400m for accurate inference
+            # We personally feel that Siglipv1 is better than Siglipv2, but we still include the Siglipv2 in src/stretch/perception/encoders/ for future reference
+            self.encoder = MaskSiglipEncoder(
+                version="so400m", feature_matching_threshold=0.14, device=self.device
+            )
+
         # You can see a clear difference in hyperparameter selection in different querying strategies
         # Running gpt4o is time consuming, so we don't want to waste more time on object detection or Siglip or voxelization
         # On the other hand querying by feature similarity is fast and we want more fine grained details in semantic memory
@@ -226,7 +233,7 @@ class RobotAgent(RobotAgentBase):
             image_shape = (360, 270)
         else:
             self.detection_model = OwlPerception(
-                version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.2
+                version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.15
             )
             semantic_memory_resolution = 0.05
             image_shape = (480, 360)
@@ -468,7 +475,11 @@ class RobotAgent(RobotAgentBase):
         print("*" * 10, "Look around to check", "*" * 10)
         # for pan in [0.6, -0.2, -1.0, -1.8]:
         #     tilt = -0.6
-        for angle in [constants.look_down, constants.look_left_1, constants.look_left_2, constants.look_right_1, constants.look_right_2]:
+        for angle in [
+            constants.look_ahead, constants.look_front, constants.look_down, 
+            constants.look_left_1, constants.look_left_2, 
+            constants.look_right_1, constants.look_right_2
+        ]:
             self.robot.head_to(angle=angle, blocking=True)
             self.update()
 
@@ -592,7 +603,11 @@ class RobotAgent(RobotAgentBase):
         if len(localized_point) == 2:
             localized_point = np.array([localized_point[0], localized_point[1], 0])
 
-        point = self.space.sample_navigation(start_pose, self.planner, localized_point)
+        point = self.space.sample_navigation(
+            start=start_pose, 
+            point=localized_point, 
+            planner=self.planner
+        )
 
         print("Navigation endpoint selected")
 
@@ -617,7 +632,7 @@ class RobotAgent(RobotAgentBase):
             self.rerun_visualizer.log_custom_pointcloud(
                 "world/object",
                 [localized_point[0], localized_point[1], 1.5],
-                torch.Tensor([1, 0, 0]),
+                torch.Tensor([0, 1, 0]),
                 0.1,
             )
 
@@ -677,19 +692,20 @@ class RobotAgent(RobotAgentBase):
         step = 0
         end_point = None
         while not finished and step < max_step:
-            print("*" * 20, step, "*" * 20)
+            print("*" * 20, "navigation step", step, "*" * 20)
             step += 1
             finished, end_point = self.execute_action(text)
             if finished is None:
                 print("Navigation failed! The path might be blocked!")
                 return None
+        print("Navigation finished!")
         return end_point
 
     def place(
         self,
         text,
         local=True,
-        init_tilt=INIT_HEAD_TILT,
+        # init_tilt=INIT_HEAD_TILT,
         base_node="camera_depth_optical_frame",
     ):
         """
@@ -760,7 +776,7 @@ class RobotAgent(RobotAgentBase):
     def manipulate(
         self,
         text,
-        init_tilt=INIT_HEAD_TILT,
+        point=None,
         base_node="camera_depth_optical_frame",
         skip_confirmation: bool = False,
     ):
@@ -775,19 +791,17 @@ class RobotAgent(RobotAgentBase):
         """
 
         self.robot.switch_to_manipulation_mode()
-        self.robot.look_at_ee()
-
-        gripper_pos = 1
+        # self.robot.look_at_ee()
 
         self.manip_wrapper.move_to_position(
-            arm_pos=INIT_ARM_POS,
-            head_pan=INIT_HEAD_PAN,
-            head_tilt=init_tilt,
-            gripper_pos=gripper_pos,
-            lift_pos=INIT_LIFT_POS,
-            wrist_pitch=INIT_WRIST_PITCH,
-            wrist_roll=INIT_WRIST_ROLL,
-            wrist_yaw=INIT_WRIST_YAW,
+            joint1=constants.look_front[0],
+            joint2=constants.look_front[1],
+            joint3=constants.look_front[2],
+            joint4=constants.look_front[3],
+            joint5=constants.look_front[4],
+            joint6=constants.look_front[5],
+            gripper_pos=self.robot.get_robot_model().GRIPPER_OPEN,
+            target_point=point,
         )
 
         rotation, translation, depth, width = capture_and_process_image(

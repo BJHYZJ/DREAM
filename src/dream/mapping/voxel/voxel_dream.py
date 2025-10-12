@@ -20,6 +20,7 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
+import open3d as o3d
 from PIL import Image
 from scipy.ndimage import maximum_filter, median_filter
 from torch import Tensor
@@ -27,7 +28,6 @@ from torch import Tensor
 from dream.core.interfaces import Observations
 from dream.llms import OpenaiClient
 from dream.llms.prompts import DYNAMEM_VISUAL_GROUNDING_PROMPT
-from dream.perception.encoders import MaskSiglipEncoder
 from dream.utils.image import Camera, camera_xyz_to_global_xyz
 from dream.utils.morphology import binary_dilation, binary_erosion, get_edges
 from dream.utils.point_cloud_torch import unproject_masked_depth_to_xyz_coordinates
@@ -35,6 +35,7 @@ from dream.utils.voxel import VoxelizedPointcloud, scatter3d
 
 from .voxel import VALID_FRAMES, Frame
 from .voxel import SparseVoxelMap
+
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         background_instance_label: int = -1,
         instance_memory_kwargs: Dict[str, Any] = {},
         voxel_kwargs: Dict[str, Any] = {},
-        encoder: Optional[MaskSiglipEncoder] = None,
+        encoder=None,
         map_2d_device: str = "cpu",
         device: Optional[str] = None,
         use_instance_memory: bool = False,
@@ -105,7 +106,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
             use_instance_memory=use_instance_memory,
             use_median_filter=use_median_filter,
             median_filter_size=median_filter_size,
-            median_filter_max_error=median_filter_size,
+            median_filter_max_error=median_filter_max_error,
             use_derivative_filter=use_derivative_filter,
             derivative_filter_threshold=derivative_filter_threshold,
             prune_detected_objects=prune_detected_objects,
@@ -126,6 +127,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         self.log = log
         self.mllm = mllm
         if self.mllm:
+            # Used to do visual grounding task
             self.gpt_client = OpenaiClient(
                 DYNAMEM_VISUAL_GROUNDING_PROMPT, model="gpt-4o-2024-05-13"
             )
@@ -156,7 +158,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         text: str,
         point: Union[torch.Tensor, np.ndarray],
         distance_threshold: float = 0.1,
-        similarity_threshold: float = 0.14,
+        similarity_threshold: float = 0.21,
     ):
         """
         Running visual grounding is quite time consuming.
@@ -176,9 +178,12 @@ class SparseVoxelMapDream(SparseVoxelMap):
         return torch.max(alignments[distances < distance_threshold]) >= similarity_threshold
 
     def get_2d_map(
-        self, debug: bool = False, return_history_id: bool = False
+        self, debug: bool = False, return_history_id: bool = False, kernel: int = 7
     ) -> Tuple[Tensor, ...]:
-        """Get 2d map with explored area and frontiers."""
+        """
+        Get 2d map with explored area and frontiers.
+        return_history_id: if True, return when each voxel was recently updated
+        """
 
         # Is this already cached? If so we don't need to go to all this work
         if (
@@ -209,8 +214,8 @@ class SparseVoxelMapDream(SparseVoxelMap):
         # int() truncates towards zero: int(-3.86)=-3, but we need floor(-3.86)=-4
         min_height = int(np.floor(self.obs_min_height / self.grid_resolution))
         max_height = int(np.ceil(self.obs_max_height / self.grid_resolution))
-        print(f'[DEBUG] obs_min_height={self.obs_min_height}, obs_max_height={self.obs_max_height}')
-        print(f'[DEBUG] min_height={min_height}, max_height={max_height}, height_bins={max_height - min_height}')
+        # print(f'[DEBUG] obs_min_height={self.obs_min_height}, obs_max_height={self.obs_max_height}')
+        # print(f'[DEBUG] min_height={min_height}, max_height={max_height}, height_bins={max_height - min_height}')
 
         # grid_size = self.grid_size + [max_height]
         # voxels = torch.zeros(grid_size, device=device)
@@ -229,8 +234,8 @@ class SparseVoxelMapDream(SparseVoxelMap):
         
         # Mask out obstacles: keep points in range [0, height_bins) after shifting
         obs_mask = (xyz[:, -1] >= 0) & (xyz[:, -1] < height_bins)
-        print(f'[DEBUG] Total points before filtering: {xyz.shape[0]}')
-        print(f'[DEBUG] Points after height filtering: {obs_mask.sum().item()}')
+        # print(f'[DEBUG] Total points before filtering: {xyz.shape[0]}')
+        # print(f'[DEBUG] Points after height filtering: {obs_mask.sum().item()}')
         xyz = xyz[obs_mask, :]
         counts = counts[obs_mask][:, None]
         # print(counts)
@@ -255,12 +260,12 @@ class SparseVoxelMapDream(SparseVoxelMap):
         # Since we shifted coordinates, the full z-dimension is already [0:height_bins]
         obstacles_soft = torch.sum(voxels, dim=-1)
         obstacles = obstacles_soft > self.obs_min_density
-        print(f'[DEBUG] obs_min_density={self.obs_min_density}')
-        print(f'[DEBUG] obstacles_soft max={obstacles_soft.max().item():.1f}, mean={obstacles_soft.mean().item():.1f}')
-        print(f'[DEBUG] Number of obstacle cells: {obstacles.sum().item()} / {obstacles.numel()}')
+        # print(f'[DEBUG] obs_min_density={self.obs_min_density}')
+        # print(f'[DEBUG] obstacles_soft max={obstacles_soft.max().item():.1f}, mean={obstacles_soft.mean().item():.1f}')
+        # print(f'[DEBUG] Number of obstacle cells: {obstacles.sum().item()} / {obstacles.numel()}')
 
         history_soft = torch.max(history_ids, dim=-1).values
-        history_soft = torch.from_numpy(maximum_filter(history_soft.float().numpy(), size=7))
+        history_soft = torch.from_numpy(maximum_filter(history_soft.float().numpy(), size=kernel))
 
         if self._remove_visited_from_obstacles:
             # Remove "visited" points containing observations of the robot
@@ -374,6 +379,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         """
         Process rgbd images for Dynamem
         """
+        # Log input data
         if not os.path.exists(self.log):
             os.mkdir(self.log)
         self.obs_count += 1
@@ -384,6 +390,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         np.save(self.log + "/intrinsics" + str(self.obs_count) + ".npy", intrinsics)
         np.save(self.log + "/pose" + str(self.obs_count) + ".npy", pose)
 
+        # Update obstacle map
         self.voxel_pcd.clear_points(
             torch.from_numpy(depth), torch.from_numpy(intrinsics), torch.from_numpy(pose)
         )
@@ -423,6 +430,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         valid_depth = valid_depth & (median_filter_error < 0.01).bool()
         mask = ~valid_depth
 
+        # Update semantic memory
         self.semantic_memory.clear_points(
             depth, torch.from_numpy(intrinsics), torch.from_numpy(pose), min_samples_clear=10
         )
@@ -436,18 +444,6 @@ class SparseVoxelMapDream(SparseVoxelMap):
         valid_rgb = rgb.permute(1, 2, 0)[~mask]
         if len(valid_xyz) != 0:
             self.add_to_semantic_memory(valid_xyz, features, valid_rgb)
-
-        # if self.image_shape is not None:
-        #     rgb = F.interpolate(
-        #         rgb.unsqueeze(0), size=self.image_shape, mode="bilinear", align_corners=False
-        #     ).squeeze()
-
-        # self.add(
-        #     camera_pose=torch.Tensor(pose),
-        #     rgb=torch.Tensor(rgb).permute(1, 2, 0),
-        #     depth=torch.Tensor(depth),
-        #     camera_K=torch.Tensor(intrinsics),
-        # )
 
     def add_to_semantic_memory(
         self,
@@ -496,16 +492,31 @@ class SparseVoxelMapDream(SparseVoxelMap):
                 text, debug=debug, return_debug=return_debug
             )
 
-    def find_all_images(self, text: str):
+    def find_all_images(
+        self,
+        text: str,
+        min_similarity_threshold: Optional[float] = None,
+        min_point_num: int = 100,
+        max_img_num: Optional[int] = 3,
+    ):
         """
-        Select all images with high pixel similarity with text
+        Select all images with high pixel similarity with text (by identifying whether points in this image are relevant objects)
+
+        Args:
+            min_similarity_threshold: Make sure every point with similarity greater than this value would be considered as the relevant objects
+            min_point_num: Make sure we select at least these many points as relevant images.
+            max_img_num: The maximum number of images we want to identify as relevant objects.
         """
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         points = points.cpu()
         alignments = self.find_alignment_over_model(text).cpu().squeeze()
         obs_counts = self.semantic_memory._obs_counts.cpu()
 
-        turning_point = min(0.12, alignments[torch.argsort(alignments)[-100]])
+        turning_point = (
+            min(min_similarity_threshold, alignments[torch.argsort(alignments)[-min_point_num]])
+            if min_similarity_threshold is not None
+            else alignments[torch.argsort(alignments)[-min_point_num]]
+        )
         mask = alignments >= turning_point
         obs_counts = obs_counts[mask]
         alignments = alignments[mask]
@@ -534,8 +545,12 @@ class SparseVoxelMapDream(SparseVoxelMap):
             points_with_max_alignment[i] = point_with_max_alignment
             max_alignments[i] = cluster_alignments.max()
 
+        if max_img_num is not None:
+            top_k = min(max_img_num, len(max_alignments))
+        else:
+            top_k = len(max_alignments)
         top_alignments, top_indices = torch.topk(
-            max_alignments, k=min(3, len(max_alignments)), dim=0, largest=True, sorted=True
+            max_alignments, k=top_k, dim=0, largest=True, sorted=True
         )
         top_points = points_with_max_alignment[top_indices]
         top_obs_counts = unique_obs_counts[top_indices]
@@ -563,32 +578,15 @@ class SparseVoxelMapDream(SparseVoxelMap):
             depth = self.observations[obs_id].depth
             rgb[depth > 2.5] = [0, 0, 0]
             image = Image.fromarray(rgb.astype(np.uint8), mode="RGB")
-            buffered = BytesIO()
-            image.save(buffered, format="PNG")
-            img_bytes = buffered.getvalue()
-            base64_encoded = base64.b64encode(img_bytes).decode("utf-8")
-            user_messages.append(
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/png;base64,{base64_encoded}",
-                        "detail": "low",
-                    },
-                }
-            )
-        user_messages.append(
-            {
-                "type": "text",
-                "text": "The object you need to find is " + text,
-            }
-        )
+            user_messages.append(image)
+        user_messages.append("The object you need to find is " + text)
 
         response = self.gpt_client(user_messages)
-        return self.process_response(response)
+        return self.parse_localization_response(response)
 
-    def process_response(self, response: str):
+    def parse_localization_response(self, response: str):
         """
-        Process the output of GPT4o to extract the selected image's id
+        Parse the output of GPT4o to extract the selected image's id
         """
         try:
             # Use regex to locate the 'Images:' section, allowing for varying whitespace and line breaks
@@ -632,7 +630,11 @@ class SparseVoxelMapDream(SparseVoxelMap):
         debug_text = ""
         target_point = None
 
-        image_ids, points, alignments = self.find_all_images(text)
+        image_ids, points, alignments = self.find_all_images(
+            # text, min_similarity_threshold=0.12, max_img_num=3
+            text,
+            max_img_num=3,
+        )
         target_id = self.llm_locator(image_ids, text)
 
         if target_id is None:
@@ -665,7 +667,9 @@ class SparseVoxelMapDream(SparseVoxelMap):
         else:
             return target_point, debug_text, image_id, point
 
-    def localize_with_feature_similarity(self, text, debug=True, return_debug=False):
+    def localize_with_feature_similarity(
+        self, text, similarity_threshold: float = 0.14, debug=True, return_debug=False
+    ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         alignments = self.find_alignment_over_model(text).cpu()
         point = points[alignments.argmax(dim=-1)].detach().cpu().squeeze()
@@ -682,6 +686,9 @@ class SparseVoxelMapDream(SparseVoxelMap):
             depth = self.observations[obs_id - 1].depth
             K = self.observations[obs_id - 1].camera_K
 
+            rgb = cv2.cvtColor(rgb.numpy(), cv2.COLOR_RGB2BGR)
+            cv2.imwrite(self.log + "/rgb" + text + "_" + str(obs_id.item() - 1) + ".png", rgb)
+
             res = self.detection_model.compute_obj_coord(text, rgb, depth, K, pose)
 
         if res is not None:
@@ -690,8 +697,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
                 "#### - Object is detected in observations . **😃** Directly navigate to it.\n"
             )
         else:
-            # debug_text += '#### - Directly ignore this instance is the target. **😞** \n'
-            cosine_similarity_check = alignments.max().item() > 0.14
+            cosine_similarity_check = alignments.max().item() > 0.21
             if cosine_similarity_check:
                 target_point = point
 
@@ -700,7 +706,8 @@ class SparseVoxelMapDream(SparseVoxelMap):
                 )
             else:
                 debug_text += "#### - Cannot verify whether this instance is the target. **😞** \n"
-        # print('target_point', target_point)
+        print("--------------------------------")
+        print(debug_text)
         if not debug:
             return target_point
         elif not return_debug:
@@ -717,10 +724,6 @@ class SparseVoxelMapDream(SparseVoxelMap):
         feats: Optional[Tensor] = None,
         depth: Optional[Tensor] = None,
         base_pose: Optional[Tensor] = None,
-        instance_image: Optional[Tensor] = None,
-        instance_classes: Optional[Tensor] = None,
-        instance_scores: Optional[Tensor] = None,
-        obs: Optional[Observations] = None,
         xyz_frame: str = "camera",
         **info,
     ):
@@ -733,10 +736,6 @@ class SparseVoxelMapDream(SparseVoxelMap):
             xyz(Tensor): N x 3 point cloud points in camera coordinates
             feats(Tensor): N x D point cloud features; D == 3 for RGB is most common
             base_pose(Tensor): optional location of robot base
-            instance_image(Tensor): [H,W] image of ints where values at a pixel correspond to instance_id
-            instance_classes(Tensor): [K] tensor of ints where class = instance_classes[instance_id]
-            instance_scores: [K] of detection confidence score = instance_scores[instance_id]
-            # obs: observations
         """
         # TODO: we should remove the xyz/feats maybe? just use observations as input?
         # TODO: switch to using just Obs struct?
@@ -799,6 +798,15 @@ class SparseVoxelMapDream(SparseVoxelMap):
                 pose=camera_pose.unsqueeze(0),
                 inv_intrinsics=torch.linalg.inv(camera_K[:3, :3]).unsqueeze(0),
             )
+        
+        if False:
+            color = rgb.reshape(-1, 3) / 255.0
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(full_world_xyz.detach().cpu().numpy())
+            pcd.colors = o3d.utility.Vector3dVector(color.detach().cpu().numpy())
+            coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2, origin=[0, 0, 0])
+            o3d.visualization.draw_geometries([pcd, coordinate_frame])
+
         # add observations before we start changing things
         self.observations.append(
             Frame(
@@ -974,3 +982,22 @@ class SparseVoxelMapDream(SparseVoxelMap):
         with open(filename, "wb") as f:
             pickle.dump(data, f)
         print("write all data to", filename)
+
+
+    def get_outside_frontier(self, xyt, planner):
+        """
+        This function selects the edges of currently reachable space.
+        """
+        obstacles, _ = self.get_2d_map()
+        if len(xyt) == 3:
+            xyt = xyt[:2]
+        reachable_points = planner.get_reachable_points(planner.to_pt(xyt))
+        reachable_xs, reachable_ys = zip(*reachable_points)
+        reachable_xs = torch.tensor(reachable_xs)
+        reachable_ys = torch.tensor(reachable_ys)
+
+        reachable_map = torch.zeros_like(obstacles)
+        reachable_map[reachable_xs, reachable_ys] = 1
+        reachable_map = reachable_map.to(torch.bool)
+        edges = get_edges(reachable_map)
+        return edges & ~reachable_map

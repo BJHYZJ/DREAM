@@ -89,6 +89,86 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
                 theta = theta + 2 * np.pi
         return theta
 
+    def debug_robot_position(self, start: torch.Tensor, planner):
+        """调试机器人当前位置"""
+        import matplotlib.pyplot as plt
+        import numpy as np
+        
+        print(f"[DEBUG] Robot position: ({start[0]:.3f}, {start[1]:.3f}, {start[2]:.3f})")
+        
+        obstacles, explored = self.voxel_map.get_2d_map()
+
+        start_pt = planner.to_pt(start)
+        print(f"[DEBUG] Robot grid position: ({start_pt[0]}, {start_pt[1]})")
+        
+        crop_size = 50
+        x0 = max(0, start_pt[0] - crop_size//2)
+        x1 = min(obstacles.shape[0], start_pt[0] + crop_size//2)
+        y0 = max(0, start_pt[1] - crop_size//2)
+        y1 = min(obstacles.shape[1], start_pt[1] + crop_size//2)
+        
+        crop_obs = obstacles[x0:x1, y0:y1]
+        crop_exp = explored[x0:x1, y0:y1]
+        
+        robot_x_rel = start_pt[0] - x0
+        robot_y_rel = start_pt[1] - y0
+        
+        plt.figure(figsize=(15, 10))
+        
+        mask = self.get_oriented_mask(start[2])
+        dim = mask.shape[0]
+        half_dim = dim // 2
+        
+        footprint_contour = np.zeros_like(crop_obs.cpu().numpy())
+        
+        for i in range(crop_size):
+            for j in range(crop_size):
+                global_x = x0 + i
+                global_y = y0 + j
+                rel_x = global_x - start_pt[0]
+                rel_y = global_y - start_pt[1]
+                if abs(rel_x) <= half_dim and abs(rel_y) <= half_dim:
+                    mask_x = int(rel_x + half_dim)
+                    mask_y = int(rel_y + half_dim)
+                    if 0 <= mask_x < dim and 0 <= mask_y < dim:
+                        if mask.cpu().numpy()[mask_x, mask_y] > 0:
+                            footprint_contour[i, j] = 1
+        
+        # 子图1: 障碍物地图 + 机器人footprint
+        plt.subplot(221)
+        plt.imshow(crop_obs.cpu().numpy(), cmap='Reds', alpha=0.7)
+        plt.contour(footprint_contour, levels=[0.5], colors='green', linewidths=3, alpha=0.8)
+        plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Obstacles + Robot Footprint\nRed=obstacles, Green=robot outline, Blue=center")
+        plt.legend()
+        
+        # 子图2: 探索地图 + 机器人footprint
+        plt.subplot(222)
+        plt.imshow(crop_exp.cpu().numpy(), cmap='Greens', alpha=0.7)
+        plt.contour(footprint_contour, levels=[0.5], colors='blue', linewidths=3, alpha=0.8)
+        plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Explored + Robot Footprint\nGreen=explored, Blue=robot outline, Red=center")
+        plt.legend()
+        
+        # 子图3: 障碍物地图（纯障碍物）
+        plt.subplot(223)
+        plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
+        plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Obstacles Only\nRed=obstacles, Blue=robot center")
+        plt.legend()
+        
+        # 子图4: 探索地图（纯探索）
+        plt.subplot(224)
+        plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
+        plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Explored Only\nGreen=explored, Red=robot center")
+        plt.legend()
+        
+        plt.suptitle(f"Robot Position Analysis (cropped {crop_size}x{crop_size})\nRobot at grid ({start_pt[0]}, {start_pt[1]})", fontsize=14)
+        plt.tight_layout()
+        plt.show()
+
+
     def sample_target_point(
         self, start: torch.Tensor, point: torch.Tensor, planner, exploration: bool = False
     ) -> Optional[np.ndarray]:
@@ -122,7 +202,7 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
         if len(xs) < 1:
             print("No target point find, maybe no point is reachable")
             return None
-        selected_targets = torch.stack([xs, ys], dim=-1)[
+        selected_targets = torch.stack([xs, ys], dim=-1)[  # 计算所有可达点到目标的距离，并从近到远排序
             torch.linalg.norm(
                 (torch.stack([xs, ys], dim=-1) - torch.tensor([target_x, target_y])).float(), dim=-1
             )
@@ -134,12 +214,12 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
             selected_x, selected_y = planner.to_xy([selected_target[0], selected_target[1]])
             theta = self.compute_theta(selected_x, selected_y, point[0], point[1])
 
-            target_is_valid = self.is_valid(np.array([selected_x, selected_y, theta]))
+            target_is_valid = self.is_valid(np.array([selected_x, selected_y, theta]))  # 碰撞检测
             if not target_is_valid:
                 continue
-            if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.35:
-                continue
-            elif np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.5:
+            # if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.35:
+            #     continue
+            if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.7:
                 i = (point[0] - selected_target[0]) // abs(point[0] - selected_target[0])
                 j = (point[1] - selected_target[1]) // abs(point[1] - selected_target[1])
                 index_i = int(selected_target[0].int() + i)
@@ -149,64 +229,104 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
 
             if not target_is_valid:
                 continue
-
+            self.debug_robot_position(np.array([selected_x, selected_y, theta]), planner)
             return np.array([selected_x, selected_y, theta])
 
         return None
 
-    def sample_exploration(
-        self,
-        xyt,
-        planner,
-        use_alignment_heuristics=True,
-        text=None,
-        debug=False,
-    ):
-        obstacles, explored, history_soft = self.voxel_map.get_2d_map(return_history_id=True)
-        if len(xyt) == 3:
-            xyt = xyt[:2]
-        reachable_points = planner.get_reachable_points(planner.to_pt(xyt))
-        reachable_xs, reachable_ys = zip(*reachable_points)
-        reachable_xs = torch.tensor(reachable_xs)
-        reachable_ys = torch.tensor(reachable_ys)
+    def sample_exploration(self, xyt, planner, text=None, debug=False):
+        """
+        Sample an exploration target
+        """
+        obstacles, explored, history_soft = self.voxel_map.get_2d_map(
+            return_history_id=True, kernel=5
+        )
+        outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
 
-        reachable_map = torch.zeros_like(obstacles)
-        reachable_map[reachable_xs, reachable_ys] = 1
-        reachable_map = reachable_map.to(torch.bool)
-        edges = get_edges(reachable_map)
-        # kernel = self._get_kernel(expand_size)
-        kernel = None
-        if kernel is not None:
-            expanded_frontier = binary_dilation(
-                edges.float().unsqueeze(0).unsqueeze(0),
-                kernel,
-            )[0, 0].bool()
-        else:
-            expanded_frontier = edges
-        outside_frontier = expanded_frontier & ~reachable_map
         time_heuristics = self._time_heuristic(history_soft, outside_frontier, debug=debug)
-        if (
-            use_alignment_heuristics
-            and len(self.voxel_map.semantic_memory._points) > 0
-            and text != ""
-            and text is not None
-        ):
-            alignments_heuristics = self.voxel_map.get_2d_alignment_heuristics(text)
-            alignments_heuristics = self._alignment_heuristic(
-                alignments_heuristics, outside_frontier, debug=debug
-            )
-            total_heuristics = time_heuristics + 0.3 * alignments_heuristics
-        else:
-            alignments_heuristics = None
-            total_heuristics = time_heuristics
+
+        # TODO: Find good alignment heuristic, we have found few candidates but none of them has satisfactory performance
+
+        ######################################
+        # Candidate 1: Borrow the idea from https://arxiv.org/abs/2310.10103
+        # for i, (cluster, _) in enumerate(image_descriptions):
+        #   cluser_string = ""
+        #   for ob in cluster:
+        #       cluser_string += ob + ", "
+        #   options += f"{i+1}. {cluser_string[:-2]}\n"
+
+        # if positive:
+        #     messages = f"I observe the following clusters of objects while exploring the room:\n\n {options}\nWhere should I search next if I try to {task}?"
+        #     choices = self.positive_score_client.sample(messages, n_samples=num_samples)
+        # else:
+        #     messages = f"I observe the following clusters of objects while exploring the room:\n\n {options}\nWhere should I avoid spending time searching if I try to {task}?"
+        #     choices = self.negative_score_client.sample(messages, n_samples=num_samples)
+
+        # answers = []
+        # reasonings = []
+        # for choice in choices:
+        #     complete_response = choice.lower()
+        #     reasoning = complete_response.split("reasoning: ")[1].split("\n")[0]
+        #     # Parse out the first complete integer from the substring after  the text "Answer: ". use regex
+        #     if len(complete_response.split("answer:")) > 1:
+        #          answer = complete_response.split("answer:")[1].split("\n")[0]
+        #          # Separate the answers by commas
+        #          answers.append([int(x) for x in answer.split(",")])
+        #      else:
+        #          answers.append([])
+        #      reasonings.append(reasoning)
+
+        # # Flatten answers
+        # flattened_answers = [item for sublist in answers for item in sublist]
+        # filtered_flattened_answers = [
+        #     x for x in flattened_answers if x >= 1 and x <= len(image_descriptions)
+        # ]
+        # # Aggregate into counts and normalize to probabilities
+        # answer_counts = {
+        #     x: filtered_flattened_answers.count(x) / len(answers)
+        #     for x in set(filtered_flattened_answers)
+        # }
+        ######################################
+        # Candidate 2: Naively use semantic feature alignment
+        # def get_2d_alignment_heuristics(self, text: str, debug: bool = False):
+        # if self.semantic_memory._points is None:
+        #     return None
+        # # Convert metric measurements to discrete
+        # # Gets the xyz correctly - for now everything is assumed to be within the correct distance of origin
+        # xyz, _, _, _ = self.semantic_memory.get_pointcloud()
+        # xyz = xyz.detach().cpu()
+        # if xyz is None:
+        #     xyz = torch.zeros((0, 3))
+
+        # device = xyz.device
+        # xyz = ((xyz / self.grid_resolution) + self.grid_origin).long()
+        # xyz[xyz[:, -1] < 0, -1] = 0
+
+        # # Crop to robot height
+        # min_height = int(self.obs_min_height / self.grid_resolution)
+        # max_height = int(self.obs_max_height / self.grid_resolution)
+        # grid_size = self.grid_size + [max_height]
+
+        # # Mask out obstacles only above a certain height
+        # obs_mask = xyz[:, -1] < max_height
+        # xyz = xyz[obs_mask, :]
+        # alignments = self.find_alignment_over_model(text)[0].detach().cpu()
+        # alignments = alignments[obs_mask][:, None]
+
+        # alignment_heuristics = scatter3d(xyz, alignments, grid_size, "max")
+        # alignment_heuristics = torch.max(alignment_heuristics, dim=-1).values
+        # alignment_heuristics = torch.from_numpy(
+        #     maximum_filter(alignment_heuristics.numpy(), size=5)
+        # )
+
+        alignments_heuristics = None
+        total_heuristics = time_heuristics
 
         rounded_heuristics = np.ceil(total_heuristics * 200) / 200
         max_heuristic = rounded_heuristics.max()
         indices = np.column_stack(np.where(rounded_heuristics == max_heuristic))
         closest_index = np.argmin(np.linalg.norm(indices - np.asarray(planner.to_pt(xyt)), axis=-1))
         index = indices[closest_index]
-        # index = np.unravel_index(np.argmax(total_heuristics), total_heuristics.shape)
-        # debug = True
         if debug:
             from matplotlib import pyplot as plt
 
@@ -223,29 +343,8 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
             plt.show()
         return index, time_heuristics, alignments_heuristics, total_heuristics
 
-    def _alignment_heuristic(
-        self,
-        alignments,
-        outside_frontier,
-        alignment_smooth=15,
-        alignment_threshold=0.13,
-        debug=False,
-    ):
-        alignments = np.ma.masked_array(alignments, ~outside_frontier)
-        alignment_heuristics = 1 / (
-            1 + np.exp(-alignment_smooth * (alignments - alignment_threshold))
-        )
-        index = np.unravel_index(np.argmax(alignment_heuristics), alignments.shape)
-        if debug:
-            plt.clf()
-            plt.title("alignment")
-            plt.imshow(alignment_heuristics)
-            plt.scatter(index[1], index[0], s=15, c="g")
-            plt.show()
-        return alignment_heuristics
-
     def _time_heuristic(
-        self, history_soft, outside_frontier, time_smooth=0.1, time_threshold=50, debug=False
+        self, history_soft, outside_frontier, time_smooth=0.1, time_threshold=10, debug=False
     ):
         history_soft = np.ma.masked_array(history_soft, ~outside_frontier)
         time_heuristics = history_soft.max() - history_soft
@@ -257,7 +356,7 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
         if debug:
             # plt.clf()
             plt.title("time")
-            plt.imshow(time_heuristics)
+            plt.imshow(history_soft)
             plt.scatter(index[1], index[0], s=15, c="r")
             plt.show()
         return time_heuristics
@@ -291,47 +390,36 @@ class SparseVoxelMapNavigationSpaceDream(SparseVoxelMapNavigationSpace):
         return float(xy[0]), float(xy[1])
 
     def sample_navigation(self, start, planner, point, mode="navigation"):
-        plt.clf()
+        # plt.clf()
         if point is None:
-            start_pt = self.to_pt(start)
+            # start_pt = self.to_pt(start)
             return None
         goal = self.sample_target_point(start, point, planner, exploration=mode != "navigation")
         print("point:", point, "goal:", goal)
-        obstacles, explored = self.voxel_map.get_2d_map()
-        plt.imshow(obstacles)
-        start_pt = self.to_pt(start)
-        plt.scatter(start_pt[1], start_pt[0], s=15, c="b")
-        point_pt = self.to_pt(point)
-        plt.scatter(point_pt[1], point_pt[0], s=15, c="r")
-        if goal is not None:
-            goal_pt = self.to_pt(goal)
-            plt.scatter(goal_pt[1], goal_pt[0], s=10, c="g")
+        # obstacles, explored = self.voxel_map.get_2d_map()
+        # plt.imshow(obstacles)
+        # start_pt = self.to_pt(start)
+        # plt.scatter(start_pt[1], start_pt[0], s=15, c="b")
+        # point_pt = self.to_pt(point)
+        # plt.scatter(point_pt[1], point_pt[0], s=15, c="r")
+        # if goal is not None:
+        #     goal_pt = self.to_pt(goal)
+            # plt.scatter(goal_pt[1], goal_pt[0], s=10, c="g")
         # plt.show()
         return goal
 
     def sample_frontier(self, planner, start_pose=[0, 0, 0], text=None):
-        if text is not None and text != "":
-            (
-                index,
-                time_heuristics,
-                alignments_heuristics,
-                total_heuristics,
-            ) = self.sample_exploration(
-                start_pose,
-                planner,
-                use_alignment_heuristics=True,
-                text=text,
-                debug=False,
-            )
-        else:
-            index, time_heuristics, _, total_heuristics = self.sample_exploration(
-                start_pose,
-                planner,
-                use_alignment_heuristics=False,
-                text=None,
-                debug=False,
-            )
-            alignments_heuristics = time_heuristics
+        (
+            index,
+            time_heuristics,
+            alignments_heuristics,
+            total_heuristics,
+        ) = self.sample_exploration(
+            start_pose,
+            planner,
+            text=text,
+            debug=False,
+        )
 
         obstacles, explored = self.voxel_map.get_2d_map()
         return self.voxel_map.grid_coords_to_xyt(torch.tensor([index[0], index[1]]))

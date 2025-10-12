@@ -25,7 +25,7 @@ from termcolor import colored
 import dream.motion.constants as constants
 import dream.motion.conversions as conversions
 import dream.utils.compression as compression
-from dream.core.interfaces import ContinuousNavigationAction, Observations, ServoObservations
+from dream.core.interfaces import ContinuousNavigationAction, Observations, StateObservations, ServoObservations
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
@@ -165,18 +165,19 @@ class DreamRobotZmqClient(AbstractRobotClient):
         # self._head_not_moving_tolerance = float(
         #     parameters["motion"]["joint_thresholds"]["head_not_moving_tolerance"]
         # )
-        self._arm_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["arm"])
-        self._lift_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["lift"])
-        self._base_x_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["base_x"])
-        self._wrist_roll_joint_tolerance = float(
-            parameters["motion"]["joint_tolerance"]["wrist_roll"]
-        )
-        self._wrist_pitch_joint_tolerance = float(
-            parameters["motion"]["joint_tolerance"]["wrist_pitch"]
-        )
-        self._wrist_yaw_joint_tolerance = float(
-            parameters["motion"]["joint_tolerance"]["wrist_yaw"]
-        )
+        self._arm_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["joint"])
+        self._gripper_tolerance = float(parameters["motion"]["joint_tolerance"]["gripper"])
+        # self._lift_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["lift"])
+        # self._base_x_joint_tolerance = float(parameters["motion"]["joint_tolerance"]["base_x"])
+        # self._wrist_roll_joint_tolerance = float(
+        #     parameters["motion"]["joint_tolerance"]["wrist_roll"]
+        # )
+        # self._wrist_pitch_joint_tolerance = float(
+        #     parameters["motion"]["joint_tolerance"]["wrist_pitch"]
+        # )
+        # self._wrist_yaw_joint_tolerance = float(
+        #     parameters["motion"]["joint_tolerance"]["wrist_yaw"]
+        # )
 
         # Robot model
         self._robot_model = RangerxARMKinematics(
@@ -271,10 +272,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None, None, None
-            joint_positions = self._state["joint_positions"]
-            joint_velocities = self._state["joint_velocities"]
-            joint_efforts = self._state["joint_efforts"]
-        return joint_positions, joint_velocities, joint_efforts
+            joint_states = self._state.joint_positions
+            joint_velocities = self._state.joint_velocities
+            joint_efforts = self._state.joint_efforts
+        return joint_states, joint_velocities, joint_efforts
 
     def get_joint_positions(self, timeout: float = 5.0) -> np.ndarray:
         """Get the current joint positions"""
@@ -285,20 +286,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None
-            joint_positions = self._state["joint_positions"]
+            joint_positions = self._state.joint_positions
         return joint_positions
 
-    def get_six_joints(self, timeout: float = 5.0) -> np.ndarray:
-        """
-        Get the 6-dof joint positions
-        So basically it contains:
-            0. Base
-            1. Lift
-            2. Arm
-            3. Yaw
-            4. Pitch
-            5. Roll
-        """
+    def get_seven_joints(self, timeout: float = 5.0) -> np.ndarray:
         joint_positions = self.get_joint_positions(timeout=timeout)
         return np.array(self._extract_joint_pos(joint_positions))
 
@@ -311,7 +302,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None
-            joint_velocities = self._state["joint_velocities"]
+            joint_velocities = self._state.joint_velocities
         return joint_velocities
 
     def get_joint_efforts(self, timeout: float = 5.0) -> np.ndarray:
@@ -331,7 +322,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None
-            joint_efforts = self._state["joint_efforts"]
+            joint_efforts = self._state.joint_efforts
         return joint_efforts
 
     # def get_base_pose(self, timeout: float = 5.0) -> np.ndarray:
@@ -362,7 +353,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     #                 if timeit.default_timer() - t0 > timeout:
     #                     logger.error("Timeout waiting for state message")
     #                     return None
-    #             xyt = self._state["base_pose"]
+    #             xyt = self._state.base_pose
     #     return xyt
 
     def get_base_in_map_xyt(self, timeout: float = 5.0) -> np.ndarray:
@@ -393,7 +384,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     if timeit.default_timer() - t0 > timeout:
                         logger.error("Timeout waiting for state message")
                         return None
-                base_in_map_pose = self._state["base_in_map_pose"]
+                base_in_map_pose = self._state.base_in_map_pose
                 xyt = sophus2xyt(pose2sophus(base_in_map_pose))
 
         return xyt
@@ -416,99 +407,100 @@ class DreamRobotZmqClient(AbstractRobotClient):
             float: The position of the gripper
         """
         joint_state = self.get_joint_positions()
-        return joint_state[HelloStretchIdx.GRIPPER]
+        return joint_state[DreamIdx.GRIPPER]
 
-    def get_ee_pose(self, matrix=False, link_name=None, q=None):
-        """Get the current pose of the end effector.
+    # def get_ee_pose(self, matrix=False, link_name=None, q=None):
+    #     """Get the current pose of the end effector.
 
-        Args:
-            matrix: Whether to return the pose as a matrix
-            link_name: The name of the link to get the pose of
-            q: The joint positions to use
+    #     Args:
+    #         matrix: Whether to return the pose as a matrix
+    #         link_name: The name of the link to get the pose of
+    #         q: The joint positions to use
 
-        Returns:
-            Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]: The position and orientation of the end effector
-        """
-        if q is None:
-            q = self.get_joint_positions()
-        pos, quat = self._robot_model.manip_fk(q, node=link_name)
+    #     Returns:
+    #         Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]: The position and orientation of the end effector
+    #     """
+    #     if q is None:
+    #         q = self.get_joint_positions()
+    #     pos, quat = self._robot_model.manip_fk(q, node=link_name)
 
-        if matrix:
-            pose = posquat2sophus(pos, quat)
-            return pose.matrix()
-        else:
-            return pos, quat
+    #     if matrix:
+    #         pose = posquat2sophus(pos, quat)
+    #         return pose.matrix()
+    #     else:
+    #         return pos, quat
 
-    def get_frame_pose(self, q: Union[np.ndarray, dict], node_a: str, node_b: str) -> np.ndarray:
-        """Get the pose of frame b relative to frame a.
+    # def get_frame_pose(self, q: Union[np.ndarray, dict], node_a: str, node_b: str) -> np.ndarray:
+    #     """Get the pose of frame b relative to frame a.
 
-        Args:
-            q: The joint positions
-            node_a: The name of the first frame
-            node_b: The name of the second frame
+    #     Args:
+    #         q: The joint positions
+    #         node_a: The name of the first frame
+    #         node_b: The name of the second frame
 
-        Returns:
-            np.ndarray: The pose of frame b relative to frame a as a 4x4 matrix
-        """
-        # TODO: get this working properly and update the documentation
-        return self._robot_model.manip_ik_solver.get_frame_pose(q, node_a, node_b)
+    #     Returns:
+    #         np.ndarray: The pose of frame b relative to frame a as a 4x4 matrix
+    #     """
+    #     # TODO: get this working properly and update the documentation
+    #     return self._robot_model.manip_ik_solver.get_frame_pose(q, node_a, node_b)
 
-    def solve_ik(
-        self,
-        pos: List[float],
-        quat: Optional[List[float]] = None,
-        initial_cfg: np.ndarray = None,
-        debug: bool = False,
-        custom_ee_frame: Optional[str] = None,
-    ) -> Optional[np.ndarray]:
-        """Solve inverse kinematics appropriately (or at least try to) and get the joint position
-        that we will be moving to.
+    # def solve_ik(
+    #     self,
+    #     pos: List[float],
+    #     quat: Optional[List[float]] = None,
+    #     initial_cfg: np.ndarray = None,
+    #     debug: bool = False,
+    #     custom_ee_frame: Optional[str] = None,
+    # ) -> Optional[np.ndarray]:
+    #     """Solve inverse kinematics appropriately (or at least try to) and get the joint position
+    #     that we will be moving to.
 
-        Note: When relative==True, the delta orientation is still defined in the world frame
+    #     Note: When relative==True, the delta orientation is still defined in the world frame
 
-        Returns None if no solution is found, else returns an executable solution
-        """
+    #     Returns None if no solution is found, else returns an executable solution
+    #     """
 
-        pos_ee_curr, quat_ee_curr = self.get_ee_pose()
-        if quat is None:
-            quat = quat_ee_curr
+    #     pos_ee_curr, quat_ee_curr = self.get_ee_pose()
+    #     if quat is None:
+    #         quat = quat_ee_curr
 
-        # Compute IK goal: pose relative to base
-        pose_desired = posquat2sophus(np.array(pos), np.array(quat))
+    #     # Compute IK goal: pose relative to base
+    #     pose_desired = posquat2sophus(np.array(pos), np.array(quat))
 
-        pose_base2ee_desired = pose_desired
+    #     pose_base2ee_desired = pose_desired
 
-        pos_ik_goal, quat_ik_goal = sophus2posquat(pose_base2ee_desired)
+    #     pos_ik_goal, quat_ik_goal = sophus2posquat(pose_base2ee_desired)
 
-        # Execute joint command
-        if debug:
-            print("=== EE goto command ===")
-            print(f"Initial EE pose: pos={pos_ee_curr}; quat={quat_ee_curr}")
-            print(f"Input EE pose: pos={np.array(pos)}; quat={np.array(quat)}")
-            print(f"Desired EE pose: pos={pos_ik_goal}; quat={quat_ik_goal}")
+    #     # Execute joint command
+    #     if debug:
+    #         print("=== EE goto command ===")
+    #         print(f"Initial EE pose: pos={pos_ee_curr}; quat={quat_ee_curr}")
+    #         print(f"Input EE pose: pos={np.array(pos)}; quat={np.array(quat)}")
+    #         print(f"Desired EE pose: pos={pos_ik_goal}; quat={quat_ik_goal}")
 
-        # Perform IK
-        full_body_cfg, ik_success, ik_debug_info = self._robot_model.manip_ik(
-            (pos_ik_goal, quat_ik_goal),
-            q0=initial_cfg,
-            custom_ee_frame=custom_ee_frame,
-        )
+    #     # Perform IK
+    #     full_body_cfg, ik_success, ik_debug_info = self._robot_model.manip_ik(
+    #         (pos_ik_goal, quat_ik_goal),
+    #         q0=initial_cfg,
+    #         custom_ee_frame=custom_ee_frame,
+    #     )
 
-        # Expected to return None if we did not get a solution
-        if not ik_success or full_body_cfg is None:
-            return None
-        # Return a valid solution to the IK problem here
-        return full_body_cfg
+    #     # Expected to return None if we did not get a solution
+    #     if not ik_success or full_body_cfg is None:
+    #         return None
+    #     # Return a valid solution to the IK problem here
+    #     return full_body_cfg
 
     def _extract_joint_pos(self, q):
         """Helper to convert from the general-purpose config including full robot state, into the command space used in just the manip controller. Extracts just lift/arm/wrist information."""
         return [
-            q[HelloStretchIdx.BASE_X],
-            q[HelloStretchIdx.LIFT],
-            q[HelloStretchIdx.ARM],
-            q[HelloStretchIdx.WRIST_YAW],
-            q[HelloStretchIdx.WRIST_PITCH],
-            q[HelloStretchIdx.WRIST_ROLL],
+            q[DreamIdx.JOINT1],
+            q[DreamIdx.JOINT2],
+            q[DreamIdx.JOINT3],
+            q[DreamIdx.JOINT4],
+            q[DreamIdx.JOINT5],
+            q[DreamIdx.JOINT6],
+            q[DreamIdx.GRIPPER],
         ]
 
     def get_pose_graph(self) -> np.ndarray:
@@ -517,19 +509,18 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def robot_to(self, joint_angles: np.ndarray, blocking: bool = False, timeout: float = 10.0):
         """Move the robot to a particular joint configuration."""
-        next_action = {"joint": joint_angles, "manip_blocking": blocking}
+        next_action = {"joint": joint_angles, "wait": blocking}
         self.send_action(next_action=next_action, timeout=timeout)
 
     def head_to(
         self,
-        # head_pan: float,
-        # head_tilt: float,
         angle: np.array,
+        target_point: np.array,
         blocking: bool = False,
         timeout: float = 10.0,
         reliable: bool = True,
     ):
-        """Move the head to a particular configuration.
+        """Move the head to a particular configuration. servo angle control
 
         Args:
             angle: The angle of the xarm6
@@ -573,37 +564,37 @@ class DreamRobotZmqClient(AbstractRobotClient):
             reliable=True,
         )
 
-    def look_at_ee(self, blocking: bool = True, timeout: float = 10.0):
-        """Let robot look to its arm."""
-        self.head_to(
-            angle=constants.look_front,
-            blocking=blocking,
-            timeout=timeout,
-            reliable=True,
-        )
+    # def look_at_ee(self, blocking: bool = True, timeout: float = 10.0):
+    #     """Let robot look to its arm."""
+    #     self.head_to(
+    #         angle=constants.look_front,
+    #         blocking=blocking,
+    #         timeout=timeout,
+    #         reliable=True,
+    #     )
+
+
 
     def arm_to(
         self,
         joint_angles: Optional[np.ndarray] = None,
         gripper: float = None,
-        head: Optional[np.ndarray] = None,
+        target_point: np.array = None,
         blocking: bool = True,
         timeout: float = 10.0,
         verbose: bool = False,
         min_time: float = 2.5,
         reliable: bool = True,
-        **config,
     ) -> bool:
         """Move the arm to a particular joint configuration.
 
         Args:
-            joint_angles: 6 or Nx6 array of the joint angles to move to
+            joint_angles: 7 or Nx7 array of the joint angles to move to
             blocking: Whether to block until the motion is complete
             timeout: How long to wait for the motion to complete
             verbose: Whether to print out debug information
             min_time: The minimum time to wait before considering the arm to be done
             reliable: Whether to resend the action if it is not received
-            **config: arm configuration options; maps joints to values.
 
         Returns:
             bool: Whether the motion was successful
@@ -612,49 +603,25 @@ class DreamRobotZmqClient(AbstractRobotClient):
             raise ValueError("Robot must be in manipulation mode to move the arm")
         if isinstance(joint_angles, list):
             joint_angles = np.array(joint_angles)
-        if joint_angles is None:
-            assert (
-                config is not None and len(config.keys()) > 0
-            ), "Must provide joint angles array or specific joint values as params"
-            joint_positions = self.get_joint_positions()
-            joint_angles = conversions.config_to_manip_command(joint_positions)
-        elif len(joint_angles) > 6:
-            if verbose:
-                print("arm_to: converting from full robot state to 6dof manipulation state.")
-            joint_angles = conversions.config_to_manip_command(joint_angles)
-        if head is not None:
-            assert len(head) == 2, "Head must be a 2D vector of pan and tilt"
 
-        elif len(joint_angles) < 6:
-            raise ValueError(
-                "joint_angles must be 6 dimensional: base_x, lift, arm, wrist roll, wrist pitch, wrist yaw"
-            )
-        if config is not None and len(config.keys()) > 0:
-            # Convert joint names to indices and update joint angles
-            for joint, value in config.items():
-                joint_angles[conversions.get_manip_joint_idx(joint)] = value
-        # Make sure it's all the right size
         assert (
             len(joint_angles) == 6
-        ), "joint angles must be 6 dimensional: base_x, lift, arm, wrist roll, wrist pitch, wrist yaw"
+        ), "joint angles must be 6 dimensional: joint1, joint2, joint3, joint4, joint5, joint6"
 
         # Create and send the action dictionary
         _next_action = {"joint": joint_angles}
         if gripper is not None:
             _next_action["gripper"] = gripper
-        if head is not None:
-            _next_action["head_to"] = head
-        else:
-            # TODO: remove this once we no longer need to specify all joints for arm_to
-            # If head is not specified, we need to set it to the right head position
-            # In this case, we assume if moving arm you should look at ee
-            _next_action["head_to"] = constants.look_at_ee
-        _next_action["manip_blocking"] = blocking
+        
+        if target_point is not None:
+            _next_action["target_point"] = target_point
+        
+        _next_action["wait"] = blocking
         self.send_action(_next_action, reliable=reliable)
 
         # Handle blocking
         steps = 0
-        if blocking:
+        if target_point is None and blocking:
             t0 = timeit.default_timer()
             while not self._finish:
 
@@ -669,31 +636,26 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     time.sleep(0.01)
                     continue
 
-                arm_diff = np.abs(joint_state[HelloStretchIdx.ARM] - joint_angles[2])
-                lift_diff = np.abs(joint_state[HelloStretchIdx.LIFT] - joint_angles[1])
-                base_x_diff = np.abs(joint_state[HelloStretchIdx.BASE_X] - joint_angles[0])
-                wrist_roll_diff = np.abs(
-                    angle_difference(joint_state[HelloStretchIdx.WRIST_ROLL], joint_angles[3])
-                )
-                wrist_pitch_diff = np.abs(
-                    angle_difference(joint_state[HelloStretchIdx.WRIST_PITCH], joint_angles[4])
-                )
-                wrist_yaw_diff = np.abs(
-                    angle_difference(joint_state[HelloStretchIdx.WRIST_YAW], joint_angles[5])
-                )
+                joint1_diff = np.abs(joint_state[DreamIdx.joint1] - joint_angles[2])
+                joint2_diff = np.abs(joint_state[DreamIdx.joint2] - joint_angles[1])
+                joint3_diff = np.abs(joint_state[DreamIdx.joint3] - joint_angles[2])
+                joint4_diff = np.abs(joint_state[DreamIdx.joint4] - joint_angles[3])
+                joint5_diff = np.abs(joint_state[DreamIdx.joint5] - joint_angles[4])
+                joint6_diff = np.abs(joint_state[DreamIdx.joint6] - joint_angles[5])
+                gripper_diff = np.abs(joint_state[DreamIdx.GRIPPER] - joint_angles[6])
                 if verbose:
                     print(
-                        f"{arm_diff=}, {lift_diff=}, {base_x_diff=}, {wrist_roll_diff=}, {wrist_pitch_diff=}, {wrist_yaw_diff=}"
+                        f"{joint1_diff=}, {joint2_diff=}, {joint3_diff=}, {joint4_diff=}, {joint5_diff=}, {joint6_diff=}, {gripper_diff=}"
                     )
 
                 t1 = timeit.default_timer()
                 if (
-                    (arm_diff < self._arm_joint_tolerance)
-                    and (lift_diff < self._lift_joint_tolerance)
-                    and (base_x_diff < self._base_x_joint_tolerance)
-                    and (wrist_roll_diff < self._wrist_roll_joint_tolerance)
-                    and (wrist_pitch_diff < self._wrist_pitch_joint_tolerance)
-                    and (wrist_yaw_diff < self._wrist_yaw_joint_tolerance)
+                    (joint1_diff < self._arm_joint_tolerance)
+                    and (joint2_diff < self._arm_joint_tolerance)
+                    and (joint3_diff < self._arm_joint_tolerance)
+                    and (joint4_diff < self._arm_joint_tolerance)
+                    and (joint5_diff < self._arm_joint_tolerance)
+                    and (joint6_diff < self._arm_joint_tolerance)
                 ):
                     # sleep to prevent ros2 streaming latency
                     time.sleep(0.3)
@@ -709,7 +671,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 else:
                     if verbose:
                         print(
-                            f"{arm_diff=}, {lift_diff=}, {base_x_diff=}, {wrist_roll_diff=}, {wrist_pitch_diff=}, {wrist_yaw_diff=}"
+                            f"{joint1_diff=}, {joint2_diff=}, {joint3_diff=}, {joint4_diff=}, {joint5_diff=}, {joint6_diff=}, {gripper_diff=}"
                         )
                 time.sleep(0.01)
 
@@ -823,7 +785,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if verbose:
                     print("Opening gripper:", joint_state[DreamIdx.GRIPPER])
                 gripper_err = np.abs(joint_state[DreamIdx.GRIPPER] - gripper_target)
-                if gripper_err < 0.1:
+                if gripper_err < self._gripper_tolerance:  # 0 ~ 830
                     return True
                 t1 = timeit.default_timer()
                 if t1 - t0 > timeout:
@@ -853,10 +815,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 joint_state = self.get_joint_positions()
                 if joint_state is None:
                     continue
-                gripper_err = np.abs(joint_state[HelloStretchIdx.GRIPPER] - gripper_target)
+                gripper_err = np.abs(joint_state[DreamIdx.GRIPPER] - gripper_target)
                 if verbose:
                     print("Closing gripper:", gripper_err, gripper_target)
-                if gripper_err < 0.1:
+                if gripper_err < self._gripper_tolerance:
                     return True
                 t1 = timeit.default_timer()
                 if t1 - t0 > timeout:
@@ -1188,7 +1150,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             close_to_goal = at_goal
             if verbose:
                 print(
-                    f"Waiting for step={block_id} {self._last_step} prev={self._last_step} at {pos} moved {moved_dist:0.04f} angle {angle_dist:0.04f} not_moving {not_moving_count} at_goal {self._state['at_goal']}"
+                    f"Waiting for step={block_id} {self._last_step} prev={self._last_step} at {pos} moved {moved_dist:0.04f} angle {angle_dist:0.04f} not_moving {not_moving_count} at_goal {self._state.at_goal}"
                 )
                 print(min_steps_not_moving, self._last_step, at_goal)
                 if goal_angle is not None:
@@ -1249,7 +1211,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._obs_lock:
             obs_ood = self._obs is not None and self._obs.step < self._last_step
         with self._state_lock:
-            state_ood = self._state is not None and self._state["step"] < self._last_step
+            state_ood = self._state is not None and self._state.step < self._last_step
         return obs_ood or state_ood
 
 
@@ -1263,7 +1225,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._state_lock:
             if self._state is None:
                 return False
-            return self._state["at_goal"]
+            return self._state.at_goal
 
     def save_map(self, filename: str):
         """Save the current map to a file.
@@ -1461,14 +1423,18 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """
         if verbose:
             logger.info("-> sending", next_action)
-            cur_joints = self.get_six_joints()
+            cur_joints = self.get_joint_positions()
             print("Current robot states")
             print(" - base: ", cur_joints[0])
-            print(" - lift: ", cur_joints[1])
-            print(" - arm: ", cur_joints[2])
-            print(" - yaw: ", cur_joints[3])
-            print(" - pitch: ", cur_joints[4])
-            print(" - roll: ", cur_joints[5])
+            print(" - base_theta: ", cur_joints[1])
+            print(" - joint1: ", cur_joints[2])
+            print(" - joint2: ", cur_joints[3])
+            print(" - joint3: ", cur_joints[4])
+            print(" - joint4: ", cur_joints[5])
+            print(" - joint5: ", cur_joints[6])
+            print(" - joint6: ", cur_joints[7])
+            print(" - gripper: ", cur_joints[8])
+
         blocking = False
         block_id = None
         with self._act_lock:
@@ -1624,9 +1590,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                             f"Dropping out-of-date state message: {state['step']} < {self._last_step}"
                         )
                         self._warning_on_out_of_date_state = state["step"]
-            self._state = state
-            self._control_mode = state["control_mode"]
-            self._at_goal = state["at_goal"]
+            # self._state = state
+            self._state = StateObservations.from_dict(state)
+            self._control_mode = self._state.control_mode
+            self._at_goal = self._state.at_goal
 
     def _update_servo(self, message):
         """Servo messages"""
@@ -1644,35 +1611,13 @@ class DreamRobotZmqClient(AbstractRobotClient):
         #     image_scaling = None
 
         # Get head information from the message as well
-        color_image = compression.from_jpg(message["color_image"])
-        depth_image = compression.from_jp2(message["depth_image"]) / 1000
+        rgb = compression.from_jpg(message["rgb"])
+        depth = compression.from_jp2(message["depth"]) / 1000
         
-        with self._servo_lock and self._state_lock:
-            servo_observation = ServoObservations(
-                # gps=self._state["base_pose_in_map"][:2],
-                # compass=self._state["base_pose_in_map"][2],
-                rgb=color_image,
-                depth=depth_image,
-            )
-
-            # We may not have the camera information yet
-            # Some robots do not have the d405
-            # if "ee_cam/depth_camera_K" in message:
-            #     observation.ee_camera_K = message["ee_cam/depth_camera_K"]
-            #     observation.ee_camera_pose = message["ee_cam/pose"]
-            #     observation.ee_depth_scaling = message["ee_cam/image_scaling"]
-
-            servo_observation.joint_positions = message["joint_positions"]
-            servo_observation.ee_in_map_pose = message["ee_in_map_pose"]  # np.ndarray
-            servo_observation.camera_in_map_pose = message["camera_in_map_pose"]  # np.ndarray
-            servo_observation.depth_scaling = message["depth_scaling"]
-            servo_observation.camera_K = message["camera_K"]
-            
-            if "is_simulation" in message:
-                servo_observation.is_simulation = message["is_simulation"]
-            else:
-                servo_observation.is_simulation = False
-            self._servo = servo_observation
+        with self._servo_lock:
+            self._servo = ServoObservations.from_dict(message)
+            self._servo.rgb = rgb
+            self._servo.depth = depth
 
     def get_servo_observation(self):
         """Get the current servo observation.
@@ -1721,7 +1666,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """
         # This is not really thread safe
         with self._state_lock:
-            return self._state is not None and self._state["is_homed"]
+            return self._state is not None and self._state.is_homed
 
     @property
     def is_runstopped(self) -> bool:
@@ -1731,7 +1676,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             bool: whether the robot is runstopped
         """
         with self._state_lock:
-            return self._state is not None and self._state["is_runstopped"]
+            return self._state is not None and self._state.is_runstopped
 
     def start(self) -> bool:
         """Start running blocking thread in a separate thread. This will wait for observations to come in and update internal state.

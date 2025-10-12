@@ -21,8 +21,10 @@ from .base_encoder import BaseImageTextEncoder
 
 logger = Logger(__name__)
 
+# pip install git+https://github.com/huggingface/transformers.git
 
-class SiglipEncoder(BaseImageTextEncoder):
+
+class Siglip2Encoder(BaseImageTextEncoder):
     """Image/text feature encoder using SIGLip model.
 
     Referencing the following paper: https://arxiv.org/abs/2303.15343
@@ -38,9 +40,9 @@ class SiglipEncoder(BaseImageTextEncoder):
         device: Optional[str] = None,
         version: Optional[str] = None,
         feature_matching_threshold: float = 0.05,
-        cache_dir: Optional[str] = './checkpoints',
         **kwargs,
     ) -> None:
+        # version: base -> b-16-512, large -> l-16-512, so400m -> so-16-512, giant -> g-16-384
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         self.device = device
@@ -48,18 +50,22 @@ class SiglipEncoder(BaseImageTextEncoder):
         self.feature_matching_threshold = feature_matching_threshold
 
         if version is None:
-            version = "base"
+            version = "so400m"
 
         if version == "base":
-            model_name = "google/siglip-base-patch16-224"
+            model_name = "google/siglip2-base-patch16-512"
+        elif version == "large":
+            model_name = "google/siglip2-large-patch16-512"
         elif version == "so400m":
-            model_name = "google/siglip-so400m-patch14-384"
+            model_name = "google/siglip2-so400m-patch16-512"
+        elif version == "giant":
+            model_name = "google/siglip2-giant-opt-patch16-384"
         else:
             raise ValueError(f"Invalid version {version}: must be one of 'base', 'so400m'")
 
-        self.processor = AutoProcessor.from_pretrained(model_name, cache_dir=cache_dir)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
-        self.model = AutoModel.from_pretrained(model_name, cache_dir=cache_dir).to(self.device)
+        self.processor = AutoProcessor.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name).to(self.device)
 
     def encode_image(
         self,
@@ -136,16 +142,13 @@ class SiglipEncoder(BaseImageTextEncoder):
         return torch.cosine_similarity(image, text, dim=-1)
 
 
-class MaskSiglipEncoder(SiglipEncoder):
+class MaskSiglip2Encoder(Siglip2Encoder):
     def __init__(
         self,
         device: Optional[str] = None,
         version: Optional[str] = None,
-        feature_matching_threshold: float = 0.12,
+        feature_matching_threshold: float = 0.01,
     ) -> None:
-        """
-        Extract pixel-wise features from SIGLip model
-        """
         super().__init__(
             normalize=True,
             device=device,
@@ -182,10 +185,6 @@ class MaskSiglipEncoder(SiglipEncoder):
         Run mask siglip
         Input:
             image: RGB image, shape [3, H, W]
-            image_shape: desired output shape, tuple (H1, W1)
-        Output:
-            image: RGB image, shape [3, H1, W1]
-            features: pixel-wise features, shape [H1, W1, 512]
         """
         input = self.processor(images=image, padding="max_length", return_tensors="pt")
         for i in input:
@@ -201,9 +200,6 @@ class MaskSiglipEncoder(SiglipEncoder):
         return image, features
 
     def extract_per_pixel_features(self, x, image_shape):
-        """
-        Same as run_mask_siglip, but for multiple images
-        """
         with torch.no_grad():
             output = self.model.vision_model(x["pixel_values"], output_hidden_states=True)
             feat = output.last_hidden_state

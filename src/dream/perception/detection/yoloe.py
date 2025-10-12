@@ -14,48 +14,19 @@
 
 
 import argparse
-import os
-from pathlib import Path
 from typing import List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 import torch
-from segment_anything import SamPredictor, sam_model_registry
-from ultralytics import YOLOWorld
+from PIL import Image
+from ultralytics import YOLOE
 
 from dream.core.abstract_perception import PerceptionModule
 from dream.core.interfaces import Observations
 from dream.perception.detection.scannet_200_classes import CLASS_LABELS_200
 from dream.perception.detection.utils import filter_depth, overlay_masks
-from dream.utils.config import get_full_config_path
-
-
-def run_sam_batch(
-    image: np.ndarray, predictor: SamPredictor, boxes, batch_size=16
-) -> List[np.ndarray]:
-    """Run SAM on a batch of boxes.
-
-    Arguments:
-        predictor: SAM predictor
-        boxes: list of boxes in format [x1, y1, x2, y2]
-        batch_size: batch size for SAM
-
-    Returns:
-        all_masks: list of masks
-    """
-    num_boxes = len(boxes)
-    all_masks = []
-
-    predictor.set_image(image)
-
-    boxes = np.round(boxes)
-
-    for i in range(0, num_boxes):
-        mask, score, logits = predictor.predict(box=boxes[i], multimask_output=False)
-        all_masks.extend(mask)
-
-    return all_masks
+from dream.utils.image import Camera, camera_xyz_to_global_xyz
 
 
 def merge_masks(masks, height, width) -> np.ndarray:
@@ -84,18 +55,31 @@ def merge_masks(masks, height, width) -> np.ndarray:
 
     return merged_mask
 
+def draw_masks(masks, height, width):
+    panoptic_masks = []
+    for mask in masks:
+        xy_coords = (mask * [width, height]).astype(np.int32)
+        panotic_mask = np.zeros((height, width), dtype=np.uint8)
 
-class YoloWorldPerception(PerceptionModule):
+        # Draw filled polygon
+        cv2.fillPoly(panotic_mask, [xy_coords], color=1)
+
+        # Add to list
+        panoptic_masks.append(panotic_mask.astype(bool))
+
+    return panoptic_masks
+
+
+class YoloEPerception(PerceptionModule):
     def __init__(
         self,
         config_file=None,
         vocabulary="coco",
         class_list: Optional[Union[List[str], Tuple[str]]] = None,
-        checkpoint_file=None,
-        sem_gpu_id=0,
         verbose: bool = False,
-        size: str = "m",
+        size: str = "l",
         confidence_threshold: Optional[float] = None,
+        device: str = "cuda" if torch.cuda.is_available() else "cpu",
     ):
         """Load trained YOLO model for inference.
 
@@ -105,49 +89,21 @@ class YoloWorldPerception(PerceptionModule):
              for a custom set of categories
             custom_vocabulary: if vocabulary="custom", this should be a comma-separated
              list of classes (as a single string)
-            checkpoint_file: path to model checkpoint
-            sem_gpu_id: GPU ID to load the model on, -1 for CPU
             verbose: whether to print out debug information
         """
         self.verbose = verbose
         self.confidence = confidence_threshold if confidence_threshold is not None else 0.1
 
         if class_list is None:
-            class_list = CLASS_LABELS_200
+            self.class_list = CLASS_LABELS_200
 
-        if checkpoint_file is None:
-            checkpoint_file = get_full_config_path(f"perception/yolo_world/yolov8{size}-world.pt")
+        self.device = device
+        checkpoint_file = f"yoloe-v8{size}-seg.pt"
+        self.model = YOLOE(checkpoint_file)
+        self.model.to(self.device)
 
-        # Check if checkpoint file exists
-        if not Path(checkpoint_file).exists():
-            # Make parent directory
-            Path(checkpoint_file).parent.mkdir(parents=True, exist_ok=True)
-            # Download the model
-            os.system(
-                f"wget -O {checkpoint_file} "
-                f"https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8{size}-worldv2.pt"
-            )
-
-        # Download the SAM checkpoint if it does not exist
-        sam_checkpoint = get_full_config_path("perception/yolo_world/sam_vit_b_01ec64.pth")
-        if not Path(sam_checkpoint).exists():
-            # Make parent directory
-            Path(sam_checkpoint).parent.mkdir(parents=True, exist_ok=True)
-            # Download the model
-            os.system(
-                f"wget -O {sam_checkpoint} "
-                f"https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth"
-            )
-
-        # Initialize SAM
-        # sam = sam_model_registry["default"](checkpoint=sam_checkpoint)
-        sam = sam_model_registry["vit_b"](checkpoint=sam_checkpoint)
-        sam.to(device="cuda" if torch.cuda.is_available() else "cpu")
-        self.sam_predictor = SamPredictor(sam)
-
-        self.model = YOLOWorld(checkpoint_file)
-        self.model.to("cuda" if torch.cuda.is_available() else "cpu")
-        self.model.set_classes(class_list)
+        self.model.set_classes(self.class_list, self.model.get_text_pe(self.class_list))
+        self._current_vocabulary = {i: self.class_list[i] for i in range(len(self.class_list))}
 
         if self.verbose:
             print(f"Loaded YOLO model from {checkpoint_file}")
@@ -155,7 +111,7 @@ class YoloWorldPerception(PerceptionModule):
         self.num_sem_categories = 80
 
     def reset_vocab(self, new_vocab: List[str], vocab_type="custom"):
-        print("Resetting vocabulary not supported for YOLO")
+        self.class_list = new_vocab
 
     def predict(
         self,
@@ -177,6 +133,8 @@ class YoloWorldPerception(PerceptionModule):
             obs.task_observations["semantic_frame"]: segmentation visualization
              image of shape (H, W, 3)
         """
+
+        self.model.set_classes(self.class_list, self.model.get_text_pe(self.class_list))
 
         if isinstance(rgb, np.ndarray):
             # This is expected
@@ -204,16 +162,6 @@ class YoloWorldPerception(PerceptionModule):
 
         class_idcs = pred[0].boxes.cls.cpu().numpy()
 
-        # TODO: create masks using segment anything
-        boxes = pred[0].boxes.xyxy.cpu().numpy()
-        # Use SAM to extract masks
-
-        masks = run_sam_batch(image, self.sam_predictor, boxes, batch_size=16)
-        # merged_masks = merge_masks(masks, height, width)
-        # import matplotlib.pyplot as plt
-        # plt.imshow(merged_masks)
-        # plt.show()
-
         # Add some visualization code for YOLO
         if draw_instance_predictions:
             task_observations["semantic_frame"] = pred[0].plot(conf=False, labels=False, masks=True)
@@ -222,6 +170,11 @@ class YoloWorldPerception(PerceptionModule):
 
         # Sort instances by mask size
         scores = pred[0].boxes.conf.cpu().numpy()
+
+        if pred[0].masks is not None:
+            masks = draw_masks(pred[0].masks.xyn, height, width)
+        else:
+            masks = []
 
         if depth_threshold is not None and depth is not None:
             masks = np.array([filter_depth(mask, depth, depth_threshold) for mask in masks])
@@ -241,6 +194,79 @@ class YoloWorldPerception(PerceptionModule):
 
     def is_instance(self):
         return True
+
+    def detect_object(
+        self,
+        rgb: Union[np.ndarray, torch.Tensor, Image.Image],
+        text: Union[str, List[str]],
+        confidence_threshold: Optional[float] = None,
+        output_mask: Optional[bool] = True,
+        visualize_mask: bool = False,
+        mask_filename: Optional[str] = None,
+        box_filename: Optional[str] = None,
+    ):
+        """Try to find target objects given one or many text queries.
+        Arguments:
+            rgb: ideally of shape (C, H, W), the pixel value should be integer between [0, 255]
+        """
+        if confidence_threshold is None:
+            confidence_threshold = self.confidence
+        if isinstance(rgb, torch.Tensor):
+            rgb = rgb.numpy()
+        if not isinstance(rgb, Image.Image):
+            height, width, _ = rgb.shape
+            image = Image.fromarray(rgb.astype(np.uint8))
+        else:
+            width, height = rgb.size
+            image = rgb
+        if not isinstance(text, list):
+            text = [text]
+        self.model.set_classes(text, self.model.get_text_pe(text))
+        results = self.model.predict(image, conf=confidence_threshold)
+
+        if output_mask:
+            if results[0].masks is None or len(results[0].masks) == 0:
+                return None, None
+            else:
+                masks = draw_masks(results[0].masks.xyn, height, width)
+                return masks[0], results[0].boxes.xyxy.cpu().numpy()[0]
+        else:
+            return results[0].boxes.conf.cpu().numpy(), results[0].boxes.xyxy.cpu().numpy()
+
+    def compute_obj_coord(
+        self,
+        text: str,
+        rgb: torch.Tensor,
+        depth: torch.Tensor,
+        camera_K: torch.Tensor,
+        camera_pose: torch.Tensor,
+        confidence_threshold: Optional[float] = None,
+        depth_threshold: float = 3.0,
+    ):
+        height, width = depth.squeeze().shape
+        camera = Camera.from_K(np.array(camera_K), width=width, height=height)
+        camera_xyz = camera.depth_to_xyz(np.array(depth))
+        xyz = torch.Tensor(camera_xyz_to_global_xyz(camera_xyz, np.array(camera_pose)))
+
+        scores, boxes = self.detect_object(
+            rgb=rgb, text=text, confidence_threshold=confidence_threshold, output_mask=False
+        )
+        for idx, (score, bbox) in enumerate(
+            sorted(zip(scores, boxes), key=lambda x: x[0], reverse=True)
+        ):
+
+            tl_x, tl_y, br_x, br_y = bbox
+            w, h = depth.shape
+            tl_x, tl_y, br_x, br_y = (
+                int(max(0, tl_x.item())),
+                int(max(0, tl_y.item())),
+                int(min(h, br_x.item())),
+                int(min(w, br_y.item())),
+            )
+
+            if torch.min(depth[tl_y:br_y, tl_x:br_x].reshape(-1)) < depth_threshold:
+                return torch.median(xyz[tl_y:br_y, tl_x:br_x].reshape(-1, 3), dim=0).values
+        return None
 
 
 def get_parser():

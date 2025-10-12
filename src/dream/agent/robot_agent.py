@@ -1436,11 +1436,12 @@ class RobotAgent:
         # Add some debugging stuff - show what 3d point clouds look like
         if visualize_map_at_start:
             if not self._realtime_updates:
-                self.update(visualize_map=False)  # Append latest observations
+                # self.update(visualize_map=False)  # Append latest observations
+                self.update()
             print("- Visualize map after updating")
             self.get_voxel_map().show(
                 orig=np.zeros(3),
-                xyt=self.robot.get_base_pose(),
+                xyt=self.robot.get_base_in_map_xyt(),
                 footprint=self.robot.get_robot_model().get_footprint(),
                 instances=self.semantic_sensor is not None,
             )
