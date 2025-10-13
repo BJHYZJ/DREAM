@@ -87,36 +87,7 @@ class ZmqServer(BaseZmqServer):
         obs = self.client.get_full_observation()
         if obs is None:
             return None
-        # rgb, depth = obs.rgb, obs.depth
-        # width, height = rgb.shape[:2]
-
-        # # Convert depth into int format
-        # depth = (depth * 1000).astype(np.uint16)
-
-        # # Make both into jpegs
-        # rgb = compression.to_jpg(rgb)
-        # depth = compression.to_jp2(depth)
-
-        # Get the other fields from an observation
-        # rgb = compression.to_webp(rgb)
         data = {
-            # "rgb": obs.rgb,
-            # "depth": obs.depth,
-            # "gps": obs.gps,
-            # "compass": obs.compass,
-            # "camera_pose_in_map": obs.camera_pose_in_map.matrix(),
-            # "camera_pose_in_arm": obs.camera_pose_in_arm.matrix(),
-            # "camera_pose_in_base": obs.camera_pose_in_base.matrix(),
-            # "joint": obs.joint,
-            # "joint_velocities": obs.joint_velocities,
-            # "camera_K": obs.camera_K.cpu().numpy(),
-            # "ee_pose_in_map": obs.ee_pose_in_map.matrix(),
-            # "rgb_width": width,
-            # "rgb_height": height,
-            # "lidar_points": obs.lidar_points,
-            # "lidar_timestamp": obs.lidar_timestamp,
-            # "pose_graph": self.client.get_pose_graph(),
-
             "timestamp": obs.timestamp,
             "compass": obs.compass,
             "gps": obs.gps,
@@ -124,15 +95,11 @@ class ZmqServer(BaseZmqServer):
             "is_history_node": obs.is_history_node,
             "rgb": obs.rgb_compressed,
             "depth": obs.depth_compressed,
-            # "lidar_points": obs.laser_compressed,
             "camera_K": obs.camera_K,
             "pose_graph": obs.pose_graph,
             "local_tf_graph": obs.local_tf_graph,
             "base_in_map_pose": obs.base_in_map_pose,
             "camera_in_map_pose": obs.camera_in_map_pose,
-
-
-            # "last_motion_failed": self.client.last_motion_failed(),
             "recv_address": self.recv_address,
             "step": self._last_step,
             "at_goal": self.client.at_goal(),
@@ -151,6 +118,8 @@ class ZmqServer(BaseZmqServer):
             "compass": obs.compass,
             "base_in_map_pose": obs.base_in_map_pose,
             "ee_in_map_pose": obs.ee_in_map_pose,
+            "camera_in_map_pose": obs.camera_in_map_pose,
+            "camera_in_base_pose": obs.camera_in_base_pose,
             "joint_states": obs.joint_states,
             "joint_velocities": obs.joint_velocities,
             "joint_forces": obs.joint_forces,
@@ -188,8 +157,6 @@ class ZmqServer(BaseZmqServer):
             "depth_scaling": self.depth_scaling,
             "color_shape": color_image.shape,
             "depth_shape": depth_image.shape,
-            "ee_in_map_pose": obs.ee_in_map_pose,
-            "camera_in_map_pose": obs.camera_in_map_pose,
             "step": self._last_step,
         }
         # message.update(d405_output)
