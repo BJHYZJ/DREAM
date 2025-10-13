@@ -339,6 +339,8 @@ class DreamClient(AbstractRobotClient):
     def get_camera_in_map_pose(self):
         return self._ros_client.get_camera_in_map_pose()
 
+    def get_camera_in_base_pose(self):
+        return self._ros_client.get_camera_in_base_pose()
 
     # def get_joint_state(self):
     #     """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
