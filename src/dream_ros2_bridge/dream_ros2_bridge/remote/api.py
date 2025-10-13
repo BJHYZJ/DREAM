@@ -335,6 +335,9 @@ class DreamClient(AbstractRobotClient):
     
     def get_ee_in_map_pose(self):
         return self._ros_client.get_ee_in_map_pose()
+    
+    def get_ee_in_base_pose(self):
+        return self._ros_client.get_ee_in_base_pose()
 
     def get_camera_in_map_pose(self):
         return self._ros_client.get_camera_in_map_pose()
@@ -547,6 +550,7 @@ class DreamClient(AbstractRobotClient):
             compass=np.array([theta]),
             base_in_map_pose=base_in_map_pose.matrix(),
             ee_in_map_pose=self.get_ee_in_map_pose().matrix(),
+            ee_in_base_pose=self.get_ee_in_base_pose().matrix(),
             camera_in_map_pose=camera_in_map_pose.matrix(),
             camera_in_base_pose=camera_in_base_pose.matrix(),
             joint_states=joint_states,

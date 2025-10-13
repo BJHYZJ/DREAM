@@ -298,6 +298,7 @@ class StateObservations(BaseObservations):
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
     base_in_map_pose: np.ndarray
     ee_in_map_pose: np.ndarray
+    ee_in_base_pose: np.ndarray
     camera_in_map_pose: np.ndarray
     camera_in_base_pose: np.ndarray
     joint_states: np.ndarray  # joint radians or degrees 

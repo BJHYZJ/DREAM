@@ -193,6 +193,7 @@ class DreamRosInterface(Node):
         self.se3_camera_in_base_pose: Optional[sp.SE3] = None
         self.se3_camera_in_arm_pose: Optional[sp.SE3] = None
         self.se3_ee_in_map_pose: Optional[sp.SE3] = None
+        self.se3_ee_in_base_pose: Optional[sp.SE3] = None
 
         self.at_goal: bool = False
 
@@ -577,6 +578,7 @@ class DreamRosInterface(Node):
         self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_ee_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_base", self._tf_ee_pose_in_base_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
 
         # Create trajectory client with which we can control the robot
         # self.trajectory_client = ActionClient(
@@ -810,6 +812,12 @@ class DreamRosInterface(Node):
         with self._lock_tf:
             self.se3_ee_in_map_pose = se3
 
+    def _tf_ee_pose_in_base_callback(self, msg: PoseStamped):
+        """ee pose in base callback"""
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_ee_in_base_pose = se3
+
     def get_base_in_map_pose(self):
         with self._lock_tf:
             return self.se3_base
@@ -829,6 +837,10 @@ class DreamRosInterface(Node):
     def get_ee_in_map_pose(self):
         with self._lock_tf:
             return self.se3_ee_in_map_pose
+
+    def get_ee_in_base_pose(self):
+        with self._lock_tf:
+            return self.se3_ee_in_base_pose
 
     def get_rtabmapdata(self):
         with self._lock_rtab:

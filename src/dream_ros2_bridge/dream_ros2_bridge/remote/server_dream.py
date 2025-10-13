@@ -118,6 +118,7 @@ class ZmqServer(BaseZmqServer):
             "compass": obs.compass,
             "base_in_map_pose": obs.base_in_map_pose,
             "ee_in_map_pose": obs.ee_in_map_pose,
+            "ee_in_base_pose": obs.ee_in_base_pose,
             "camera_in_map_pose": obs.camera_in_map_pose,
             "camera_in_base_pose": obs.camera_in_base_pose,
             "joint_states": obs.joint_states,

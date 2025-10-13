@@ -36,6 +36,7 @@ class TFPosePublisher(Node):
             "camera_pose_in_base": ["camera_color_optical_frame", "base_link"],
             "camera_pose_in_map": ["camera_color_optical_frame", "map"],
             "ee_pose_in_map": ["link_eef", "map"],
+            "ee_pose_in_base": ["link_eef", "base_link"],
         }
         
         # Create publishers for TF pose information
