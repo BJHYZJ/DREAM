@@ -23,7 +23,7 @@ import trimesh.transformations as tra
 from dream.core.interfaces import Observations, RtabmapData, ServoObservations, StateObservations
 from dream.core.robot import AbstractRobotClient, ControlMode
 from dream.motion import RobotModel
-from dream.motion.constants import STRETCH_NAVIGATION_Q, STRETCH_PREGRASP_Q, DreamIdx
+from dream.motion.constants import DreamIdx
 from dream.motion.kinematics import RangerxARMKinematics
 from dream.utils.geometry import xyt2sophus, posquat2sophus, sophus2xyt, pose2sophus
 from dream.motion.constants import ROBOT_JOINTS

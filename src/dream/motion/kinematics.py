@@ -20,12 +20,12 @@ from scipy.spatial.transform import Rotation
 
 from dream.core.interfaces import ContinuousFullBodyAction
 from dream.motion.base import IKSolverBase
-from dream.motion.constants import (
-    MANIP_STRETCH_URDF,
-    PLANNER_STRETCH_URDF,
-    STRETCH_GRASP_FRAME,
-    STRETCH_HOME_Q,
-)
+# from dream.motion.constants import (
+#     MANIP_STRETCH_URDF,
+#     PLANNER_STRETCH_URDF,
+#     STRETCH_GRASP_FRAME,
+#     STRETCH_HOME_Q,
+# )
 from dream.motion.pinocchio_ik_solver import PinocchioIKSolver, PositionIKOptimizer
 from dream.motion.robot import Footprint
 
