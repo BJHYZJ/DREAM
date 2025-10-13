@@ -18,8 +18,7 @@ from scipy.spatial.transform import Rotation as R
 from std_srvs.srv import Trigger
 
 import dream.motion.conversions as conversions
-from dream.motion.constants import STRETCH_HOME_Q
-from dream.motion.kinematics import DreamIdx
+from dream.motion.constants import DreamIdx
 from dream.motion.robot import RobotModel
 from dream.utils.geometry import pose_global_to_base_xyt, posquat2sophus, sophus2posquat
 from .abstract import AbstractControlModule, enforce_enabled
