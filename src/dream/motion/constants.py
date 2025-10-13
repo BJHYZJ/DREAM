@@ -63,15 +63,50 @@ T_LOC_STABILIZE = 1.0
 BASE_JOINTS = ['base_x', 'base_y', 'base_theta']
 ARM_JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
 GRIPPER_JOINTS = ['gripper']
+POSITION_JOINTS = ['ee_x', 'ee_y', 'ee_z', 'ee_roll', 'ee_pitch', 'ee_yaw']
 ROBOT_JOINTS = BASE_JOINTS + ARM_JOINTS + GRIPPER_JOINTS
 
 BASE_INDEX = [ROBOT_JOINTS.index(joint) for joint in BASE_JOINTS]
 ARM_INDEX = [ROBOT_JOINTS.index(joint) for joint in ARM_JOINTS]
 GRIPPER_INDEX = [ROBOT_JOINTS.index(joint) for joint in GRIPPER_JOINTS]
+POSITION_JOINTS_INDEX = ARM_INDEX  # six dof position
 
 
 CAMERA_POSET_TOPIC = "/robot/camera_pose"
 
+
+
+class DreamIdx:
+    BASE_X = 0
+    BASE_Y = 1
+    BASE_THETA = 2
+    JOINT1 = 3
+    JOINT2 = 4
+    JOINT3 = 5
+    JOINT4 = 6
+    JOINT5 = 7
+    JOINT6 = 8
+    GRIPPER = 9
+
+    name_to_idx = {
+        "base_x": BASE_X,
+        "base_y": BASE_Y,
+        "base_theta": BASE_THETA,
+        "joint1": JOINT1,
+        "joint2": JOINT2,
+        "joint3": JOINT3,
+        "joint4": JOINT4,
+        "joint5": JOINT5,
+        "joint6": JOINT6,
+        "gripper": GRIPPER,
+    }
+
+    @classmethod
+    def get_idx(cls, name: str) -> int:
+        if name in cls.name_to_idx:
+            return cls.name_to_idx[name]
+        else:
+            raise ValueError(f"Unknown joint name: {name}")
 
 # ROS_ARM_JOINTS = ["joint_arm_l0", "joint_arm_l1", "joint_arm_l2", "joint_arm_l3"]
 # ROS_LIFT_JOINT = "joint_lift"
@@ -111,143 +146,143 @@ CAMERA_POSET_TOPIC = "/robot/camera_pose"
 
 
 # Stores joint indices for the Stretch configuration space
-class HelloStretchIdx:
-    BASE_X = 0
-    BASE_Y = 1
-    BASE_THETA = 2
-    LIFT = 3
-    ARM = 4
-    GRIPPER = 5
-    WRIST_ROLL = 6
-    WRIST_PITCH = 7
-    WRIST_YAW = 8
-    HEAD_PAN = 9
-    HEAD_TILT = 10
+# class HelloStretchIdx:
+#     BASE_X = 0
+#     BASE_Y = 1
+#     BASE_THETA = 2
+#     LIFT = 3
+#     ARM = 4
+#     GRIPPER = 5
+#     WRIST_ROLL = 6
+#     WRIST_PITCH = 7
+#     WRIST_YAW = 8
+#     HEAD_PAN = 9
+#     HEAD_TILT = 10
 
 
-STRETCH_HOME_Q = np.array(
-    [
-        0,  # x
-        0,  # y
-        0,  # theta
-        0.2,  # lift
-        0.057,  # arm
-        0.0,  # gripper rpy
-        0.0,
-        0.0,
-        3.0,  # wrist,
-        0.0,
-        0.0,
-    ]
-)
+# STRETCH_HOME_Q = np.array(
+#     [
+#         0,  # x
+#         0,  # y
+#         0,  # theta
+#         0.2,  # lift
+#         0.057,  # arm
+#         0.0,  # gripper rpy
+#         0.0,
+#         0.0,
+#         3.0,  # wrist,
+#         0.0,
+#         0.0,
+#     ]
+# )
 
-# look down in navigation mode for doing manipulation post-navigation
-STRETCH_POSTNAV_Q = np.array(
-    [
-        0,  # x
-        0,  # y
-        0,  # theta
-        0.78,  # lift
-        0.01,  # arm
-        0.0,  # gripper rpy
-        0.0,  # wrist roll
-        -1.5,  # wrist pitch
-        0.0,  # wrist yaw
-        0.0,
-        math.radians(-45),
-    ]
-)
+# # look down in navigation mode for doing manipulation post-navigation
+# STRETCH_POSTNAV_Q = np.array(
+#     [
+#         0,  # x
+#         0,  # y
+#         0,  # theta
+#         0.78,  # lift
+#         0.01,  # arm
+#         0.0,  # gripper rpy
+#         0.0,  # wrist roll
+#         -1.5,  # wrist pitch
+#         0.0,  # wrist yaw
+#         0.0,
+#         math.radians(-45),
+#     ]
+# )
 
-# Gripper pointed down, for a top-down grasp
-STRETCH_PREGRASP_Q = np.array(
-    [
-        0,  # x
-        0,  # y
-        0,  # theta
-        0.78,  # lift
-        0.01,  # arm
-        0.0,  # gripper rpy
-        0.0,  # wrist roll
-        -1.5,  # wrist pitch
-        0.0,  # wrist yaw
-        -np.pi / 2,  # head pan, camera to face the arm
-        -np.pi / 4,
-    ]
-)
+# # Gripper pointed down, for a top-down grasp
+# STRETCH_PREGRASP_Q = np.array(
+#     [
+#         0,  # x
+#         0,  # y
+#         0,  # theta
+#         0.78,  # lift
+#         0.01,  # arm
+#         0.0,  # gripper rpy
+#         0.0,  # wrist roll
+#         -1.5,  # wrist pitch
+#         0.0,  # wrist yaw
+#         -np.pi / 2,  # head pan, camera to face the arm
+#         -np.pi / 4,
+#     ]
+# )
 
-# Gripper pointed down, for a top-down grasp
-STRETCH_DEMO_PREGRASP_Q = np.array(
-    [
-        0,  # x
-        0,  # y
-        0,  # theta
-        0.4,  # lift
-        0.01,  # arm
-        0.0,  # gripper rpy
-        0.0,  # wrist roll
-        -1.5,  # wrist pitch
-        0.0,  # wrist yaw
-        -np.pi / 2,  # head pan, camera to face the arm
-        -np.pi / 4,
-    ]
-)
+# # Gripper pointed down, for a top-down grasp
+# STRETCH_DEMO_PREGRASP_Q = np.array(
+#     [
+#         0,  # x
+#         0,  # y
+#         0,  # theta
+#         0.4,  # lift
+#         0.01,  # arm
+#         0.0,  # gripper rpy
+#         0.0,  # wrist roll
+#         -1.5,  # wrist pitch
+#         0.0,  # wrist yaw
+#         -np.pi / 2,  # head pan, camera to face the arm
+#         -np.pi / 4,
+#     ]
+# )
 
-# Gripper straight out, lowered arm for clear vision
-STRETCH_PREDEMO_Q = np.array(
-    [
-        0,  # x
-        0,  # y
-        0,  # theta
-        0.4,  # lift
-        0.01,  # arm
-        0.0,  # gripper rpy
-        0.0,  # wrist roll
-        0.0,  # wrist pitch
-        0.0,  # wrist yaw
-        -np.pi / 2,  # head pan, camera to face the arm
-        -np.pi / 4,
-    ]
-)
-# Navigation should not be fully folded up against the arm - in case its holding something
-STRETCH_NAVIGATION_Q = np.array(
-    [
-        0,  # x
-        0,  # y
-        0,  # theta
-        0.6,  # lift
-        0.01,  # arm
-        0.0,  # gripper rpy
-        0.0,  # wrist roll
-        -1.5,  # wrist pitch
-        0.0,  # wrist yaw
-        0.0,
-        math.radians(-65),
-        # look_close[1],
-    ]
-)
+# # Gripper straight out, lowered arm for clear vision
+# STRETCH_PREDEMO_Q = np.array(
+#     [
+#         0,  # x
+#         0,  # y
+#         0,  # theta
+#         0.4,  # lift
+#         0.01,  # arm
+#         0.0,  # gripper rpy
+#         0.0,  # wrist roll
+#         0.0,  # wrist pitch
+#         0.0,  # wrist yaw
+#         -np.pi / 2,  # head pan, camera to face the arm
+#         -np.pi / 4,
+#     ]
+# )
+# # Navigation should not be fully folded up against the arm - in case its holding something
+# STRETCH_NAVIGATION_Q = np.array(
+#     [
+#         0,  # x
+#         0,  # y
+#         0,  # theta
+#         0.6,  # lift
+#         0.01,  # arm
+#         0.0,  # gripper rpy
+#         0.0,  # wrist roll
+#         -1.5,  # wrist pitch
+#         0.0,  # wrist yaw
+#         0.0,
+#         math.radians(-65),
+#         # look_close[1],
+#     ]
+# )
 
 
-PIN_CONTROLLED_JOINTS = [
-    "base_x_joint",
-    "joint_lift",
-    "joint_arm_l0",
-    "joint_arm_l1",
-    "joint_arm_l2",
-    "joint_arm_l3",
-    "joint_wrist_yaw",
-    "joint_wrist_pitch",
-    "joint_wrist_roll",
-]
+# PIN_CONTROLLED_JOINTS = [
+#     "base_x_joint",
+#     "joint_lift",
+#     "joint_arm_l0",
+#     "joint_arm_l1",
+#     "joint_arm_l2",
+#     "joint_arm_l3",
+#     "joint_wrist_yaw",
+#     "joint_wrist_pitch",
+#     "joint_wrist_roll",
+# ]
 
-ROS_ARM_JOINTS = ["joint_arm_l0", "joint_arm_l1", "joint_arm_l2", "joint_arm_l3"]
-ROS_LIFT_JOINT = "joint_lift"
-ROS_GRIPPER_FINGER = "joint_gripper_finger_left"
-# ROS_GRIPPER_FINGER2 = "joint_gripper_finger_right"
-ROS_HEAD_PAN = "joint_head_pan"
-ROS_HEAD_TILT = "joint_head_tilt"
-ROS_WRIST_YAW = "joint_wrist_yaw"
-ROS_WRIST_PITCH = "joint_wrist_pitch"
-ROS_WRIST_ROLL = "joint_wrist_roll"
+# ROS_ARM_JOINTS = ["joint_arm_l0", "joint_arm_l1", "joint_arm_l2", "joint_arm_l3"]
+# ROS_LIFT_JOINT = "joint_lift"
+# ROS_GRIPPER_FINGER = "joint_gripper_finger_left"
+# # ROS_GRIPPER_FINGER2 = "joint_gripper_finger_right"
+# ROS_HEAD_PAN = "joint_head_pan"
+# ROS_HEAD_TILT = "joint_head_tilt"
+# ROS_WRIST_YAW = "joint_wrist_yaw"
+# ROS_WRIST_PITCH = "joint_wrist_pitch"
+# ROS_WRIST_ROLL = "joint_wrist_roll"
 
-stretch_degrees_of_freedom = 3 + 2 + 4 + 2
-default_gripper_open_threshold: float = 0.3
+# stretch_degrees_of_freedom = 3 + 2 + 4 + 2
+# default_gripper_open_threshold: float = 0.3

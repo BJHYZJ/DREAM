@@ -45,37 +45,37 @@ from dream.motion.robot import Footprint
 #     )
 
 
-class DreamIdx:
-    BASE_X = 0
-    BASE_Y = 1
-    BASE_THETA = 2
-    JOINT1 = 3
-    JOINT2 = 4
-    JOINT3 = 5
-    JOINT4 = 6
-    JOINT5 = 7
-    JOINT6 = 8
-    GRIPPER = 9
+# class DreamIdx:
+#     BASE_X = 0
+#     BASE_Y = 1
+#     BASE_THETA = 2
+#     JOINT1 = 3
+#     JOINT2 = 4
+#     JOINT3 = 5
+#     JOINT4 = 6
+#     JOINT5 = 7
+#     JOINT6 = 8
+#     GRIPPER = 9
 
-    name_to_idx = {
-        "base_x": BASE_X,
-        "base_y": BASE_Y,
-        "base_theta": BASE_THETA,
-        "joint1": JOINT1,
-        "joint2": JOINT2,
-        "joint3": JOINT3,
-        "joint4": JOINT4,
-        "joint5": JOINT5,
-        "joint6": JOINT6,
-        "gripper": GRIPPER,
-    }
+#     name_to_idx = {
+#         "base_x": BASE_X,
+#         "base_y": BASE_Y,
+#         "base_theta": BASE_THETA,
+#         "joint1": JOINT1,
+#         "joint2": JOINT2,
+#         "joint3": JOINT3,
+#         "joint4": JOINT4,
+#         "joint5": JOINT5,
+#         "joint6": JOINT6,
+#         "gripper": GRIPPER,
+#     }
 
-    @classmethod
-    def get_idx(cls, name: str) -> int:
-        if name in cls.name_to_idx:
-            return cls.name_to_idx[name]
-        else:
-            raise ValueError(f"Unknown joint name: {name}")
+#     @classmethod
+#     def get_idx(cls, name: str) -> int:
+#         if name in cls.name_to_idx:
+#             return cls.name_to_idx[name]
+#         else:
+#             raise ValueError(f"Unknown joint name: {name}")
 
 # # Stores joint indices for the Stretch configuration space
 # class HelloStretchIdx:
