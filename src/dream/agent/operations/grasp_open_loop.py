@@ -15,8 +15,6 @@ import dream.motion.constants as constants
 from dream.agent.base import ManagedOperation
 from dream.core.interfaces import Observations
 
-# from dream.mapping.instance import Instance
-from dream.motion.kinematics import DreamIdx
 from dream.utils.geometry import point_global_to_base
 from dream.utils.point_cloud import show_point_cloud
 

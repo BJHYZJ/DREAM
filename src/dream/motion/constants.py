@@ -8,9 +8,7 @@
 # license information maybe found below, if so.
 
 import math
-
 import numpy as np
-
 from dream.utils.config import get_full_config_path
 
 # Stretch stuff

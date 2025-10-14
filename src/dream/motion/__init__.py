@@ -8,11 +8,5 @@
 # license information maybe found below, if so.
 
 from .base import XYT, ConfigurationSpace, Node, Planner, PlanResult
-from .constants import (
-    STRETCH_BASE_FRAME,
-    STRETCH_CAMERA_FRAME,
-    STRETCH_GRASP_FRAME,
-    STRETCH_HEAD_CAMERA_ROTATIONS,
-)
 from .constants import DreamIdx
 from .robot import Footprint, RobotModel

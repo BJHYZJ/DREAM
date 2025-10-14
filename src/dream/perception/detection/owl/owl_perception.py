@@ -107,6 +107,7 @@ class OwlPerception:
         camera_pose: torch.Tensor,
         confidence_threshold: Optional[float] = None,
         depth_threshold: float = 3.0,
+        with_bbox: bool = False,
     ):
         height, width = depth.squeeze().shape
         camera = Camera.from_K(np.array(camera_K), width=width, height=height)
@@ -130,5 +131,11 @@ class OwlPerception:
             )
 
             if torch.min(depth[tl_y:br_y, tl_x:br_x].reshape(-1)) < depth_threshold:
-                return torch.median(xyz[tl_y:br_y, tl_x:br_x].reshape(-1, 3), dim=0).values
-        return None
+                if with_bbox:
+                    return torch.median(xyz[tl_y:br_y, tl_x:br_x].reshape(-1, 3), dim=0).values, bbox
+                else:
+                    return torch.median(xyz[tl_y:br_y, tl_x:br_x].reshape(-1, 3), dim=0).values
+        if with_bbox:
+            return None, None
+        else:
+            return None

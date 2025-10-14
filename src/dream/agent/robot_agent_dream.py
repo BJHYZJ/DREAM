@@ -776,7 +776,7 @@ class RobotAgent(RobotAgentBase):
     def manipulate(
         self,
         text,
-        point=None,
+        target_point: None,
         base_node="camera_depth_optical_frame",
         skip_confirmation: bool = False,
     ):
@@ -792,17 +792,14 @@ class RobotAgent(RobotAgentBase):
 
         self.robot.switch_to_manipulation_mode()
         # self.robot.look_at_ee()
+        self.robot.look_at_target(target_point=target_point)
 
-        self.manip_wrapper.move_to_position(
-            joint1=constants.look_front[0],
-            joint2=constants.look_front[1],
-            joint3=constants.look_front[2],
-            joint4=constants.look_front[3],
-            joint5=constants.look_front[4],
-            joint6=constants.look_front[5],
-            gripper_pos=self.robot.get_robot_model().GRIPPER_OPEN,
-            target_point=point,
-        )
+        self.manip_wrapper.look_at_target(target_point=target_point)
+
+        # self.manip_wrapper.move_to_position(
+        #     gripper_pos=self.robot.get_robot_model().GRIPPER_OPEN,
+        #     target_point=target_point,
+        # )
 
         rotation, translation, depth, width = capture_and_process_image(
             mode="pick",

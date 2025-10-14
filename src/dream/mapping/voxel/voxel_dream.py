@@ -670,33 +670,47 @@ class SparseVoxelMapDream(SparseVoxelMap):
     def localize_with_feature_similarity(
         self, text, similarity_threshold: float = 0.14, debug=True, return_debug=False
     ):
-        points, _, _, _ = self.semantic_memory.get_pointcloud()
-        alignments = self.find_alignment_over_model(text).cpu()
-        point = points[alignments.argmax(dim=-1)].detach().cpu().squeeze()
-        obs_counts = self.semantic_memory._obs_counts
-        obs_id = obs_counts[alignments.argmax(dim=-1)].detach().cpu()
+        # points, _, _, _ = self.semantic_memory.get_pointcloud()
+        # alignments = self.find_alignment_over_model(text).cpu()
+        # point = points[alignments.argmax(dim=-1)].detach().cpu().squeeze()
+        # obs_counts = self.semantic_memory._obs_counts
+        # obs_id = obs_counts[alignments.argmax(dim=-1)].detach().cpu()
+        obs_id, point, score, _res = self._get_best_observation_by_bbox_ratio(
+            text=text, 
+            similarity_threshold=similarity_threshold, 
+            max_point_num=50, 
+            max_img_num=3
+        )
+
+        # Lightweight selection: based on point cloud similarity and recency
+        # obs_id, point = self._select_best_frame_lightweight(text, threshold=0.05)
+        
         debug_text = ""
         target_point = None
 
-        if obs_id <= 0 or obs_id > len(self.observations):
-            res = None
-        else:
+        if _res is not None:
+        # if obs_id is not None and obs_id <= len(self.observations):
             rgb = self.observations[obs_id - 1].rgb
             pose = self.observations[obs_id - 1].camera_pose
             depth = self.observations[obs_id - 1].depth
             K = self.observations[obs_id - 1].camera_K
-
             rgb = cv2.cvtColor(rgb.numpy(), cv2.COLOR_RGB2BGR)
-            cv2.imwrite(self.log + "/rgb" + text + "_" + str(obs_id.item() - 1) + ".png", rgb)
-
+            # double check if the detection is correct, use the point with highest confidence_threshold
             res = self.detection_model.compute_obj_coord(text, rgb, depth, K, pose)
-
+            cv2.imwrite(self.log + "/rgb_" + text + "_" + str(obs_id.item() - 1) + ".png", rgb)
+            # rgb_bgr = cv2.cvtColor(rgb.numpy(), cv2.COLOR_RGB2BGR)
+            # res = self.detection_model.compute_obj_coord(text, rgb_bgr, depth, K, pose)
+            # cv2.imwrite(self.log + "/rgb_" + text + "_" + str(obs_id - 1) + ".png", rgb_bgr)
+        else:
+            res = None
+            
         if res is not None:
             target_point = res
             debug_text += (
                 "#### - Object is detected in observations . **😃** Directly navigate to it.\n"
             )
         else:
+            alignments = self.find_alignment_over_model(text).cpu()
             cosine_similarity_check = alignments.max().item() > 0.21
             if cosine_similarity_check:
                 target_point = point
@@ -714,6 +728,222 @@ class SparseVoxelMapDream(SparseVoxelMap):
             return target_point, debug_text
         else:
             return target_point, debug_text, obs_id, point
+
+    def _select_best_frame_lightweight(self, text, threshold=0.05, 
+                                        point_weight=0.6, recency_weight=0.4):
+        """
+        Lightweight frame selection: use find_all_images to get candidates,
+        then rank by point count and recency
+        
+        Args:
+            text: Query text
+            similarity_threshold: Minimum similarity threshold
+            point_weight: Weight for point count (default 0.6)
+            recency_weight: Weight for recency (default 0.4)
+            
+        Returns:
+            (obs_id, point) Selected frame ID and representative point
+        """
+        # Step 1: Get candidate frames from find_all_images
+        candidate_obs_ids, candidate_points, candidate_similarities = self.find_all_images(
+            text, 
+            min_similarity_threshold=threshold,
+            min_point_num=50,
+            max_img_num=10  # Get more candidates for better selection
+        )
+        
+        # Fallback: if no candidates found
+        if len(candidate_obs_ids) == 0:
+            points, _, _, _ = self.semantic_memory.get_pointcloud()
+            alignments = self.find_alignment_over_model(text).cpu()
+            obs_counts = self.semantic_memory._obs_counts
+            max_idx = alignments.argmax(dim=-1)
+            return obs_counts[max_idx].detach().cpu().item(), points[max_idx].detach().cpu().squeeze()
+        
+        # Step 2: Count points for each candidate frame
+        points, _, _, _ = self.semantic_memory.get_pointcloud()
+        alignments = self.find_alignment_over_model(text).cpu()
+        obs_counts = self.semantic_memory._obs_counts.cpu()
+        
+        # Filter high similarity points
+        mask = alignments.squeeze() >= threshold
+        filtered_obs_counts = obs_counts[mask]
+        filtered_points = points[mask]
+        
+        # Step 3: For each candidate frame, calculate score
+        frame_scores = []
+        max_obs_id = max(1, len(self.observations))
+        
+        for i, obs_id in enumerate(candidate_obs_ids):
+            obs_id_val = obs_id.item() if hasattr(obs_id, 'item') else obs_id
+            
+            # Count how many high-similarity points are in this frame
+            frame_point_mask = filtered_obs_counts == obs_id_val
+            num_points = frame_point_mask.sum().item()
+            
+            # Normalize point count to [0, 1]
+            point_score = min(1.0, num_points / 100.0)
+            
+            # Recency score: [0, 1], newer frames get higher scores
+            recency_score = (obs_id_val - 1) / max(1, max_obs_id - 1)
+            
+            # Combined score: weighted by point count and recency
+            combined_score = point_weight * point_score + recency_weight * recency_score
+            
+            frame_scores.append({
+                'obs_id': obs_id_val,
+                'point': candidate_points[i],
+                'num_points': num_points,
+                'recency': recency_score,
+                'score': combined_score
+            })
+        
+        # Step 4: Sort by combined score and select the best
+        frame_scores.sort(key=lambda x: x['score'], reverse=True)
+        best_frame = frame_scores[0]
+        
+        return best_frame['obs_id'], best_frame['point']
+
+    def _get_best_observation_by_bbox_ratio(self, text, similarity_threshold, max_point_num=50, max_img_num=3):
+        """
+        Select best observation frame by bounding box ratio (lightweight approach)
+        
+        Args:
+            text: Query text
+            similarity_threshold: Similarity threshold
+            
+        Returns:
+            (obs_id, point, bbox_ratio) Best observation frame information
+        """
+        # Get candidate frames
+        candidate_obs_ids, candidate_points, candidate_similarities = self.find_all_images(
+            text, 
+            min_similarity_threshold=similarity_threshold,
+            min_point_num=max_point_num,
+            max_img_num=max_img_num
+        )
+        
+        best_obs_id = None
+        best_point = None
+        best_score = 0.0
+        best_res = None
+        
+        for i, obs_id in enumerate(candidate_obs_ids):
+            if obs_id <= 0 or obs_id > len(self.observations):
+                continue
+
+            # Calculate bounding box ratio
+            bbox_ratio, res = self._get_bbox_ratio(obs_id, text, confidence_threshold=0.05)
+            if bbox_ratio is None:
+                continue
+            
+            # Combined score: bbox ratio + recency bonus
+            # Newer observations get a small bonus (0.01 per 10 frames)
+            recency_bonus = obs_id * 0.01  # Small bonus for newer frames
+            combined_score = bbox_ratio + recency_bonus
+            
+            if combined_score > best_score:
+                best_obs_id = obs_id
+                best_point = candidate_points[i]
+                best_score = combined_score
+                best_res = res
+
+        return best_obs_id, best_point, best_score, best_res
+    
+    def _get_bbox_ratio(self, obs_idx, text, confidence_threshold=0.1, visualize=False):
+        """
+        Calculate the ratio of target object's bounding box to the whole image (lightweight)
+        
+        Args:
+            obs_idx: Observation frame index
+            text: Query text
+            
+        Returns:
+            Ratio of bbox area to image area (0.0-1.0)
+        """
+        try:
+            rgb = self.observations[obs_idx - 1].rgb
+            depth = self.observations[obs_idx - 1].depth
+            K = self.observations[obs_idx - 1].camera_K
+            pose = self.observations[obs_idx - 1].camera_pose
+            
+            # Try to detect target object
+            rgb_bgr = cv2.cvtColor(rgb.numpy(), cv2.COLOR_RGB2BGR)
+            res, bbox = self.detection_model.compute_obj_coord(
+                text=text, 
+                rgb=rgb_bgr, 
+                depth=depth, 
+                camera_K=K, 
+                camera_pose=pose, 
+                confidence_threshold=confidence_threshold, 
+                with_bbox=True
+            )
+            
+            if res is not None:
+                # Calculate bounding box area from tl_x, tl_y, br_x, br_y format
+                img_area = rgb.shape[0] * rgb.shape[1]  # H * W
+                bbox_width = bbox[2] - bbox[0]  # br_x - tl_x
+                bbox_height = bbox[3] - bbox[1]  # br_y - tl_y
+                bbox_area = bbox_width * bbox_height
+                bbox_ratio = bbox_area / img_area
+                
+                # Visualization if requested
+                if visualize:
+                    self._save_bbox_visualization(obs_idx, text, bbox, res, bbox_ratio, rgb_bgr)
+                
+                return bbox_ratio, res
+            
+            return None, None
+            
+        except Exception as e:
+            print(f"Bbox ratio calculation failed for obs {obs_idx}: {e}")
+            return None
+
+    def _save_bbox_visualization(self, obs_idx, text, bbox, res, bbox_ratio, rgb_bgr):
+        """
+        Save bbox visualization for debugging
+        """
+        try:
+            vis_img = rgb_bgr.copy()
+            
+            if bbox is not None and res is not None:
+                # Draw bounding box
+                tl_x, tl_y, br_x, br_y = bbox
+                tl_x, tl_y, br_x, br_y = (
+                    int(max(0, tl_x.item())),
+                    int(max(0, tl_y.item())),
+                    int(min(vis_img.shape[1], br_x.item())),
+                    int(min(vis_img.shape[0], br_y.item())),
+                )
+                
+                # Draw rectangle
+                cv2.rectangle(vis_img, (tl_x, tl_y), (br_x, br_y), (0, 255, 0), 2)
+                
+                # Add text information
+                info_text = f"Bbox Ratio: {bbox_ratio:.3f}"
+                cv2.putText(vis_img, info_text, (tl_x, tl_y - 10), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                # Add object coordinates
+                coord_text = f"3D: ({res[0]:.2f}, {res[1]:.2f}, {res[2]:.2f})"
+                cv2.putText(vis_img, coord_text, (tl_x, br_y + 20), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                
+                print(f"  Obs {obs_idx}: Detection found - Bbox ratio: {bbox_ratio:.3f}")
+                
+            else:
+                # No detection found
+                cv2.putText(vis_img, f"No detection for: {text}", (10, 30), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                print(f"  Obs {obs_idx}: No detection found")
+            
+            # Save visualization
+            save_path = f"{self.log}/bbox_debug_obs{obs_idx}_{text.replace(' ', '_')}.png"
+            cv2.imwrite(save_path, vis_img)
+            
+        except Exception as e:
+            print(f"Failed to save visualization for obs {obs_idx}: {e}")
+
 
     def add(
         self,

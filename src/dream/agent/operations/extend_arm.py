@@ -9,7 +9,6 @@
 
 import dream.motion.constants as constants
 from dream.agent.base import ManagedOperation
-from dream.motion.kinematics import DreamIdx
 
 
 class ExtendArm(ManagedOperation):

@@ -16,7 +16,6 @@ import numpy as np
 from dream.agent.base import ManagedOperation
 from dream.agent.robot_agent import RobotAgent
 from dream.mapping.instance import Instance
-from dream.motion import DreamIdx
 from dream.utils.geometry import point_global_to_base
 
 

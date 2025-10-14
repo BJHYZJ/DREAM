@@ -13,7 +13,7 @@ import pinocchio as pin
 # from urdf_parser_py.urdf import URDF
 from scipy.spatial.transform import Rotation as R
 
-from dream.motion.kinematics import DreamIdx
+from dream.motion.constants import DreamIdx
 from dream.motion import constants
 
 OVERRIDE_STATES: dict[str, float] = {}
@@ -86,46 +86,62 @@ class DreamManipulationWrapper:
 
         return joint_names, joint_values
 
+    def look_at_target(
+        self, 
+        target_point,
+        blocking=True,
+    ):
+        """
+        Look at the target point
+        """
+        self.robot.look_at_target(target_point, blocking=blocking)
+
+
     def move_to_position(
         self,
-        joint1=None,
-        joint2=None,
-        joint3=None,
-        joint4=None,
-        joint5=None,
-        joint6=None,
+        base_trans=None,
+        ee_x=None,
+        ee_y=None,
+        ee_z=None,
+        ee_roll=None,
+        ee_pitch=None,
+        ee_yaw=None,
         gripper_pos=None,
-        target_point=None,
         blocking=True,
     ):
         """
         Moves the robots, base, arm, gripper, head to a desired position.
         """
-
         # Base, arm and gripper state update
-        target_state = self.robot.get_seven_joints()
+        target_state = self.robot.extract_joints_positions()
 
-        if not joint1 is None:
-            target_state[0] = joint1
-        if not joint2 is None:
-            target_state[1] = joint2
-        if not joint3 is None:
-            target_state[2] = joint3
-        if not joint4 is None:
-            target_state[3] = joint4
-        if not joint5 is None:
-            target_state[4] = joint5
-        if not joint6 is None:
-            target_state[5] = joint6
+        if base_trans is None:
+            target_state[0] += base_trans
 
+        if not ee_x is None:
+            target_state[1] = ee_x
+        if not ee_y is None:
+            target_state[2] = ee_y
+        if not ee_z is None:
+            target_state[3] = ee_z
+        if not ee_roll is None:
+            target_state[4] = ee_roll
+        if not ee_pitch is None:
+            target_state[5] = ee_pitch
+        if not ee_yaw is None:
+            target_state[6] = ee_yaw
+        
         if gripper_pos is not None:
-            self.CURRENT_STATE = gripper_pos
-            self.robot.gripper_to(self.CURRENT_STATE, blocking=blocking)
+            target_state[7] = gripper_pos
+
+        # if gripper_pos is not None:
+        #     self.CURRENT_STATE = gripper_pos
+        #     self.robot.gripper_to(self.CURRENT_STATE, blocking=blocking)
 
         self.robot.arm_to(
-            joint_angles=target_state[:6], 
-            gripper=target_state[6], 
-            target_point=target_point,
+            base_x=target_state[0],
+            joint_angles=target_state[1:7], 
+            gripper=target_state[7], 
             blocking=blocking, 
             reliable=False
         )
@@ -155,7 +171,7 @@ class DreamManipulationWrapper:
         """
         update all the current positions of joints
         """
-        state = self.robot.get_seven_joints()
+        state = self.robot.extract_joints_positions()
         origin_dist = state[0]
 
         # Head Joints
@@ -181,7 +197,7 @@ class DreamManipulationWrapper:
         """
         Given the desired joints movement this function will the joints accordingly
         """
-        state = self.robot.get_seven_joints()
+        state = self.robot.extract_joints_positions()
 
         # clamp rotational joints between -1.57 to 1.57
         joints["joint_wrist_pitch"] = (joints["joint_wrist_pitch"] + 1.57) % 3.14 - 1.57

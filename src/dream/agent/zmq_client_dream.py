@@ -29,7 +29,8 @@ from dream.core.interfaces import ContinuousNavigationAction, Observations, Stat
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
-from dream.motion.kinematics import DreamIdx, RangerxARMKinematics
+from dream.motion.kinematics import RangerxARMKinematics
+from dream.motion.constants import DreamIdx
 from dream.utils.geometry import (
     angle_difference,
     posquat2sophus,
@@ -225,6 +226,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
         if enable_rerun_server:
             from dream.visualization.rerun import RerunVisualizer
 
+            if output_path is not None and not output_path.exists():
+                output_path.mkdir(parents=True, exist_ok=True)
+
             self._rerun = RerunVisualizer(output_path=output_path)
         else:
             self._rerun = None
@@ -272,10 +276,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None, None, None
-            joint_states = self._state.joint_positions
+            joint_states = self._state.joint_states
             joint_velocities = self._state.joint_velocities
-            joint_efforts = self._state.joint_efforts
-        return joint_states, joint_velocities, joint_efforts
+            joint_forces = self._state.joint_forces
+        return joint_states, joint_velocities, joint_forces
 
     def get_joint_positions(self, timeout: float = 5.0) -> np.ndarray:
         """Get the current joint positions"""
@@ -289,7 +293,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             joint_positions = self._state.joint_positions
         return joint_positions
 
-    def get_seven_joints(self, timeout: float = 5.0) -> np.ndarray:
+    def extract_joints_positions(self, timeout: float = 5.0) -> np.ndarray:
         joint_positions = self.get_joint_positions(timeout=timeout)
         return np.array(self._extract_joint_pos(joint_positions))
 
@@ -397,7 +401,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     #         Tuple[float, float]: The pan and tilt angles
     #     """
 
-    #     joint_positions, _, _ = self.get_joint_state()
+    #     joint_states, _, _ = self.get_joint_state()
     #     return joint_positions[DreamIdx.HEAD_PAN], joint_positions[DreamIdx.HEAD_TILT]
 
     def get_gripper_position(self):
@@ -491,17 +495,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
     #     # Return a valid solution to the IK problem here
     #     return full_body_cfg
 
-    def _extract_joint_pos(self, q):
+    def _extract_joint_pos(self, positions):
         """Helper to convert from the general-purpose config including full robot state, into the command space used in just the manip controller. Extracts just lift/arm/wrist information."""
-        return [
-            q[DreamIdx.JOINT1],
-            q[DreamIdx.JOINT2],
-            q[DreamIdx.JOINT3],
-            q[DreamIdx.JOINT4],
-            q[DreamIdx.JOINT5],
-            q[DreamIdx.JOINT6],
-            q[DreamIdx.GRIPPER],
-        ]
+        return [positions[DreamIdx.BASE_X]] + positions[constants.POSITION_JOINTS_INDEX] + positions[DreamIdx.GRIPPER],
 
     def get_pose_graph(self) -> np.ndarray:
         """Get the robot's SLAM pose graph"""
@@ -514,8 +510,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def head_to(
         self,
-        angle: np.array,
-        target_point: np.array,
+        angle: np.ndarray,
         blocking: bool = False,
         timeout: float = 10.0,
         reliable: bool = True,
@@ -541,9 +536,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
         next_action = {"head_to": angle, "wait": blocking}
         sent = self.send_action(next_action, timeout=timeout, reliable=reliable)
 
-        # if blocking:
-        #     step = sent["step"]
-        #     whole_body_q = np.zeros(self._robot_model.dof, dtype=np.float32)
+        if blocking:
+            # step = sent["step"]
+            # whole_body_q = np.zeros(self._robot_model.dof, dtype=np.float32)
             # whole_body_q[HelloStretchIdx.HEAD_PAN] = float(head_pan)
             # whole_body_q[HelloStretchIdx.HEAD_TILT] = float(head_tilt)
 
@@ -554,6 +549,36 @@ class DreamRobotZmqClient(AbstractRobotClient):
             # time.sleep(0.25)
             # self._wait_for_head(whole_body_q, block_id=step)
             # time.sleep(0.25)
+            t0 = timeit.default_timer()
+            steps = 0
+            while not self._finish:
+                if steps % 40 == 39:
+                    self.send_action(next_action, timeout=timeout, reliable=True)
+                
+                # Get current joint state
+                joint_states, _, _ = self.get_joint_state()
+                if joint_states is None:
+                    time.sleep(0.01)
+                    steps += 1
+                    continue
+                
+                # Compute error for all 6 joints
+                error = np.linalg.norm(joint_states[3:9] - angle)
+                
+                if error < 0.01:  # 1 degree threshold
+                    # print(f"[Camera Aim] ✅ Reached target")
+                    return True
+                
+                steps += 1
+                time.sleep(0.01)
+                
+                t1 = timeit.default_timer()
+                if t1 - t0 > timeout:
+                    logger.error("Timeout waiting for camera to aim at target")
+                    return False
+            
+            return False
+
 
     def look_front(self, blocking: bool = True, timeout: float = 10.0):
         """Let robot look to its front."""
@@ -564,22 +589,124 @@ class DreamRobotZmqClient(AbstractRobotClient):
             reliable=True,
         )
 
-    # def look_at_ee(self, blocking: bool = True, timeout: float = 10.0):
-    #     """Let robot look to its arm."""
-    #     self.head_to(
-    #         angle=constants.look_front,
-    #         blocking=blocking,
-    #         timeout=timeout,
-    #         reliable=True,
-    #     )
+    def look_at_target(self, target_point: np.array, blocking: bool = True, timeout: float = 10.0):
+        """Let robot look at the target point."""
+        if not self.in_manipulation_mode():
+            raise ValueError("Robot must be in manipulation mode to look at target point")
+        if isinstance(target_point, list):
+            target_point = np.array(target_point)
+        assert len(target_point) == 3, "target point must be a vector of size 3"
+        t0 = timeit.default_timer()
+        with self._state_lock:
+            while self._state is None:
+                time.sleep(1e-4)
+                if timeit.default_timer() - t0 > timeout:
+                    logger.error("Timeout waiting for state message")
+                    return None
+            joint_states = self._state.joint_states
+            joint_positions = self._state.joint_positions  # arm position: ee in base position
+            base_in_map_pose = self._state.base_in_map_pose
+            camera_in_base_pose = self._state.camera_in_base_pose
+            ee_in_base_pose = self._state.ee_in_base_pose
+
+        new_joints = self._robot_model.compute_look_at_target(
+            arm_angles_deg=joint_states[3:9],
+            target_in_map_point=target_point,
+            base_in_map_pose=base_in_map_pose,
+            camera_in_base_pose=camera_in_base_pose,
+            ee_in_base_pose=ee_in_base_pose,
+        )
+
+        self.head_to(new_joints, blocking=blocking, timeout=timeout)
+        # Handle blocking
+        # if blocking:
+        #     # 1. Compute IK locally to get target joint angles
+        #     kinematics = self.get_robot_model()
+            
+        #     # Get current camera pose
+        #     obs = self.get_observation()
+        #     camera_pose = obs.camera_in_map_pose
+        #     camera_position = camera_pose[:3, 3]
+            
+        #     # Compute target orientation (camera pointing at target)
+        #     camera_to_target = target_point - camera_position
+        #     distance = np.linalg.norm(camera_to_target)
+            
+        #     if distance < 0.01:
+        #         logger.error("Target too close to camera")
+        #         return False
+            
+        #     direction = camera_to_target / distance
+        #     front = direction
+        #     world_up = np.array([0, 0, 1])
+        #     if abs(np.dot(front, world_up)) > 0.99:
+        #         world_up = np.array([0, 1, 0])
+        #     right = np.cross(world_up, front)
+        #     right = right / np.linalg.norm(right)
+        #     up = np.cross(front, right)
+        #     target_rotation = np.stack([right, up, front], axis=1)
+            
+        #     # Create target pose
+        #     target_pose = np.eye(4)
+        #     target_pose[:3, :3] = target_rotation
+        #     target_pose[:3, 3] = camera_position
+            
+        #     # Transform to base frame
+        #     base_pose = self.get_base_pose()
+        #     target_pose_base = np.linalg.inv(base_pose) @ target_pose
+            
+        #     # Compute IK locally
+        #     current_joints = self.get_six_joints()
+        #     success_ik, target_joint_angles = kinematics.compute_ik_local(
+        #         target_pose_base, 
+        #         seed=current_joints
+        #     )
+            
+        #     if not success_ik:
+        #         logger.error("IK computation failed")
+        #         return False
+            
+        #     print(f"[Camera Aim] Target joint angles: {target_joint_angles}")
+            
+        #     # 2. Monitor until reached target
+        #     t0 = timeit.default_timer()
+        #     steps = 0
+        #     while not self._finish:
+        #         if steps % 40 == 39:
+        #             self.send_action(next_action, timeout=timeout, reliable=True)
+                
+        #         # Get current joint state
+        #         joint_states, _, _ = self.get_joint_state()
+        #         if joint_states is None:
+        #             time.sleep(0.01)
+        #             steps += 1
+        #             continue
+                
+        #         # Compute error for all 6 joints
+        #         error = np.linalg.norm(joint_states[:6] - target_joint_angles)
+                
+        #         if error < 0.05:  # 5cm threshold
+        #             print(f"[Camera Aim] ✅ Reached target")
+        #             return True
+                
+        #         steps += 1
+        #         time.sleep(0.01)
+                
+        #         t1 = timeit.default_timer()
+        #         if t1 - t0 > timeout:
+        #             logger.error("Timeout waiting for camera to aim at target")
+        #             return False
+            
+        #     return False
+        # return True
 
 
 
     def arm_to(
         self,
+        base_x: float = None,
         joint_angles: Optional[np.ndarray] = None,
         gripper: float = None,
-        target_point: np.array = None,
         blocking: bool = True,
         timeout: float = 10.0,
         verbose: bool = False,
@@ -613,15 +740,13 @@ class DreamRobotZmqClient(AbstractRobotClient):
         if gripper is not None:
             _next_action["gripper"] = gripper
         
-        if target_point is not None:
-            _next_action["target_point"] = target_point
         
         _next_action["wait"] = blocking
         self.send_action(_next_action, reliable=reliable)
 
         # Handle blocking
         steps = 0
-        if target_point is None and blocking:
+        if blocking:
             t0 = timeit.default_timer()
             while not self._finish:
 
@@ -631,18 +756,18 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     if verbose:
                         print("Resending action", joint_angles)
 
-                joint_state, joint_velocities, _ = self.get_joint_state()
-                if joint_state is None:
+                joint_states, joint_velocities, _ = self.get_joint_state()
+                if joint_states is None:
                     time.sleep(0.01)
                     continue
 
-                joint1_diff = np.abs(joint_state[DreamIdx.joint1] - joint_angles[2])
-                joint2_diff = np.abs(joint_state[DreamIdx.joint2] - joint_angles[1])
-                joint3_diff = np.abs(joint_state[DreamIdx.joint3] - joint_angles[2])
-                joint4_diff = np.abs(joint_state[DreamIdx.joint4] - joint_angles[3])
-                joint5_diff = np.abs(joint_state[DreamIdx.joint5] - joint_angles[4])
-                joint6_diff = np.abs(joint_state[DreamIdx.joint6] - joint_angles[5])
-                gripper_diff = np.abs(joint_state[DreamIdx.GRIPPER] - joint_angles[6])
+                joint1_diff = np.abs(joint_states[DreamIdx.joint1] - joint_angles[2])
+                joint2_diff = np.abs(joint_states[DreamIdx.joint2] - joint_angles[1])
+                joint3_diff = np.abs(joint_states[DreamIdx.joint3] - joint_angles[2])
+                joint4_diff = np.abs(joint_states[DreamIdx.joint4] - joint_angles[3])
+                joint5_diff = np.abs(joint_states[DreamIdx.joint5] - joint_angles[4])
+                joint6_diff = np.abs(joint_states[DreamIdx.joint6] - joint_angles[5])
+                gripper_diff = np.abs(joint_states[DreamIdx.GRIPPER] - joint_angles[6])
                 if verbose:
                     print(
                         f"{joint1_diff=}, {joint2_diff=}, {joint3_diff=}, {joint4_diff=}, {joint5_diff=}, {joint6_diff=}, {gripper_diff=}"
@@ -874,136 +999,136 @@ class DreamRobotZmqClient(AbstractRobotClient):
         # self._wait_for_arm(constants.STRETCH_PREGRASP_Q)
         assert self.in_manipulation_mode()
 
-    def _wait_for_head(
-        self,
-        q: np.ndarray,
-        timeout: float = 3.0,
-        min_wait_time: float = 0.5,
-        resend_action: Optional[dict] = None,
-        block_id: int = -1,
-        verbose: bool = False,
-    ) -> None:
-        """Wait for the head to move to a particular configuration."""
-        t0 = timeit.default_timer()
-        at_goal = False
+    # def _wait_for_head(
+    #     self,
+    #     q: np.ndarray,
+    #     timeout: float = 3.0,
+    #     min_wait_time: float = 0.5,
+    #     resend_action: Optional[dict] = None,
+    #     block_id: int = -1,
+    #     verbose: bool = False,
+    # ) -> None:
+    #     """Wait for the head to move to a particular configuration."""
+    #     t0 = timeit.default_timer()
+    #     at_goal = False
 
-        # Wait for the head to move
-        # If the head is not moving, we are done
-        # Head must be stationary for at least min_wait_time
-        prev_joint_positions = None
-        prev_t = None
-        while not self._finish:
+    #     # Wait for the head to move
+    #     # If the head is not moving, we are done
+    #     # Head must be stationary for at least min_wait_time
+    #     prev_joint_positions = None
+    #     prev_t = None
+    #     while not self._finish:
 
-            # Check to make sure message was sent and received
-            if self.out_of_date():
-                time.sleep(0.01)
-                continue
+    #         # Check to make sure message was sent and received
+    #         if self.out_of_date():
+    #             time.sleep(0.01)
+    #             continue
 
-            joint_positions, joint_velocities, _ = self.get_joint_state()
+    #         joint_positions, joint_velocities, _ = self.get_joint_state()
 
-            if joint_positions is None:
-                time.sleep(0.01)
-                continue
+    #         if joint_positions is None:
+    #             time.sleep(0.01)
+    #             continue
 
-            # if self._last_step < block_id:
-            #     # TODO: remove debug info
-            #     print("Waiting for step", block_id, "to be processed; currently on:", self._last_step)
-            #     time.sleep(0.05)
-            #     continue
+    #         # if self._last_step < block_id:
+    #         #     # TODO: remove debug info
+    #         #     print("Waiting for step", block_id, "to be processed; currently on:", self._last_step)
+    #         #     time.sleep(0.05)
+    #         #     continue
 
-            pan_err = np.abs(
-                joint_positions[HelloStretchIdx.HEAD_PAN] - q[HelloStretchIdx.HEAD_PAN]
-            )
-            tilt_err = np.abs(
-                joint_positions[HelloStretchIdx.HEAD_TILT] - q[HelloStretchIdx.HEAD_TILT]
-            )
-            head_speed = np.linalg.norm(
-                joint_velocities[HelloStretchIdx.HEAD_PAN : HelloStretchIdx.HEAD_TILT]
-            )
+    #         pan_err = np.abs(
+    #             joint_positions[HelloStretchIdx.HEAD_PAN] - q[HelloStretchIdx.HEAD_PAN]
+    #         )
+    #         tilt_err = np.abs(
+    #             joint_positions[HelloStretchIdx.HEAD_TILT] - q[HelloStretchIdx.HEAD_TILT]
+    #         )
+    #         head_speed = np.linalg.norm(
+    #             joint_velocities[HelloStretchIdx.HEAD_PAN : HelloStretchIdx.HEAD_TILT]
+    #         )
 
-            if prev_joint_positions is not None:
-                head_speed_v2 = np.linalg.norm(
-                    joint_positions[HelloStretchIdx.HEAD_PAN : HelloStretchIdx.HEAD_TILT]
-                    - prev_joint_positions[HelloStretchIdx.HEAD_PAN : HelloStretchIdx.HEAD_TILT]
-                ) / (timeit.default_timer() - prev_t)
-            else:
-                head_speed_v2 = float("inf")
+    #         if prev_joint_positions is not None:
+    #             head_speed_v2 = np.linalg.norm(
+    #                 joint_positions[HelloStretchIdx.HEAD_PAN : HelloStretchIdx.HEAD_TILT]
+    #                 - prev_joint_positions[HelloStretchIdx.HEAD_PAN : HelloStretchIdx.HEAD_TILT]
+    #             ) / (timeit.default_timer() - prev_t)
+    #         else:
+    #             head_speed_v2 = float("inf")
 
-            # Take the max of the two speeds
-            # This is to handle the case where we're getting weird measurements
-            head_speed = max(head_speed, head_speed_v2)
+    #         # Take the max of the two speeds
+    #         # This is to handle the case where we're getting weird measurements
+    #         head_speed = max(head_speed, head_speed_v2)
 
-            # Save the current joint positions to compute speed
-            prev_joint_positions = joint_positions
-            prev_t = timeit.default_timer()
+    #         # Save the current joint positions to compute speed
+    #         prev_joint_positions = joint_positions
+    #         prev_t = timeit.default_timer()
 
-            if verbose:
-                print("Waiting for head to move", pan_err, tilt_err, "head speed =", head_speed)
-            if head_speed > self._head_not_moving_tolerance:
-                at_goal = False
-            elif pan_err < self._head_pan_tolerance and tilt_err < self._head_tilt_tolerance:
-                at_goal = True
-                at_goal_t = timeit.default_timer()
-            elif resend_action is not None:
-                self.send_message(resend_action)
-            else:
-                at_goal = False
+    #         if verbose:
+    #             print("Waiting for head to move", pan_err, tilt_err, "head speed =", head_speed)
+    #         if head_speed > self._head_not_moving_tolerance:
+    #             at_goal = False
+    #         elif pan_err < self._head_pan_tolerance and tilt_err < self._head_tilt_tolerance:
+    #             at_goal = True
+    #             at_goal_t = timeit.default_timer()
+    #         elif resend_action is not None:
+    #             self.send_message(resend_action)
+    #         else:
+    #             at_goal = False
 
-            if (
-                at_goal
-                and timeit.default_timer() - at_goal_t > min_wait_time
-                and head_speed < self._head_not_moving_tolerance
-            ):
-                break
+    #         if (
+    #             at_goal
+    #             and timeit.default_timer() - at_goal_t > min_wait_time
+    #             and head_speed < self._head_not_moving_tolerance
+    #         ):
+    #             break
 
-            t1 = timeit.default_timer()
-            if t1 - t0 > min_wait_time and head_speed < self._head_not_moving_tolerance:
-                if verbose:
-                    print("Head not moving, we are done")
-                break
+    #         t1 = timeit.default_timer()
+    #         if t1 - t0 > min_wait_time and head_speed < self._head_not_moving_tolerance:
+    #             if verbose:
+    #                 print("Head not moving, we are done")
+    #             break
 
-            if t1 - t0 > timeout:
-                print("Timeout waiting for head to move")
-                break
-            time.sleep(0.01)
+    #         if t1 - t0 > timeout:
+    #             print("Timeout waiting for head to move")
+    #             break
+    #         time.sleep(0.01)
 
-    def _wait_for_arm(
-        self, q: np.ndarray, timeout: float = 10.0, resend_action: Optional[dict] = None
-    ) -> bool:
-        """Wait for the arm to move to a particular configuration. Will throw an exception if the arm is not moving; probably means a packet was dropped. Arm configuration is in full-body joint space, as defined by the HelloStretchIdx enum.
+    # def _wait_for_arm(
+    #     self, q: np.ndarray, timeout: float = 10.0, resend_action: Optional[dict] = None
+    # ) -> bool:
+    #     """Wait for the arm to move to a particular configuration. Will throw an exception if the arm is not moving; probably means a packet was dropped. Arm configuration is in full-body joint space, as defined by the HelloStretchIdx enum.
 
-        Args:
-            q(np.ndarray): The target joint angles
-            timeout(float): How long to wait for the arm to move
-            resend_action(dict): The action to resend if the arm is not moving. If none, do not resend.
+    #     Args:
+    #         q(np.ndarray): The target joint angles
+    #         timeout(float): How long to wait for the arm to move
+    #         resend_action(dict): The action to resend if the arm is not moving. If none, do not resend.
 
-        Returns:
-            bool: Whether the arm successfully moved to the target configuration
-        """
-        t0 = timeit.default_timer()
-        while not self._finish:
-            joint_positions, joint_velocities, _ = self.get_joint_state()
-            if joint_positions is None:
-                continue
+    #     Returns:
+    #         bool: Whether the arm successfully moved to the target configuration
+    #     """
+    #     t0 = timeit.default_timer()
+    #     while not self._finish:
+    #         joint_states, joint_velocities, _ = self.get_joint_state()
+    #         if joint_states is None:
+    #             continue
 
-            arm_diff = np.abs(joint_positions[HelloStretchIdx.ARM] - q[HelloStretchIdx.ARM])
-            lift_diff = np.abs(joint_positions[HelloStretchIdx.LIFT] - q[HelloStretchIdx.LIFT])
+    #         arm_diff = np.abs(joint_states[HelloStretchIdx.ARM] - q[HelloStretchIdx.ARM])
+    #         lift_diff = np.abs(joint_states[HelloStretchIdx.LIFT] - q[HelloStretchIdx.LIFT])
 
-            if arm_diff < self._arm_joint_tolerance and lift_diff < self._lift_joint_tolerance:
-                return True
+    #         if arm_diff < self._arm_joint_tolerance and lift_diff < self._lift_joint_tolerance:
+    #             return True
 
-            if resend_action is not None:
-                self.send_message(resend_action)
+    #         if resend_action is not None:
+    #             self.send_message(resend_action)
 
-            t1 = timeit.default_timer()
-            if t1 - t0 > timeout:
-                logger.error(
-                    f"Timeout waiting for arm to move to arm={q[HelloStretchIdx.ARM]}, lift={q[HelloStretchIdx.LIFT]}: {t1 - t0} seconds, arm_diff={arm_diff}, lift_diff={lift_diff}"
-                )
-                return False
+    #         t1 = timeit.default_timer()
+    #         if t1 - t0 > timeout:
+    #             logger.error(
+    #                 f"Timeout waiting for arm to move to arm={q[HelloStretchIdx.ARM]}, lift={q[HelloStretchIdx.LIFT]}: {t1 - t0} seconds, arm_diff={arm_diff}, lift_diff={lift_diff}"
+    #             )
+    #             return False
 
-        # This should never happen
-        return False
+    #     # This should never happen
+    #     return False
 
     def _wait_for_mode(
         self,

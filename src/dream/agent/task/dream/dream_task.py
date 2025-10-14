@@ -28,18 +28,18 @@ from dream.utils.logger import Logger
 logger = Logger(__name__)
 
 
-# def compute_tilt(camera_xyz, target_xyz):
-#     """
-#     a util function for computing robot head tilts so the robot can look at the target object after navigation
-#     - camera_xyz: estimated (x, y, z) coordinates of camera
-#     - target_xyz: estimated (x, y, z) coordinates of the target object
-#     """
-#     if not isinstance(camera_xyz, np.ndarray):
-#         camera_xyz = np.array(camera_xyz)
-#     if not isinstance(target_xyz, np.ndarray):
-#         target_xyz = np.array(target_xyz)
-#     vector = camera_xyz - target_xyz
-#     return -np.arctan2(vector[2], np.linalg.norm(vector[:2]))
+def compute_tilt(camera_xyz, target_xyz):
+    """
+    a util function for computing robot head tilts so the robot can look at the target object after navigation
+    - camera_xyz: estimated (x, y, z) coordinates of camera
+    - target_xyz: estimated (x, y, z) coordinates of the target object
+    """
+    if not isinstance(camera_xyz, np.ndarray):
+        camera_xyz = np.array(camera_xyz)
+    if not isinstance(target_xyz, np.ndarray):
+        target_xyz = np.array(target_xyz)
+    vector = camera_xyz - target_xyz
+    return -np.arctan2(vector[2], np.linalg.norm(vector[:2]))
 
 
 class DreamTaskExecutor:
@@ -146,11 +146,13 @@ class DreamTaskExecutor:
             target_object: The object to pick up.
         """
         self.robot.switch_to_manipulation_mode()
-        # camera_xyz = self.robot.get_head_pose()[:3, 3]
+        # camera_in_map_pose = self.robot.get_head_pose()[:3, 3]
+        # self.robot.look_at_target(target_point=point)
+        # camera_xyz = camera_in_map_pose[:3, 3]
         # if point is not None:
         #     theta = compute_tilt(camera_xyz, point)
         # else:
-        #     theta = -0.6
+        #     theta = None
 
         # Grasp the object using operation if it's available
         if self.grasp_object is not None:
@@ -158,7 +160,7 @@ class DreamTaskExecutor:
             print("Using operation to grasp object:", target_object)
             print(" - Point:", point)
             # print(" - Theta:", theta)
-            state = self.robot.get_six_joints()
+            state = self.robot.extract_joints_positions()
             state[1] = 1.0
             self.robot.arm_to(state, blocking=True)
             self.grasp_object(
@@ -175,7 +177,7 @@ class DreamTaskExecutor:
             # Otherwise, use the self.agent's manipulation method
             # This is from OK Robot
             print("Using self.agent to grasp object:", target_object)
-            self.agent.manipulate(target_object, point=point, skip_confirmation=skip_confirmations)
+            self.agent.manipulate(target_object, target_point=point, skip_confirmation=skip_confirmations)
         self.robot.look_front()
 
     def _take_picture(self, channel=None) -> None:
@@ -291,7 +293,7 @@ class DreamTaskExecutor:
                 ):
                     self.robot.move_to_nav_posture()
                     # point = self._find(args)
-                    point = [0.0, 0.0, 1.8885841369628906]
+                    point = [-0.0868,  0.2490,  0.1744]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None

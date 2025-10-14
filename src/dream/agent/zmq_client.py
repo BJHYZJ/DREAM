@@ -29,7 +29,7 @@ from dream.core.interfaces import ContinuousNavigationAction, Observations
 from dream.core.parameters import Parameters, get_parameters
 from dream.core.robot import AbstractRobotClient
 from dream.motion import PlanResult
-from dream.motion.kinematics import DreamIdx
+from dream.motion.constants import DreamIdx
 from dream.utils.geometry import (
     angle_difference,
     posquat2sophus,
