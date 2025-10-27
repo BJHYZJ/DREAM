@@ -13,11 +13,12 @@
 # LICENSE file in the root directory of this source tree.
 import math
 import os
-from typing import List, Optional, Tuple
-
 import numpy as np
-from scipy.spatial.transform import Rotation
+import pinocchio
 
+from typing import List, Optional, Tuple
+from pathlib import Path
+from scipy.spatial.transform import Rotation
 from dream.core.interfaces import ContinuousFullBodyAction
 from dream.motion.base import IKSolverBase
 # from dream.motion.constants import (
@@ -26,7 +27,6 @@ from dream.motion.base import IKSolverBase
 #     STRETCH_GRASP_FRAME,
 #     STRETCH_HOME_Q,
 # )
-import pinocchio
 from dream.motion.pinocchio_ik_solver import PinocchioIKSolver, PositionIKOptimizer
 from dream.motion.robot import Footprint
 from scipy.spatial.transform import Rotation as R
@@ -145,7 +145,10 @@ class RangerxARMKinematics:
             verbose: Whether to print detailed initialization info
         """
         if urdf_path is None:
-            urdf_path = "/home/yanzj/workspace/dream/src/dream_ros2_bridge/urdf/xarm6_kinematics.urdf"
+            urdf_path = str(
+                Path(__file__).resolve().parents[2]  # .../DREAM/src
+                / "dream_ros2_bridge" / "urdf" / "xarm6_kinematics.urdf"
+            )
         
         self.model = pinocchio.buildModelFromUrdf(urdf_path)
         self.data = self.model.createData()

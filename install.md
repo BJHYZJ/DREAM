@@ -1,7 +1,7 @@
 setuptools==59.8.0
 
 
-cd dream_ws/src/stretch_mujoco/third_party/robocasa/
+cd DREAM_ws/src/stretch_mujoco/third_party/robocasa/
 pip install -e .
 cd ../robosuit
 pip install -e .
@@ -237,7 +237,7 @@ https://github.com/Livox-SDK/livox_ros_driver2/issues/145
 [rtabmap-4] terminate called after throwing an instance of 'cv::Exception'
 [rtabmap-4]   what():  OpenCV(4.13.0-dev) /home/yanzj/opencv_build/opencv/modules/core/src/alloc.cpp:73: error: (-4:Insufficient memory) Failed to allocate 126573934692672 bytes in function 'OutOfMemoryError'
 [rtabmap-4] 
-[ERROR] [rtabmap-4]: process has died [pid 31704, exit code -6, cmd '/home/yanzj/dream_ws/dream_ws/install/rtabmap_slam/lib/rtabmap_slam/rtabmap -d --ros-args -r __ns:=/rtabmap_ranger_xarm --params-file /tmp/launch_params_tnddmdv1 --params-file /tmp/launch_params_xw0tduiw --params-file /tmp/launch_params_ljkfxpl2 -r odom:=/fast_lio2/Odometry -r imu:=imu/data -r rgb/image:=/camera/color/image_raw -r rgb/camera_info:=/camera/color/camera_info -r depth/image:=/camera/aligned_depth_to_color/image_raw -r scan_cloud:=/fast_lio2/cloud_registered_body'].
+[ERROR] [rtabmap-4]: process has died [pid 31704, exit code -6, cmd '/home/yanzj/DREAM_ws/DREAM_ws/install/rtabmap_slam/lib/rtabmap_slam/rtabmap -d --ros-args -r __ns:=/rtabmap_ranger_xarm --params-file /tmp/launch_params_tnddmdv1 --params-file /tmp/launch_params_xw0tduiw --params-file /tmp/launch_params_ljkfxpl2 -r odom:=/fast_lio2/Odometry -r imu:=imu/data -r rgb/image:=/camera/color/image_raw -r rgb/camera_info:=/camera/color/camera_info -r depth/image:=/camera/aligned_depth_to_color/image_raw -r scan_cloud:=/fast_lio2/cloud_registered_body'].
 ```
 
 解决方案：
@@ -256,7 +256,7 @@ https://github.com/introlab/rtabmap_ros/issues/1295
 
 ros2 run nav2_planner planner_server \
   --ros-args \
-  --params-file /home/yanzj/dream_ws/dream_ws/src/dream_ros2_bridge/config/nav2_params.yaml \
+  --params-file /home/yanzj/DREAM_ws/DREAM_ws/src/dream_ros2_bridge/config/nav2_params.yaml \
   -r /tf:=tf -r /tf_static:=tf_static \
   --log-level DEBUG \
   --log-level nav2_planner:=DEBUG \
@@ -296,7 +296,7 @@ cloudcompare.CloudCompare map.ply
 
 vscode debug for ros2 环境生成
 ```bash
-bash -lc 'source /opt/ros/humble/setup.bash && source ./dream_ws/install/setup.bash && env' \
+bash -lc 'source /opt/ros/humble/setup.bash && source ./DREAM_ws/install/setup.bash && env' \
         | awk -F= 'BEGIN{OFS="="} /^[A-Za-z_][A-Za-z0-9_]*=/{gsub(/\0/,"",$2); print $1"="$2}' \
         > .vscode/ros2.env
 ```
@@ -374,7 +374,7 @@ ros2 bag record \
 
 bag paly
 ```
-ros2 bag play /home/yanzj/dream_ws/dream_ws/rosbag2_2025_09_15-10_47_03 --clock --rate 1.0
+ros2 bag play /home/yanzj/DREAM_ws/DREAM_ws/rosbag2_2025_09_15-10_47_03 --clock --rate 1.0
 ```
 
 
