@@ -124,25 +124,15 @@ def launch_setup(context, *args, **kwargs):
 
 
     # Static transform from camera to end effector
-    static_tf_camera_to_eef = Node(
+    static_tf_link6_to_camera = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
-        name="static_tf_camera_to_eef",
+        name="static_tf_link6_to_camera",
         # arguments=['-0.09566', '0.0325', '0.02532', '-1.5707963', '-1.5707963', '3.1415926', 'link_eef', 'camera_link'],
         arguments=['0.10014', '-0.0175', '0.02489', '0', '-1.04719755', '3.1415926', 'link6', 'camera_link'],
         output="screen"
     )
 
-    # # Static transform from robot base to lidar frame (body)
-    # static_tf_base_to_lidar = Node(
-    #     package="tf2_ros",
-    #     executable="static_transform_publisher",
-    #     name="static_tf_base_to_lidar",
-    #     arguments=['0.29011', '0.0', '0.075', '-1.5707963', '0', '0', 'base_link', 'body'],
-    #     # arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'livox_frame', 'base_link'],  # all transform is set in MID360_config.json
-    #     output="screen",
-    #     parameters=[{'use_sim_time': use_sim_time}]
-    # )
 
     # Static transform from fast lio2 lidar frame to livox lidar frame
     static_tf_lidar_to_livox = Node(
@@ -226,8 +216,7 @@ def launch_setup(context, *args, **kwargs):
         camera_launch,
         lidar_launch,
         fast_lio_node,
-        static_tf_camera_to_eef,
-        # static_tf_base_to_lidar,
+        static_tf_link6_to_camera,
         static_tf_lidar_to_livox,
         static_tf_livox_to_base,
         static_tf_base_to_footprint,
@@ -235,7 +224,6 @@ def launch_setup(context, *args, **kwargs):
         ranger_launch,
         robot_state_publisher_node,
         joint_state_publisher_node,
-        # odom_transform_node,
         tf_pose_publisher_node,
         goto_controller_node,
         rviz_node,
