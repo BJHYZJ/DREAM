@@ -16,14 +16,14 @@ import open3d as o3d
 import scipy
 from PIL import Image
 
-from .image_publisher import DynamemCamera
+from .image_publisher import DreamCamera
 
 Bbox = Tuple[int, int, int, int]
 
 
 class Placing:
     def __init__(self, robot, detection_model, save_dir=None):
-        self.camera = DynamemCamera(robot)
+        self.camera = DreamCamera(robot)
         self.detection_model = detection_model
         self.fx = self.camera.fx
         self.fy = self.camera.fy

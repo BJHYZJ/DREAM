@@ -1,6 +1,4 @@
-[submodule "third_party/segment-anything-2"]
-	path = third_party/segment-anything-2
-	url = https://github.com/facebookresearch/segment-anything-2.git
-[submodule "third_party/ok-robot"]
-	path = third_party/ok-robot
-	url = https://github.com/peiqi-liu/ok-robot
+
+[submodule "third_party/anygrasp_sdk"]
+	path = third_party/anygrasp_sdk
+	url = https://github.com/graspnet/anygrasp_sdk.git

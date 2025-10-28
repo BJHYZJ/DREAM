@@ -70,6 +70,68 @@ colcon build --symlink-install --cmake-args -DRTABMAP_SYNC_MULTI_RGBD=ON -DRTABM
 cd ../..
 ```
 
+anygrasp environment setup (cuda-12.1)
+```bash
+git clone git@github.com:BJHYZJ/DREAM.git
+# 更新submodule
+git submodule update --remote --recursive
+
+export PYTHONNOUSERSITE=1
+conda create -n anygrasp python=3.10 -y
+conda activate anygrasp
+pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu121  -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+pip install ipython cmake pybind11 ninja scipy==1.10.1 scikit-learn==1.4.0 pandas==2.0.3 hydra-core opencv-python openai-clip timm matplotlib==3.7.2 imageio timm open3d numpy-quaternion more-itertools pyliblzfse einops transformers pytorch-lightning wget gdown tqdm zmq torch_geometric numpy==1.23.0  # -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+pip install protobuf==3.19.0
+
+conda install "setuptools <65"
+pip install git+https://github.com/pccws/MinkowskiEngine  # -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# if you meet ` No module named 'distutils.msvccompiler` error, use: conda install "setuptools <65" 
+# pip install graspnetAPI
+export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True  # reference https://github.com/graspnet/graspnetAPI/issues/43
+pip install git+https://github.com/graspnet/graspnetAPI.git
+
+pip install git+https://github.com/luca-medeiros/lang-segment-anything.git  # -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+
+pip install numpy==1.23.5
+
+
+# set lib_cxx.so and gsnet.so
+```bash
+# set {python version} to 310 when you use python==3.10
+cp third_party/anygrasp_sdk/grasp_detection/gsnet_versions/gsnet.cpython-310-x86_64-linux-gnu.so src/anygrasp_manipulation/gsnet.so
+cp third_party/anygrasp_sdk/license_registration/lib_cxx_versions/lib_cxx.cpython-310-x86_64-linux-gnu.so src/anygrasp_manipulation/lib_cxx.so
+
+```bash
+cd src/anygrasp_manipulation/pointnet2
+pip install -e .
+```
+
+# use anygraph
+get computer id
+```bash
+cd src/anygrasp_manipulation
+./anygrasp_license_registration/license_checker -f  
+```
+get license from [src/anygrasp_manipulation/anygrasp_license_registration/README.md](src/anygrasp_manipulation/anygrasp_license_registration/README.md)
+
+put license to `src/anygrasp_manipulation/license`
+and copy anygrasp checkpoints to ./checkpoints/anygrasp
+
+You can check license states via
+```bash
+./anygrasp_license_registration/license_checker -c license/licenseCfg.json
+```
+
+run anygrasp_manipulation
+```bash
+conda activate anygrasp
+python demo.py --open_communication --port 5557
+```
+
 
 
 ```bash

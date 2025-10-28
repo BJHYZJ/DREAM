@@ -726,7 +726,7 @@ class RobotAgent(RobotAgentBase):
                 mode="place",
                 obj=text,
                 socket=self.manip_socket,
-                hello_robot=self.manip_wrapper,
+                manip_wrapper=self.manip_wrapper,
             )
         else:
             if self.owl_sam_detector is None:
@@ -794,7 +794,7 @@ class RobotAgent(RobotAgentBase):
         # self.robot.look_at_ee()
         self.robot.look_at_target(target_point=target_point)
 
-        self.manip_wrapper.look_at_target(target_point=target_point)
+        # self.manip_wrapper.look_at_target(target_point=target_point)
 
         # self.manip_wrapper.move_to_position(
         #     gripper_pos=self.robot.get_robot_model().GRIPPER_OPEN,
@@ -805,7 +805,7 @@ class RobotAgent(RobotAgentBase):
             mode="pick",
             obj=text,
             socket=self.manip_socket,
-            hello_robot=self.manip_wrapper,
+            manip_wrapper=self.manip_wrapper,
         )
 
         if rotation is None:

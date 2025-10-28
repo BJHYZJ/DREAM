@@ -38,7 +38,7 @@ def send_depth_img(socket, depth_img):
     socket.send(depth_img_encoded.tobytes())
 
 
-class DynamemCamera:
+class DreamCamera:
     def __init__(self, robot):
         self.robot = robot
 
@@ -55,9 +55,9 @@ class DynamemCamera:
 
     def capture_image(self):
         self.rgb_image, self.depth_image, self.points = self.robot.get_images(compute_xyz=True)
-        self.rgb_image = np.rot90(self.rgb_image, k=1)[:, :, [2, 1, 0]]
-        self.depth_image = np.rot90(self.depth_image, k=1)
-        self.points = np.rot90(self.points, k=1)
+        # self.rgb_image = np.rot90(self.rgb_image, k=1)[:, :, [2, 1, 0]]
+        # self.depth_image = np.rot90(self.depth_image, k=1)
+        # self.points = np.rot90(self.points, k=1)
 
         self.rgb_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2RGB)
 
@@ -66,21 +66,21 @@ class DynamemCamera:
 
 class ImagePublisher:
     def __init__(self, robot, socket):
-        self.camera = DynamemCamera(robot)
+        self.camera = DreamCamera(robot)
         self.socket = socket
 
     def publish_image(self, text, mode, head_tilt=-1):
         image, depth, points = self.camera.capture_image()
         # camera_pose = self.camera.robot.head.get_pose_in_base_coords()
 
-        rotated_image = np.rot90(image, k=-1)
-        rotated_depth = np.rot90(depth, k=-1)
-        rotated_point = np.rot90(points, k=-1)
+        # rotated_image = np.rot90(image, k=-1)
+        # rotated_depth = np.rot90(depth, k=-1)
+        # rotated_point = np.rot90(points, k=-1)
 
         ## Send RGB, depth and camera intrinsics data
-        send_rgb_img(self.socket, rotated_image)
+        send_rgb_img(self.socket, image)
         print(self.socket.recv_string())
-        send_depth_img(self.socket, rotated_depth)
+        send_depth_img(self.socket, depth)
         print(self.socket.recv_string())
         send_array(
             self.socket,

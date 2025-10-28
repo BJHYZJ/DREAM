@@ -1,5 +1,5 @@
 # DREAM: Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation
-![log](docs/dream.png)
+![log](docs/dream.jpg)
 
 
 rerun-sdk==0.26.1

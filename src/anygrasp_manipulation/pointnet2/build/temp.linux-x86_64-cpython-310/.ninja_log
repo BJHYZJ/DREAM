@@ -1,0 +1,23 @@
+# ninja log v7
+0	13077	1761552376236994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/bindings.o	e075d98789e66fdd
+0	13112	1761552376236994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/ball_query.o	9ac0829b4c11fd52
+2	14489	1761552376238994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/sampling.o	1afd0e014b5c8d8d
+1	15601	1761552376237994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/group_points_gpu.o	d9b5b2ac2db64d2b
+1	15883	1761552376237994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/group_points.o	5a0db5043410a20e
+1	16004	1761552376237994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/cylinder_query.o	6dda94fe5908b52b
+2	16030	1761552376238994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/interpolate_gpu.o	fe226464b8c2aac8
+0	16157	1761552376236994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/ball_query_gpu.o	15977aed0fd9082a
+2	16189	1761552376238994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/sampling_gpu.o	522bd4859774629a
+1	17495	1761552376237994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/cylinder_query_gpu.o	bfdb3abf7268627e
+1	18119	1761552376237994557	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/interpolate.o	5958ed5f278cb5af
+7	11568	1761618340095222920	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/ball_query.o	9ac0829b4c11fd52
+8	11667	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/sampling.o	1afd0e014b5c8d8d
+8	11978	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/group_points.o	5a0db5043410a20e
+8	13574	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/bindings.o	e075d98789e66fdd
+8	13724	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/interpolate.o	5958ed5f278cb5af
+8	14355	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/cylinder_query_gpu.o	bfdb3abf7268627e
+8	14389	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/group_points_gpu.o	d9b5b2ac2db64d2b
+8	14714	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/sampling_gpu.o	522bd4859774629a
+7	14919	1761618340095222920	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/ball_query_gpu.o	15977aed0fd9082a
+8	16105	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/cylinder_query.o	6dda94fe5908b52b
+8	17710	1761618340096222937	/home/yanzj/workspace/DREAM/src/anygrasp_manipulation/pointnet2/build/temp.linux-x86_64-cpython-310/pointnet2/_ext_src/src/interpolate_gpu.o	fe226464b8c2aac8

@@ -1,0 +1,14 @@
+{
+    "version": "3.1.0",
+    "feature_id": "11767901113630971598",
+    "public_key": "ZhijieYan.public_key",
+    "signature": "ZhijieYan.signature",
+    "license": "ZhijieYan.lic",
+    "toolbox": [
+        {
+            "name": "Basic",
+            "type": "PERMANENT",
+            "data": ""
+        }
+    ]
+}

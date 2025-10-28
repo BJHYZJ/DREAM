@@ -10,9 +10,11 @@
 import numpy as np
 import pinocchio as pin
 
-from dream.agent.manipulation.dynamem_manipulation.image_publisher import ImagePublisher
-from dream.agent.manipulation.dynamem_manipulation.place import Placing
-
+from dream.agent.manipulation.dream_manipulation.image_publisher import ImagePublisher
+from dream.agent.manipulation.dream_manipulation.place import Placing
+from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
+    DreamManipulationWrapper as ManipulationWrapper,
+)
 
 def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):
     if save_dir is not None:
@@ -82,7 +84,7 @@ def apply_se3_transform(se3_obj, point):
     return transformed_point
 
 
-def capture_and_process_image(mode, obj, socket, hello_robot):
+def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrapper):
     """Find an an object in the camera frame and return the translation and rotation of the object.
 
     Returns:
@@ -94,7 +96,7 @@ def capture_and_process_image(mode, obj, socket, hello_robot):
 
     print("Currently in " + mode + " mode and the robot is about to manipulate " + obj + ".")
 
-    image_publisher = ImagePublisher(hello_robot.robot, socket)
+    image_publisher = ImagePublisher(manip_wrapper.robot, socket)
 
     # Centering the object
     head_tilt_angles = [0, -0.1, 0.1]
@@ -118,7 +120,7 @@ def capture_and_process_image(mode, obj, socket, hello_robot):
             base_trans = translation[0]
             head_tilt += rotation[0]
 
-            hello_robot.move_to_position(
+            manip_wrapper.move_to_position(
                 base_trans=base_trans, head_pan=head_pan, head_tilt=head_tilt
             )
 
@@ -130,21 +132,21 @@ def capture_and_process_image(mode, obj, socket, hello_robot):
                 return None, None, None, None
 
         elif side_retries == 2 and tilt_retries == 3:
-            hello_robot.move_to_position(base_trans=0.1, head_tilt=head_tilt)
+            manip_wrapper.move_to_position(base_trans=0.1, head_tilt=head_tilt)
             side_retries = 3
 
         elif retry_flag == 2:
             if tilt_retries == 3:
                 if side_retries == 0:
-                    hello_robot.move_to_position(base_trans=0.1, head_tilt=head_tilt)
+                    manip_wrapper.move_to_position(base_trans=0.1, head_tilt=head_tilt)
                     side_retries = 1
                 else:
-                    hello_robot.move_to_position(base_trans=-0.2, head_tilt=head_tilt)
+                    manip_wrapper.move_to_position(base_trans=-0.2, head_tilt=head_tilt)
                     side_retries = 2
                 tilt_retries = 1
             else:
                 print(f"retrying with head tilt : {head_tilt + head_tilt_angles[tilt_retries]}")
-                hello_robot.move_to_position(
+                manip_wrapper.move_to_position(
                     head_pan=head_pan, head_tilt=head_tilt + head_tilt_angles[tilt_retries]
                 )
                 tilt_retries += 1
