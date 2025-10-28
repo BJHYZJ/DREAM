@@ -1,9 +1,6 @@
 # Python 缓存
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-*.pyc
 # VS Code 配置（可选，避免上传个人配置）
 .vscode/
 *.egg-info
@@ -18,7 +15,6 @@ debug
 *.so
 *.egg
 *.egg-info
-*.pyc
 *.pyo
 *.pyd
 *.pyc
