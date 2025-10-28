@@ -1,6 +1,7 @@
 import argparse
 import sys
 import os
+
 from object_handler import ObjectHandler
 
 FAIL_COLOR = "\033[91m"

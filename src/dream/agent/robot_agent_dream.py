@@ -286,6 +286,7 @@ class RobotAgent(RobotAgentBase):
                 # rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
                 # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
                 rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
+                # rrb.Spatial2DView(name="obj", origin="/world/camera/obj_mask"),
             ),
             column_shares=[2, 1, 1],
         )
@@ -792,6 +793,7 @@ class RobotAgent(RobotAgentBase):
 
         self.robot.switch_to_manipulation_mode()
         # self.robot.look_at_ee()
+        print("*" * 20, f"look at {text}", "*" * 20)
         self.robot.look_at_target(target_point=target_point)
 
         # self.manip_wrapper.look_at_target(target_point=target_point)

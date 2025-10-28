@@ -1,10 +1,10 @@
-from typing import List, Type, Any
-from abc import ABC, abstractmethod
 import copy
+from abc import ABC, abstractmethod
+from typing import Any, List, Type
 
-from PIL import Image, ImageDraw
-import numpy as np
 import cv2
+import numpy as np
+from PIL import Image, ImageDraw
 from utils.utils import draw_rectangle
 
 
@@ -13,9 +13,7 @@ class ImageProcessor(ABC):
         pass
 
     @abstractmethod
-    def detect_obj(
-        self, image: Type[Image.Image], text: str = None, bbox: List[int] = None
-    ) -> Any:
+    def detect_obj(self, image: Type[Image.Image], text: str = None, bbox: List[int] = None) -> Any:
         pass
 
     def draw_bounding_box(
@@ -26,6 +24,7 @@ class ImageProcessor(ABC):
 
         if save_file is not None:
             new_image.save(save_file)
+            new_image.show()
 
     def draw_bounding_boxes(
         self,
@@ -42,23 +41,18 @@ class ImageProcessor(ABC):
 
         new_image = copy.deepcopy(image)
         img_drw = ImageDraw.Draw(new_image)
-        img_drw.rectangle(
-            [(max_box[0], max_box[1]), (max_box[2], max_box[3])], outline="green"
-        )
-        img_drw.text(
-            (max_box[0], max_box[1]), str(round(max_score.item(), 3)), fill="green"
-        )
+        img_drw.rectangle([(max_box[0], max_box[1]), (max_box[2], max_box[3])], outline="green")
+        img_drw.text((max_box[0], max_box[1]), str(round(max_score.item(), 3)), fill="green")
 
         for box, score, label in zip(bboxes, scores):
             box = [int(i) for i in box.tolist()]
             if score == max_score:
                 img_drw.rectangle([(box[0], box[1]), (box[2], box[3])], outline="red")
-                img_drw.text(
-                    (box[0], box[1]), str(round(max_score.item(), 3)), fill="red"
-                )
+                img_drw.text((box[0], box[1]), str(round(max_score.item(), 3)), fill="red")
             else:
                 img_drw.rectangle([(box[0], box[1]), (box[2], box[3])], outline="white")
         new_image.save(save_file)
+        new_image.show()
         print(f"Saved Detection boxes at {save_file}")
 
     def draw_mask_on_image(
@@ -75,6 +69,7 @@ class ImageProcessor(ABC):
         # placing mask over image
         alpha = 0.6
         highlighted_image = cv2.addWeighted(overlay_mask, alpha, image, 1, 0)
+        Image.fromarray(highlighted_image.astype(np.uint8)).show()
         highlighted_image = cv2.cvtColor(highlighted_image, cv2.COLOR_RGB2BGR)
 
         cv2.imwrite(save_file, highlighted_image)

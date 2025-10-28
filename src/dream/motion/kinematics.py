@@ -129,14 +129,14 @@ class RangerxARMKinematics:
     IK_DAMPING = 1e-6
     JOINT5_TILI_RANGE = [deg for deg in range(45, 145, 1)]
     # Fixed transform from end-effector frame (link_eef) to camera frame (camera_link)
-    # Units: meters. Provided by user calibration.
+    # Units: meters. Provided by user calibration.  # ros2 run tf2_ros tf2_echo link_eef camera_color_optical_frame
     CAMERA_IN_EE = np.array([
-        [0.500, -0.000,  0.866,  0.100],
-        [-0.000, -1.000, -0.000, -0.018],
-        [0.866,  0.000, -0.500, -0.147],
+        [-0.002, -0.868,  0.496,  0.100],
+        [1.000, -0.005, -0.004, -0.032],
+        [0.006,  0.496,  0.868, -0.147],
         [0.000,  0.000,  0.000,  1.000],
     ], dtype=np.float32)
-    
+
     def __init__(self, urdf_path: Optional[str] = None, verbose: bool = False):
         """Initialize with Pinocchio for local IK computation.
         
@@ -323,8 +323,7 @@ class RangerxARMKinematics:
         return pose
 
 
-
-    def compute_look_at_target(
+    def compute_look_at_target_tilt(
         self,
         arm_angles_deg: np.ndarray,
         target_in_map_point: np.ndarray,
@@ -334,90 +333,44 @@ class RangerxARMKinematics:
         joint_index: int = 4,          # Joint-5 (0-based index)
         deadband_deg: float = 0.3      # No movement if error smaller than this (degrees)
     ) -> np.ndarray:
-        """Move a single joint (default: joint-5) to center target on camera Y-axis.
 
-        Simple and robust approach:
-        - Build candidates around the current joint angle within physical limits
-        (default: ±30 degrees, step 1 degree)
-        - For each candidate, run FK, get camera pose as base_T_ee @ CAMERA_IN_EE
-        - Score = abs(atan2(y_cam, z_cam)) using unit direction vector
-        - Return angles with the best score
-        """
-
-        # 1) Prepare target in base frame
         map_T_base = np.linalg.inv(base_in_map_pose)
         tgt_h = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
         target_in_base = (map_T_base @ tgt_h)[:3]
 
-        # 2) Quick deadband check using the current camera pose
-        R_cam_cur = camera_in_base_pose[:3, :3]
-        p_cam_cur = camera_in_base_pose[:3, 3]
-        d_base_cur = target_in_base - p_cam_cur
-        dist_cur = float(np.linalg.norm(d_base_cur))
-        if dist_cur > 1e-9:
-            dir_cam_cur = R_cam_cur.T @ (d_base_cur / dist_cur)
-            cur_err_deg = abs(np.degrees(np.arctan2(dir_cam_cur[1], dir_cam_cur[2])))
-            if cur_err_deg < deadband_deg:
-                return arm_angles_deg
+        R_cam_in_base_cur = camera_in_base_pose[:3, :3]
+        p_cam_in_base_cur = camera_in_base_pose[:3, 3]
+        
+        distance_base_cur = target_in_base - p_cam_in_base_cur
+        dist_cur = float(np.linalg.norm(distance_base_cur))
 
-        # 3) Build candidate angles within limits
-        lo_deg = float(np.degrees(self.model.lowerPositionLimit[joint_index]))
-        hi_deg = float(np.degrees(self.model.upperPositionLimit[joint_index]))
+        dir_cam_z = distance_base_cur / dist_cur
+        dir_cam_cur = R_cam_in_base_cur.T @ (dir_cam_z)
 
-        candidates_deg = [deg for deg in self.JOINT5_TILI_RANGE if deg >= lo_deg and deg <= hi_deg]
+        tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
 
-        # 4) Brute-force search
-        best_angle_deg = arm_angles_deg[joint_index]
-        best_err_deg = float('inf')
+        c, s = np.cos(-tilt_err), np.sin(-tilt_err)
+        Rx = np.array([[1.0, 0.0, 0.0],
+                       [0.0,   c,  -s],
+                       [0.0,   s,   c]], dtype=float)
+        R_cam_in_base_new = R_cam_in_base_cur @ Rx
 
-        base_T_ee_cam = np.linalg.inv(ee_in_base_pose) @ camera_in_base_pose
-        err_deg_dict = {}
-        q0_deg = np.asarray(arm_angles_deg, dtype=float)
-        for a_deg in candidates_deg:
-            q_try_deg = q0_deg.copy()
-            q_try_deg[joint_index] = a_deg
+        camera_in_base_pose_new = np.eye(4, dtype=float)
+        camera_in_base_pose_new[:3, :3] = R_cam_in_base_new
+        camera_in_base_pose_new[:3, 3] = p_cam_in_base_cur
 
-            q_try = np.radians(q_try_deg)
-            if len(q_try) != self.model.nq:
-                q_try = np.concatenate([q_try, np.zeros(self.model.nq - len(q_try))])
+        ee_in_base_pose_new = camera_in_base_pose_new @ np.linalg.inv(self.CAMERA_IN_EE)
 
-            # FK: base_T_ee for the test pose
-            pinocchio.forwardKinematics(self.model, self.data, q_try)
-            pinocchio.updateFramePlacements(self.model, self.data)
-            ee_pose = self.data.oMf[self.ee_frame_id]
-            base_T_ee = ee_pose.homogeneous
-
-            # Camera pose for the test pose
-            base_T_cam = base_T_ee @ base_T_ee_cam
-            R_cam = base_T_cam[:3, :3]
-            p_cam = base_T_cam[:3, 3]
-
-            # Direction from camera to target in camera frame
-            d_base = target_in_base - p_cam
-            dist = float(np.linalg.norm(d_base))
-            if dist <= 1e-9:
-                err_deg = 0.0
-            else:
-                dir_cam = R_cam.T @ (d_base / dist)
-                if dir_cam[2] <= 0:
-                    # Target behind the camera; skip this candidate
-                    continue
-                err_deg = abs(np.degrees(np.arctan2(dir_cam[1], dir_cam[2])))
-            err_deg_dict[a_deg] = err_deg
-            if err_deg < best_err_deg:
-                best_err_deg = err_deg
-                best_angle_deg = a_deg
-
-        # If nothing improved, keep as-is
-        if not np.isfinite(best_err_deg):
-            return arm_angles_deg
-
-        result = arm_angles_deg.copy()
-        result[joint_index] = best_angle_deg
-        return result
-
-
-
+        q_init = np.deg2rad(arm_angles_deg)
+        success, arm_angles_deg_new, _ = self.compute_arm_ik(
+            ee_in_base_pose_new,
+            q_init=q_init,
+            return_degrees=True,
+            verbose=False
+        )
+        if success:
+            return arm_angles_deg_new
+        return arm_angles_deg
 
 if __name__ == "__main__":
     from scipy.spatial.transform import Rotation as R

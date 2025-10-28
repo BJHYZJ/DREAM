@@ -7,26 +7,25 @@
  * Modifications were made for integration purposes.
 """
 
-import os
-import math
 import copy
+import math
+import os
+import time
 
 import numpy as np
 import open3d as o3d
-from PIL import Image
-
-from utils.types import Bbox
-from gsnet import AnyGrasp
 from graspnetAPI import GraspGroup
-from utils.zmq_socket import ZmqSocket
-from utils.utils import (
-    get_3d_points,
-    visualize_cloud_geometries,
-    sample_points,
-    draw_rectangle,
-)
+from gsnet import AnyGrasp
+# from image_processors import LangSAMProcessor
+from PIL import Image
 from utils.camera import CameraParameters
-from image_processors import LangSAMProcessor
+from utils.types import Bbox
+from utils.utils import draw_rectangle, get_3d_points, sample_points, visualize_cloud_geometries
+from utils.zmq_socket import ZmqSocket
+
+from image_processors import OWLSAMProcessor
+
+from datetime import datetime
 
 
 class ObjectHandler:
@@ -38,22 +37,24 @@ class ObjectHandler:
         if self.cfgs.open_communication:
             self.socket = ZmqSocket(self.cfgs)
 
-        self.lang_sam = LangSAMProcessor()
+        self.lang_sam = OWLSAMProcessor()
+        # self.lang_sam = LangSAMProcessor()
+        self.rerun_frame = 1
 
     def receive_input(self, tries):
         if self.cfgs.open_communication:
             print("\n\nWaiting for data from Robot")
             # Reading color array
-            colors = self.socket.recv_array()
+            colors = self.socket.recv_rgb_img()
             self.socket.send_data("RGB received")
 
             # Depth data
-            depths = self.socket.recv_array()
+            depths = self.socket.recv_depth_img()
             # print(np.max(depths), np.min(depths))
             self.socket.send_data("depth received")
 
             # Camera Intrinsics
-            fx, fy, cx, cy, head_tilt = self.socket.recv_array()
+            fx, fy, cx, cy = self.socket.recv_array()
             self.socket.send_data("intrinsics received")
 
             # Object query
@@ -69,27 +70,24 @@ class ObjectHandler:
 
             image = Image.fromarray(colors)
         else:
-            head_tilt = -45
             data_dir = "./example_data/"
             colors = np.array(Image.open(os.path.join(data_dir, "test_rgb.png")))
             image = Image.open(os.path.join(data_dir, "test_rgb.png"))
-            depths = np.array(Image.open(os.path.join(data_dir, "test_depth.png")))
-            fx, fy, cx, cy, scale = 306, 306, 118, 211, 0.001
+            depths = np.load(os.path.join(data_dir, "test_depth.npy")).astype(np.float64)
+            fx, fy, cx, cy = 606.4227, 606.4227, 254.01973, 320.10287
             if tries == 1:
                 self.action = str(input("Enter action [pick/place]: "))
-                self.query = str(input("Enter a Object name in the scence: "))
-            depths = depths * scale
+                self.query = str(input("Enter a Object name in the scene: "))
 
         # Camera Parameters
         colors = colors / 255.0
-        head_tilt = head_tilt / 100
-        self.cam = CameraParameters(fx, fy, cx, cy, head_tilt, image, colors, depths)
+        self.cam = CameraParameters(fx, fy, cx, cy, image, colors, depths)
 
     def manipulate(self):
         """
         Wrapper for grasping and placing
 
-        11 is the maximum number of retries incase of object or grasp detection failure
+        11 is the maximum number of retries in case of object or grasp detection failure
         Try - 1 -> captures image and centers the robot
         Try - 2 -> captures image and tries to perform action
         If failed:
@@ -97,33 +95,45 @@ class ObjectHandler:
         Even then if it fails:
             Try - 5,6,7 -> moves base to left tries again three different camera orientations
         Even then if it fails:
-            Try - 8,9,10 -> moves base to the right and agian tries three different camera orientations
+            Try - 8,9,10 -> moves base to the right and again tries three different camera orientations
         Finally if it fails to detect any pose in above all attempts:
-            Try 11 -> If object is detected but anygrasp couldnt find a pose as a last resort
+            Try 11 -> If object is detected but anygrasp couldn't find a pose as a last resort
                       the cropped object image is sent to the model.
-        In any of the above attempts it is able to succedd it wont perform any further tries
+        In any of the above attempts it is able to succeed it won't perform any further tries
         """
 
+        cur_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         tries = 1
         retry = True
         while retry and tries <= 11:
             self.receive_input(tries)
 
             # Directory for saving visualisations
-            self.save_dir = self.cfgs.environment + "/" + self.query + "/anygrasp/"
+            self.save_dir = self.cfgs.environment + "/" + self.query + "/" + cur_time
+            debug_text = (
+                "### Robot's monolouge: \n ## The text query I received is " + self.query + ".\n"
+            )
             if not os.path.exists(self.save_dir):
                 os.makedirs(self.save_dir)
             if self.cfgs.open_communication:
                 camera_image_file_name = self.save_dir + "/clean_" + str(tries) + ".jpg"
                 self.cam.image.save(camera_image_file_name)
                 print(f"Saving the camera image at {camera_image_file_name}")
-                np.save(
-                    self.save_dir + "/depths_" + str(tries) + ".npy", self.cam.depths
-                )
+                np.save(self.save_dir + "/depths_" + str(tries) + ".npy", self.cam.depths)
 
-            box_filename = f"{self.cfgs.environment}/{self.query}/anygrasp/object_detection_{tries}.jpg"
-            mask_filename = f"{self.cfgs.environment}/{self.query}/anygrasp/semantic_segmentation_{tries}.jpg"
-            # Object Segmentaion Mask
+            box_filename = (
+                f"{self.save_dir}/object_detection_{tries}.jpg"
+            )
+            mask_filename = (
+                f"{self.save_dir}/semantic_segmentation_{tries}.jpg"
+            )
+            # Object Segmentation Mask
+
+            colors = np.array(self.cam.image)
+            colors[self.cam.depths > self.cfgs.max_depth + 0.3] = 1e-4
+            colors = Image.fromarray(colors, "RGB")
+            colors.save(camera_image_file_name)
+
             seg_mask, bbox = self.lang_sam.detect_obj(
                 self.cam.image,
                 self.query,
@@ -135,7 +145,7 @@ class ObjectHandler:
 
             if bbox is None:
                 if self.cfgs.open_communication:
-                    print("Didnt detect the object, Trying Again")
+                    print("Didn't detect the object, Trying Again")
                     tries = tries + 1
                     print(f"Try no: {tries}")
                     data_msg = "No Objects detected, Have to try again"
@@ -143,10 +153,9 @@ class ObjectHandler:
                     if tries == 11:
                         return
                     continue
-                    # self.socket.send_data("No Objects detected, Have to try again")
                 else:
                     print(
-                        "Didnt find the Object. Try with another object or tune grasper height and width parameters in demo.py"
+                        "Didn't find the Object. Try with another object or tune grasper height and width parameters in demo.py"
                     )
                     retry = False
                     continue
@@ -157,6 +166,7 @@ class ObjectHandler:
             if tries == 1 and self.cfgs.open_communication:
                 self.center_robot(bbox)
                 tries += 1
+                time.sleep(0.5)
                 continue
 
             points = get_3d_points(self.cam)
@@ -205,9 +215,8 @@ class ObjectHandler:
         print(f"Camera Tilt {tilt}")
 
         if self.cfgs.open_communication:
-            data_msg = "Now you received the base and haed trans, good luck."
+            data_msg = "Now you received the base and head trans, good luck."
             self.socket.send_data([[-dis], [-tilt], [0, 0, 1], data_msg])
-            # self.socket.send_data("Now you received the base and haed trans, good luck.")
 
     def place(self, points: np.ndarray, seg_mask: np.ndarray) -> bool:
         points_x, points_y, points_z = points[:, :, 0], points[:, :, 1], points[:, :, 2]
@@ -219,7 +228,11 @@ class ObjectHandler:
 
         # Removing all points whose depth is zero(undetermined)
         zero_depth_seg_mask = (
-            (flat_x != 0) * (flat_y != 0) * (flat_z != 0) * seg_mask.reshape(-1)
+            (flat_x != 0)
+            * (flat_y != 0)
+            * (flat_z != 0)
+            * (~np.isnan(flat_z))
+            * seg_mask.reshape(-1)
         )
         flat_x = flat_x[zero_depth_seg_mask]
         flat_y = flat_y[zero_depth_seg_mask]
@@ -231,13 +244,17 @@ class ObjectHandler:
         points1 = np.stack([flat_x, flat_y, flat_z], axis=-1)
 
         # Rotation matrix for camera tilt
-        cam_to_3d_rot = np.array(
-            [
-                [1, 0, 0],
-                [0, math.cos(self.cam.head_tilt), math.sin(self.cam.head_tilt)],
-                [0, -math.sin(self.cam.head_tilt), math.cos(self.cam.head_tilt)],
-            ]
-        )
+        # cam_to_3d_rot = np.array(
+        #     [
+        #         [1, 0, 0],
+        #         [0, math.cos(self.cam.head_tilt), math.sin(self.cam.head_tilt)],
+        #         [0, -math.sin(self.cam.head_tilt), math.cos(self.cam.head_tilt)],
+        #     ]
+        # )
+
+        pcd1 = o3d.geometry.PointCloud()
+        pcd1.points = o3d.utility.Vector3dVector(points1)
+        pcd1.colors = o3d.utility.Vector3dVector(colors)
 
         # 3d point cloud with upright camera
         transformed_points = np.dot(points1, cam_to_3d_rot)
@@ -249,10 +266,6 @@ class ObjectHandler:
         transformed_y = transformed_points[:, 1]
         transformed_z = transformed_points[:, 2]
         colors = colors[floor_mask]
-
-        pcd1 = o3d.geometry.PointCloud()
-        pcd1.points = o3d.utility.Vector3dVector(points1)
-        pcd1.colors = o3d.utility.Vector3dVector(colors)
 
         pcd2 = o3d.geometry.PointCloud()
         pcd2.points = o3d.utility.Vector3dVector(transformed_points)
@@ -270,24 +283,24 @@ class ObjectHandler:
         z_mask = (transformed_z < 0) & (transformed_z > (pz - z_margin))
         mask = x_mask & y_mask & z_mask
         py = np.max(transformed_y[mask])
-        point = np.array(
-            [px, py, pz]
-        )  # Final placing point in upright camera co-ordinate system
+        point = np.array([px, py, pz])  # Final placing point in upright camera coordinate system
 
         geometries = []
         cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=0.1, height=0.04)
         cylinder_rot = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
         cylinder.rotate(cylinder_rot)
-        cylinder.translate(point)
+        cylinder.translate(cam_to_3d_rot @ point)
+        cylinder.rotate(cam_to_3d_rot)
         cylinder.paint_uniform_color([0, 1, 0])
         geometries.append(cylinder)
 
         if self.cfgs.debug:
             visualize_cloud_geometries(
-                pcd2,
+                pcd1,
                 geometries,
                 save_file=self.save_dir + "/placing.jpg",
                 visualize=not self.cfgs.headless,
+                # rerun_name="proposed_placing_location",
             )
 
         point[1] += 0.1
@@ -317,7 +330,11 @@ class ObjectHandler:
         points_x, points_y, points_z = points[:, :, 0], points[:, :, 1], points[:, :, 2]
 
         # Filtering points based on the distance from camera
-        mask = (points_z > self.cfgs.min_depth) & (points_z < self.cfgs.max_depth)
+        mask = (
+            (points_z > self.cfgs.min_depth)
+            & (points_z < self.cfgs.max_depth)
+            & ~np.isnan(points_z)
+        )
         points = np.stack([points_x, -points_y, points_z], axis=-1)
         points = points[mask].astype(np.float32)
         colors_m = self.cam.colors[mask].astype(np.float32)
@@ -347,9 +364,8 @@ class ObjectHandler:
         # Filtering the grasps by penalising the vertical grasps as they are not robust to calibration errors.
         bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
         W, H = self.cam.image.size
-        ref_vec = np.array(
-            [0, math.cos(self.cam.head_tilt), -math.sin(self.cam.head_tilt)]
-        )
+        # ref_vec = np.array([0, math.cos(self.cam.head_tilt), -math.sin(self.cam.head_tilt)])
+
         min_score, max_score = 1, -10
         image = copy.deepcopy(self.cam.image)
         img_drw = draw_rectangle(image, bbox)
@@ -371,7 +387,7 @@ class ObjectHandler:
             cur_vec = rotation_matrix[:, 0]
             angle = math.acos(np.dot(ref_vec, cur_vec) / (np.linalg.norm(cur_vec)))
             if not crop_flag:
-                score = g.score - 0.1 * (angle) ** 4
+                score = g.score - 0.5 * angle ** 4
             else:
                 score = g.score
 
@@ -396,16 +412,14 @@ class ObjectHandler:
             return False
 
         projections_file_name = (
-            self.cfgs.environment + "/" + self.query + "/anygrasp/grasp_projections.jpg"
+            self.save_dir + "/grasp_projections.jpg"
         )
         image.save(projections_file_name)
         print(f"Saved projections of grasps at {projections_file_name}")
         filter_gg = filter_gg.nms().sort_by_score()
 
         if self.cfgs.debug:
-            trans_mat = np.array(
-                [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]
-            )
+            trans_mat = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
             cloud.transform(trans_mat)
             grippers = gg.to_open3d_geometry_list()
             filter_grippers = filter_gg.to_open3d_geometry_list()
@@ -418,13 +432,15 @@ class ObjectHandler:
                 cloud,
                 grippers,
                 visualize=not self.cfgs.headless,
-                save_file=f"{self.cfgs.environment}/{self.query}/anygrasp/poses.jpg",
+                save_file=f"{self.save_dir}/poses.jpg",
+                # rerun_name="all_anygrasp_estimated_poses",
             )
             visualize_cloud_geometries(
                 cloud,
                 [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
                 visualize=not self.cfgs.headless,
-                save_file=f"{self.cfgs.environment}/{self.query}/anygrasp/best_pose.jpg",
+                save_file=f"{self.save_dir}/best_pose.jpg",
+                # rerun_name="selected_pose",
             )
 
         if self.cfgs.open_communication:
@@ -433,7 +449,7 @@ class ObjectHandler:
                 [
                     filter_gg[0].translation,
                     filter_gg[0].rotation_matrix,
-                    [filter_gg[0].depth, crop_flag, 0],
+                    [filter_gg[0].depth, filter_gg[0].width, 0],
                     data_msg,
                 ]
             )

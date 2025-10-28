@@ -59,7 +59,7 @@ class DreamCamera:
         # self.depth_image = np.rot90(self.depth_image, k=1)
         # self.points = np.rot90(self.points, k=1)
 
-        self.rgb_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2RGB)
+        # self.rgb_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2RGB)
 
         return self.rgb_image, self.depth_image, self.points
 
@@ -69,7 +69,7 @@ class ImagePublisher:
         self.camera = DreamCamera(robot)
         self.socket = socket
 
-    def publish_image(self, text, mode, head_tilt=-1):
+    def publish_image(self, text, mode):
         image, depth, points = self.camera.capture_image()
         # camera_pose = self.camera.robot.head.get_pose_in_base_coords()
 
@@ -90,7 +90,6 @@ class ImagePublisher:
                     self.camera.fx,
                     self.camera.cy,
                     self.camera.cx,
-                    int(head_tilt * 100),
                 ]
             ),
         )

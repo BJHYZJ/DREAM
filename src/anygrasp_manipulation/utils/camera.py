@@ -10,7 +10,6 @@ class CameraParameters:
     fy: float
     cx: float
     cy: float
-    head_tilt: float
     image: Type[Image.Image]
     colors: np.ndarray
     depths: np.ndarray

@@ -95,7 +95,7 @@ pip install git+https://github.com/graspnet/graspnetAPI.git
 
 pip install git+https://github.com/luca-medeiros/lang-segment-anything.git  # -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-
+rerun-sdk==0.26.1
 pip install numpy==1.23.5
 
 

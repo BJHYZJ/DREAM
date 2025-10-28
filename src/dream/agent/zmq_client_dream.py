@@ -609,7 +609,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             camera_in_base_pose = self._state.camera_in_base_pose
             ee_in_base_pose = self._state.ee_in_base_pose
 
-        new_joints = self._robot_model.compute_look_at_target(
+        new_joints = self._robot_model.compute_look_at_target_tilt(
             arm_angles_deg=joint_states[3:9],
             target_in_map_point=target_point,
             base_in_map_pose=base_in_map_pose,

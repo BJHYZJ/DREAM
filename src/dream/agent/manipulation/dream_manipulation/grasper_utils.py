@@ -99,11 +99,11 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
     image_publisher = ImagePublisher(manip_wrapper.robot, socket)
 
     # Centering the object
-    head_tilt_angles = [0, -0.1, 0.1]
+    head_tilt_angles = [0, -30, 30]
     tilt_retries, side_retries = 1, 0
     retry_flag = True
-    head_tilt = -0.65
-    head_pan = -1.57
+    head_tilt = 105
+    # head_pan = -1.57
 
     while retry_flag:
 
@@ -112,9 +112,7 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         print(f"side retries : {side_retries}")
         print(f"tilt retries : {tilt_retries}")
 
-        translation, rotation, depth, width, retry_flag = image_publisher.publish_image(
-            obj, mode, head_tilt=head_tilt
-        )
+        translation, rotation, depth, width, retry_flag = image_publisher.publish_image(obj, mode)
 
         if retry_flag == 1:
             base_trans = translation[0]
