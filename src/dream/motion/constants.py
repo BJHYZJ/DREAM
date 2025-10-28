@@ -48,13 +48,13 @@ STRETCH_ARM_LIFT = 0.8
 # look_down = np.array([0.0, math.radians(-58)])
 
 # 相机安装在机械臂上，所以只能动机械臂
-look_front = [0, -45, -90, 0, 110, 0]
+look_front = [0, -45, -90, 0, 105, 0]
 look_ahead = [0, -45, -90, 0, 75, 0]
 look_down = [0, -45, -90, 0, 135, 0]
 look_left_1 = [45, -45, -90, 0, 135, 0]
-look_left_2 = [45, -45, -90, 0, 110, 0]
+look_left_2 = [45, -45, -90, 0, 105, 0]
 look_right_1 = [-45, -45, -90, 0, 135, 0]
-look_right_2 = [-45, -45, -90, 0, 110, 0]
+look_right_2 = [-45, -45, -90, 0, 105, 0]
 
 
 T_LOC_STABILIZE = 1.0
