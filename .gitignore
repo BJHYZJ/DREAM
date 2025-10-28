@@ -11,3 +11,16 @@ memory
 checkpoints
 dream_log
 debug
+*build*/
+*dist*/
+*egg-info*/
+*__pycache__*/
+*.so
+*.egg
+*.egg-info
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+*.pyo
+*.pyd
