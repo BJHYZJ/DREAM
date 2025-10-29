@@ -31,12 +31,14 @@ class TFPosePublisher(Node):
         
         # TF pose configuration - maps pose keys to frame pairs
         self.tf_poses = {
-            "base_pose": ["base_link", "map"],
-            "camera_pose_in_arm": ["camera_color_optical_frame", "arm_base"],
-            "camera_pose_in_base": ["camera_color_optical_frame", "base_link"],
-            "camera_pose_in_map": ["camera_color_optical_frame", "map"],
-            "ee_pose_in_map": ["link_eef", "map"],
-            "ee_pose_in_base": ["link_eef", "base_link"],
+            "base_in_map_pose": ["base_link", "map"],
+            "camera_in_arm_base_pose": ["camera_color_optical_frame", "arm_base"],
+            "camera_in_base_pose": ["camera_color_optical_frame", "base_link"],
+            "camera_in_map_pose": ["camera_color_optical_frame", "map"],
+            "ee_in_arm_base_pose": ["link_eef", "arm_base"],
+            "ee_in_base_pose": ["link_eef", "base_link"],
+            "ee_in_map_pose": ["link_eef", "map"],
+            
         }
         
         # Create publishers for TF pose information

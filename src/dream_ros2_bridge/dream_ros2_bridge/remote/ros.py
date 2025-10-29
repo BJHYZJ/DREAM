@@ -188,12 +188,14 @@ class DreamRosInterface(Node):
         # self.se3_base_odom: Optional[sp.SE3] = None
         # self.se3_camera_pose: Optional[sp.SE3] = None
 
-        self.se3_base: Optional[sp.SE3] = None
-        self.se3_camera_in_map_pose: Optional[sp.SE3] = None
+        self.se3_base_in_map_pose: Optional[sp.SE3] = None
+        self.se3_camera_in_arm_base_pose: Optional[sp.SE3] = None
         self.se3_camera_in_base_pose: Optional[sp.SE3] = None
-        self.se3_camera_in_arm_pose: Optional[sp.SE3] = None
-        self.se3_ee_in_map_pose: Optional[sp.SE3] = None
+        self.se3_camera_in_map_pose: Optional[sp.SE3] = None
+        self.se3_ee_in_arm_base_pose: Optional[sp.SE3] = None
         self.se3_ee_in_base_pose: Optional[sp.SE3] = None
+        self.se3_ee_in_map_pose: Optional[sp.SE3] = None
+        
 
         self.at_goal: bool = False
 
@@ -573,13 +575,13 @@ class DreamRosInterface(Node):
         # self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=self.cb_rtabmapinfo_group)
 
         # tf pose publisher
-        self._tf_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_pose", self._tf_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-        self._tf_camera_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_map", self._tf_camera_pose_in_map_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-        self._tf_camera_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_base", self._tf_camera_pose_in_base_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-        self._tf_camera_pose_in_arm_sub = self.create_subscription(PoseStamped, "tf_pose/camera_pose_in_arm", self._tf_camera_pose_in_arm_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-        self._tf_ee_pose_in_map_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_map", self._tf_ee_pose_in_map_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-        self._tf_ee_pose_in_base_sub = self.create_subscription(PoseStamped, "tf_pose/ee_pose_in_base", self._tf_ee_pose_in_base_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-
+        self._tf_base_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_in_map_pose", self._tf_base_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_camera_in_arm_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/camera_in_arm_base_pose", self._tf_camera_in_arm_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_camera_in_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/camera_in_base_pose", self._tf_camera_in_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_camera_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/camera_in_map_pose", self._tf_camera_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_ee_in_arm_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/ee_in_arm_base_pose", self._tf_ee_in_arm_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_ee_in_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/ee_in_base_pose", self._tf_ee_in_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_ee_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/ee_in_map_pose", self._tf_ee_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         # Create trajectory client with which we can control the robot
         # self.trajectory_client = ActionClient(
         #     self, FollowJointTrajectory, "/stretch_controller/follow_joint_trajectory"
@@ -775,18 +777,30 @@ class DreamRosInterface(Node):
         # self._last_odom_update_timestamp = msg.header.stamp
         # self.se3_base_odom = sp.SE3(matrix_from_pose_msg(msg.pose.pose))
 
-    def _tf_base_pose_callback(self, msg: PoseStamped):
-        """base pose callback"""
+    def _tf_base_in_map_pose_callback(self, msg: PoseStamped):
+        """base pose in map callback"""
         # timestamp_now = self.get_clock().now().to_msg()
         # timestamp_tf = msg.header.stamp
         # delay = timestamp_now.sec + timestamp_now.nanosec / 1e9 - timestamp_tf.sec - timestamp_tf.nanosec / 1e9
         # self.get_logger().info(f"TF delay: {delay}")
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
         with self._lock_tf:
-            self.se3_base = se3
+            self.se3_base_in_map_pose = se3
 
-    def _tf_camera_pose_in_map_callback(self, msg: PoseStamped):
-        """camera pose in map callback"""
+    def _tf_camera_in_arm_base_pose_callback(self, msg: PoseStamped):
+        """camera pose in arm base callback"""
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_camera_in_arm_base_pose = se3
+
+    def _tf_camera_in_base_pose_callback(self, msg: PoseStamped):
+        """camera pose in base pose callback"""
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_camera_in_base_pose = se3
+
+    def _tf_camera_in_map_pose_callback(self, msg: PoseStamped):
+        """camera pose in map pose callback"""
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
         # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
         # now_timestamp = time.time()
@@ -794,53 +808,52 @@ class DreamRosInterface(Node):
         with self._lock_tf:
             self.se3_camera_in_map_pose = se3
 
-    def _tf_camera_pose_in_base_callback(self, msg: PoseStamped):
-        """camera pose in base callback"""
+    def _tf_ee_in_arm_base_pose_callback(self, msg: PoseStamped):
+        """ee pose in arm base pose callback"""
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
         with self._lock_tf:
-            self.se3_camera_in_base_pose = se3
-    
-    def _tf_camera_pose_in_arm_callback(self, msg: PoseStamped):
-        """camera pose in arm callback"""
-        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
-        with self._lock_tf:
-            self.se3_camera_in_arm_pose = se3
-    
-    def _tf_ee_pose_in_map_callback(self, msg: PoseStamped):
-        """ee pose in map callback"""
-        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
-        with self._lock_tf:
-            self.se3_ee_in_map_pose = se3
+            self.se3_ee_in_arm_base_pose = se3
 
-    def _tf_ee_pose_in_base_callback(self, msg: PoseStamped):
-        """ee pose in base callback"""
+    def _tf_ee_in_base_pose_callback(self, msg: PoseStamped):
+        """ee pose in base pose pose callback"""
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
         with self._lock_tf:
             self.se3_ee_in_base_pose = se3
 
+    def _tf_ee_in_map_pose_callback(self, msg: PoseStamped):
+        """ee pose in map pose callback"""
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_ee_in_map_pose = se3
+
     def get_base_in_map_pose(self):
         with self._lock_tf:
-            return self.se3_base
+            return self.se3_base_in_map_pose
 
-    def get_camera_in_map_pose(self):
+    def get_camera_in_arm_base_pose(self):
         with self._lock_tf:
-            return self.se3_camera_in_map_pose
+            return self.se3_camera_in_arm_base_pose
 
     def get_camera_in_base_pose(self):
         with self._lock_tf:
             return self.se3_camera_in_base_pose
 
-    def get_camera_in_arm_pose(self):
+    def get_camera_in_map_pose(self):
         with self._lock_tf:
-            return self.se3_camera_in_arm_pose
+            return self.se3_camera_in_map_pose
+
+    def get_ee_in_arm_base_pose(self):
+        with self._lock_tf:
+            return self.se3_ee_in_arm_base_pose
+
+    def get_ee_in_base_pose(self):
+        with self._lock_tf:
+            return self.se3_ee_in_base_pose
     
     def get_ee_in_map_pose(self):
         with self._lock_tf:
             return self.se3_ee_in_map_pose
 
-    def get_ee_in_base_pose(self):
-        with self._lock_tf:
-            return self.se3_ee_in_base_pose
 
     def get_rtabmapdata(self):
         with self._lock_rtab:

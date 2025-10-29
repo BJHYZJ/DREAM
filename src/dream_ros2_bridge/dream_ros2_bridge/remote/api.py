@@ -333,17 +333,25 @@ class DreamClient(AbstractRobotClient):
         base_in_map_pose = self.get_base_in_map_pose()
         return sophus2xyt(pose2sophus(base_in_map_pose))
     
-    def get_ee_in_map_pose(self):
-        return self._ros_client.get_ee_in_map_pose()
+    def get_camera_in_arm_base_pose(self):
+        return self._ros_client.get_camera_in_arm_base_pose()
     
-    def get_ee_in_base_pose(self):
-        return self._ros_client.get_ee_in_base_pose()
+    def get_camera_in_base_pose(self):
+        return self._ros_client.get_camera_in_base_pose()
 
     def get_camera_in_map_pose(self):
         return self._ros_client.get_camera_in_map_pose()
 
-    def get_camera_in_base_pose(self):
-        return self._ros_client.get_camera_in_base_pose()
+    def get_ee_in_arm_base_pose(self):
+        return self._ros_client.get_ee_in_arm_base_pose()
+
+    def get_ee_in_base_pose(self):
+        return self._ros_client.get_ee_in_base_pose()
+    
+    def get_ee_in_map_pose(self):
+        return self._ros_client.get_ee_in_map_pose()
+
+
 
     # def get_joint_state(self):
     #     """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
@@ -531,9 +539,15 @@ class DreamClient(AbstractRobotClient):
     ) -> StateObservations:
         joint_information = self.get_join_information()
         base_in_map_pose = self.get_base_in_map_pose()
-        camera_in_map_pose = self.get_camera_in_map_pose()
+        camera_in_arm_base_pose = self.get_camera_in_arm_base_pose()
         camera_in_base_pose = self.get_camera_in_base_pose()
-        if joint_information is None or base_in_map_pose is None or camera_in_map_pose is None or camera_in_base_pose is None:
+        camera_in_map_pose = self.get_camera_in_map_pose()
+        ee_in_arm_base_pose = self.get_ee_in_arm_base_pose()
+        ee_in_base_pose = self.get_ee_in_base_pose()
+        ee_in_map_pose = self.get_ee_in_map_pose()
+        if joint_information is None or base_in_map_pose is None or \
+            camera_in_arm_base_pose is None or camera_in_base_pose is None or camera_in_map_pose is None or \
+            ee_in_arm_base_pose is None or ee_in_base_pose is None or ee_in_map_pose is None:
             print("get_state_observation: joint_states is None or base_in_map_pose or camera_in_map_pose or camera_in_base_pose is None")
             return None
         
@@ -549,10 +563,12 @@ class DreamClient(AbstractRobotClient):
             gps=gps,
             compass=np.array([theta]),
             base_in_map_pose=base_in_map_pose.matrix(),
-            ee_in_map_pose=self.get_ee_in_map_pose().matrix(),
-            ee_in_base_pose=self.get_ee_in_base_pose().matrix(),
-            camera_in_map_pose=camera_in_map_pose.matrix(),
+            camera_in_arm_base_pose=camera_in_arm_base_pose.matrix(),
             camera_in_base_pose=camera_in_base_pose.matrix(),
+            camera_in_map_pose=camera_in_map_pose.matrix(),
+            ee_in_arm_base_pose=ee_in_arm_base_pose.matrix(),
+            ee_in_base_pose=ee_in_base_pose.matrix(),
+            ee_in_map_pose=ee_in_map_pose.matrix(),
             joint_states=joint_states,
             joint_velocities=joint_velocities,
             joint_forces=joint_forces,
