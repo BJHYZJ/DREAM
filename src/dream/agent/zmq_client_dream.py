@@ -605,16 +605,16 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     return None
             joint_states = self._state.joint_states
             joint_positions = self._state.joint_positions  # arm position: ee in base position
-            base_in_map_pose = self._state.base_in_map_pose
-            camera_in_base_pose = self._state.camera_in_base_pose
-            ee_in_base_pose = self._state.ee_in_base_pose
+            arm_base_in_map_pose = self._state.arm_base_in_map_pose
+            camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
+            ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
 
         joint_positions_goal = self._robot_model.compute_look_at_target_tilt(
             arm_angles_deg=joint_states[3:9],
             target_in_map_point=target_point,
-            base_in_map_pose=base_in_map_pose,
-            camera_in_base_pose=camera_in_base_pose,
-            ee_in_base_pose=ee_in_base_pose,
+            arm_base_in_map_pose=arm_base_in_map_pose,
+            camera_in_arm_base_pose=camera_in_arm_base_pose,
+            ee_in_arm_base_pose=ee_in_arm_base_pose,
         )
 
         # self.head_to(new_joints, blocking=blocking, timeout=timeout)

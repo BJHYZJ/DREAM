@@ -360,27 +360,27 @@ class RangerxARMKinematics:
         self,
         arm_angles_deg: np.ndarray,
         target_in_map_point: np.ndarray,
-        base_in_map_pose: np.ndarray,
-        camera_in_base_pose: np.ndarray,
-        ee_in_base_pose: np.ndarray,
+        arm_base_in_map_pose: np.ndarray,
+        camera_in_arm_base_pose: np.ndarray,
+        ee_in_arm_base_pose: np.ndarray,
     ) -> np.ndarray:
 
         target_in_map_homo = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
-        target_in_base = (np.linalg.inv(base_in_map_pose) @ target_in_map_homo)[:3]
-        camera_in_ee = np.linalg.inv(ee_in_base_pose) @ camera_in_base_pose
+        target_in_arm_base = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map_homo)[:3]
+        camera_in_ee = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
 
-        R_cam_in_base_cur = camera_in_base_pose[:3, :3]
-        p_cam_in_base_cur = camera_in_base_pose[:3, 3]
+        R_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, :3]
+        p_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, 3]
 
         all_attempts = 10
         for attempt in range(all_attempts):
             if attempt > 0:
-                p_cam_in_base_cur[2] -= 20
-            distance_base_cur = target_in_base - p_cam_in_base_cur
-            dist_cur = float(np.linalg.norm(distance_base_cur))
+                p_cam_in_arm_base_cur[2] -= 20
+            distance_arm_base_cur = target_in_arm_base - p_cam_in_arm_base_cur
+            dist_cur = float(np.linalg.norm(distance_arm_base_cur))
 
-            dir_cam_z = distance_base_cur / dist_cur
-            dir_cam_cur = R_cam_in_base_cur.T @ (dir_cam_z)
+            dir_cam_z = distance_arm_base_cur / dist_cur
+            dir_cam_cur = R_cam_in_arm_base_cur.T @ (dir_cam_z)
 
             tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
 
@@ -388,17 +388,17 @@ class RangerxARMKinematics:
             Rx = np.array([[1.0, 0.0, 0.0],
                         [0.0,   c,  -s],
                         [0.0,   s,   c]], dtype=float)
-            R_cam_in_base_new = R_cam_in_base_cur @ Rx
+            R_cam_in_base_new = R_cam_in_arm_base_cur @ Rx
 
-            camera_in_base_pose_new = np.eye(4, dtype=float)
-            camera_in_base_pose_new[:3, :3] = R_cam_in_base_new
-            camera_in_base_pose_new[:3, 3] = p_cam_in_base_cur
+            camera_in_arm_base_pose_new = np.eye(4, dtype=float)
+            camera_in_arm_base_pose_new[:3, :3] = R_cam_in_base_new
+            camera_in_arm_base_pose_new[:3, 3] = p_cam_in_arm_base_cur
 
-            ee_in_base_pose_new = camera_in_base_pose_new @ np.linalg.inv(camera_in_ee)
+            ee_in_arm_base_pose_new = camera_in_arm_base_pose_new @ np.linalg.inv(camera_in_ee)
 
             q_init = np.deg2rad(arm_angles_deg)
             success, arm_angles_deg_new, _ = self.compute_arm_ik(
-                ee_in_base_pose_new,
+                ee_in_arm_base_pose_new,
                 q_init=q_init,
                 return_degrees=True,
                 verbose=False
