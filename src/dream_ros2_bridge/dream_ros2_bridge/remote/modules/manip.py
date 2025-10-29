@@ -352,17 +352,24 @@ class DreamManipulationClient(AbstractControlModule):
     #     q, _, _ = self._ros_client.get_joint_state()
     #     return q[DreamIdx.GRIPPER]
 
-    @enforce_enabled
-    def goto(self, q, wait=True):
-        """Directly command the robot using generalized coordinates
-        For xarm, we'll convert to end-effector pose and move directly
-        """
-        # For xarm, we expect q to be [base_x, joint1, joint2, joint3, joint4, joint5, joint6, gripper]
-        # We'll use the joint positions to move the arm
-        if len(q) >= 6:
-            joint_positions = q[1:7]  # Skip base_x, get joint positions
-            return self._arm.move_to_pose(joint_positions, wait=wait)
+    # @enforce_enabled
+    # def goto(self, q, wait=True):
+    #     """Directly command the robot using generalized coordinates
+    #     For xarm, we'll convert to end-effector pose and move directly
+    #     """
+    #     # For xarm, we expect q to be [base_x, joint1, joint2, joint3, joint4, joint5, joint6, gripper]
+    #     # We'll use the joint positions to move the arm
+    #     if len(q) >= 6:
+    #         joint_positions = q[1:7]  # Skip base_x, get joint positions
+    #         return self._arm.move_to_pose(joint_positions, wait=wait)
         
+    #     return True
+
+
+    #enforce_enabled
+    def move_to_positions(self, positions: List[np.ndarray], wait: bool = True):
+        """Move robot to specified positions"""
+        self._arm.move_to_pose(positions, wait=wait)
         return True
 
     @enforce_enabled

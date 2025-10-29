@@ -260,6 +260,14 @@ class ZmqServer(BaseZmqServer):
                 target_point=target_point,
                 blocking=_is_blocking,
             )
+        elif "move_to_positions" in action:
+            if self.verbose:
+                print(f"Moving to positions {action['move_to_positions']}")
+            _is_wait = action.get("wait", False)
+            self.client.move_to_positions(
+                action["move_to_positions"],
+                wait=_is_wait,
+            )
         elif "head_to" in action:
             # This will send head without anything else
             if self.verbose or True:

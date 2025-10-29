@@ -652,6 +652,9 @@ class DreamClient(AbstractRobotClient):
     def get_servo_angle(self):
         return self.manip.get_servo_angle()
 
+    def move_to_positions(self, positions: List[np.ndarray], wait: bool = True):
+        return self.manip.move_to_positions(positions, wait=wait)
+
     # def head_to(
     #     self,
     #     pan: float,
