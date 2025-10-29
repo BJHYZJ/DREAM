@@ -297,6 +297,7 @@ class StateObservations(BaseObservations):
     gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
     compass: np.ndarray  # positive theta is rotation to left in radians - consistent with robot
     base_in_map_pose: np.ndarray
+    arm_base_in_map_pose: np.ndarray
     camera_in_arm_base_pose: np.ndarray
     camera_in_base_pose: np.ndarray
     camera_in_map_pose: np.ndarray

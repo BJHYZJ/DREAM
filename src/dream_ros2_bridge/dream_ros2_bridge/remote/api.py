@@ -325,13 +325,15 @@ class DreamClient(AbstractRobotClient):
         return arm_position
 
     def get_base_in_map_pose(self) -> np.ndarray:
-        """Get the robot's base pose as XYT."""
         return self._ros_client.get_base_in_map_pose()
     
     def get_base_in_map_xyt(self) -> np.ndarray:
         """Get the robot's base pose as XYT (required by AbstractRobotClient)."""
         base_in_map_pose = self.get_base_in_map_pose()
         return sophus2xyt(pose2sophus(base_in_map_pose))
+
+    def get_arm_base_in_map_pose(self):
+        return self._ros_client.get_arm_base_in_map_pose()
     
     def get_camera_in_arm_base_pose(self):
         return self._ros_client.get_camera_in_arm_base_pose()
@@ -539,13 +541,14 @@ class DreamClient(AbstractRobotClient):
     ) -> StateObservations:
         joint_information = self.get_join_information()
         base_in_map_pose = self.get_base_in_map_pose()
+        arm_base_in_map_pose = self.get_arm_base_in_map_pose()
         camera_in_arm_base_pose = self.get_camera_in_arm_base_pose()
         camera_in_base_pose = self.get_camera_in_base_pose()
         camera_in_map_pose = self.get_camera_in_map_pose()
         ee_in_arm_base_pose = self.get_ee_in_arm_base_pose()
         ee_in_base_pose = self.get_ee_in_base_pose()
         ee_in_map_pose = self.get_ee_in_map_pose()
-        if joint_information is None or base_in_map_pose is None or \
+        if joint_information is None or base_in_map_pose is None or arm_base_in_map_pose is None or \
             camera_in_arm_base_pose is None or camera_in_base_pose is None or camera_in_map_pose is None or \
             ee_in_arm_base_pose is None or ee_in_base_pose is None or ee_in_map_pose is None:
             print("get_state_observation: joint_states is None or base_in_map_pose or camera_in_map_pose or camera_in_base_pose is None")
@@ -563,6 +566,7 @@ class DreamClient(AbstractRobotClient):
             gps=gps,
             compass=np.array([theta]),
             base_in_map_pose=base_in_map_pose.matrix(),
+            arm_base_in_map_pose=arm_base_in_map_pose.matrix(),
             camera_in_arm_base_pose=camera_in_arm_base_pose.matrix(),
             camera_in_base_pose=camera_in_base_pose.matrix(),
             camera_in_map_pose=camera_in_map_pose.matrix(),
