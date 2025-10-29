@@ -609,7 +609,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             camera_in_base_pose = self._state.camera_in_base_pose
             ee_in_base_pose = self._state.ee_in_base_pose
 
-        new_joints = self._robot_model.compute_look_at_target_tilt(
+        joint_positions_goal = self._robot_model.compute_look_at_target_tilt(
             arm_angles_deg=joint_states[3:9],
             target_in_map_point=target_point,
             base_in_map_pose=base_in_map_pose,
@@ -617,7 +617,35 @@ class DreamRobotZmqClient(AbstractRobotClient):
             ee_in_base_pose=ee_in_base_pose,
         )
 
-        self.head_to(new_joints, blocking=blocking, timeout=timeout)
+        # self.head_to(new_joints, blocking=blocking, timeout=timeout)
+        self.move_to_positions(goal_positions=joint_positions_goal, blocking=blocking, timeout=timeout)
+
+
+    def move_to_positions(self, goal_positions: np.ndarray, blocking: bool = True, timeout: float = 10.0, reliable: bool = True):
+        """Move the arm to a particular joint configuration."""
+        if not self.in_manipulation_mode():
+            raise ValueError("Robot must be in manipulation mode to move to positions")
+        if isinstance(goal_positions, list):
+            goal_positions = np.array(goal_positions)
+        assert len(goal_positions) == 6, "goal pose must be a vector of size 6"
+        next_action = {"move_to_positions": goal_positions, "wait": blocking}
+        self.send_action(next_action, timeout=timeout, reliable=reliable)
+        # if blocking:
+        #     t0 = timeit.default_timer()
+        #     while not self._finish:
+        #         joint_positions = self.get_joint_positions()
+        #         if joint_positions is None:
+        #             time.sleep(0.01)
+        #             continue
+        #         # check if the joint positions are close to the goal positions
+        #         if np.linalg.norm(joint_positions - goal_positions) < 1:
+        #             return True
+        #         time.sleep(0.01)
+        #         if timeit.default_timer() - t0 > timeout:
+        #             logger.error("Timeout waiting for arm to move to positions")
+        #             return False
+        #     return False
+        # return True
 
     def arm_to(
         self,

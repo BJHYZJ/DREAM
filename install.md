@@ -97,7 +97,7 @@ pip install git+https://github.com/luca-medeiros/lang-segment-anything.git  # -i
 
 rerun-sdk==0.26.1
 pip install numpy==1.23.5
-
+pip install pip install transforms3d==0.3.1
 
 # set lib_cxx.so and gsnet.so
 ```bash

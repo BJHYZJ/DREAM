@@ -129,6 +129,7 @@ def launch_setup(context, *args, **kwargs):
         executable="static_transform_publisher",
         name="static_tf_link6_to_camera",
         # arguments=['-0.09566', '0.0325', '0.02532', '-1.5707963', '-1.5707963', '3.1415926', 'link_eef', 'camera_link'],
+        #                x,        y,        z,     yaw,     pitch,         roll,     parent,     child
         arguments=['0.09541', '-0.0175', '0.02489', '0', '-1.04719755', '3.1415926', 'link6', 'camera_link'],
         output="screen"
     )

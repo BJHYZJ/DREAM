@@ -31,6 +31,18 @@ from dream.motion.pinocchio_ik_solver import PinocchioIKSolver, PositionIKOptimi
 from dream.motion.robot import Footprint
 from scipy.spatial.transform import Rotation as R
 
+from transforms3d.quaternions import mat2quat
+from transforms3d.euler import quat2euler
+
+def quat2rpy(quat):
+    # Convert to numpy array
+    if type(quat) is list:
+        quat = np.array(quat)
+    # Convert to rpy
+    rpy = np.array(quat2euler(quat, axes="sxyz")) / np.pi * 180
+    return rpy
+
+
 # used for mapping joint states in STRETCH_*_Q to match the sim/real joint action space
 # def map_joint_q_state_to_action_space(q):
 #     return np.array(
@@ -130,12 +142,12 @@ class RangerxARMKinematics:
     JOINT5_TILI_RANGE = [deg for deg in range(45, 145, 1)]
     # Fixed transform from end-effector frame (link_eef) to camera frame (camera_link)
     # Units: meters. Provided by user calibration.  # ros2 run tf2_ros tf2_echo link_eef camera_color_optical_frame
-    CAMERA_IN_EE = np.array([
-        [-0.002, -0.868,  0.496,  0.100],
-        [1.000, -0.005, -0.004, -0.032],
-        [0.006,  0.496,  0.868, -0.147],
-        [0.000,  0.000,  0.000,  1.000],
-    ], dtype=np.float32)
+    # CAMERA_IN_EE = np.array([
+    #     [-0.002, -0.868,  0.496,  0.100],
+    #     [1.000, -0.005, -0.004, -0.032],
+    #     [0.006,  0.496,  0.868, -0.147],
+    #     [0.000,  0.000,  0.000,  1.000],
+    # ], dtype=np.float32)
 
     def __init__(self, urdf_path: Optional[str] = None, verbose: bool = False):
         """Initialize with Pinocchio for local IK computation.
@@ -322,6 +334,27 @@ class RangerxARMKinematics:
         
         return pose
 
+    @staticmethod
+    def xyzrpy_from_pose(
+        pose: np.ndarray,
+        degrees: bool = True,
+        output_mm: bool = True
+    ) -> Tuple[float, float, float, float, float, float]:
+        """Extract position and ZYX-orientation (roll, pitch, yaw) from 4x4 pose.
+
+        Uses the same convention as pose_from_xyzrpy: rotation = R.from_euler('ZYX', [yaw, pitch, roll]).
+        """
+        if pose.shape != (4, 4):
+            raise ValueError(f"pose must be 4x4, got {pose.shape}")
+
+        x, y, z = pose[:3, 3].astype(float)
+        if output_mm:
+            x, y, z = x * 1000.0, y * 1000.0, z * 1000.0
+
+        # as_euler('ZYX') returns [yaw, pitch, roll]
+        yaw, pitch, roll = R.from_matrix(pose[:3, :3]).as_euler('ZYX', degrees=degrees)
+        return float(x), float(y), float(z), float(roll), float(pitch), float(yaw)
+
 
     def compute_look_at_target_tilt(
         self,
@@ -330,47 +363,218 @@ class RangerxARMKinematics:
         base_in_map_pose: np.ndarray,
         camera_in_base_pose: np.ndarray,
         ee_in_base_pose: np.ndarray,
-        joint_index: int = 4,          # Joint-5 (0-based index)
-        deadband_deg: float = 0.3      # No movement if error smaller than this (degrees)
     ) -> np.ndarray:
 
-        map_T_base = np.linalg.inv(base_in_map_pose)
-        tgt_h = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
-        target_in_base = (map_T_base @ tgt_h)[:3]
+        target_in_map_homo = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
+        target_in_base = (np.linalg.inv(base_in_map_pose) @ target_in_map_homo)[:3]
+        camera_in_ee = np.linalg.inv(ee_in_base_pose) @ camera_in_base_pose
 
         R_cam_in_base_cur = camera_in_base_pose[:3, :3]
         p_cam_in_base_cur = camera_in_base_pose[:3, 3]
-        
-        distance_base_cur = target_in_base - p_cam_in_base_cur
-        dist_cur = float(np.linalg.norm(distance_base_cur))
 
-        dir_cam_z = distance_base_cur / dist_cur
-        dir_cam_cur = R_cam_in_base_cur.T @ (dir_cam_z)
+        all_attempts = 10
+        for attempt in range(all_attempts):
+            if attempt > 0:
+                p_cam_in_base_cur[2] -= 20
+            distance_base_cur = target_in_base - p_cam_in_base_cur
+            dist_cur = float(np.linalg.norm(distance_base_cur))
 
-        tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
+            dir_cam_z = distance_base_cur / dist_cur
+            dir_cam_cur = R_cam_in_base_cur.T @ (dir_cam_z)
 
-        c, s = np.cos(-tilt_err), np.sin(-tilt_err)
-        Rx = np.array([[1.0, 0.0, 0.0],
-                       [0.0,   c,  -s],
-                       [0.0,   s,   c]], dtype=float)
-        R_cam_in_base_new = R_cam_in_base_cur @ Rx
+            tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
 
-        camera_in_base_pose_new = np.eye(4, dtype=float)
-        camera_in_base_pose_new[:3, :3] = R_cam_in_base_new
-        camera_in_base_pose_new[:3, 3] = p_cam_in_base_cur
+            c, s = np.cos(-tilt_err), np.sin(-tilt_err)
+            Rx = np.array([[1.0, 0.0, 0.0],
+                        [0.0,   c,  -s],
+                        [0.0,   s,   c]], dtype=float)
+            R_cam_in_base_new = R_cam_in_base_cur @ Rx
 
-        ee_in_base_pose_new = camera_in_base_pose_new @ np.linalg.inv(self.CAMERA_IN_EE)
+            camera_in_base_pose_new = np.eye(4, dtype=float)
+            camera_in_base_pose_new[:3, :3] = R_cam_in_base_new
+            camera_in_base_pose_new[:3, 3] = p_cam_in_base_cur
 
-        q_init = np.deg2rad(arm_angles_deg)
-        success, arm_angles_deg_new, _ = self.compute_arm_ik(
-            ee_in_base_pose_new,
-            q_init=q_init,
-            return_degrees=True,
-            verbose=False
-        )
+            ee_in_base_pose_new = camera_in_base_pose_new @ np.linalg.inv(camera_in_ee)
+
+            q_init = np.deg2rad(arm_angles_deg)
+            success, arm_angles_deg_new, _ = self.compute_arm_ik(
+                ee_in_base_pose_new,
+                q_init=q_init,
+                return_degrees=True,
+                verbose=False
+            )
+            if success:
+                break
+
+
+
+        # quat = mat2quat(ee_in_base_pose_new[:3, :3])
+        # tar_xyz = (ee_in_base_pose_new[:3, 3] * 1000)
+        # tar_rpy = quat2rpy(quat)
+        # joint_positions_goal = list(tar_xyz) + list(tar_rpy)
+
+        # joint_positions_goal = self.xyzrpy_from_pose(ee_in_base_pose_new)
+
+
+        # self.visualize_camera_poses(
+        #     camera_in_base_pose=camera_in_base_pose,
+        #     camera_in_base_pose_new=camera_in_base_pose_new,
+        #     target_point=target_in_base,
+        #     axis_len=0.15,
+        #     title="camera_in_base",
+        #     save=None,
+        # )
+
+        # self.visualize_camera_poses(
+        #     camera_in_base_pose=ee_in_base_pose,
+        #     camera_in_base_pose_new=ee_in_base_pose_new,
+        #     target_point=target_in_base,
+        #     axis_len=0.15,
+        #     title="ee_in_base",
+        #     save=None,
+        # )
+
         if success:
             return arm_angles_deg_new
         return arm_angles_deg
+
+    def visualize_frames(
+        self,
+        poses: List[Tuple[np.ndarray, str]],
+        axis_len: float = 0.1,
+        title: Optional[str] = None,
+        point: Optional[np.ndarray] = None,
+        save: Optional[str] = None,
+    ) -> None:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+        fig = plt.figure(figsize=(7, 7))
+        ax = fig.add_subplot(111, projection="3d")
+
+        I = np.eye(4)
+        self._draw_frame(ax, I, "base", axis_len=axis_len, alpha=0.25, linewidth=1.0)
+
+        for T, label in poses:
+            self._draw_frame(ax, T, label, axis_len=axis_len, alpha=1.0, linewidth=2.0)
+
+        if point is not None:
+            p = np.asarray(point, dtype=float).reshape(3)
+            ax.scatter([p[0]], [p[1]], [p[2]], c="k", s=40, label="target")
+
+        ax.set_xlabel("X (m)")
+        ax.set_ylabel("Y (m)")
+        ax.set_zlabel("Z (m)")
+        if title:
+            ax.set_title(title)
+
+        # bounds
+        all_pts = [T[:3, 3] for T, _ in poses]
+        if point is not None:
+            all_pts.append(np.asarray(point, dtype=float).reshape(3))
+        if all_pts:
+            all_pts = np.array(all_pts)
+            mins = all_pts.min(axis=0)
+            maxs = all_pts.max(axis=0)
+            pad = max(1e-3, 0.1 * float(np.linalg.norm(maxs - mins)))
+            ax.set_xlim(mins[0] - pad, maxs[0] + pad)
+            ax.set_ylim(mins[1] - pad, maxs[1] + pad)
+            ax.set_zlim(mins[2] - pad, maxs[2] + pad)
+        self._set_axes_equal(ax)
+
+        if point is not None:
+            ax.legend(loc="upper left")
+
+        if save:
+            import os
+            os.makedirs(os.path.dirname(save), exist_ok=True)
+            plt.savefig(save, bbox_inches="tight", dpi=150)
+        plt.show()
+
+    def visualize_camera_poses(
+        self,
+        camera_in_base_pose: np.ndarray,
+        camera_in_base_pose_new: np.ndarray,
+        target_point: Optional[np.ndarray] = None,
+        axis_len: float = 0.1,
+        title: Optional[str] = "Camera frames in base",
+        save: Optional[str] = None,
+    ) -> None:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+        fig = plt.figure(figsize=(7, 7))
+        ax = fig.add_subplot(111, projection="3d")
+
+        I = np.eye(4)
+        self._draw_frame(ax, I, "base", axis_len=axis_len, alpha=0.25, linewidth=1.0)
+
+        T_cur = np.asarray(camera_in_base_pose, dtype=float)
+        T_new = np.asarray(camera_in_base_pose_new, dtype=float)
+
+        # 当前相机细线，新相机加粗
+        self._draw_frame(ax, T_cur, "cur", axis_len=axis_len, alpha=0.9, linewidth=2.0)
+        self._draw_frame(ax, T_new, "new", axis_len=axis_len, alpha=1.0, linewidth=4.0)
+
+        if target_point is not None:
+            p = np.asarray(target_point, dtype=float).reshape(3)
+            ax.scatter([p[0]], [p[1]], [p[2]], c="k", s=40, label="target")
+
+        ax.set_xlabel("X (m)")
+        ax.set_ylabel("Y (m)")
+        ax.set_zlabel("Z (m)")
+        if title:
+            ax.set_title(title)
+
+        # bounds
+        all_pts = [T_cur[:3, 3], T_new[:3, 3]]
+        if target_point is not None:
+            all_pts.append(np.asarray(target_point, dtype=float).reshape(3))
+        all_pts = np.array(all_pts)
+        mins = all_pts.min(axis=0)
+        maxs = all_pts.max(axis=0)
+        pad = max(1e-3, 0.1 * float(np.linalg.norm(maxs - mins)))
+        ax.set_xlim(mins[0] - pad, maxs[0] + pad)
+        ax.set_ylim(mins[1] - pad, maxs[1] + pad)
+        ax.set_zlim(mins[2] - pad, maxs[2] + pad)
+        self._set_axes_equal(ax)
+
+        if target_point is not None:
+            ax.legend(loc="upper left")
+
+        if save:
+            import os
+            os.makedirs(os.path.dirname(save), exist_ok=True)
+            plt.savefig(save, bbox_inches="tight", dpi=150)
+        plt.show()
+
+    @staticmethod
+    def _draw_frame(ax, T: np.ndarray, label: str, axis_len: float, alpha: float = 1.0, linewidth: float = 2.0) -> None:
+        Rm = T[:3, :3]
+        p = T[:3, 3]
+        x_axis = Rm[:, 0] * axis_len
+        y_axis = Rm[:, 1] * axis_len
+        z_axis = Rm[:, 2] * axis_len
+        ax.plot([p[0], p[0] + x_axis[0]], [p[1], p[1] + x_axis[1]], [p[2], p[2] + x_axis[2]], color="r", alpha=alpha, linewidth=linewidth)
+        ax.plot([p[0], p[0] + y_axis[0]], [p[1], p[1] + y_axis[1]], [p[2], p[2] + y_axis[2]], color="g", alpha=alpha, linewidth=linewidth)
+        ax.plot([p[0], p[0] + z_axis[0]], [p[1], p[1] + z_axis[1]], [p[2], p[2] + z_axis[2]], color="b", alpha=alpha, linewidth=linewidth)
+        ax.text(p[0], p[1], p[2], f" {label}", color="k")
+
+    @staticmethod
+    def _set_axes_equal(ax) -> None:
+        x_limits = ax.get_xlim3d()
+        y_limits = ax.get_ylim3d()
+        z_limits = ax.get_zlim3d()
+        x_range = abs(x_limits[1] - x_limits[0])
+        y_range = abs(y_limits[1] - y_limits[0])
+        z_range = abs(z_limits[1] - z_limits[0])
+        max_range = max([x_range, y_range, z_range])
+        x_middle = float(np.mean(x_limits))
+        y_middle = float(np.mean(y_limits))
+        z_middle = float(np.mean(z_limits))
+        ax.set_xlim3d([x_middle - max_range / 2, x_middle + max_range / 2])
+        ax.set_ylim3d([y_middle - max_range / 2, y_middle + max_range / 2])
+        ax.set_zlim3d([z_middle - max_range / 2, z_middle + max_range / 2])
 
 if __name__ == "__main__":
     from scipy.spatial.transform import Rotation as R
