@@ -609,7 +609,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
             ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
 
-        joint_positions_goal = self._robot_model.compute_look_at_target_tilt(
+        arm_angles_deg = self._robot_model.compute_look_at_target_tilt(
             arm_angles_deg=joint_states[3:9],
             target_in_map_point=target_point,
             arm_base_in_map_pose=arm_base_in_map_pose,
@@ -617,8 +617,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
             ee_in_arm_base_pose=ee_in_arm_base_pose,
         )
 
-        # self.head_to(new_joints, blocking=blocking, timeout=timeout)
-        self.move_to_positions(goal_positions=joint_positions_goal, blocking=blocking, timeout=timeout)
+        self.head_to(arm_angles_deg, blocking=blocking, timeout=timeout)
+        # self.move_to_positions(goal_positions=joint_positions_goal, blocking=blocking, timeout=timeout)
 
 
     def move_to_positions(self, goal_positions: np.ndarray, blocking: bool = True, timeout: float = 10.0, reliable: bool = True):

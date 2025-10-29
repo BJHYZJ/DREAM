@@ -372,11 +372,20 @@ class RangerxARMKinematics:
         R_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, :3]
         p_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, 3]
 
-        all_attempts = 10
-        for attempt in range(all_attempts):
-            if attempt > 0:
-                p_cam_in_arm_base_cur[2] -= 20
-            distance_arm_base_cur = target_in_arm_base - p_cam_in_arm_base_cur
+        # Symmetric z-search: 0, -step, +step, -2*step, +2*step, ... (meters)
+        max_steps = 10
+        step_m = 0.03
+        for attempt in range(max_steps + 1):
+            p_try = p_cam_in_arm_base_cur.copy()
+            if attempt == 0:
+                dz = 0.0
+            else:
+                k = (attempt + 1) // 2
+                sign = -1.0 if (attempt % 2 == 1) else 1.0
+                dz = sign * k * step_m
+            p_try[2] = p_cam_in_arm_base_cur[2] + dz
+
+            distance_arm_base_cur = target_in_arm_base - p_try
             dist_cur = float(np.linalg.norm(distance_arm_base_cur))
 
             dir_cam_z = distance_arm_base_cur / dist_cur
@@ -392,7 +401,7 @@ class RangerxARMKinematics:
 
             camera_in_arm_base_pose_new = np.eye(4, dtype=float)
             camera_in_arm_base_pose_new[:3, :3] = R_cam_in_base_new
-            camera_in_arm_base_pose_new[:3, 3] = p_cam_in_arm_base_cur
+            camera_in_arm_base_pose_new[:3, 3] = p_try
 
             ee_in_arm_base_pose_new = camera_in_arm_base_pose_new @ np.linalg.inv(camera_in_ee)
 
@@ -406,36 +415,10 @@ class RangerxARMKinematics:
             if success:
                 break
 
-
-
-        # quat = mat2quat(ee_in_base_pose_new[:3, :3])
-        # tar_xyz = (ee_in_base_pose_new[:3, 3] * 1000)
-        # tar_rpy = quat2rpy(quat)
-        # joint_positions_goal = list(tar_xyz) + list(tar_rpy)
-
-        # joint_positions_goal = self.xyzrpy_from_pose(ee_in_base_pose_new)
-
-
-        # self.visualize_camera_poses(
-        #     camera_in_base_pose=camera_in_base_pose,
-        #     camera_in_base_pose_new=camera_in_base_pose_new,
-        #     target_point=target_in_base,
-        #     axis_len=0.15,
-        #     title="camera_in_base",
-        #     save=None,
-        # )
-
-        # self.visualize_camera_poses(
-        #     camera_in_base_pose=ee_in_base_pose,
-        #     camera_in_base_pose_new=ee_in_base_pose_new,
-        #     target_point=target_in_base,
-        #     axis_len=0.15,
-        #     title="ee_in_base",
-        #     save=None,
-        # )
-
         if success:
+            print(f"compute_look_at_target_tilt success: {arm_angles_deg_new}, attempt: {attempt}")
             return arm_angles_deg_new
+        print(f"compute_look_at_target_tilt failed: {arm_angles_deg_new}")
         return arm_angles_deg
 
     def visualize_frames(
