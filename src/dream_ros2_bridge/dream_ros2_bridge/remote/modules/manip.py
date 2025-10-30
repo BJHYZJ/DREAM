@@ -88,7 +88,8 @@ class XARM6:
 
     def get_current_pose(self):
         if not self.is_alive:
-            raise ValueError("Robot is not alive!")
+            # raise ValueError("Robot is not alive!")
+            return None
         code, pose = self._arm.get_position()
         if not self._check_code(code, "get_position"):
             # raise ValueError("get_current_pose Error")
@@ -97,7 +98,8 @@ class XARM6:
 
     def get_joint_state(self):
         if not self.is_alive:
-            raise ValueError("Robot is not alive!")
+            # raise ValueError("Robot is not alive!")
+            return None, None, None
         code, state = self._arm.get_joint_states()
         if not self._check_code(code, "get_joint_state"):
             # raise ValueError("get_joint_state Error")
@@ -134,7 +136,8 @@ class XARM6:
 
     def get_gripper_state(self):
         if not self.is_alive:
-            raise ValueError("Robot is not alive!")
+            # raise ValueError("Robot is not alive!")
+            return None
         code, state = self._arm.get_gripper_position()
         if not self._check_code(code, "get_gripper_position"):
             # raise ValueError("get_gripper_position Error")
@@ -152,7 +155,14 @@ class XARM6:
         self._arm.set_servo_angle(angle=angle, is_radian=is_radian, wait=wait)
 
     def get_servo_angle(self, is_radian=False, is_real=False):
-        return self._arm.get_servo_angle(is_radian=is_radian, is_real=is_real)
+        if not self.is_alive:
+            # raise ValueError("Robot is not alive!")
+            return None
+        code, angle = self._arm.get_servo_angle(is_radian=is_radian, is_real=is_real)
+        if not self._check_code(code, "get_servo_angle"):
+            # raise ValueError("get_servo_angle Error")
+            return None
+        return angle
 
     # Register error/warn changed callback
     def _error_warn_changed_callback(self, data):
@@ -209,12 +219,16 @@ class XARM6:
 
     @property
     def is_alive(self):
-        if self.alive and self._arm.connected and self._arm.error_code == 0:
+        # if self.alive and self._arm.connected and self._arm.error_code == 0:
+        if self._arm.connected and self._arm.error_code == 0:
+            # print(self._arm.connected, self._arm.error_code, self._arm.state)
             if self._arm.state == 5:
-                cnt = 0
-                while self._arm.state == 5 and cnt < 5:
-                    cnt += 1
-                    time.sleep(0.1)
+                self._arm.set_state(0)
+                print("set state to 0 when state is 5")
+                # cnt = 0
+                # while self._arm.state == 5 and cnt < 5:
+                #     cnt += 1
+                #     time.sleep(0.1)
             return self._arm.state < 4
         else:
             return False
