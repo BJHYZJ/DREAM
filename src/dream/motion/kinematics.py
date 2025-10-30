@@ -15,6 +15,7 @@ import math
 import os
 import numpy as np
 import pinocchio
+import cv2
 
 from typing import List, Optional, Tuple
 from pathlib import Path
@@ -139,7 +140,7 @@ class RangerxARMKinematics:
     IK_MAX_ITER = 200
     IK_STEP_SIZE = 0.1
     IK_DAMPING = 1e-6
-    JOINT5_TILI_RANGE = [deg for deg in range(45, 145, 1)]
+    # JOINT5_TILI_RANGE = [deg for deg in range(55, 145, 1)]
     # Fixed transform from end-effector frame (link_eef) to camera frame (camera_link)
     # Units: meters. Provided by user calibration.  # ros2 run tf2_ros tf2_echo link_eef camera_color_optical_frame
     # CAMERA_IN_EE = np.array([
@@ -148,6 +149,9 @@ class RangerxARMKinematics:
     #     [0.006,  0.496,  0.868, -0.147],
     #     [0.000,  0.000,  0.000,  1.000],
     # ], dtype=np.float32)
+
+    TILT_RANGE = [deg for deg in range(75, 135, 1)]
+    PAN_RANGE = [deg for deg in range(-45, 45, 1)]
 
     def __init__(self, urdf_path: Optional[str] = None, verbose: bool = False):
         """Initialize with Pinocchio for local IK computation.
@@ -274,7 +278,8 @@ class RangerxARMKinematics:
     def compute_arm_fk(
         self,
         joint_angles: np.ndarray,
-        return_mm: bool = False
+        return_mm: bool = False,
+        return_pose: bool = True
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Compute forward kinematics.
         
@@ -301,7 +306,13 @@ class RangerxARMKinematics:
         if return_mm:
             position *= 1000
         
-        return position, pose.rotation.copy()
+        if return_pose:
+            arm_pose = np.eye(4)
+            arm_pose[:3, :3] = pose.rotation.copy()
+            arm_pose[:3, 3] = position.copy()
+            return arm_pose
+        else:
+            return position, pose.rotation.copy()
     
     @staticmethod
     def pose_from_xyzrpy(
@@ -356,7 +367,169 @@ class RangerxARMKinematics:
         return float(x), float(y), float(z), float(roll), float(pitch), float(yaw)
 
 
+    def cal_tilt_err(
+        self, 
+        camera_in_arm_base_pose: np.ndarray, 
+        target_in_arm_base: np.ndarray
+    ) -> float:
+        # Compute signed tilt error using camera_link axes: forward=+X, up=+Z.
+        R_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, :3]
+        p_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, 3]
+        distance_arm_base_cur = target_in_arm_base - p_cam_in_arm_base_cur
+        dist_cur = float(np.linalg.norm(distance_arm_base_cur))
+
+        dir_cam_z = distance_arm_base_cur / dist_cur
+        dir_cam_cur = R_cam_in_arm_base_cur.T @ (dir_cam_z)
+        tilt_err = abs(np.arctan2(dir_cam_cur[1], dir_cam_cur[2]))
+        return tilt_err
+
+
+    def check_tilt_err(self, tilt: float) -> bool:
+        if tilt < np.deg2rad(0.5):
+            return True
+        return False
+
+    def _angle_cam_axis_to_target(
+        self,
+        camera_in_base_pose: np.ndarray,
+        target_in_base: np.ndarray,
+        axis_idx: int = 2,
+        axis_sign: float = 1.0,
+    ) -> float:
+        """Return the angle (radians) between a camera axis and the direction to target.
+
+        - camera_in_base_pose: 4x4, meters
+        - target_in_base: 3, meters
+        - axis_idx: camera axis index (0:X, 1:Y, 2:Z). Default 2 for Z-axis
+        - axis_sign: +1 if the axis points forward, -1 to flip
+        """
+        Rm = camera_in_base_pose[:3, :3]
+        pc = camera_in_base_pose[:3, 3]
+        d = target_in_base - pc
+        nd = float(np.linalg.norm(d))
+        if nd < 1e-9:
+            return float('inf')
+        dir_to_tgt = d / nd
+        cam_axis = axis_sign * Rm[:, axis_idx]
+        cos_th = float(np.clip(np.dot(cam_axis, dir_to_tgt), -1.0, 1.0))
+        return float(np.arccos(cos_th))
+
+
+    def cal_u_err(self, target_in_camera: np.ndarray, camera_K: np.ndarray) -> float:
+        """Return the horizontal error in pixels between the target and the camera center.
+
+        - target_in_camera: 3, meters
+        - camera_K: 3x3, camera intrinsics matrix
+        """
+        cx = camera_K[0, 2]
+        u, _ = self.project_point_to_pixel(target_in_camera, camera_K)
+        u_err = abs(u - cx)
+        return u_err
+
+    def cal_v_err(self, target_in_camera: np.ndarray, camera_K: np.ndarray) -> float:
+        """Return the vertical error in pixels between the target and the camera center.
+
+        - target_in_camera: 3, meters
+        - camera_K: 3x3, camera intrinsics matrix
+        """
+        cy = camera_K[1, 2]
+        _, v = self.project_point_to_pixel(target_in_camera, camera_K)
+        v_err = abs(v - cy)
+        return v_err
+
+    def project_point_to_pixel(self, points, intrinsic):
+        assert points.shape == (1,) or points.shape == (3,), "points must be 1x3 or 3x1"
+        if points.shape != (3,):
+            points = points.reshape(1, 1, 3)
+        u, v = cv2.projectPoints(
+            points, 
+            np.zeros(3), 
+            np.zeros(3), 
+            intrinsic, 
+            np.zeros(5)
+        )[0][0, 0, :]
+        return u, v
+
+
     def compute_look_at_target_tilt(
+        self,
+        arm_angles_deg: np.ndarray,
+        target_in_map_point: np.ndarray,
+        camera_in_map_pose: np.ndarray,
+        arm_base_in_map_pose: np.ndarray,
+        camera_in_arm_base_pose: np.ndarray,
+        ee_in_arm_base_pose: np.ndarray,
+        camera_K: np.ndarray,
+    ) -> np.ndarray:
+        target_in_map = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
+        target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map)[:3]
+        TARTER_IN_ARM_BASE = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map)
+        CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+
+        best_v_err = self.cal_v_err(target_in_camera, camera_K)
+        best_tilt = None
+        arm_angles_deg_new = arm_angles_deg.copy()
+        for tilt in self.TILT_RANGE:
+            arm_angles_deg_new = arm_angles_deg.copy()
+            arm_angles_deg_new[4] = float(tilt)
+            ee_in_arm_base_pose_new = self.compute_arm_fk(
+                np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
+            )
+            camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
+            target_in_camera_new = (np.linalg.inv(camera_in_arm_base_pose_new) @ TARTER_IN_ARM_BASE)[:3]
+            v_err_new = self.cal_v_err(target_in_camera_new, camera_K)
+            print(tilt, v_err_new)
+            if v_err_new < best_v_err:
+                best_v_err = v_err_new
+                best_tilt = float(tilt)
+        if best_tilt is not None:
+            arm_angles_deg_new[4] = best_tilt
+        else:
+            arm_angles_deg_new = arm_angles_deg
+
+        return arm_angles_deg_new
+
+
+    def compute_look_at_target_pan(
+        self,
+        arm_angles_deg: np.ndarray,
+        target_in_map_point: np.ndarray,
+        camera_in_map_pose: np.ndarray,
+        arm_base_in_map_pose: np.ndarray,
+        camera_in_arm_base_pose: np.ndarray,
+        ee_in_arm_base_pose: np.ndarray,
+        camera_K: np.ndarray,
+    ) -> np.ndarray:
+        target_in_map = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
+        target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map)[:3]
+        TARTER_IN_ARM_BASE = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map)
+        CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+
+        best_u_err = self.cal_u_err(target_in_camera, camera_K)
+        best_pan = None
+        arm_angles_deg_new = arm_angles_deg.copy()
+        for pan in self.PAN_RANGE:
+            arm_angles_deg_new = arm_angles_deg.copy()
+            arm_angles_deg_new[0] = float(pan)
+            ee_in_arm_base_pose_new = self.compute_arm_fk(
+                np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
+            )
+            camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
+            target_in_camera_new = (np.linalg.inv(camera_in_arm_base_pose_new) @ TARTER_IN_ARM_BASE)[:3]
+            u_err_new = self.cal_u_err(target_in_camera_new, camera_K)
+            print(pan, u_err_new)
+            if u_err_new < best_u_err:
+                best_u_err = u_err_new
+                best_pan = float(pan)
+        if best_pan is not None:
+            arm_angles_deg_new[0] = best_pan
+        else:
+            arm_angles_deg_new = arm_angles_deg
+
+        return arm_angles_deg_new
+
+
+    def compute_look_at_target_tilt_angle(
         self,
         arm_angles_deg: np.ndarray,
         target_in_map_point: np.ndarray,
@@ -367,59 +540,115 @@ class RangerxARMKinematics:
 
         target_in_map_homo = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
         target_in_arm_base = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map_homo)[:3]
-        camera_in_ee = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+        CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
 
-        R_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, :3]
-        p_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, 3]
+        # R_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, :3]
+        # p_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, 3]
 
-        # Symmetric z-search: 0, -step, +step, -2*step, +2*step, ... (meters)
-        max_steps = 10
-        step_m = 0.03
-        for attempt in range(max_steps + 1):
-            p_try = p_cam_in_arm_base_cur.copy()
-            if attempt == 0:
-                dz = 0.0
-            else:
-                k = (attempt + 1) // 2
-                sign = -1.0 if (attempt % 2 == 1) else 1.0
-                dz = sign * k * step_m
-            p_try[2] = p_cam_in_arm_base_cur[2] + dz
+        # distance_arm_base_cur = target_in_arm_base - p_cam_in_arm_base_cur
+        # dist_cur = float(np.linalg.norm(distance_arm_base_cur))
 
-            distance_arm_base_cur = target_in_arm_base - p_try
-            dist_cur = float(np.linalg.norm(distance_arm_base_cur))
+        # dir_cam_z = distance_arm_base_cur / dist_cur
+        # dir_cam_cur = R_cam_in_arm_base_cur.T @ (dir_cam_z)
 
-            dir_cam_z = distance_arm_base_cur / dist_cur
-            dir_cam_cur = R_cam_in_arm_base_cur.T @ (dir_cam_z)
+        # tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
 
-            tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
+        tilt_err = self.cal_tilt_err(camera_in_arm_base_pose, target_in_arm_base)
+        if self.check_tilt_err(tilt_err):
+            return arm_angles_deg
 
-            c, s = np.cos(-tilt_err), np.sin(-tilt_err)
-            Rx = np.array([[1.0, 0.0, 0.0],
-                        [0.0,   c,  -s],
-                        [0.0,   s,   c]], dtype=float)
-            R_cam_in_base_new = R_cam_in_arm_base_cur @ Rx
+        min_tilt_err = tilt_err
+        best_tilt = None
+        arm_angles_deg_new = arm_angles_deg.copy()
+        for tilt in self.TILT_RANGE:
+            arm_angles_deg_new[4] = float(tilt)
+            ee_in_arm_base_pose_new = self.compute_arm_fk(np.deg2rad(arm_angles_deg_new))
+            camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
+            
+            tilt_err_new = self.cal_tilt_err(camera_in_arm_base_pose_new, target_in_arm_base)
+            print(tilt, tilt_err_new)
+            if tilt_err_new < min_tilt_err:
+                min_tilt_err = tilt_err_new
+                best_tilt = tilt
+                if self.check_tilt_err(tilt_err_new):
+                    arm_angles_deg_new[4] = best_tilt
+                    return arm_angles_deg_new
+        
+        if best_tilt is not None:
+            print(f"compute_look_at_target_tilt best_tilt: {best_tilt}")
+            arm_angles_deg_new[4] = best_tilt
+        return arm_angles_deg_new
 
-            camera_in_arm_base_pose_new = np.eye(4, dtype=float)
-            camera_in_arm_base_pose_new[:3, :3] = R_cam_in_base_new
-            camera_in_arm_base_pose_new[:3, 3] = p_try
 
-            ee_in_arm_base_pose_new = camera_in_arm_base_pose_new @ np.linalg.inv(camera_in_ee)
 
-            q_init = np.deg2rad(arm_angles_deg)
-            success, arm_angles_deg_new, _ = self.compute_arm_ik(
-                ee_in_arm_base_pose_new,
-                q_init=q_init,
-                return_degrees=True,
-                verbose=False
-            )
-            if success:
-                break
+    # def compute_look_at_target_tilt_ik(
+    #     self,
+    #     arm_angles_deg: np.ndarray,
+    #     target_in_map_point: np.ndarray,
+    #     arm_base_in_map_pose: np.ndarray,
+    #     camera_in_arm_base_pose: np.ndarray,
+    #     ee_in_arm_base_pose: np.ndarray,
+    # ) -> np.ndarray:
 
-        if success:
-            print(f"compute_look_at_target_tilt success: {arm_angles_deg_new}, attempt: {attempt}")
-            return arm_angles_deg_new
-        print(f"compute_look_at_target_tilt failed: {arm_angles_deg_new}")
-        return arm_angles_deg
+    #     target_in_map_homo = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
+    #     target_in_arm_base = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map_homo)[:3]
+    #     camera_in_ee = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+
+    #     R_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, :3]
+    #     p_cam_in_arm_base_cur = camera_in_arm_base_pose[:3, 3]
+
+    #     # Symmetric z-search: 0, -step, +step, -2*step, +2*step, ... (meters)
+    #     import time
+    #     t0 = time.time()
+    #     max_steps = 100
+    #     step_m = 0.03
+    #     for attempt in range(max_steps + 1):
+    #         p_try = p_cam_in_arm_base_cur.copy()
+    #         if attempt == 0:
+    #             dz = 0.0
+    #         else:
+    #             k = (attempt + 1) // 2
+    #             sign = -1.0 if (attempt % 2 == 1) else 1.0
+    #             dz = sign * k * step_m
+    #         p_try[2] = p_cam_in_arm_base_cur[2] + dz
+
+    #         distance_arm_base_cur = target_in_arm_base - p_try
+    #         dist_cur = float(np.linalg.norm(distance_arm_base_cur))
+
+    #         dir_cam_z = distance_arm_base_cur / dist_cur
+    #         dir_cam_cur = R_cam_in_arm_base_cur.T @ (dir_cam_z)
+
+    #         tilt_err = np.arctan2(dir_cam_cur[1], dir_cam_cur[2])
+
+    #         c, s = np.cos(-tilt_err), np.sin(-tilt_err)
+    #         Rx = np.array([[1.0, 0.0, 0.0],
+    #                     [0.0,   c,  -s],
+    #                     [0.0,   s,   c]], dtype=float)
+    #         R_cam_in_base_new = R_cam_in_arm_base_cur @ Rx
+
+    #         camera_in_arm_base_pose_new = np.eye(4, dtype=float)
+    #         camera_in_arm_base_pose_new[:3, :3] = R_cam_in_base_new
+    #         camera_in_arm_base_pose_new[:3, 3] = p_try
+
+    #         ee_in_arm_base_pose_new = camera_in_arm_base_pose_new @ np.linalg.inv(camera_in_ee)
+
+    #         q_init = np.deg2rad(arm_angles_deg)
+    #         success, arm_angles_deg_new, _ = self.compute_arm_ik(
+    #             ee_in_arm_base_pose_new,
+    #             q_init=q_init,
+    #             return_degrees=True,
+    #             verbose=False
+    #         )
+    #         if success:
+    #             break
+    #     t1 = time.time()
+    #     print(f"compute_look_at_target_tilt time: {t1 - t0}")
+
+    #     if success:
+    #         print(f"compute_look_at_target_tilt success: {arm_angles_deg_new}, attempt: {attempt}")
+    #         return arm_angles_deg_new
+    #     print(f"compute_look_at_target_tilt failed: {arm_angles_deg_new}")
+    #     return arm_angles_deg
 
     def visualize_frames(
         self,
@@ -574,7 +803,7 @@ if __name__ == "__main__":
     joints_deg = [0, -45, -90, 0, 110, 0]
     joints_rad = np.deg2rad(joints_deg)
     
-    position_m, rotation = kinematics.compute_arm_fk(joints_rad, return_mm=False)
+    position_m, rotation = kinematics.compute_arm_fk(joints_rad, return_mm=False, return_pose=False)
     position_mm, _ = kinematics.compute_arm_fk(joints_rad, return_mm=True)
     roll, pitch, yaw = np.rad2deg(R.from_matrix(rotation).as_euler('xyz'))
     

@@ -293,7 +293,7 @@ class DreamTaskExecutor:
                 ):
                     self.robot.move_to_nav_posture()
                     # point = self._find(args)
-                    point = [-0.0704,  0.5059,  0.1144]
+                    point = [-0.10140, 0.92395, 0.06083]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None

@@ -604,17 +604,21 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     logger.error("Timeout waiting for state message")
                     return None
             joint_states = self._state.joint_states
-            joint_positions = self._state.joint_positions  # arm position: ee in base position
             arm_base_in_map_pose = self._state.arm_base_in_map_pose
             camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
+            camera_in_map_pose = self._state.camera_in_map_pose
             ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
+
+        camera_K = self.get_camera_K()
 
         arm_angles_deg = self._robot_model.compute_look_at_target_tilt(
             arm_angles_deg=joint_states[3:9],
             target_in_map_point=target_point,
+            camera_in_map_pose=camera_in_map_pose,
             arm_base_in_map_pose=arm_base_in_map_pose,
             camera_in_arm_base_pose=camera_in_arm_base_pose,
             ee_in_arm_base_pose=ee_in_arm_base_pose,
+            camera_K=camera_K,
         )
 
         self.head_to(arm_angles_deg, blocking=blocking, timeout=timeout)
