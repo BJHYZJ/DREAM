@@ -91,7 +91,8 @@ class XARM6:
             raise ValueError("Robot is not alive!")
         code, pose = self._arm.get_position()
         if not self._check_code(code, "get_position"):
-            raise ValueError("get_current_pose Error")
+            # raise ValueError("get_current_pose Error")
+            return None
         return pose
 
     def get_joint_state(self):
@@ -99,17 +100,16 @@ class XARM6:
             raise ValueError("Robot is not alive!")
         code, state = self._arm.get_joint_states()
         if not self._check_code(code, "get_joint_state"):
-            raise ValueError("get_joint_state Error")
+            # raise ValueError("get_joint_state Error")
+            return None, None, None
         # Return only the first 6 joints (excluding gripper)
         # state is typically [positions, velocities, torques] with 7 elements each
-        if isinstance(state, (list, tuple)) and len(state) >= 3:
-            return [
-                state[0][:6],  # positions of first 6 joints
-                state[1][:6],  # velocities of first 6 joints  
-                state[2][:6]   # torques of first 6 joints
-            ]
-        else:
-            return state
+        return [
+            state[0][:6],  # positions of first 6 joints
+            state[1][:6],  # velocities of first 6 joints  
+            state[2][:6]   # torques of first 6 joints
+        ]
+
 
     def set_gripper(self, target: int = 830, wait: bool = True):
         if not self.is_alive:
@@ -137,7 +137,8 @@ class XARM6:
             raise ValueError("Robot is not alive!")
         code, state = self._arm.get_gripper_position()
         if not self._check_code(code, "get_gripper_position"):
-            raise ValueError("get_gripper_position Error")
+            # raise ValueError("get_gripper_position Error")
+            return None
         return state
 
     def reset(self):

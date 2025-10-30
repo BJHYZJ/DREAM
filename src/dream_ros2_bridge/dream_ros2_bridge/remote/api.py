@@ -376,14 +376,14 @@ class DreamClient(AbstractRobotClient):
 
         base_pose = self.get_base_in_map_pose()
 
-        if base_pose is None:
-            return None
-
         arm_state, arm_velocity, arm_force = self.get_arm_state()
         vel_base = self._ros_client.get_vel_base()
         
         arm_position = self.get_arm_position()
         gripper_position = self.get_gripper_state()
+
+        if base_pose is None or arm_state is None or arm_position is None or gripper_position is None:
+            return None
 
         joint_states[ARM_INDEX] = arm_state
 
