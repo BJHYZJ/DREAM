@@ -237,32 +237,32 @@ class ZmqServer(BaseZmqServer):
             if "w" in base_velocity_action:
                 w = action["base_velocity"]["w"]
             self.client.nav.set_velocity(v, w)
-        elif "joint" in action:
-            # This allows for executing motor commands on the robot relatively quickly
-            if self.verbose:
-                print(f"Moving arm to config={action['joint']}")
-            if "gripper" in action:
-                gripper_cmd = action["gripper"]
-            else:
-                gripper_cmd = None
-            if "target_point" in action:
-                target_point = action["target_point"]
-            else:
-                target_point = None
+        # elif "joint" in action:
+        #     # This allows for executing motor commands on the robot relatively quickly
+        #     if self.verbose:
+        #         print(f"Moving arm to config={action['joint']}")
+        #     if "gripper" in action:
+        #         gripper_cmd = action["gripper"]
+        #     else:
+        #         gripper_cmd = None
+        #     if "target_point" in action:
+        #         target_point = action["target_point"]
+        #     else:
+        #         target_point = None
 
-            # I found currently the blocking in arm to does not
-            # serve any actual purpose so maybe we should use this line instead
+        #     # I found currently the blocking in arm to does not
+        #     # serve any actual purpose so maybe we should use this line instead
 
-            # _is_blocking = action.get("blocking", False) or action.get("manip_blocking", False)
-            _is_blocking = action.get("blocking", False)
+        #     # _is_blocking = action.get("blocking", False) or action.get("manip_blocking", False)
+        #     _is_blocking = action.get("blocking", False)
 
-            # Now send all command fields here
-            self.client.arm_to(
-                action["joint"],
-                gripper=gripper_cmd,
-                target_point=target_point,
-                blocking=_is_blocking,
-            )
+        #     # Now send all command fields here
+        #     self.client.arm_to(
+        #         action["joint"],
+        #         gripper=gripper_cmd,
+        #         target_point=target_point,
+        #         blocking=_is_blocking,
+        #     )
         elif "move_to_positions" in action:
             if self.verbose:
                 print(f"Moving to positions {action['move_to_positions']}")
@@ -281,10 +281,10 @@ class ZmqServer(BaseZmqServer):
                 angle=action["servo_angle"],
                 wait=action['wait']
             )
-        elif "gripper" in action and "joint" not in action:
+        elif "gripper" in action:
             if self.verbose or True:
                 print(f"Moving gripper to {action['gripper']}")
-            self.client.manip.move_gripper(action["gripper"])
+            self.client.manip.set_gripper(action["gripper"])
         else:
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)

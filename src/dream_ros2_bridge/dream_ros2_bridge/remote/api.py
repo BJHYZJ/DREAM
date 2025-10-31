@@ -675,46 +675,46 @@ class DreamClient(AbstractRobotClient):
     def get_has_wrist(self) -> bool:
         return self._ros_client.get_has_wrist()
 
-    def arm_to(
-        self,
-        q: np.ndarray,
-        gripper: float = None,
-        head_pan: float = None,
-        head_tilt: float = None,
-        blocking: bool = False,
-        timeout: float = 4.0,
-    ):
-        """Send arm commands"""
-        assert len(q) == 6
+    # def arm_to(
+    #     self,
+    #     q: np.ndarray,
+    #     gripper: float = None,
+    #     head_pan: float = None,
+    #     head_tilt: float = None,
+    #     blocking: bool = False,
+    #     timeout: float = 4.0,
+    # ):
+    #     """Send arm commands"""
+    #     assert len(q) == 6
 
-        print(f"-> Sending arm and gripper to {q=} {gripper=} {head_pan=} {head_tilt=}")
-        t0 = time.time()
+    #     print(f"-> Sending arm and gripper to {q=} {gripper=} {head_pan=} {head_tilt=}")
+    #     t0 = time.time()
 
-        self.manip.goto_joint_positions(
-            joint_positions=q,
-            gripper=gripper,
-            head_pan=head_pan,
-            head_tilt=head_tilt,
-            blocking=blocking,
-        )
+    #     self.manip.goto_joint_positions(
+    #         joint_positions=q,
+    #         gripper=gripper,
+    #         head_pan=head_pan,
+    #         head_tilt=head_tilt,
+    #         blocking=blocking,
+    #     )
 
-        if blocking:
-            t0 = time.time()
-            while (time.time() - t0) < timeout:
-                self.manip.goto_joint_positions(
-                    joint_positions=q,
-                    gripper=gripper,
-                    head_pan=head_pan,
-                    head_tilt=head_tilt,
-                    blocking=blocking,
-                )
-                joint_pos_final = self.manip.get_joint_positions()
-                joint_err = np.array(joint_pos_final) - np.array(q)
-                arm_success = np.allclose(joint_err[:3], 0.0, atol=JOINT_POS_TOL)
-                wrist_success = np.allclose(joint_err[3:], 0.0, atol=JOINT_ANG_TOL)
-                time.sleep(0.1)
-                if arm_success and wrist_success:
-                    break
+    #     if blocking:
+    #         t0 = time.time()
+    #         while (time.time() - t0) < timeout:
+    #             self.manip.goto_joint_positions(
+    #                 joint_positions=q,
+    #                 gripper=gripper,
+    #                 head_pan=head_pan,
+    #                 head_tilt=head_tilt,
+    #                 blocking=blocking,
+    #             )
+    #             joint_pos_final = self.manip.get_joint_positions()
+    #             joint_err = np.array(joint_pos_final) - np.array(q)
+    #             arm_success = np.allclose(joint_err[:3], 0.0, atol=JOINT_POS_TOL)
+    #             wrist_success = np.allclose(joint_err[3:], 0.0, atol=JOINT_ANG_TOL)
+    #             time.sleep(0.1)
+    #             if arm_success and wrist_success:
+    #                 break
 
 
 if __name__ == "__main__":

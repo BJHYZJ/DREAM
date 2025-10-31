@@ -777,7 +777,7 @@ class DreamManipulationClient(AbstractControlModule):
     def close_gripper(self, wait=True):
         self._arm.close_gripper(wait=wait)
 
-    def move_gripper(self, target: int = 830, wait: bool = True):
+    def set_gripper(self, target: int = 830, wait: bool = True):
         self._arm.set_gripper(target, wait=wait)
 
         # joint_goals = {self._ros_client.GRIPPER_FINGER: target}
