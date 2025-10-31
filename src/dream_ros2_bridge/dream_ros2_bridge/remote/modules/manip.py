@@ -280,6 +280,7 @@ class DreamManipulationClient(AbstractControlModule):
 
     # Interface methods
 
+    @enforce_enabled
     def get_ee_pose(self, world_frame=False, matrix=False):
         """Get current end-effector pose from xarm controller"""
         # Get current pose from xarm controller [x, y, z, roll, pitch, yaw]
@@ -356,7 +357,8 @@ class DreamManipulationClient(AbstractControlModule):
     #         q[DreamIdx.JOINT6],
     #         q[DreamIdx.GRIPPER],
     #     ]
-
+    
+    @enforce_enabled
     def get_gripper_position(self) -> float:
         """get current gripper position as a float"""
         gripper_state = self._arm.get_gripper_state()
@@ -381,20 +383,17 @@ class DreamManipulationClient(AbstractControlModule):
     #     return True
 
 
-    #enforce_enabled
+    @enforce_enabled
     def move_to_positions(self, positions: List[np.ndarray], wait: bool = True):
         """Move robot to specified positions"""
         self._arm.move_to_pose(positions, wait=wait)
         return True
 
     @enforce_enabled
-    def head_to(self, angle: np.ndarray, is_radian: bool = False, wait: bool = True):
-        """Move robot to specified head position"""
+    def set_servo_angle(self, angle: np.ndarray, is_radian: bool = False, wait: bool = True):
         self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
 
-    def set_servo_angle(self, angle, is_radian=False, wait=True):
-        self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
-
+    @enforce_enabled
     def get_servo_angle(self, is_radian=False, is_real=False):
         return self._arm.get_servo_angle(is_radian=is_radian, is_real=is_real)
 
