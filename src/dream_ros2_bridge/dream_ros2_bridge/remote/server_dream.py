@@ -271,14 +271,14 @@ class ZmqServer(BaseZmqServer):
                 action["move_to_positions"],
                 wait=_is_wait,
             )
-        elif "head_to" in action:
+        elif "servo_angle" in action:
             # This will send head without anything else
             if self.verbose or True:
-                print(f"Moving head to {action['head_to']}")
+                print(f"Moving head to {action['servo_angle']}")
             if not self.client.in_manipulation_mode():
                 self.client.switch_to_manipulation_mode()
-            self.client.head_to(
-                angle=action["head_to"],
+            self.client.set_servo_angle(
+                angle=action["servo_angle"],
                 wait=action['wait']
             )
         elif "gripper" in action and "joint" not in action:
