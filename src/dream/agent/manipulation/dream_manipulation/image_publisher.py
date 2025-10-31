@@ -102,7 +102,8 @@ class ImagePublisher:
         print(self.socket.recv_string())
 
         ## Waiting for the base and camera transforms to center the object vertically and horizontally
-        self.socket.send_string("Waiting for gripper pose/ base and head trans from workstation")
+        # self.socket.send_string("Waiting for gripper pose/ base and head trans from workstation")
+        self.socket.send_string("Waiting for gripper pose/ and head trans from workstation")
         translation = recv_array(self.socket)
         self.socket.send_string("translation received by robot")
         rotation = recv_array(self.socket)

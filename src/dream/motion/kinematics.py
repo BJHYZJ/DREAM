@@ -454,18 +454,16 @@ class RangerxARMKinematics:
     def compute_look_at_target_tilt(
         self,
         arm_angles_deg: np.ndarray,
-        target_in_map_point: np.ndarray,
-        camera_in_map_pose: np.ndarray,
-        arm_base_in_map_pose: np.ndarray,
+        target_in_camera: np.ndarray,
         camera_in_arm_base_pose: np.ndarray,
         ee_in_arm_base_pose: np.ndarray,
         camera_K: np.ndarray,
     ) -> np.ndarray:
-        target_in_map = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
-        target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map)[:3]
-        TARTER_IN_ARM_BASE = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map)
+        assert target_in_camera.shape == (3,), "target_in_camera must be a vector of size 3"
+        target_in_camera_homo = np.array([target_in_camera[0], target_in_camera[1], target_in_camera[2], 1.0], dtype=float)
+        TARTER_IN_ARM_BASE = (camera_in_arm_base_pose @ target_in_camera_homo)
         CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
-
+        
         best_v_err = self.cal_v_err(target_in_camera, camera_K)
         best_tilt = None
         arm_angles_deg_new = arm_angles_deg.copy()
@@ -478,7 +476,7 @@ class RangerxARMKinematics:
             camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
             target_in_camera_new = (np.linalg.inv(camera_in_arm_base_pose_new) @ TARTER_IN_ARM_BASE)[:3]
             v_err_new = self.cal_v_err(target_in_camera_new, camera_K)
-            print(tilt, v_err_new)
+            # print(tilt, v_err_new)
             if v_err_new < best_v_err:
                 best_v_err = v_err_new
                 best_tilt = float(tilt)
@@ -493,16 +491,14 @@ class RangerxARMKinematics:
     def compute_look_at_target_pan(
         self,
         arm_angles_deg: np.ndarray,
-        target_in_map_point: np.ndarray,
-        camera_in_map_pose: np.ndarray,
-        arm_base_in_map_pose: np.ndarray,
+        target_in_camera: np.ndarray,
         camera_in_arm_base_pose: np.ndarray,
         ee_in_arm_base_pose: np.ndarray,
         camera_K: np.ndarray,
     ) -> np.ndarray:
-        target_in_map = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
-        target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map)[:3]
-        TARTER_IN_ARM_BASE = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map)
+        assert target_in_camera.shape == (3,), "target_in_camera must be a vector of size 3"
+        target_in_camera_homo = np.array([target_in_camera[0], target_in_camera[1], target_in_camera[2], 1.0], dtype=float)
+        TARTER_IN_ARM_BASE = (camera_in_arm_base_pose @ target_in_camera_homo)
         CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
 
         best_u_err = self.cal_u_err(target_in_camera, camera_K)
@@ -517,7 +513,7 @@ class RangerxARMKinematics:
             camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
             target_in_camera_new = (np.linalg.inv(camera_in_arm_base_pose_new) @ TARTER_IN_ARM_BASE)[:3]
             u_err_new = self.cal_u_err(target_in_camera_new, camera_K)
-            print(pan, u_err_new)
+            # print(pan, u_err_new)
             if u_err_new < best_u_err:
                 best_u_err = u_err_new
                 best_pan = float(pan)
@@ -527,6 +523,85 @@ class RangerxARMKinematics:
             arm_angles_deg_new = arm_angles_deg
 
         return arm_angles_deg_new
+
+
+
+    # def compute_look_at_target_tilt(
+    #     self,
+    #     arm_angles_deg: np.ndarray,
+    #     target_in_map_point: np.ndarray,
+    #     camera_in_map_pose: np.ndarray,
+    #     arm_base_in_map_pose: np.ndarray,
+    #     camera_in_arm_base_pose: np.ndarray,
+    #     ee_in_arm_base_pose: np.ndarray,
+    #     camera_K: np.ndarray,
+    # ) -> np.ndarray:
+    #     target_in_map = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
+    #     target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map)[:3]
+    #     TARTER_IN_ARM_BASE = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map)
+    #     CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+
+    #     best_v_err = self.cal_v_err(target_in_camera, camera_K)
+    #     best_tilt = None
+    #     arm_angles_deg_new = arm_angles_deg.copy()
+    #     for tilt in self.TILT_RANGE:
+    #         arm_angles_deg_new = arm_angles_deg.copy()
+    #         arm_angles_deg_new[4] = float(tilt)
+    #         ee_in_arm_base_pose_new = self.compute_arm_fk(
+    #             np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
+    #         )
+    #         camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
+    #         target_in_camera_new = (np.linalg.inv(camera_in_arm_base_pose_new) @ TARTER_IN_ARM_BASE)[:3]
+    #         v_err_new = self.cal_v_err(target_in_camera_new, camera_K)
+    #         # print(tilt, v_err_new)
+    #         if v_err_new < best_v_err:
+    #             best_v_err = v_err_new
+    #             best_tilt = float(tilt)
+    #     if best_tilt is not None:
+    #         arm_angles_deg_new[4] = best_tilt
+    #     else:
+    #         arm_angles_deg_new = arm_angles_deg
+
+    #     return arm_angles_deg_new
+
+
+    # def compute_look_at_target_pan(
+    #     self,
+    #     arm_angles_deg: np.ndarray,
+    #     target_in_map_point: np.ndarray,
+    #     camera_in_map_pose: np.ndarray,
+    #     arm_base_in_map_pose: np.ndarray,
+    #     camera_in_arm_base_pose: np.ndarray,
+    #     ee_in_arm_base_pose: np.ndarray,
+    #     camera_K: np.ndarray,
+    # ) -> np.ndarray:
+    #     target_in_map = np.array([target_in_map_point[0], target_in_map_point[1], target_in_map_point[2], 1.0], dtype=float)
+    #     target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map)[:3]
+    #     TARTER_IN_ARM_BASE = (np.linalg.inv(arm_base_in_map_pose) @ target_in_map)
+    #     CAMERA_IN_EE = np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+
+    #     best_u_err = self.cal_u_err(target_in_camera, camera_K)
+    #     best_pan = None
+    #     arm_angles_deg_new = arm_angles_deg.copy()
+    #     for pan in self.PAN_RANGE:
+    #         arm_angles_deg_new = arm_angles_deg.copy()
+    #         arm_angles_deg_new[0] = float(pan)
+    #         ee_in_arm_base_pose_new = self.compute_arm_fk(
+    #             np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
+    #         )
+    #         camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
+    #         target_in_camera_new = (np.linalg.inv(camera_in_arm_base_pose_new) @ TARTER_IN_ARM_BASE)[:3]
+    #         u_err_new = self.cal_u_err(target_in_camera_new, camera_K)
+    #         # print(pan, u_err_new)
+    #         if u_err_new < best_u_err:
+    #             best_u_err = u_err_new
+    #             best_pan = float(pan)
+    #     if best_pan is not None:
+    #         arm_angles_deg_new[0] = best_pan
+    #     else:
+    #         arm_angles_deg_new = arm_angles_deg
+
+    #     return arm_angles_deg_new
 
 
     def compute_look_at_target_tilt_angle(

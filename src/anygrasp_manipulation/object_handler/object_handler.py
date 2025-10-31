@@ -190,33 +190,52 @@ class ObjectHandler:
                     )
                     retry = False
 
+    # def center_robot(self, bbox: Bbox):
+    #     """
+    #     Center the robots base and camera to face the center of the Object Bounding box
+    #     """
+
+    #     bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
+
+    #     bbox_center = [
+    #         int((bbox_x_min + bbox_x_max) / 2),
+    #         int((bbox_y_min + bbox_y_max) / 2),
+    #     ]
+    #     depth_obj = self.cam.depths[bbox_center[1], bbox_center[0]]
+    #     print(
+    #         f"{self.query} height and depth: {((bbox_y_max - bbox_y_min) * depth_obj)/self.cam.fy}, {depth_obj}"
+    #     )
+
+    #     # base movement
+    #     dis = (bbox_center[0] - self.cam.cx) / self.cam.fx * depth_obj
+    #     print(f"Base displacement {dis}")
+
+    #     # camera tilt
+    #     tilt = math.atan((bbox_center[1] - self.cam.cy) / self.cam.fy)
+    #     print(f"Camera Tilt {tilt}")
+
+    #     if self.cfgs.open_communication:
+    #         data_msg = "Now you received the base and head trans, good luck."
+    #         self.socket.send_data([[-dis], [-tilt], [0, 0, 1], data_msg])
+
     def center_robot(self, bbox: Bbox):
         """
         Center the robots base and camera to face the center of the Object Bounding box
         """
-
         bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
-
-        bbox_center = [
-            int((bbox_x_min + bbox_x_max) / 2),
-            int((bbox_y_min + bbox_y_max) / 2),
-        ]
-        depth_obj = self.cam.depths[bbox_center[1], bbox_center[0]]
-        print(
-            f"{self.query} height and depth: {((bbox_y_max - bbox_y_min) * depth_obj)/self.cam.fy}, {depth_obj}"
-        )
-
-        # base movement
-        dis = (bbox_center[0] - self.cam.cx) / self.cam.fx * depth_obj
-        print(f"Base displacement {dis}")
-
-        # camera tilt
-        tilt = math.atan((bbox_center[1] - self.cam.cy) / self.cam.fy)
-        print(f"Camera Tilt {tilt}")
+        u = int((bbox_x_min + bbox_x_max) / 2)
+        v = int((bbox_y_min + bbox_y_max) / 2)
+        Z = self.cam.depths[v, u].item()
+        X = (u - self.cam.cx) / self.cam.fx * Z
+        Y = (v - self.cam.cy) / self.cam.fy * Z
+        p_cam = [X, Y, Z]
+        print(f"Object center in camera frame: {p_cam}")
 
         if self.cfgs.open_communication:
-            data_msg = "Now you received the base and head trans, good luck."
-            self.socket.send_data([[-dis], [-tilt], [0, 0, 1], data_msg])
+            data_msg = f"Object center in camera frame: {p_cam} is received."
+            # self.socket.send_data([p_cam.tolist(), [0, 0, 1], data_msg])
+            self.socket.send_data([p_cam, [], [0, 0, 1], data_msg])
+
 
     def place(self, points: np.ndarray, seg_mask: np.ndarray) -> bool:
         points_x, points_y, points_z = points[:, :, 0], points[:, :, 1], points[:, :, 2]
@@ -335,13 +354,20 @@ class ObjectHandler:
             & (points_z < self.cfgs.max_depth)
             & ~np.isnan(points_z)
         )
-        points = np.stack([points_x, -points_y, points_z], axis=-1)
+        # points = np.stack([points_x, -points_y, points_z], axis=-1)
         points = points[mask].astype(np.float32)
         colors_m = self.cam.colors[mask].astype(np.float32)
 
         if self.cfgs.sampling_rate < 1:
             points, indices = sample_points(points, self.cfgs.sampling_rate)
             colors_m = colors_m[indices]
+
+        # if self.cfgs.debug:
+        scene_cloud = o3d.geometry.PointCloud()
+        scene_cloud.points = o3d.utility.Vector3dVector(points)
+        scene_cloud.colors = o3d.utility.Vector3dVector(colors_m)
+        # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+        # o3d.visualization.draw_geometries([scene_cloud, coordinate])
 
         # Grasp Prediction
         # gg is a list of grasps of type graspgroup in graspnetAPI
@@ -352,7 +378,7 @@ class ObjectHandler:
         zmin = points[:, 2].min()
         zmax = points[:, 2].max()
         lims = [xmin, xmax, ymin, ymax, zmin, zmax]
-        gg, cloud = self.grasping_model.get_grasp(points, colors_m, lims)
+        gg, _ = self.grasping_model.get_grasp(points, colors_m, lims=lims, apply_object_mask=True, dense_grasp=False, collision_detection=True)
 
         if len(gg) == 0:
             print("No Grasp detected after collision detection!")
@@ -366,7 +392,7 @@ class ObjectHandler:
         W, H = self.cam.image.size
         # ref_vec = np.array([0, math.cos(self.cam.head_tilt), -math.sin(self.cam.head_tilt)])
 
-        min_score, max_score = 1, -10
+        # min_score, max_score = 1, -10
         image = copy.deepcopy(self.cam.image)
         img_drw = draw_rectangle(image, bbox)
         for g in gg:
@@ -383,26 +409,26 @@ class ObjectHandler:
                 ix = W - 1
             if iy >= H:
                 iy = H - 1
-            rotation_matrix = g.rotation_matrix
-            cur_vec = rotation_matrix[:, 0]
-            angle = math.acos(np.dot(ref_vec, cur_vec) / (np.linalg.norm(cur_vec)))
-            if not crop_flag:
-                score = g.score - 0.5 * angle ** 4
-            else:
-                score = g.score
+            # rotation_matrix = g.rotation_matrix
+            # cur_vec = rotation_matrix[:, 0]
+            # angle = math.acos(np.dot(ref_vec, cur_vec) / (np.linalg.norm(cur_vec)))
+            # if not crop_flag:
+            #     score = g.score - 0.5 * angle ** 4
+            # else:
+            #     score = g.score
 
             if not crop_flag:
                 if seg_mask[iy, ix]:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="green")
-                    if g.score >= 0.095:
-                        g.score = score
-                    min_score = min(min_score, g.score)
-                    max_score = max(max_score, g.score)
+                    # if g.score >= 0.095:
+                    #     g.score = score
+                    # min_score = min(min_score, g.score)
+                    # max_score = max(max_score, g.score)
                     filter_gg.add(g)
                 else:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="red")
             else:
-                g.score = score
+                # g.score = score
                 filter_gg.add(g)
 
         if len(filter_gg) == 0:
@@ -419,8 +445,8 @@ class ObjectHandler:
         filter_gg = filter_gg.nms().sort_by_score()
 
         if self.cfgs.debug:
-            trans_mat = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-            cloud.transform(trans_mat)
+            trans_mat = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+            scene_cloud.transform(trans_mat)
             grippers = gg.to_open3d_geometry_list()
             filter_grippers = filter_gg.to_open3d_geometry_list()
             for gripper in grippers:
@@ -429,14 +455,14 @@ class ObjectHandler:
                 gripper.transform(trans_mat)
 
             visualize_cloud_geometries(
-                cloud,
+                scene_cloud,
                 grippers,
                 visualize=not self.cfgs.headless,
                 save_file=f"{self.save_dir}/poses.jpg",
                 # rerun_name="all_anygrasp_estimated_poses",
             )
             visualize_cloud_geometries(
-                cloud,
+                scene_cloud,
                 [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
                 visualize=not self.cfgs.headless,
                 save_file=f"{self.save_dir}/best_pose.jpg",

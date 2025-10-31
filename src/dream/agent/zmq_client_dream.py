@@ -241,18 +241,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def parameters(self) -> Parameters:
         return self._parameters
 
-    # def get_ee_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
-    #     """Get the RGB and depth images from the end effector camera.
-
-    #     Returns:
-    #         Tuple[np.ndarray, np.ndarray]: The RGB and depth images
-    #     """
-    #     with self._servo_lock:
-    #         if self._servo is None:
-    #             return None, None
-    #         rgb = self._servo_obs["ee_rgb"]
-    #         depth = self._servo_obs["ee_depth"]
-    #     return rgb, depth
 
     def get_head_rgbd(self) -> Tuple[np.ndarray, np.ndarray]:
         """Get the RGB and depth images from camera.
@@ -293,9 +281,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
             joint_positions = self._state.joint_positions
         return joint_positions
 
-    def extract_joints_positions(self, timeout: float = 5.0) -> np.ndarray:
-        joint_positions = self.get_joint_positions(timeout=timeout)
-        return np.array(self._extract_joint_pos(joint_positions))
+    def extract_joint_state(self, timeout: float = 5.0) -> np.ndarray:
+        joint_states, _, _ = self.get_joint_state(timeout=timeout)
+        return np.array(self._extract_joint_state(joint_states))
 
     def get_joint_velocities(self, timeout: float = 5.0) -> np.ndarray:
         """Get the current joint velocities"""
@@ -329,36 +317,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
             joint_efforts = self._state.joint_efforts
         return joint_efforts
 
-    # def get_base_pose(self, timeout: float = 5.0) -> np.ndarray:
-    #     """Get the current pose of the base.
-
-    #     Args:
-    #         timeout: How long to wait for the observation
-
-    #     Returns:
-    #         np.ndarray: The base pose as [x, y, theta]
-    #     """
-    #     t0 = timeit.default_timer()
-    #     if self.update_base_pose_from_full_obs:
-    #         with self._obs_lock:
-    #             print("[Getting base pose from full obs]")
-    #             while self._obs is None:
-    #                 time.sleep(0.01)
-    #                 if timeit.default_timer() - t0 > timeout:
-    #                     logger.error("Timeout waiting for observation")
-    #                     return None
-    #             gps = self._obs["gps"]
-    #             compass = self._obs["compass"]
-    #             xyt = np.concatenate([gps, compass], axis=-1)
-    #     else:
-    #         with self._state_lock:
-    #             while self._state is None:
-    #                 time.sleep(1e-4)
-    #                 if timeit.default_timer() - t0 > timeout:
-    #                     logger.error("Timeout waiting for state message")
-    #                     return None
-    #             xyt = self._state.base_pose
-    #     return xyt
 
     def get_base_in_map_xyt(self, timeout: float = 5.0) -> np.ndarray:
         """Get the current pose of the base.
@@ -394,16 +352,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         return xyt
 
 
-    # def get_pan_tilt(self):
-    #     """Get the current pan and tilt of the head.
-
-    #     Returns:
-    #         Tuple[float, float]: The pan and tilt angles
-    #     """
-
-    #     joint_states, _, _ = self.get_joint_state()
-    #     return joint_positions[DreamIdx.HEAD_PAN], joint_positions[DreamIdx.HEAD_TILT]
-
     def get_gripper_position(self):
         """Get the current position of the gripper.
 
@@ -413,186 +361,68 @@ class DreamRobotZmqClient(AbstractRobotClient):
         joint_state = self.get_joint_positions()
         return joint_state[DreamIdx.GRIPPER]
 
-    # def get_ee_pose(self, matrix=False, link_name=None, q=None):
-    #     """Get the current pose of the end effector.
 
-    #     Args:
-    #         matrix: Whether to return the pose as a matrix
-    #         link_name: The name of the link to get the pose of
-    #         q: The joint positions to use
 
-    #     Returns:
-    #         Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]: The position and orientation of the end effector
-    #     """
-    #     if q is None:
-    #         q = self.get_joint_positions()
-    #     pos, quat = self._robot_model.manip_fk(q, node=link_name)
-
-    #     if matrix:
-    #         pose = posquat2sophus(pos, quat)
-    #         return pose.matrix()
-    #     else:
-    #         return pos, quat
-
-    # def get_frame_pose(self, q: Union[np.ndarray, dict], node_a: str, node_b: str) -> np.ndarray:
-    #     """Get the pose of frame b relative to frame a.
-
-    #     Args:
-    #         q: The joint positions
-    #         node_a: The name of the first frame
-    #         node_b: The name of the second frame
-
-    #     Returns:
-    #         np.ndarray: The pose of frame b relative to frame a as a 4x4 matrix
-    #     """
-    #     # TODO: get this working properly and update the documentation
-    #     return self._robot_model.manip_ik_solver.get_frame_pose(q, node_a, node_b)
-
-    # def solve_ik(
-    #     self,
-    #     pos: List[float],
-    #     quat: Optional[List[float]] = None,
-    #     initial_cfg: np.ndarray = None,
-    #     debug: bool = False,
-    #     custom_ee_frame: Optional[str] = None,
-    # ) -> Optional[np.ndarray]:
-    #     """Solve inverse kinematics appropriately (or at least try to) and get the joint position
-    #     that we will be moving to.
-
-    #     Note: When relative==True, the delta orientation is still defined in the world frame
-
-    #     Returns None if no solution is found, else returns an executable solution
-    #     """
-
-    #     pos_ee_curr, quat_ee_curr = self.get_ee_pose()
-    #     if quat is None:
-    #         quat = quat_ee_curr
-
-    #     # Compute IK goal: pose relative to base
-    #     pose_desired = posquat2sophus(np.array(pos), np.array(quat))
-
-    #     pose_base2ee_desired = pose_desired
-
-    #     pos_ik_goal, quat_ik_goal = sophus2posquat(pose_base2ee_desired)
-
-    #     # Execute joint command
-    #     if debug:
-    #         print("=== EE goto command ===")
-    #         print(f"Initial EE pose: pos={pos_ee_curr}; quat={quat_ee_curr}")
-    #         print(f"Input EE pose: pos={np.array(pos)}; quat={np.array(quat)}")
-    #         print(f"Desired EE pose: pos={pos_ik_goal}; quat={quat_ik_goal}")
-
-    #     # Perform IK
-    #     full_body_cfg, ik_success, ik_debug_info = self._robot_model.manip_ik(
-    #         (pos_ik_goal, quat_ik_goal),
-    #         q0=initial_cfg,
-    #         custom_ee_frame=custom_ee_frame,
-    #     )
-
-    #     # Expected to return None if we did not get a solution
-    #     if not ik_success or full_body_cfg is None:
-    #         return None
-    #     # Return a valid solution to the IK problem here
-    #     return full_body_cfg
-
-    def _extract_joint_pos(self, positions):
+    def _extract_joint_state(self, joint_states):
         """Helper to convert from the general-purpose config including full robot state, into the command space used in just the manip controller. Extracts just lift/arm/wrist information."""
-        return [positions[DreamIdx.BASE_X]] + positions[constants.POSITION_JOINTS_INDEX] + positions[DreamIdx.GRIPPER],
+        return joint_states[constants.ARM_INDEX]
 
     def get_pose_graph(self) -> np.ndarray:
         """Get the robot's SLAM pose graph"""
         return self._pose_graph
 
-    def robot_to(self, joint_angles: np.ndarray, blocking: bool = False, timeout: float = 10.0):
-        """Move the robot to a particular joint configuration."""
-        next_action = {"joint": joint_angles, "wait": blocking}
-        self.send_action(next_action=next_action, timeout=timeout)
-
-    def head_to(
-        self,
-        angle: np.ndarray,
-        blocking: bool = False,
-        timeout: float = 10.0,
-        reliable: bool = True,
-    ):
-        """Move the head to a particular configuration. servo angle control
-
-        Args:
-            angle: The angle of the xarm6
-            blocking: Whether to block until the motion is complete
-            timeout: How long to wait for the motion to complete
-            reliable: Whether to resend the action if it is not received
-        """
-        # if head_pan < self._head_pan_min or head_pan > self._head_pan_max:
-        #     logger.warning(
-        #         f"Head pan is restricted to be between {self._head_pan_min} and {self._head_pan_max} for safety: was {head_pan}"
-        #     )
-        # if head_tilt > self._head_tilt_max or head_tilt < self._head_tilt_min:
-        #     logger.warning(
-        #         f"Head tilt is restricted to be between {self._head_tilt_min} and {self._head_tilt_max} for safety: was{head_tilt}"
-        #     )
-        # head_pan = np.clip(head_pan, self._head_pan_min, self._head_pan_max)
-        # head_tilt = np.clip(head_tilt, -np.pi / 2, 0)
-        next_action = {"head_to": angle, "wait": blocking}
-        sent = self.send_action(next_action, timeout=timeout, reliable=reliable)
-
-        if blocking:
-            # step = sent["step"]
-            # whole_body_q = np.zeros(self._robot_model.dof, dtype=np.float32)
-            # whole_body_q[HelloStretchIdx.HEAD_PAN] = float(head_pan)
-            # whole_body_q[HelloStretchIdx.HEAD_TILT] = float(head_tilt)
-
-            # time.sleep(0.1)
-            # self._wait_for_head(whole_body_q, block_id=step)
-            # time.sleep(0.1)
-
-            # time.sleep(0.25)
-            # self._wait_for_head(whole_body_q, block_id=step)
-            # time.sleep(0.25)
-            t0 = timeit.default_timer()
-            steps = 0
-            while not self._finish:
-                if steps % 40 == 39:
-                    self.send_action(next_action, timeout=timeout, reliable=True)
-                
-                # Get current joint state
-                joint_states, _, _ = self.get_joint_state()
-                if joint_states is None:
-                    time.sleep(0.01)
-                    steps += 1
-                    continue
-                
-                # Compute error for all 6 joints
-                error = np.linalg.norm(joint_states[3:9] - angle)
-                
-                if error < 0.01:  # 1 degree threshold
-                    # print(f"[Camera Aim] ✅ Reached target")
-                    return True
-                
-                steps += 1
-                time.sleep(0.01)
-                
-                t1 = timeit.default_timer()
-                if t1 - t0 > timeout:
-                    logger.error("Timeout waiting for camera to aim at target")
-                    return False
-            
-            return False
-
 
     def look_front(self, blocking: bool = True, timeout: float = 10.0):
         """Let robot look to its front."""
-        self.head_to(
+        self.arm_to(
             angle=constants.look_front,
             blocking=blocking,
             timeout=timeout,
             reliable=True,
         )
 
-    def look_at_target(self, target_point: np.array, blocking: bool = True, timeout: float = 10.0):
+    # def get_camera_in_ee(self, timeout: float = 5.0) -> np.ndarray:
+    #     t0 = timeit.default_timer()
+    #     with self._state_lock:
+    #         while self._state is None:
+    #             time.sleep(1e-4)
+    #             if timeit.default_timer() - t0 > timeout:
+    #                 logger.error("Timeout waiting for state message")
+    #                 return None
+    #         camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
+    #         ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
+    #     return np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
+
+
+    def get_camera_in_arm_base(self, timeout: float = 5.0) -> np.ndarray:
+        t0 = timeit.default_timer()
+        with self._state_lock:
+            while self._state is None:
+                time.sleep(1e-4)
+                if timeit.default_timer() - t0 > timeout:
+                    logger.error("Timeout waiting for state message")
+                    return None
+            camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
+        return camera_in_arm_base_pose
+
+
+    def look_at_target(self, target_point: np.array, is_in_map: bool = True, blocking: bool = True, timeout: float = 10.0):
+        self.look_at_target_tilt(target_point, is_in_map=is_in_map, blocking=blocking, timeout=timeout)
+        self.look_at_target_pan(target_point, is_in_map=is_in_map, blocking=blocking, timeout=timeout)
+        time.sleep(0.5)
+
+
+    def look_at_target_tilt(
+        self, 
+        target_point: np.array, 
+        is_in_map: bool = True, 
+        blocking: bool = True, 
+        timeout: float = 10.0
+    ):
         """Let robot look at the target point."""
         if not self.in_manipulation_mode():
             raise ValueError("Robot must be in manipulation mode to look at target point")
+
         if isinstance(target_point, list):
             target_point = np.array(target_point)
         assert len(target_point) == 3, "target point must be a vector of size 3"
@@ -604,161 +434,88 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     logger.error("Timeout waiting for state message")
                     return None
             joint_states = self._state.joint_states
-            arm_base_in_map_pose = self._state.arm_base_in_map_pose
+            # arm_base_in_map_pose = self._state.arm_base_in_map_pose
             camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
             camera_in_map_pose = self._state.camera_in_map_pose
             ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
 
         camera_K = self.get_camera_K()
 
+        if is_in_map:
+            target_in_map_homo = np.array([target_point[0], target_point[1], target_point[2], 1.0], dtype=float)
+            target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map_homo)[:3]
+        else:
+            target_in_camera = target_point
+
         arm_angles_deg = self._robot_model.compute_look_at_target_tilt(
             arm_angles_deg=joint_states[3:9],
-            target_in_map_point=target_point,
-            camera_in_map_pose=camera_in_map_pose,
-            arm_base_in_map_pose=arm_base_in_map_pose,
+            target_in_camera=target_in_camera,
             camera_in_arm_base_pose=camera_in_arm_base_pose,
             ee_in_arm_base_pose=ee_in_arm_base_pose,
             camera_K=camera_K,
         )
-
-        self.head_to(arm_angles_deg, blocking=blocking, timeout=timeout)
-        # self.move_to_positions(goal_positions=joint_positions_goal, blocking=blocking, timeout=timeout)
+        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout)
 
 
-    def move_to_positions(self, goal_positions: np.ndarray, blocking: bool = True, timeout: float = 10.0, reliable: bool = True):
-        """Move the arm to a particular joint configuration."""
+    def look_at_target_pan(
+        self, 
+        target_point: np.array, 
+        is_in_map: bool = True, 
+        blocking: bool = True, 
+        timeout: float = 10.0
+    ):
+        """Let robot look at the target point."""
         if not self.in_manipulation_mode():
-            raise ValueError("Robot must be in manipulation mode to move to positions")
-        if isinstance(goal_positions, list):
-            goal_positions = np.array(goal_positions)
-        assert len(goal_positions) == 6, "goal pose must be a vector of size 6"
-        next_action = {"move_to_positions": goal_positions, "wait": blocking}
-        self.send_action(next_action, timeout=timeout, reliable=reliable)
-        # if blocking:
-        #     t0 = timeit.default_timer()
-        #     while not self._finish:
-        #         joint_positions = self.get_joint_positions()
-        #         if joint_positions is None:
-        #             time.sleep(0.01)
-        #             continue
-        #         # check if the joint positions are close to the goal positions
-        #         if np.linalg.norm(joint_positions - goal_positions) < 1:
-        #             return True
-        #         time.sleep(0.01)
-        #         if timeit.default_timer() - t0 > timeout:
-        #             logger.error("Timeout waiting for arm to move to positions")
-        #             return False
-        #     return False
-        # return True
+            raise ValueError("Robot must be in manipulation mode to look at target point")
 
-    def arm_to(
-        self,
-        base_x: float = None,
-        joint_angles: Optional[np.ndarray] = None,
-        gripper: float = None,
-        blocking: bool = True,
-        timeout: float = 10.0,
-        verbose: bool = False,
-        min_time: float = 2.5,
-        reliable: bool = True,
-    ) -> bool:
-        """Move the arm to a particular joint configuration.
-
-        Args:
-            joint_angles: 7 or Nx7 array of the joint angles to move to
-            blocking: Whether to block until the motion is complete
-            timeout: How long to wait for the motion to complete
-            verbose: Whether to print out debug information
-            min_time: The minimum time to wait before considering the arm to be done
-            reliable: Whether to resend the action if it is not received
-
-        Returns:
-            bool: Whether the motion was successful
-        """
-        if not self.in_manipulation_mode():
-            raise ValueError("Robot must be in manipulation mode to move the arm")
-        if isinstance(joint_angles, list):
-            joint_angles = np.array(joint_angles)
-
-        assert (
-            len(joint_angles) == 6
-        ), "joint angles must be 6 dimensional: joint1, joint2, joint3, joint4, joint5, joint6"
-
-        # Create and send the action dictionary
-        _next_action = {"joint": joint_angles}
-        if gripper is not None:
-            _next_action["gripper"] = gripper
+        if isinstance(target_point, list):
+            target_point = np.array(target_point)
+        assert len(target_point) == 3, "target point must be a vector of size 3"
+        t0 = timeit.default_timer()
+        with self._state_lock:
+            while self._state is None:
+                time.sleep(1e-4)
+                if timeit.default_timer() - t0 > timeout:
+                    logger.error("Timeout waiting for state message")
+                    return None
+            joint_states = self._state.joint_states
+            # arm_base_in_map_pose = self._state.arm_base_in_map_pose
+            camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
+            camera_in_map_pose = self._state.camera_in_map_pose
+            ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
         
-        
-        _next_action["wait"] = blocking
-        self.send_action(_next_action, reliable=reliable)
+        camera_K = self.get_camera_K()
 
-        # Handle blocking
-        steps = 0
-        if blocking:
-            t0 = timeit.default_timer()
-            while not self._finish:
+        if is_in_map:
+            target_in_map_homo = np.array([target_point[0], target_point[1], target_point[2], 1.0], dtype=float)
+            target_in_camera = (np.linalg.inv(camera_in_map_pose) @ target_in_map_homo)[:3]
+        else:
+            target_in_camera = target_point
 
-                if steps % 40 == 39:
-                    # Resend the action until we get there
-                    self.send_action(_next_action, reliable=reliable)
-                    if verbose:
-                        print("Resending action", joint_angles)
+        arm_angles_deg = self._robot_model.compute_look_at_target_pan(
+            arm_angles_deg=joint_states[3:9],
+            target_in_camera=target_in_camera,
+            camera_in_arm_base_pose=camera_in_arm_base_pose,
+            ee_in_arm_base_pose=ee_in_arm_base_pose,
+            camera_K=camera_K,
+        )
+        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout)
 
-                joint_states, joint_velocities, _ = self.get_joint_state()
-                if joint_states is None:
-                    time.sleep(0.01)
-                    continue
 
-                joint1_diff = np.abs(joint_states[DreamIdx.joint1] - joint_angles[2])
-                joint2_diff = np.abs(joint_states[DreamIdx.joint2] - joint_angles[1])
-                joint3_diff = np.abs(joint_states[DreamIdx.joint3] - joint_angles[2])
-                joint4_diff = np.abs(joint_states[DreamIdx.joint4] - joint_angles[3])
-                joint5_diff = np.abs(joint_states[DreamIdx.joint5] - joint_angles[4])
-                joint6_diff = np.abs(joint_states[DreamIdx.joint6] - joint_angles[5])
-                gripper_diff = np.abs(joint_states[DreamIdx.GRIPPER] - joint_angles[6])
-                if verbose:
-                    print(
-                        f"{joint1_diff=}, {joint2_diff=}, {joint3_diff=}, {joint4_diff=}, {joint5_diff=}, {joint6_diff=}, {gripper_diff=}"
-                    )
+    def arm_to_position(self, goal_positions: np.ndarray, blocking: bool = True, timeout: float = 10.0, reliable: bool = True):
+        # """Move the arm to a particular joint configuration."""
+        # if not self.in_manipulation_mode():
+        #     raise ValueError("Robot must be in manipulation mode to move to positions")
+        # if isinstance(goal_positions, list):
+        #     goal_positions = np.array(goal_positions)
+        # assert len(goal_positions) == 6, "goal pose must be a vector of size 6"
+        # next_action = {"move_to_positions": goal_positions, "wait": blocking}
+        # self.send_action(next_action, timeout=timeout, reliable=reliable)
+        assert 1 == 1
 
-                t1 = timeit.default_timer()
-                if (
-                    (joint1_diff < self._arm_joint_tolerance)
-                    and (joint2_diff < self._arm_joint_tolerance)
-                    and (joint3_diff < self._arm_joint_tolerance)
-                    and (joint4_diff < self._arm_joint_tolerance)
-                    and (joint5_diff < self._arm_joint_tolerance)
-                    and (joint6_diff < self._arm_joint_tolerance)
-                ):
-                    # sleep to prevent ros2 streaming latency
-                    time.sleep(0.3)
-                    return True
-                elif t1 - t0 > min_time and np.linalg.norm(joint_velocities) < 0.01:
-                    logger.info("Arm not moving, we are done")
-                    logger.info("Arm joint velocities", joint_velocities)
-                    logger.info(t1 - t0)
-                    # Arm stopped moving but did not reach goal
-                    # sleep to prevent ros2 streaming latency
-                    time.sleep(0.3)
-                    return False
-                else:
-                    if verbose:
-                        print(
-                            f"{joint1_diff=}, {joint2_diff=}, {joint3_diff=}, {joint4_diff=}, {joint5_diff=}, {joint6_diff=}, {gripper_diff=}"
-                        )
-                time.sleep(0.01)
 
-                if t1 - t0 > timeout:
-                    logger.error("Timeout waiting for arm to move")
-                    break
-                steps += 1
-            # sleep to prevent ros2 streaming latency
-            time.sleep(0.3)
-            return False
-        return True
 
-    def move_base_to(
+    def base_to(
         self,
         xyt: Union[ContinuousNavigationAction, np.ndarray],
         relative: bool = False,
@@ -819,6 +576,93 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 # resend_action=action,
                 # resend_action=current_action,
             )
+            
+
+    def arm_to(
+        self,
+        angle: np.ndarray,
+        blocking: bool = False,
+        timeout: float = 10.0,
+        reliable: bool = True,
+    ):
+        """Move the arm to a particular configuration. servo angle control
+
+        Args:
+            angle: The angle of the xarm6
+            blocking: Whether to block until the motion is complete
+            timeout: How long to wait for the motion to complete
+            reliable: Whether to resend the action if it is not received
+        """
+        next_action = {"servo_angle": angle, "wait": blocking}
+        self.send_action(next_action, timeout=timeout, reliable=reliable)
+
+        if blocking:
+            t0 = timeit.default_timer()
+            steps = 0
+            while not self._finish:
+                if steps % 40 == 39:
+                    self.send_action(next_action, timeout=timeout, reliable=True)
+                
+                # Get current joint state
+                joint_states, _, _ = self.get_joint_state()
+                if joint_states is None:
+                    time.sleep(0.01)
+                    steps += 1
+                    continue
+                
+                # Compute error for all 6 joints
+                error = np.linalg.norm(joint_states[3:9] - angle)
+                
+                if error < 0.01:  # 1 degree threshold
+                    # print(f"[Camera Aim] ✅ Reached target")
+                    return True
+                
+                steps += 1
+                time.sleep(0.01)
+                
+                t1 = timeit.default_timer()
+                if t1 - t0 > timeout:
+                    logger.error("Timeout waiting for camera to aim at target")
+                    return False
+            
+            return False
+
+
+    def gripper_to(self, position: float, blocking: bool = True, timeout: float = 10.0):
+        """Set the position of the gripper."""
+        next_action = {"gripper": position, "wait": blocking}
+        self.send_action(next_action, timeout=timeout)
+
+        if blocking:
+            t0 = timeit.default_timer()
+            steps = 0
+            while not self._finish:
+                if steps % 40 == 39:
+                    self.send_action(next_action, timeout=timeout, reliable=True)
+                
+                # Get current joint state
+                gripper_position = self.get_gripper_position()
+                if gripper_position is None:
+                    time.sleep(0.01)
+                    steps += 1
+                    continue
+                
+                # Compute error for all 6 joints
+                error = np.linalg.norm(gripper_position - position)
+                
+                if error < 1:  # 1 degree threshold
+                    # print(f"[Camera Aim] ✅ Reached target")
+                    return True
+                
+                steps += 1
+                time.sleep(0.01)
+                
+                t1 = timeit.default_timer()
+                if t1 - t0 > timeout:
+                    logger.error("Timeout waiting for camera to aim at target")
+                    return False
+            
+            return False
 
     def set_velocity(self, v: float, w: float):
         """Move to xyt in global coordinates or relative coordinates.
@@ -1393,10 +1237,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
             assert (
                 len(pt) == 3 or len(pt) == 2
             ), "base trajectory needs to be 2-3 dimensions: x, y, and (optionally) theta"
-            self.move_base_to(pt, relative, blocking=False, reliable=False)
+            self.base_to(pt, relative, blocking=False, reliable=False)
             print("Moving to", pt)
             last_waypoint = i == len(trajectory) - 1
-            self.move_base_to(
+            self.base_to(
                 pt,
                 relative=False,
                 blocking=last_waypoint,

@@ -99,10 +99,11 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
     image_publisher = ImagePublisher(manip_wrapper.robot, socket)
 
     # Centering the object
-    head_tilt_angles = [0, -30, 30]
-    tilt_retries, side_retries = 1, 0
+    head_tilt_angles = [0, -10, 10]
+    tilt_retries = 1
+    side_retries = 0
     retry_flag = True
-    head_tilt = 105
+    # head_tilt = 105
     # head_pan = -1.57
 
     while retry_flag:
@@ -115,12 +116,14 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         translation, rotation, depth, width, retry_flag = image_publisher.publish_image(obj, mode)
 
         if retry_flag == 1:
-            base_trans = translation[0]
-            head_tilt += rotation[0]
+            # base_trans = translation[0]
+            # head_tilt += rotation[0]
+            target_in_cam = np.array(translation).astype(np.float32)
 
-            manip_wrapper.move_to_position(
-                base_trans=base_trans, head_pan=head_pan, head_tilt=head_tilt
-            )
+            manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
+            # manip_wrapper.move_to_position(
+            #     base_trans=base_trans, head_pan=head_pan, head_tilt=head_tilt
+            # )
 
         elif retry_flag != 0 and side_retries == 3:
             print("Tried in all angles but couldn't succeed")
@@ -130,22 +133,22 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
                 return None, None, None, None
 
         elif side_retries == 2 and tilt_retries == 3:
-            manip_wrapper.move_to_position(base_trans=0.1, head_tilt=head_tilt)
+            manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
             side_retries = 3
 
         elif retry_flag == 2:
             if tilt_retries == 3:
                 if side_retries == 0:
-                    manip_wrapper.move_to_position(base_trans=0.1, head_tilt=head_tilt)
+                    manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
                     side_retries = 1
                 else:
-                    manip_wrapper.move_to_position(base_trans=-0.2, head_tilt=head_tilt)
+                    manip_wrapper.move_to_position(base_theta=np.deg2rad(-30))
                     side_retries = 2
                 tilt_retries = 1
             else:
-                print(f"retrying with head tilt : {head_tilt + head_tilt_angles[tilt_retries]}")
+                print(f"retrying with head tilt : {head_tilt_angles[tilt_retries]}")
                 manip_wrapper.move_to_position(
-                    head_pan=head_pan, head_tilt=head_tilt + head_tilt_angles[tilt_retries]
+                    joint5=head_tilt_angles[tilt_retries]
                 )
                 tilt_retries += 1
 
@@ -192,11 +195,10 @@ def move_to_point(robot, point, base_node, gripper_node, move_mode=1, pitch_rota
 
 
 def pickup(
-    robot,
+    manip_wrapper,
     rotation,
     translation,
-    base_node,
-    gripper_node,
+    camera_in_arm_base,
     gripper_height=0.03,
     gripper_depth=0.03,
     gripper_width=1,
@@ -215,53 +217,88 @@ def pickup(
     4. Gradually Move the gripper to the desired position
     """
     # Transforming the final point from Model camera frame to robot camera frame
-    pin_point = np.array([-translation[1], -translation[0], translation[2]])
+    ee_goal_in_camera_translation = translation.copy()
 
     # Rotation from Camera frame to Model frame
-    rotation1_bottom_mat = np.array(
+    rotation_bottom_mat = np.array(
         [
             [0.0000000, -1.0000000, 0.0000000],
             [-1.0000000, 0.0000000, 0.0000000],
-            [0.0000000, 0.0000000, 1.0000000],
+            [0.0000000, 0.0000000, -1.0000000],
         ]
     )
 
-    # Rotation from model frame to pose frame
-    rotation1_mat = np.array(
-        [
-            [rotation[0][0], rotation[0][1], rotation[0][2]],
-            [rotation[1][0], rotation[1][1], rotation[1][2]],
-            [rotation[2][0], rotation[2][1], rotation[2][2]],
-        ]
-    )
+    rotation_top_mat = np.array([
+            [ 0.0000000,  0.0000000,  1.0000000],
+            [ 0.0000000, -1.0000000,  0.0000000],
+            [ 1.0000000,  0.0000000,  0.0000000],
+        ])
+
+    # # Rotation from model frame to pose frame
+    # rotation1_mat = np.array(
+    #     [
+    #         [rotation[0][0], rotation[0][1], rotation[0][2]],
+    #         [rotation[1][0], rotation[1][1], rotation[1][2]],
+    #         [rotation[2][0], rotation[2][1], rotation[2][2]],
+    #     ]
+    # )
 
     # Rotation from camera frame to pose frame
-    pin_rotation = np.dot(rotation1_bottom_mat, rotation1_mat)
+    ee_goal_in_camera_rotation = rotation @ rotation_bottom_mat.T
     # print(f"pin rotation{pin_rotation}")
 
     # Relative rotation and translation of grasping point relative to camera
-    pin_dest_frame = pin.SE3(np.array(pin_rotation), np.array(pin_point))
+    # target_in_camera_frame = pin.SE3(np.array(target_rotation_in_camera), np.array(target_point_in_camera))
+    ee_goal_in_camera_pose = np.eye(4)
+    ee_goal_in_camera_pose[:3, :3] = ee_goal_in_camera_rotation @ rotation_top_mat
+    ee_goal_in_camera_pose[:3, 3] = ee_goal_in_camera_translation
     # print(f"pin dest frame {pin_dest_frame}")
 
     # Camera to gripper frame transformation
-    pin_cam2gripper_transform = robot.get_joint_transform(base_node, gripper_node)
+    # pin_cam2gripper_transform = robot.get_joint_transform(base_node, gripper_node)
 
     # transformed_frame = del_pose * dest_frame
-    pin_transformed_frame = pin_cam2gripper_transform * pin_dest_frame
+    # pin_transformed_frame = pin_cam2gripper_transform * target_in_camera_frame
+    ee_goal_in_arm_base = camera_in_arm_base @ ee_goal_in_camera_pose
     # print(f"pin_transformed frame {pin_transformed_frame}")
 
+    # === Visualization: arm_base and ee_goal_in_arm_base coordinate frames ===
+    import open3d as o3d
+    def _make_frame_from_T(T: np.ndarray, size: float = 0.15) -> o3d.geometry.TriangleMesh:
+        R = T[:3, :3]
+        t = T[:3, 3]
+        frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=size)
+        # Build a 4x4 transform for Open3D
+        T_o3d = np.eye(4)
+        T_o3d[:3, :3] = R
+        T_o3d[:3, 3] = t
+        frame.transform(T_o3d)
+        return frame
+
+    geoms = []
+    # arm_base at origin (identity)
+    arm_base_T = np.eye(4)
+    geoms.append(_make_frame_from_T(arm_base_T, size=0.18))
+    # ee goal frame in arm_base
+    geoms.append(_make_frame_from_T(ee_goal_in_arm_base, size=0.15))
+    o3d.visualization.draw_geometries(geoms, window_name="arm_base (big) and ee_goal_in_arm_base")
+
+
+    success, joints_solution, debug_info = manip_wrapper.robot._robot_model.compute_arm_ik(ee_goal_in_arm_base, verbose=False)
+
     # Lifting the arm to high position as part of pregrasping position
-    print("pan, tilt before", robot.robot.get_pan_tilt())
-    robot.move_to_position(gripper_pos=gripper_width)
-    robot.move_to_position(lift_pos=1.05, head_pan=None, head_tilt=None)
-    print("pan, tilt after", robot.robot.get_pan_tilt())
+    # print("pan, tilt before", manip_wrapper.robot.get_pan_tilt())
+    print("set gripper to suit position.")
+    manip_wrapper.move_to_position(gripper_pos=gripper_width)
+    # robot.move_to_position(lift_pos=1.05, head_pan=None, head_tilt=None)
+    # print("pan, tilt after", robot.robot.get_pan_tilt())
 
     # Rotation for aligning Robot gripper frame to Model gripper frame
-    rotation2_top_mat = np.array([[0, 0, 1], [1, 0, 0], [0, -1, 0]])
+    # rotation2_top_mat = np.array([[0, 0, 1], [1, 0, 0], [0, -1, 0]])
 
     # final Rotation of gripper to hold the objcet
-    pin_final_rotation = np.dot(pin_transformed_frame.rotation, rotation2_top_mat)
-    print(f"pin final rotation {pin_final_rotation}")
+    # pin_final_rotation = np.dot(pin_transformed_frame.rotation, rotation2_top_mat)
+    # print(f"pin final rotation {pin_final_rotation}")
 
     rpy_angles = pin.rpy.matrixToRpy(pin_final_rotation)
     print("pan, tilt before", robot.robot.get_pan_tilt())

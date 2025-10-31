@@ -465,13 +465,13 @@ class RobotAgent(RobotAgentBase):
         print("*" * 10, "Look around to check", "*" * 10)
         for pan in [0.6, -0.2, -1.0, -1.8]:
             tilt = -0.6
-            self.robot.head_to(pan, tilt, blocking=True)
+            self.robot.set_servo_angle(pan, tilt, blocking=True)
             self.update()
 
     def rotate_in_place(self):
         print("*" * 10, "Rotate in place", "*" * 10)
         xyt = self.robot.get_base_pose()
-        self.robot.head_to(head_pan=0, head_tilt=-0.6, blocking=True)
+        self.robot.set_servo_angle(head_pan=0, head_tilt=-0.6, blocking=True)
         for i in range(8):
             xyt[2] += 2 * np.pi / 8
             self.robot.move_base_to(xyt, blocking=True)

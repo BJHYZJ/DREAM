@@ -147,7 +147,7 @@ class DreamTaskExecutor:
         """
         self.robot.switch_to_manipulation_mode()
         # camera_in_map_pose = self.robot.get_head_pose()[:3, 3]
-        # self.robot.look_at_target(target_point=point)
+        # self.robot.look_at_target_tilt(target_point=point)
         # camera_xyz = camera_in_map_pose[:3, 3]
         # if point is not None:
         #     theta = compute_tilt(camera_xyz, point)
@@ -293,7 +293,7 @@ class DreamTaskExecutor:
                 ):
                     self.robot.move_to_nav_posture()
                     # point = self._find(args)
-                    point = [-0.10140, 0.92395, 0.06083]
+                    point = [-0.0854,  0.4164,  0.0566]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None

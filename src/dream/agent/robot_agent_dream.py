@@ -481,13 +481,13 @@ class RobotAgent(RobotAgentBase):
             constants.look_left_1, constants.look_left_2, 
             constants.look_right_1, constants.look_right_2
         ]:
-            self.robot.head_to(angle=angle, blocking=True)
+            self.robot.arm_to(angle=angle, blocking=True)
             self.update()
 
     def rotate_in_place(self):
         print("*" * 10, "Rotate in place", "*" * 10)
         xyt = self.robot.get_base_in_map_xyt()
-        # self.robot.head_to(head_pan=0, head_tilt=-0.6, blocking=True)
+        # self.robot.arm_to(head_pan=0, head_tilt=-0.6, blocking=True)
         for i in range(8):
             xyt[2] += 2 * np.pi / 8
             self.robot.move_base_to(xyt, blocking=True)
@@ -793,15 +793,18 @@ class RobotAgent(RobotAgentBase):
 
         self.robot.switch_to_manipulation_mode()
         # self.robot.look_at_ee()
-        print("*" * 20, f"look at {text}", "*" * 20)
-        self.robot.look_at_target(target_point=target_point)
+        # self.robot.look_at_target_tilt(target_point=target_point)
+        # self.robot.look_at_target_pan(target_point=target_point)
 
-        # self.manip_wrapper.look_at_target(target_point=target_point)
+        # self.manip_wrapper.look_at_target_tilt(target_point=target_point)
 
         # self.manip_wrapper.move_to_position(
         #     gripper_pos=self.robot.get_robot_model().GRIPPER_OPEN,
         #     target_point=target_point,
         # )
+
+        print("*" * 20, f"look at {text}", "*" * 20)
+        self.robot.look_at_target(target_point=target_point)
 
         rotation, translation, depth, width = capture_and_process_image(
             mode="pick",
@@ -813,20 +816,20 @@ class RobotAgent(RobotAgentBase):
         if rotation is None:
             return False
 
-        if width < 0.05 and self.re == 3:
-            gripper_width = 0.45
-        elif width < 0.075 and self.re == 3:
-            gripper_width = 0.6
+        if width < 0.05:
+            gripper_width = 400
+        elif width < 0.075:
+            gripper_width = 500
         else:
-            gripper_width = 1
-
+            gripper_width = 800
+        
+        camera_in_arm_base= self.robot.get_camera_in_arm_base()
         if skip_confirmation or input("Do you want to do this manipulation? Y or N ") != "N":
             pickup(
                 self.manip_wrapper,
                 rotation,
                 translation,
-                base_node,
-                self.transform_node,
+                camera_in_arm_base=camera_in_arm_base,
                 gripper_depth=depth,
                 gripper_width=gripper_width,
             )

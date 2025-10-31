@@ -67,7 +67,6 @@ ROBOT_JOINTS = BASE_JOINTS + ARM_JOINTS + GRIPPER_JOINTS
 BASE_INDEX = [ROBOT_JOINTS.index(joint) for joint in BASE_JOINTS]
 ARM_INDEX = [ROBOT_JOINTS.index(joint) for joint in ARM_JOINTS]
 GRIPPER_INDEX = [ROBOT_JOINTS.index(joint) for joint in GRIPPER_JOINTS]
-POSITION_JOINTS_INDEX = ARM_INDEX  # six dof position
 
 
 CAMERA_POSET_TOPIC = "/robot/camera_pose"

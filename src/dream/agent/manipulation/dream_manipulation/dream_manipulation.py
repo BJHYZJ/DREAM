@@ -86,7 +86,7 @@ class DreamManipulationWrapper:
 
         return joint_names, joint_values
 
-    def look_at_target(
+    def look_at_target_tilt(
         self, 
         target_point,
         blocking=True,
@@ -94,18 +94,29 @@ class DreamManipulationWrapper:
         """
         Look at the target point
         """
-        self.robot.look_at_target(target_point, blocking=blocking)
+        self.robot.look_at_target_tilt(target_point, blocking=blocking)
+
+
+    def look_at_target_pan(
+        self, 
+        target_point,
+        blocking=True,
+    ):
+        """
+        Look at the target point
+        """
+        self.robot.look_at_target_pan(target_point, blocking=blocking)
 
 
     def move_to_position(
         self,
-        base_trans=None,
-        ee_x=None,
-        ee_y=None,
-        ee_z=None,
-        ee_roll=None,
-        ee_pitch=None,
-        ee_yaw=None,
+        base_theta=None,  # in radians
+        joint1=None,
+        joint2=None,
+        joint3=None,
+        joint4=None,
+        joint5=None,
+        joint6=None,
         gripper_pos=None,
         blocking=True,
     ):
@@ -113,38 +124,80 @@ class DreamManipulationWrapper:
         Moves the robots, base, arm, gripper, head to a desired position.
         """
         # Base, arm and gripper state update
-        target_state = self.robot.extract_joints_positions()
+        arm_joint_state = self.robot.extract_joint_state()
 
-        if base_trans is None:
-            target_state[0] += base_trans
+        if base_theta is not None:
+            self.robot.base_to([0, 0, base_theta], relative=True, blocking=blocking)
+            return
 
-        if not ee_x is None:
-            target_state[1] = ee_x
-        if not ee_y is None:
-            target_state[2] = ee_y
-        if not ee_z is None:
-            target_state[3] = ee_z
-        if not ee_roll is None:
-            target_state[4] = ee_roll
-        if not ee_pitch is None:
-            target_state[5] = ee_pitch
-        if not ee_yaw is None:
-            target_state[6] = ee_yaw
-        
+        if any([joint1, joint2, joint3, joint4, joint5, joint6]):
+            if joint1 is not None:
+                arm_joint_state[0] += joint1
+            if joint2 is not None:
+                arm_joint_state[1] += joint2
+            if joint3 is not None:
+                arm_joint_state[2] += joint3
+            if joint4 is not None:
+                arm_joint_state[3] += joint4
+            if joint5 is not None:
+                arm_joint_state[4] += joint5
+            if joint6 is not None:
+                arm_joint_state[5] += joint6
+
+            self.robot.arm_to(angle=arm_joint_state)
+
         if gripper_pos is not None:
-            target_state[7] = gripper_pos
+            self.robot.gripper_to(gripper_pos, blocking=blocking)
 
-        # if gripper_pos is not None:
-        #     self.CURRENT_STATE = gripper_pos
-        #     self.robot.gripper_to(self.CURRENT_STATE, blocking=blocking)
 
-        self.robot.arm_to(
-            base_x=target_state[0],
-            joint_angles=target_state[1:7], 
-            gripper=target_state[7], 
-            blocking=blocking, 
-            reliable=False
-        )
+    # def move_to_position(
+    #     self,
+    #     base_theta=None,
+    #     ee_x=None,
+    #     ee_y=None,
+    #     ee_z=None,
+    #     ee_roll=None,
+    #     ee_pitch=None,
+    #     ee_yaw=None,
+    #     gripper_pos=None,
+    #     blocking=True,
+    # ):
+    #     """
+    #     Moves the robots, base, arm, gripper, head to a desired position.
+    #     """
+    #     # Base, arm and gripper state update
+    #     target_state = self.robot.extract_joints_positions()
+
+    #     if base_theta is None:
+    #         self.robot.navigate_to([0, 0, base_theta], relative=True, blocking=blocking)
+    #         return
+
+    #     if not ee_x is None:
+    #         target_state[1] = ee_x
+    #     if not ee_y is None:
+    #         target_state[2] = ee_y
+    #     if not ee_z is None:
+    #         target_state[3] = ee_z
+    #     if not ee_roll is None:
+    #         target_state[4] = ee_roll
+    #     if not ee_pitch is None:
+    #         target_state[5] = ee_pitch
+    #     if not ee_yaw is None:
+    #         target_state[6] = ee_yaw
+        
+    #     if gripper_pos is not None:
+    #         target_state[7] = gripper_pos
+
+    #     # if gripper_pos is not None:
+    #     #     self.CURRENT_STATE = gripper_pos
+    #     #     self.robot.gripper_to(self.CURRENT_STATE, blocking=blocking)
+
+    #     self.robot.arm_to(
+    #         joint_angles=target_state[:6], 
+    #         gripper=target_state[6], 
+    #         blocking=blocking, 
+    #         reliable=False
+    #     )
 
     def pickup(self, width):
         """
@@ -223,7 +276,7 @@ class DreamManipulationWrapper:
             )
 
         self.robot.arm_to(target_state, blocking=True)
-        self.robot.head_to(head_tilt=self.tilt, head_pan=self.pan, blocking=True, reliable=False)
+        # self.robot.arm_to(head_tilt=self.tilt, head_pan=self.pan, blocking=True, reliable=False)
 
         # self.robot.arm_to(
         #     target_state, blocking=True, head=np.array([self.pan, self.tilt]), reliable=True
