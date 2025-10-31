@@ -353,21 +353,6 @@ class DreamClient(AbstractRobotClient):
     def get_ee_in_map_pose(self):
         return self._ros_client.get_ee_in_map_pose()
 
-
-
-    # def get_joint_state(self):
-    #     """Get joint states from the robot. If in manipulation mode, use the base_x position from start of manipulation mode as the joint state for base_x."""
-    #     joint_state = self._ros_client.get_joint_state()
-    #     if joint_state is None:
-    #         return None
-    #     q, dq, eff = joint_state[0], joint_state[1], joint_state[2]
-    #     # If we are in manipulation mode...
-    #     if self._base_control_mode == ControlMode.MANIPULATION:
-    #         # ...we need to get the joint positions from the manipulator
-    #         q[DreamIdx.BASE_X] = self.manip.get_base_x()
-    #     return [q, dq, eff]
-
-
     def get_join_information(self):
         joint_states = np.zeros(len(ROBOT_JOINTS))
         joint_velocities = np.zeros(len(ROBOT_JOINTS))
@@ -382,7 +367,9 @@ class DreamClient(AbstractRobotClient):
         arm_position = self.get_arm_position()
         gripper_position = self.get_gripper_state()
 
-        if base_pose is None or arm_state is None or arm_position is None or gripper_position is None:
+        # if base_pose is None or arm_state is None or arm_position is None or gripper_position is None:
+        #     return None
+        if not all(v is not None for v in [base_pose, arm_state, arm_position, gripper_position]):
             return None
 
         joint_states[ARM_INDEX] = arm_state
@@ -402,14 +389,6 @@ class DreamClient(AbstractRobotClient):
             joint_positions[DreamIdx.BASE_X] = self.manip.get_base_x()
 
         return joint_states, joint_velocities, joint_forces, joint_positions
-
-    # def get_arm_position(self):
-    #     return self._ros_client.get_arm_position()
-
-    # def get_frame_pose(self, frame, base_frame=None, lookup_time=None):
-    #     """look up a particular frame in base coords"""
-    #     return self._ros_client.get_frame_pose(frame, base_frame, lookup_time)
-
 
 
     def get_pose_graph(self) -> np.ndarray:  # TODO (zhijie, may need edit)
@@ -548,10 +527,14 @@ class DreamClient(AbstractRobotClient):
         ee_in_arm_base_pose = self.get_ee_in_arm_base_pose()
         ee_in_base_pose = self.get_ee_in_base_pose()
         ee_in_map_pose = self.get_ee_in_map_pose()
-        if joint_information is None or base_in_map_pose is None or arm_base_in_map_pose is None or \
-            camera_in_arm_base_pose is None or camera_in_base_pose is None or camera_in_map_pose is None or \
-            ee_in_arm_base_pose is None or ee_in_base_pose is None or ee_in_map_pose is None:
-            print("get_state_observation: joint_states is None or base_in_map_pose or camera_in_map_pose or camera_in_base_pose is None")
+        
+        if not all(v is not None for v in (
+            joint_information,
+            base_in_map_pose, arm_base_in_map_pose,
+            camera_in_arm_base_pose, camera_in_base_pose, camera_in_map_pose,
+            ee_in_arm_base_pose, ee_in_base_pose, ee_in_map_pose,
+        )):
+            print("get_state_observation: missing required state or tf pose")
             return None
         
         joint_states, joint_velocities, joint_forces, joint_positions = joint_information
@@ -600,63 +583,6 @@ class DreamClient(AbstractRobotClient):
             # camera_in_map_pose=camera_in_map_pose,
         )
 
-    # def get_observation(
-    #     self,
-    #     # rotate_head_pts=False,
-    #     start_pose: Optional[np.ndarray] = None,
-    #     compute_xyz: bool = True,
-    # ) -> Observations:
-    #     """Get an observation from the current robot.
-
-    #     Parameters:
-    #         rotate_head_pts: this is true to put things into the same format as Habitat; generally we do not want to do this
-    #     """
-
-    #     # Computing XYZ is expensive, we do not always needd to do it
-    #     if compute_xyz:
-    #         rgb, depth, xyz = self.cam.get_images(compute_xyz=True)
-    #     else:
-    #         rgb, depth = self.cam.get_images(compute_xyz=False)
-    #         xyz = None
-
-    #     current_pose = xyt2sophus(self.get_base_in_map_pose())
-
-    #     if start_pose is not None:
-    #         # use sophus to get the relative translation
-    #         relative_pose = start_pose.inverse() * current_pose
-    #     else:
-    #         relative_pose = current_pose
-    #     euler_angles = relative_pose.so3().log()
-    #     theta = euler_angles[-1]
-
-    #     # GPS in robot coordinates
-    #     gps = relative_pose.translation()[:2]
-
-    #     # Get joint state information
-    #     joint_positions, joint_velocities, _ = self.get_joint_state()
-
-    #     # Get lidar points and timestamp
-    #     lidar_points = self.lidar.get()
-    #     lidar_timestamp = self.lidar.get_time().nanoseconds / 1e9
-
-    #     # Create the observation
-    #     obs = Observations(
-    #         rgb=rgb,
-    #         depth=depth,
-    #         xyz=xyz,
-    #         gps=gps,
-    #         compass=np.array([theta]),
-    #         camera_pose_in_map=self._ros_client.get_camera_in_map_pose().matrix(),
-    #         camera_pose_in_arm=self._ros_client.get_camera_in_arm_pose().matrix(),
-    #         camera_pose_in_base=self._ros_client.get_camera_in_base_pose().matrix(),
-    #         ee_pose_in_map=self._ros_client.get_ee_pose_in_map().matrix(),
-    #         joint_positions=joint_positions,
-    #         joint_velocities=joint_velocities,
-    #         camera_K=self.get_camera_intrinsics(),
-    #         lidar_points=lidar_points,
-    #         lidar_timestamp=lidar_timestamp,
-    #     )
-    #     return obs
 
     def get_camera_intrinsics(self) -> torch.Tensor:
         """Get 3x3 matrix of camera intrisics K"""
@@ -674,47 +600,6 @@ class DreamClient(AbstractRobotClient):
 
     def get_has_wrist(self) -> bool:
         return self._ros_client.get_has_wrist()
-
-    # def arm_to(
-    #     self,
-    #     q: np.ndarray,
-    #     gripper: float = None,
-    #     head_pan: float = None,
-    #     head_tilt: float = None,
-    #     blocking: bool = False,
-    #     timeout: float = 4.0,
-    # ):
-    #     """Send arm commands"""
-    #     assert len(q) == 6
-
-    #     print(f"-> Sending arm and gripper to {q=} {gripper=} {head_pan=} {head_tilt=}")
-    #     t0 = time.time()
-
-    #     self.manip.goto_joint_positions(
-    #         joint_positions=q,
-    #         gripper=gripper,
-    #         head_pan=head_pan,
-    #         head_tilt=head_tilt,
-    #         blocking=blocking,
-    #     )
-
-    #     if blocking:
-    #         t0 = time.time()
-    #         while (time.time() - t0) < timeout:
-    #             self.manip.goto_joint_positions(
-    #                 joint_positions=q,
-    #                 gripper=gripper,
-    #                 head_pan=head_pan,
-    #                 head_tilt=head_tilt,
-    #                 blocking=blocking,
-    #             )
-    #             joint_pos_final = self.manip.get_joint_positions()
-    #             joint_err = np.array(joint_pos_final) - np.array(q)
-    #             arm_success = np.allclose(joint_err[:3], 0.0, atol=JOINT_POS_TOL)
-    #             wrist_success = np.allclose(joint_err[3:], 0.0, atol=JOINT_ANG_TOL)
-    #             time.sleep(0.1)
-    #             if arm_success and wrist_success:
-    #                 break
 
 
 if __name__ == "__main__":
