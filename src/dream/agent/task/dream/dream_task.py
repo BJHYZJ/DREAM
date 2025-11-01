@@ -131,7 +131,7 @@ class DreamTaskExecutor:
         # self.robot.switch_to_navigation_mode()
         # xyt = self.robot.get_base_in_map_xyt()
         # xyt[2] = xyt[2] + np.pi / 2
-        # self.robot.move_base_to(xyt, blocking=True)
+        # self.robot.base_to(xyt, blocking=True)
         return point
 
     def _pickup(

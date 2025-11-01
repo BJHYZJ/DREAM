@@ -332,14 +332,22 @@ class BaseZmqServer(CommsNode, ABC):
         # Wait for the threads to finish
         time.sleep(0.15)
 
-        # Close threads
-        self._send_thread.join()
-        self._recv_thread.join()
-        self._send_state_thread.join()
-        self._send_servo_thread.join()
+        # Close threads (only if they exist)
+        if hasattr(self, '_send_thread'):
+            self._send_thread.join()
+        if hasattr(self, '_recv_thread'):
+            self._recv_thread.join()
+        if hasattr(self, '_send_state_thread'):
+            self._send_state_thread.join()
+        if hasattr(self, '_send_servo_thread'):
+            self._send_servo_thread.join()
 
-        # Close sockets
-        self.recv_socket.close()
-        self.send_socket.close()
-        self.send_state_socket.close()
-        self.context.term()
+        # Close sockets (only if they exist)
+        if hasattr(self, 'recv_socket'):
+            self.recv_socket.close()
+        if hasattr(self, 'send_socket'):
+            self.send_socket.close()
+        if hasattr(self, 'send_state_socket'):
+            self.send_state_socket.close()
+        if hasattr(self, 'context'):
+            self.context.term()

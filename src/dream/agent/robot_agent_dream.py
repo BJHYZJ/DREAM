@@ -490,7 +490,7 @@ class RobotAgent(RobotAgentBase):
         # self.robot.arm_to(head_pan=0, head_tilt=-0.6, blocking=True)
         for i in range(8):
             xyt[2] += 2 * np.pi / 8
-            self.robot.move_base_to(xyt, blocking=True)
+            self.robot.base_to(xyt, blocking=True)
             if not self._realtime_updates:
                 self.update()
 

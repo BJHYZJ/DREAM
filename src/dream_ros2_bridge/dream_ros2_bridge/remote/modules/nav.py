@@ -141,7 +141,7 @@ class DreamNavigationClient(AbstractControlModule):
                 len(pt) == 3 or len(pt) == 2
             ), "base trajectory needs to be 2-3 dimensions: x, y, and (optionally) theta"
             just_xy = len(pt) == 2
-            self.move_base_to(pt, relative, position_only=just_xy, blocking=False)
+            self.base_to(pt, relative, position_only=just_xy, blocking=False)
             self.wait_for_waypoint(
                 pt,
                 pos_err_threshold=pos_err_threshold,
@@ -150,7 +150,7 @@ class DreamNavigationClient(AbstractControlModule):
                 verbose=verbose,
                 timeout=per_waypoint_timeout,
             )
-        self.move_base_to(pt, blocking=True)
+        self.base_to(pt, blocking=True)
 
     @enforce_enabled
     def set_velocity(self, v, w):
@@ -165,7 +165,7 @@ class DreamNavigationClient(AbstractControlModule):
         self._ros_client.velocity_pub.publish(msg)
 
     @enforce_enabled
-    def move_base_to(
+    def base_to(
         self,
         xyt: List[float],
         relative: bool = False,
@@ -220,7 +220,7 @@ class DreamNavigationClient(AbstractControlModule):
 
     @enforce_enabled
     def home(self):
-        self.move_base_to([0.0, 0.0, 0.0], blocking=True)
+        self.base_to([0.0, 0.0, 0.0], blocking=True)
 
     # Helper methods
 
