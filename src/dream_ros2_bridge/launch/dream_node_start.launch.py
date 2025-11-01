@@ -58,7 +58,7 @@ def launch_setup(context, *args, **kwargs):
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
                 dream_ros2_bridge_path, 
-                '/launch/d435i_high_resolution.launch.py'])),  
+                '/launch/d435i_low_resolution.launch.py'])),  
     ])
 
     lidar_launch = LaunchDescription([
