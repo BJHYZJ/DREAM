@@ -7,11 +7,11 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 # Starting with `realsense_ros` 4.55.1, the `.profile`` parameter is split by stream type.
 # Here, we keep both the old and new parameters for backwards compatibility.
 # https://github.com/IntelRealSense/realsense-ros/pull/3052
-configurable_parameters = [{'name': 'depth_module.profile',         'default': '640x480x15', 'description': 'depth module profile'},
-                           {'name': 'depth_module.depth_profile',   'default': '640x480x15', 'description': 'depth module profile'},
-                           {'name': 'depth_module.infra_profile',   'default': '640x480x15', 'description': 'depth module profile'},
-                           {'name': 'rgb_camera.profile',           'default': '640x480x15', 'description': 'color image width'},
-                           {'name': 'rgb_camera.color_profile',     'default': '640x480x15', 'description': 'color image width'},
+configurable_parameters = [{'name': 'depth_module.profile',         'default': '424x240x15', 'description': 'depth module profile'},
+                           {'name': 'depth_module.depth_profile',   'default': '424x240x15', 'description': 'depth module profile'},
+                           {'name': 'depth_module.infra_profile',   'default': '424x240x15', 'description': 'depth module profile'},
+                           {'name': 'rgb_camera.profile',           'default': '424x240x15', 'description': 'color image width'},
+                           {'name': 'rgb_camera.color_profile',     'default': '424x240x15', 'description': 'color image width'},
                            {'name': 'align_depth.enable',           'default': 'true',       'description': 'whether to publish aligned_depth_to_color feed'},
                            {'name': 'device_type',                  'default': 'd435', 'description': "''"}
                            ]
