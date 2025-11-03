@@ -160,9 +160,9 @@ class DreamTaskExecutor:
             print("Using operation to grasp object:", target_object)
             print(" - Point:", point)
             # print(" - Theta:", theta)
-            state = self.robot.extract_joints_positions()
-            state[1] = 1.0
-            self.robot.arm_to(state, blocking=True)
+            # state = self.robot.get_arm_joint_state()
+            # state[1] = 1.0
+            # self.robot.arm_to(state, blocking=True)
             self.grasp_object(
                 target_object=target_object,
                 object_xyz=point,

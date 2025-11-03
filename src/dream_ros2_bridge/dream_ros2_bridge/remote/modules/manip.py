@@ -25,7 +25,7 @@ from .abstract import AbstractControlModule, enforce_enabled
 
 from xarm import version
 from xarm.wrapper import XArmAPI
-from dream.motion.constants import look_front
+from dream.motion.constants import look_front, back_front
 import numpy as np
 import time
 import traceback
@@ -146,10 +146,15 @@ class XARM6:
 
     def reset(self):
         # This can proimise the initial position has the correct joint angle
-        # self._arm.set_servo_angle(
-        #     angle=self.init_servo_angle, is_radian=False, wait=True
-        # )
-        self.set_servo_angle(self.init_servo_angle, is_radian=False, wait=True)
+        servo_pose = self.get_servo_angle()
+        if servo_pose[0] > 135 or servo_pose[0] < -135:
+            self._arm.set_servo_angle(
+                angle=back_front, is_radian=False, wait=True
+            )
+        time.sleep(0.1)
+        self._arm.set_servo_angle(
+            angle=self.init_servo_angle, is_radian=False, wait=True
+        )
 
     def set_servo_angle(self, angle, is_radian=False, wait=True):
         self._arm.set_servo_angle(angle=angle, is_radian=is_radian, wait=wait)

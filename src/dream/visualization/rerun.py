@@ -359,6 +359,15 @@ class RerunVisualizer:
             ),
         )
 
+    def log_camera_servo(self, servo: ServoObservations):
+        """Log camera pose and images
+
+        Args:
+            obs (Observations): Observation dataclass
+        """
+        rr.set_time("realtime", timestamp=time.time())
+        log_to_rerun("world/camera/rgb_servo", rr.Image(servo.rgb))
+
     def log_camera(self, obs: Observations):
         """Log camera pose and images
 
@@ -708,9 +717,10 @@ class RerunVisualizer:
 
                 # Cameras use the lower-res servo object
                 self.log_camera(obs)
+                self.log_camera_servo(servo)
                 # self.log_ee_camera(servo)
 
-                # self.log_robot_state(obs)
+                # self.log_robot_state(state)
 
                 # if self.display_robot_mesh:
                 #     self.log_robot_transforms(obs)

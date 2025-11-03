@@ -13,4 +13,5 @@ class CameraParameters:
     image: Type[Image.Image]
     colors: np.ndarray
     depths: np.ndarray
+    c2ab: np.ndarray
     

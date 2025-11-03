@@ -286,6 +286,7 @@ class RobotAgent(RobotAgentBase):
                 # rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
                 # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
                 rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
+                rrb.Spatial2DView(name="rgb_servo", origin='world/camera/rgb_servo')
                 # rrb.Spatial2DView(name="obj", origin="/world/camera/obj_mask"),
             ),
             column_shares=[2, 1, 1],
@@ -806,7 +807,7 @@ class RobotAgent(RobotAgentBase):
         print("*" * 20, f"look at {text}", "*" * 20)
         self.robot.look_at_target(target_point=target_point)
 
-        rotation, translation, depth, width = capture_and_process_image(
+        rotation, translation, depth, width, theta_cumulative = capture_and_process_image(
             mode="pick",
             obj=text,
             socket=self.manip_socket,
@@ -832,14 +833,11 @@ class RobotAgent(RobotAgentBase):
                 rotation,
                 translation,
                 camera_in_arm_base=camera_in_arm_base,
-                arm_angles_deg=arm_angles_deg,
-                gripper_depth=depth,
-                # gripper_width=gripper_width,
+                arm_angles_deg=arm_angles_deg
             )
 
         # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map
-        self.manip_wrapper.move_to_position(
-            base_trans=-self.manip_wrapper.robot.get_six_joints()[0]
-        )
+        if theta_cumulative != 0:
+            self.manip_wrapper.move_to_position(base_theta=np.deg2rad(-theta_cumulative))
 
         return True

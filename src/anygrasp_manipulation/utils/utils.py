@@ -1,8 +1,7 @@
 import copy
-
-import cv2
 import numpy as np
 import open3d as o3d
+from open3d.geometry import get_rotation_matrix_from_axis_angle
 import scipy
 from PIL import Image, ImageDraw
 from utils.camera import CameraParameters
@@ -38,7 +37,7 @@ def show_mask(mask, ax=None, random_color=False):
         color = np.array([30 / 255, 144 / 255, 255 / 255, 0.6])
     h, w = mask.shape[-2:]
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
-    ax.imshow(mask_image)
+    # ax.imshow(mask_image)
 
 
 def draw_seg_mask(image, seg_mask, save_file=None):
@@ -49,7 +48,7 @@ def draw_seg_mask(image, seg_mask, save_file=None):
     image_pil.putalpha(alpha_pil)
 
     if save_file is not None:
-        image_pil.save(save_file)
+        # image_pil.save(save_file)
         print(f"Saved Segmentation Mask at {save_file}")
 
 
@@ -140,3 +139,28 @@ def visualize_cloud_geometries(
     else:
         visualizer.destroy_window()
 
+def create_arrow(direction: np.ndarray, origin: np.ndarray, color, scale=0.15):
+    length = float(np.linalg.norm(direction))
+    if length < 1e-6:
+        return None
+    unit = direction / length
+    arrow = o3d.geometry.TriangleMesh.create_arrow(
+        cylinder_radius=0.005,
+        cone_radius=0.01,
+        cylinder_height=scale * 0.8,
+        cone_height=scale * 0.2,
+    )
+    arrow.paint_uniform_color(color)
+    z_axis = np.array([0.0, 0.0, 1.0], dtype=np.float64)
+    axis = np.cross(z_axis, unit)
+    axis_norm = float(np.linalg.norm(axis))
+    if axis_norm > 1e-6:
+        axis /= axis_norm
+        angle = np.arccos(float(np.clip(np.dot(z_axis, unit), -1.0, 1.0)))
+        rot = get_rotation_matrix_from_axis_angle(axis * angle)
+        arrow.rotate(rot, center=np.zeros(3))
+    elif float(np.dot(z_axis, unit)) < 0.0:
+        rot = get_rotation_matrix_from_axis_angle(np.array([1.0, 0.0, 0.0]) * np.pi)
+        arrow.rotate(rot, center=np.zeros(3))
+    arrow.translate(origin)
+    return arrow

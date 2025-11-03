@@ -15,6 +15,7 @@ from dream.agent.manipulation.dream_manipulation.place import Placing
 from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
     DreamManipulationWrapper as ManipulationWrapper,
 )
+import dream.motion.constants as constants
 
 def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):
     if save_dir is not None:
@@ -103,6 +104,7 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
     tilt_retries = 1
     side_retries = 0
     retry_flag = True
+    theta_cumulative = 0
     # head_tilt = 105
     # head_pan = -1.57
 
@@ -134,16 +136,22 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
 
         elif side_retries == 2 and tilt_retries == 3:
             manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
+            manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
             side_retries = 3
+            theta_cumulative += 15
 
         elif retry_flag == 2:
             if tilt_retries == 3:
                 if side_retries == 0:
                     manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
+                    manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
                     side_retries = 1
+                    theta_cumulative += 15
                 else:
                     manip_wrapper.move_to_position(base_theta=np.deg2rad(-30))
+                    manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
                     side_retries = 2
+                    theta_cumulative -= 30
                 tilt_retries = 1
             else:
                 print(f"retrying with head tilt : {head_tilt_angles[tilt_retries]}")
@@ -157,10 +165,10 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
 
     if mode == "pick":
         print("Pick: Returning translation, rotation, depth, width")
-        return rotation, translation, depth, width
+        return rotation, translation, depth, width, theta_cumulative
     else:
         print("Place: Returning translation, rotation")
-        return rotation, translation
+        return rotation, translation, theta_cumulative
 
 
 def move_to_point(robot, point, base_node, gripper_node, move_mode=1, pitch_rotation=0):
@@ -200,23 +208,14 @@ def pickup(
     translation,
     camera_in_arm_base,
     arm_angles_deg,
-    gripper_height=0.03,
-    gripper_depth=0.03,
     gripper_width=830,
 ):
-
-    rotation_top_mat = np.array([
-        [ 0.0,  0.0,  1.0],
-        [ 0.0, -1.0,  0.0],
-        [ 1.0,  0.0,  0.0],
-    ], np.float32)
-
     ee_goal_in_camera_pose = np.eye(4)
-    ee_goal_in_camera_pose[:3, :3] = rotation @ rotation_top_mat
+    ee_goal_in_camera_pose[:3, :3] = rotation
     ee_goal_in_camera_pose[:3, 3] = translation
     ee_goal_in_arm_base = camera_in_arm_base @ ee_goal_in_camera_pose
     # print(f"pin_transformed frame {pin_transformed_frame}")
-
+    manip_wrapper.robot.gripper_to(position=gripper_width)
 
     success, joints_solution, debug_info = manip_wrapper.robot._robot_model.compute_arm_ik(
         ee_goal_in_arm_base, 
@@ -224,10 +223,30 @@ def pickup(
         is_radians=False, 
         verbose=False
     )
-
+    
+    picked = False
     if success:
         print("set gripper to suit position.")
-        manip_wrapper.robot.gripper_to(position=gripper_width)
+        # move arm to safty place
+        manip_wrapper.robot.arm_to(angle=constants.look_front)
+        # First, move joint6 to the target position. 
+        # This process prevents the gripper from colliding with the object during rotation.
+        joint6_change_deg = constants.look_front.copy()
+        joint6_change_deg[5] = joints_solution[5]
+        manip_wrapper.robot.arm_to(angle=joint6_change_deg)
         manip_wrapper.robot.arm_to(angle=joints_solution)
-    else:
-        assert 1 == 1
+        picked = manip_wrapper.pickup(gripper_width)
+        if picked:
+            manip_wrapper.robot.arm_to(angle=constants.look_front)
+            # look at back and place to back
+            manip_wrapper.robot.arm_to(angle=constants.back_front)
+            manip_wrapper.robot.arm_to(angle=constants.back_place)
+            manip_wrapper.robot.gripper_to(position=830)
+            manip_wrapper.robot.arm_to(angle=constants.back_front)
+            manip_wrapper.robot.arm_to(angle=constants.look_front)
+    
+    if (not success) or (not picked):
+        print("AnyGrasp is not work, try to use close loop grasp founction")
+        
+
+    return True

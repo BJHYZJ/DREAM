@@ -20,7 +20,7 @@ from gsnet import AnyGrasp
 from PIL import Image
 from utils.camera import CameraParameters
 from utils.types import Bbox
-from utils.utils import draw_rectangle, get_3d_points, sample_points, visualize_cloud_geometries
+from utils.utils import draw_rectangle, get_3d_points, sample_points, visualize_cloud_geometries, create_arrow
 from utils.zmq_socket import ZmqSocket
 
 from image_processors import OWLSAMProcessor
@@ -57,6 +57,10 @@ class ObjectHandler:
             fx, fy, cx, cy = self.socket.recv_array()
             self.socket.send_data("intrinsics received")
 
+            # camera in arm transform
+            c2ab = self.socket.recv_array()
+            self.socket.send_data("camera in arm base pose received")
+
             # Object query
             self.query = self.socket.recv_string()
             self.socket.send_data("text query received")
@@ -75,13 +79,14 @@ class ObjectHandler:
             image = Image.open(os.path.join(data_dir, "test_rgb.png"))
             depths = np.load(os.path.join(data_dir, "test_depth.npy")).astype(np.float64)
             fx, fy, cx, cy = 606.4227, 606.4227, 254.01973, 320.10287
+            c2ab = np.eye(4)
             if tries == 1:
                 self.action = str(input("Enter action [pick/place]: "))
                 self.query = str(input("Enter a Object name in the scene: "))
 
         # Camera Parameters
         colors = colors / 255.0
-        self.cam = CameraParameters(fx, fy, cx, cy, image, colors, depths)
+        self.cam = CameraParameters(fx, fy, cx, cy, image, colors, depths, c2ab)
 
     def manipulate(self):
         """
@@ -347,7 +352,16 @@ class ObjectHandler:
         crop_flag: bool = False,
     ):
         colors = self.cam.colors
+        c2b = self.cam.c2ab  # camera in arm base pose
+        R_c2b = c2b[:3, :3]
+        t_c2b = c2b[:3,  3]
         points_z = points[:, :, 2]
+
+        rotation_top_mat = np.array([
+            [ 0.0,  0.0,  1.0],
+            [ 0.0, -1.0,  0.0],
+            [ 1.0,  0.0,  0.0],
+        ], np.float32)
 
         # Filtering points based on the distance from camera
         mask = (
@@ -411,32 +425,75 @@ class ObjectHandler:
 
         gg = gg.nms().sort_by_score()
         filter_gg = GraspGroup()
-
+        # filter_gg_obj = GraspGroup()
         W, H = self.cam.image.size
+        min_score, max_score = 1, -10
         image = copy.deepcopy(self.cam.image)
         img_drw = draw_rectangle(image, bbox)
+
         for g in gg:
-            grasp_center = g.translation
+            R_cam = g.rotation_matrix @ rotation_top_mat
+            p_cam = g.translation  # grasp center
             ix, iy = (
-                int(((grasp_center[0] * self.cam.fx) / grasp_center[2]) + self.cam.cx),
-                int(((grasp_center[1] * self.cam.fy) / grasp_center[2]) + self.cam.cy),
+                int(((p_cam[0] * self.cam.fx) / p_cam[2]) + self.cam.cx),
+                int(((p_cam[1] * self.cam.fy) / p_cam[2]) + self.cam.cy),
             )
-            if ix < 0:
-                ix = 0
-            if iy < 0:
-                iy = 0
-            if ix >= W:
-                ix = W - 1
-            if iy >= H:
-                iy = H - 1
+            ix = max(0, min(ix, W - 1))
+            iy = max(0, min(iy, H - 1))
+            
+            R_base = R_c2b @ R_cam
+            p_base = (R_c2b @ p_cam) + t_c2b
+
+            approach_dir = R_base[:, 2]
+
+            base_to_target_xy = np.array([p_base[0], p_base[1], 0.0], dtype=np.float32)
+            dir_xy = base_to_target_xy / np.linalg.norm(base_to_target_xy)  # arm base -> target
+
+            # 把夹爪接近方向 approach_dir 投影到由 dir_xy 和竖直轴组成的平面
+            approach_in_dir_xy = np.dot(approach_dir, dir_xy) * dir_xy  # approach_dir 在 dir_xy 方向上的分量
+            approach_in_z = approach_dir[2] * np.array([0.0, 0.0, 1.0])  # approach_dir 在 z 方向上的分量
+            approach = approach_in_dir_xy + approach_in_z
+            approach /= float(np.linalg.norm(approach))
+
+            penalty = 0.0
+            cos_th = float(np.clip(np.dot(dir_xy, approach), -1.0, 1.0))
+            if cos_th < 0.0:
+                angle_th = np.arccos(cos_th)
+                assert angle_th >= 0
+                penalty = 0.2 * (angle_th - np.pi / 2) ** 2
+                # print(angle_th, penalty, g.score, g.score - penalty)
+
+            if not crop_flag:
+                score = g.score - penalty
+            else:
+                score = g.score
+
+            # print(angle_th, score)
+            if self.cfgs.debug and False:
+                cloud_vis = copy.deepcopy(cloud).transform(c2b)
+                coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+                gripper = g.to_open3d_geometry().transform(c2b)
+                
+                dir_arrow = create_arrow(dir_xy.astype(np.float64), p_base, [0.0, 0.7, 0.0])
+                approach_arrow = create_arrow(approach_dir.astype(np.float64), p_base, [0.8, 0.0, 0.0])
+                proj_arrow = create_arrow(approach.astype(np.float64), p_base, [0.0, 0.0, 0.6])
+                visual_items = [gripper, cloud_vis, coordinate, dir_arrow, approach_arrow, proj_arrow]
+                o3d.visualization.draw_geometries(visual_items)
 
             if not crop_flag:
                 if seg_mask[iy, ix]:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="green")
+                    # filter_gg_obj.add(g)
+                    if g.score >= 0.095:
+                        g.score = score
+                    min_score = min(min_score, g.score)
+                    max_score = max(max_score, g.score)
                     filter_gg.add(g)
                 else:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="red")
             else:
+                # filter_gg_obj.add(g)
+                g.score = score
                 filter_gg.add(g)
 
         if len(filter_gg) == 0:
@@ -451,6 +508,7 @@ class ObjectHandler:
         image.save(projections_file_name)
         print(f"Saved projections of grasps at {projections_file_name}")
         filter_gg = filter_gg.nms().sort_by_score()
+        # filter_gg_obj = filter_gg_obj.nms.sort_by_score()
 
         if self.cfgs.debug:
             # scene_cloud = o3d.geometry.PointCloud()
@@ -465,41 +523,41 @@ class ObjectHandler:
             # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
             # o3d.visualization.draw_geometries([object_cloud, coordinate])
 
-            # trans_mat = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-            # cloud.transform(trans_mat)
-            # grippers = gg.to_open3d_geometry_list()
-            # filter_grippers = filter_gg.to_open3d_geometry_list()
-            # for gripper in grippers:
-            #     gripper.transform(trans_mat)
-            # for gripper in filter_grippers:
-            #     gripper.transform(trans_mat)
-
-            coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+            trans_mat = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+            cloud.transform(trans_mat)
             grippers = gg.to_open3d_geometry_list()
-            o3d.visualization.draw_geometries([*grippers, cloud, coordinate])
-            o3d.visualization.draw_geometries([grippers[0], cloud, coordinate])
+            filter_grippers = filter_gg.to_open3d_geometry_list()
+            for gripper in grippers:
+                gripper.transform(trans_mat)
+            for gripper in filter_grippers:
+                gripper.transform(trans_mat)
 
-            # visualize_cloud_geometries(
-            #     cloud,
-            #     grippers,
-            #     visualize=not self.cfgs.headless,
-            #     save_file=f"{self.save_dir}/poses.jpg",
-            #     # rerun_name="all_anygrasp_estimated_poses",
-            # )
-            # visualize_cloud_geometries(
-            #     cloud,
-            #     [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
-            #     visualize=not self.cfgs.headless,
-            #     save_file=f"{self.save_dir}/best_pose.jpg",
-            #     # rerun_name="selected_pose",
-            # )
+            # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+            # grippers = gg.to_open3d_geometry_list()
+            # o3d.visualization.draw_geometries([*grippers, cloud, coordinate])
+            # o3d.visualization.draw_geometries([grippers[0], cloud, coordinate])
+
+            visualize_cloud_geometries(
+                cloud,
+                grippers,
+                visualize=not self.cfgs.headless,
+                save_file=f"{self.save_dir}/poses.jpg",
+                # rerun_name="all_anygrasp_estimated_poses",
+            )
+            visualize_cloud_geometries(
+                cloud,
+                [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
+                visualize=not self.cfgs.headless,
+                save_file=f"{self.save_dir}/best_pose.jpg",
+                # rerun_name="selected_pose",
+            )
 
         if self.cfgs.open_communication:
             data_msg = "Now you received the gripper pose, good luck."
             self.socket.send_data(
                 [
                     filter_gg[0].translation,
-                    filter_gg[0].rotation_matrix,
+                    filter_gg[0].rotation_matrix @ rotation_top_mat,
                     [filter_gg[0].depth, filter_gg[0].width, 0],
                     data_msg,
                 ]

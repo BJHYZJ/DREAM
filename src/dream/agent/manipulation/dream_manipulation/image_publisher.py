@@ -43,7 +43,7 @@ class DreamCamera:
         self.robot = robot
 
         # Camera intrinsics
-        intrinsics = self.robot.get_camera_K()
+        intrinsics = self.robot.get_servo_camera_K()
         self.fy = intrinsics[0, 0]
         self.fx = intrinsics[1, 1]
         self.cy = intrinsics[0, 2]
@@ -54,14 +54,15 @@ class DreamCamera:
         self.ix, self.iy = None, None
 
     def capture_image(self):
-        self.rgb_image, self.depth_image, self.points = self.robot.get_images(compute_xyz=True)
+        self.rgb_image, self.depth_image = self.robot.get_servo_images(compute_xyz=False)
+        self.c2ab = self.robot.get_camera_in_arm_base(timeout=5.0)
         # self.rgb_image = np.rot90(self.rgb_image, k=1)[:, :, [2, 1, 0]]
         # self.depth_image = np.rot90(self.depth_image, k=1)
         # self.points = np.rot90(self.points, k=1)
 
         # self.rgb_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2RGB)
 
-        return self.rgb_image, self.depth_image, self.points
+        return self.rgb_image, self.depth_image, self.c2ab
 
 
 class ImagePublisher:
@@ -70,7 +71,7 @@ class ImagePublisher:
         self.socket = socket
 
     def publish_image(self, text, mode):
-        image, depth, points = self.camera.capture_image()
+        image, depth, c2ab = self.camera.capture_image()
         # camera_pose = self.camera.robot.head.get_pose_in_base_coords()
 
         # rotated_image = np.rot90(image, k=-1)
@@ -93,6 +94,8 @@ class ImagePublisher:
                 ]
             ),
         )
+        print(self.socket.recv_string())
+        send_array(self.socket, c2ab,)
         print(self.socket.recv_string())
 
         ## Sending Object text and Manipulation mode

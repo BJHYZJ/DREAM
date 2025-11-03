@@ -45,7 +45,7 @@ max_depth: 2.5
 # If you want to determine whether one object exists, 
 # you'd better refer to the official documentation for the best threshold hyperparemeters
 detection:
-  module: "detic"  # Best performing method for our system
+  module: "owlsam"  # Best performing method for our system
   # module: "mobile_sam"
   # module: "yolo"
   # module: "yolo_world"
@@ -54,6 +54,7 @@ detection:
   # confidence_threshold: 0.3
   category_map_file: example_cat_map.json  # This is used for Detic
   use_detic_viz: False
+  confidence_threshold: 0.02
 
 # Point cloud cleanup
 # These parameters are used to clean up the point clouds going into the map we use for reasoning

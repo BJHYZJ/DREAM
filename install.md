@@ -110,7 +110,9 @@ cd src/anygrasp_manipulation/pointnet2
 pip install -e .
 ```
 
-# use anygraph
+
+
+# use anygrasp
 get computer id
 ```bash
 cd src/anygrasp_manipulation
@@ -132,6 +134,14 @@ conda activate anygrasp
 python demo.py --open_communication --port 5557
 ```
 
+
+# install Segment-anything-2
+```bash
+git submodule add https://github.com/facebookresearch/sam2.git third_party/segment-anything-2
+cd third_party/segment-anything-2
+pip install -e .
+pip install numpy==1.23.5  # numpy的版本会被覆盖，重新安装一次
+```
 
 
 ```bash

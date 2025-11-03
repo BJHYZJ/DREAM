@@ -56,6 +56,10 @@ look_left_2 = [45, -45, -90, 0, 105, 0]
 look_right_1 = [-45, -45, -90, 0, 135, 0]
 look_right_2 = [-45, -45, -90, 0, 105, 0]
 
+back_front = [180, -45, -90, 0, 105, 0]
+back_place = [180, -10, -95, 0, 110, 0]
+back_look = [180, 0, -180, 0, 180, 0]
+
 
 T_LOC_STABILIZE = 1.0
 BASE_JOINTS = ['base_x', 'base_y', 'base_theta']

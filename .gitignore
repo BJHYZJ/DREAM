@@ -21,3 +21,5 @@ debug
 *.pyo
 
 **/.TimeRecord
+
+src/anygrasp_manipulation/example_data
