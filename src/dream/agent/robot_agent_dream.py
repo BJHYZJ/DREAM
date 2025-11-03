@@ -816,22 +816,25 @@ class RobotAgent(RobotAgentBase):
         if rotation is None:
             return False
 
-        if width < 0.05:
-            gripper_width = 400
-        elif width < 0.075:
-            gripper_width = 500
-        else:
-            gripper_width = 800
+        # if width < 0.05:
+        #     gripper_width = 450
+        # elif width < 0.075:
+        #     gripper_width = 520
+        # else:
+        #     gripper_width = 830
         
         camera_in_arm_base= self.robot.get_camera_in_arm_base()
-        if skip_confirmation or input("Do you want to do this manipulation? Y or N ") != "N":
+        arm_angles_deg = self.robot.get_arm_joint_state()
+        # if skip_confirmation or input("Do you want to do this manipulation? Y or N ") != "N":
+        if skip_confirmation or True:
             pickup(
                 self.manip_wrapper,
                 rotation,
                 translation,
                 camera_in_arm_base=camera_in_arm_base,
+                arm_angles_deg=arm_angles_deg,
                 gripper_depth=depth,
-                gripper_width=gripper_width,
+                # gripper_width=gripper_width,
             )
 
         # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map

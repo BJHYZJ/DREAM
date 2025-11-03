@@ -124,7 +124,7 @@ class DreamManipulationWrapper:
         Moves the robots, base, arm, gripper, head to a desired position.
         """
         # Base, arm and gripper state update
-        arm_joint_state = self.robot.extract_joint_state()
+        arm_joint_state = self.robot.get_arm_joint_state()
 
         if base_theta is not None:
             self.robot.base_to([0, 0, base_theta], relative=True, blocking=blocking)

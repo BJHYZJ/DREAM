@@ -23,7 +23,7 @@ parser.add_argument(
 parser.add_argument(
     "--max_gripper_width",
     type=float,
-    default=0.07,
+    default=0.08,
     help="Maximum gripper width (<=0.1m)",
 )
 parser.add_argument("--gripper_height", type=float, default=0.05, help="Gripper height")

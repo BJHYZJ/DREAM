@@ -190,6 +190,7 @@ class RangerxARMKinematics:
         self,
         target_pose: np.ndarray,
         q_init: Optional[np.ndarray] = None,
+        is_radians: bool = True,
         return_degrees: bool = True,
         max_iterations: Optional[int] = None,
         verbose: bool = False
@@ -213,9 +214,12 @@ class RangerxARMKinematics:
         
         # Initialize joint configuration
         if q_init is None:
-            q = np.deg2rad([0, -45, -90, 0, 110, 0])
+            q = np.deg2rad([0, -45, -90, 0, 105, 0])
         else:
-            q = np.asarray(q_init, dtype=float)
+            if not is_radians:
+                q = np.deg2rad(q_init, dtype=float)
+            else:
+                q = np.asarray(q_init, dtype=float)
         
         # Ensure q has correct size for Pinocchio model
         if len(q) != self.model.nq:

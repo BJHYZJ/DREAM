@@ -281,7 +281,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             joint_positions = self._state.joint_positions
         return joint_positions
 
-    def extract_joint_state(self, timeout: float = 5.0) -> np.ndarray:
+    def get_arm_joint_state(self, timeout: float = 5.0) -> np.ndarray:
         joint_states, _, _ = self.get_joint_state(timeout=timeout)
         return np.array(self._extract_joint_state(joint_states))
 
@@ -650,7 +650,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 # Compute error for all 6 joints
                 error = np.linalg.norm(gripper_position - position)
                 
-                if error < 1:  # 1 degree threshold
+                if error < 5:  # 1 degree threshold
                     # print(f"[Camera Aim] ✅ Reached target")
                     return True
                 
@@ -747,12 +747,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
             return False
         return True
 
-    def gripper_to(self, target: float, blocking: bool = True, reliable: bool = True):
-        """Send the gripper to a target position."""
-        next_action = {"gripper": target, "gripper_blocking": blocking}
-        self.send_action(next_action, reliable=reliable)
-        if blocking:
-            time.sleep(0.5)
+    # def gripper_to(self, target: float, blocking: bool = True, reliable: bool = True):
+    #     """Send the gripper to a target position."""
+    #     next_action = {"gripper": target, "gripper_blocking": blocking}
+    #     self.send_action(next_action, reliable=reliable)
+    #     if blocking:
+    #         time.sleep(0.5)
 
     def switch_to_navigation_mode(self):
         """Velocity control of the robot base."""

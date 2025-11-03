@@ -135,7 +135,7 @@ def visualize_cloud_geometries(
         print(f"Saved screen shot visualization at {save_file}")
 
     if visualize:
-        # visualizer.add_geometry(coordinate_frame)
+        visualizer.add_geometry(coordinate_frame)
         visualizer.run()
     else:
         visualizer.destroy_window()

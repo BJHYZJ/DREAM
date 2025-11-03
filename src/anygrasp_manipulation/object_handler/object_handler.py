@@ -346,7 +346,8 @@ class ObjectHandler:
         bbox: Bbox,
         crop_flag: bool = False,
     ):
-        points_x, points_y, points_z = points[:, :, 0], points[:, :, 1], points[:, :, 2]
+        colors = self.cam.colors
+        points_z = points[:, :, 2]
 
         # Filtering points based on the distance from camera
         mask = (
@@ -354,52 +355,71 @@ class ObjectHandler:
             & (points_z < self.cfgs.max_depth)
             & ~np.isnan(points_z)
         )
-        # points = np.stack([points_x, -points_y, points_z], axis=-1)
-        points = points[mask].astype(np.float32)
-        colors_m = self.cam.colors[mask].astype(np.float32)
+
+        filtered_points = points[mask].astype(np.float32)
+        filtered_colors = colors[mask].astype(np.float32)
 
         if self.cfgs.sampling_rate < 1:
-            points, indices = sample_points(points, self.cfgs.sampling_rate)
-            colors_m = colors_m[indices]
+            filtered_points, indices = sample_points(filtered_points, self.cfgs.sampling_rate)
+            filtered_colors = filtered_colors[indices]
 
-        # if self.cfgs.debug:
-        scene_cloud = o3d.geometry.PointCloud()
-        scene_cloud.points = o3d.utility.Vector3dVector(points)
-        scene_cloud.colors = o3d.utility.Vector3dVector(colors_m)
-        # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-        # o3d.visualization.draw_geometries([scene_cloud, coordinate])
 
-        # Grasp Prediction
+        # Get 3D bounding box from seg_mask (target object region)
+        # Combine depth mask with segmentation mask
+        object_mask = mask & seg_mask
+        object_points = points[object_mask]
+        object_colors = colors[object_mask]
+
+        # mins = object_points.min(axis=0)
+        # maxs = object_points.max(axis=0)
+        # corners = np.array(np.meshgrid(
+        #     [mins[0], maxs[0]],
+        #     [mins[1], maxs[1]],
+        #     [mins[2], maxs[2]],
+        # )).T.reshape(-1, 3)
+
+        # filtered_points = filtered_points @ rotation_bottom_mat.T
+        # object_points = object_points @ rotation_bottom_mat.T
+        # corners = corners @ rotation_bottom_mat.T
+
+        # Grasp Prediction by Object Region
         # gg is a list of grasps of type graspgroup in graspnetAPI
-        xmin = points[:, 0].min()
-        xmax = points[:, 0].max()
-        ymin = points[:, 1].min()
-        ymax = points[:, 1].max()
-        zmin = points[:, 2].min()
-        zmax = points[:, 2].max()
-        lims = [xmin, xmax, ymin, ymax, zmin, zmax]
-        gg, _ = self.grasping_model.get_grasp(points, colors_m, lims=lims, apply_object_mask=True, dense_grasp=False, collision_detection=True)
+        # lims = [
+        #     corners[:, 0].min(), corners[:, 0].max(), 
+        #     corners[:, 1].min(), corners[:, 1].max(), 
+        #     corners[:, 2].min(), corners[:, 2].max()
+        # ]
 
-        if len(gg) == 0:
+        lims = [
+            object_points[:, 0].min(), object_points[:, 0].max(), 
+            object_points[:, 1].min(), object_points[:, 1].max(), 
+            object_points[:, 2].min(), object_points[:, 2].max()
+        ]
+
+        gg, cloud = self.grasping_model.get_grasp(
+            filtered_points, 
+            filtered_colors, 
+            lims=lims, 
+            apply_object_mask=True, 
+            dense_grasp=False, 
+            collision_detection=True
+        )
+
+        if gg is None or len(gg) == 0:
             print("No Grasp detected after collision detection!")
             return False
 
         gg = gg.nms().sort_by_score()
         filter_gg = GraspGroup()
 
-        # Filtering the grasps by penalising the vertical grasps as they are not robust to calibration errors.
-        bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
         W, H = self.cam.image.size
-        # ref_vec = np.array([0, math.cos(self.cam.head_tilt), -math.sin(self.cam.head_tilt)])
-
-        # min_score, max_score = 1, -10
         image = copy.deepcopy(self.cam.image)
         img_drw = draw_rectangle(image, bbox)
         for g in gg:
             grasp_center = g.translation
             ix, iy = (
                 int(((grasp_center[0] * self.cam.fx) / grasp_center[2]) + self.cam.cx),
-                int(((-grasp_center[1] * self.cam.fy) / grasp_center[2]) + self.cam.cy),
+                int(((grasp_center[1] * self.cam.fy) / grasp_center[2]) + self.cam.cy),
             )
             if ix < 0:
                 ix = 0
@@ -409,26 +429,14 @@ class ObjectHandler:
                 ix = W - 1
             if iy >= H:
                 iy = H - 1
-            # rotation_matrix = g.rotation_matrix
-            # cur_vec = rotation_matrix[:, 0]
-            # angle = math.acos(np.dot(ref_vec, cur_vec) / (np.linalg.norm(cur_vec)))
-            # if not crop_flag:
-            #     score = g.score - 0.5 * angle ** 4
-            # else:
-            #     score = g.score
 
             if not crop_flag:
                 if seg_mask[iy, ix]:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="green")
-                    # if g.score >= 0.095:
-                    #     g.score = score
-                    # min_score = min(min_score, g.score)
-                    # max_score = max(max_score, g.score)
                     filter_gg.add(g)
                 else:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="red")
             else:
-                # g.score = score
                 filter_gg.add(g)
 
         if len(filter_gg) == 0:
@@ -445,29 +453,46 @@ class ObjectHandler:
         filter_gg = filter_gg.nms().sort_by_score()
 
         if self.cfgs.debug:
-            trans_mat = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-            scene_cloud.transform(trans_mat)
-            grippers = gg.to_open3d_geometry_list()
-            filter_grippers = filter_gg.to_open3d_geometry_list()
-            for gripper in grippers:
-                gripper.transform(trans_mat)
-            for gripper in filter_grippers:
-                gripper.transform(trans_mat)
+            # scene_cloud = o3d.geometry.PointCloud()
+            # scene_cloud.points = o3d.utility.Vector3dVector(filtered_points)
+            # scene_cloud.colors = o3d.utility.Vector3dVector(filtered_colors)
+            # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+            # o3d.visualization.draw_geometries([scene_cloud, coordinate])
 
-            visualize_cloud_geometries(
-                scene_cloud,
-                grippers,
-                visualize=not self.cfgs.headless,
-                save_file=f"{self.save_dir}/poses.jpg",
-                # rerun_name="all_anygrasp_estimated_poses",
-            )
-            visualize_cloud_geometries(
-                scene_cloud,
-                [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
-                visualize=not self.cfgs.headless,
-                save_file=f"{self.save_dir}/best_pose.jpg",
-                # rerun_name="selected_pose",
-            )
+            # object_cloud = o3d.geometry.PointCloud()
+            # object_cloud.points = o3d.utility.Vector3dVector(object_points)
+            # object_cloud.colors = o3d.utility.Vector3dVector(object_colors)
+            # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+            # o3d.visualization.draw_geometries([object_cloud, coordinate])
+
+            # trans_mat = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+            # cloud.transform(trans_mat)
+            # grippers = gg.to_open3d_geometry_list()
+            # filter_grippers = filter_gg.to_open3d_geometry_list()
+            # for gripper in grippers:
+            #     gripper.transform(trans_mat)
+            # for gripper in filter_grippers:
+            #     gripper.transform(trans_mat)
+
+            coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+            grippers = gg.to_open3d_geometry_list()
+            o3d.visualization.draw_geometries([*grippers, cloud, coordinate])
+            o3d.visualization.draw_geometries([grippers[0], cloud, coordinate])
+
+            # visualize_cloud_geometries(
+            #     cloud,
+            #     grippers,
+            #     visualize=not self.cfgs.headless,
+            #     save_file=f"{self.save_dir}/poses.jpg",
+            #     # rerun_name="all_anygrasp_estimated_poses",
+            # )
+            # visualize_cloud_geometries(
+            #     cloud,
+            #     [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
+            #     visualize=not self.cfgs.headless,
+            #     save_file=f"{self.save_dir}/best_pose.jpg",
+            #     # rerun_name="selected_pose",
+            # )
 
         if self.cfgs.open_communication:
             data_msg = "Now you received the gripper pose, good luck."
