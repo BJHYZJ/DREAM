@@ -51,8 +51,6 @@ logger = Logger(__name__)
 
 
 class DreamRobotZmqClient(AbstractRobotClient):
-
-    update_base_pose_from_full_obs: bool = False
     num_state_report_steps: int = 10000
 
     _head_pan_min = -np.pi
@@ -269,7 +267,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             joint_forces = self._state.joint_forces
         return joint_states, joint_velocities, joint_forces
 
-    def get_joint_positions(self, timeout: float = 5.0) -> np.ndarray:
+    def get_joint_position(self, timeout: float = 5.0) -> np.ndarray:
         """Get the current joint positions"""
         t0 = timeit.default_timer()
         with self._state_lock:
@@ -328,27 +326,36 @@ class DreamRobotZmqClient(AbstractRobotClient):
             np.ndarray: The base pose as [x, y, theta]
         """
         t0 = timeit.default_timer()
-        if self.update_base_pose_from_full_obs:
-            with self._obs_lock:
-                print("[Getting base pose from full obs]")
-                while self._obs is None:
-                    time.sleep(0.01)
-                    if timeit.default_timer() - t0 > timeout:
-                        logger.error("Timeout waiting for observation")
-                        return None
-                gps = self._obs.gps
-                compass = self._obs.compass
-                xyt = np.concatenate([gps, compass], axis=-1)
-        else:
-            with self._state_lock:
-                while self._state is None:
-                    time.sleep(1e-4)
-                    if timeit.default_timer() - t0 > timeout:
-                        logger.error("Timeout waiting for state message")
-                        return None
-                base_in_map_pose = self._state.base_in_map_pose
-                xyt = sophus2xyt(pose2sophus(base_in_map_pose))
+        with self._state_lock:
+            while self._state is None:
+                time.sleep(1e-4)
+                if timeit.default_timer() - t0 > timeout:
+                    logger.error("Timeout waiting for state message")
+                    return None
+            base_in_map_pose = self._state.base_in_map_pose
+            xyt = sophus2xyt(pose2sophus(base_in_map_pose))
 
+        return xyt
+
+
+    def get_arm_base_in_map_xyt(self, timeout: float = 5.0) -> np.ndarray:
+        """Get the current pose of the base.
+
+        Args:
+            timeout: How long to wait for the observation
+
+        Returns:
+            np.ndarray: The base pose as [x, y, theta]
+        """
+        t0 = timeit.default_timer()
+        with self._state_lock:
+            while self._state is None:
+                time.sleep(1e-4)
+                if timeit.default_timer() - t0 > timeout:
+                    logger.error("Timeout waiting for state message")
+                    return None
+            arm_base_in_map_pose = self._state.arm_base_in_map_pose
+            xyt = sophus2xyt(pose2sophus(arm_base_in_map_pose))
         return xyt
 
 
@@ -358,7 +365,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         Returns:
             float: The position of the gripper
         """
-        joint_state = self.get_joint_positions()
+        joint_state = self.get_joint_position()
         return joint_state[DreamIdx.GRIPPER]
 
 
@@ -393,8 +400,13 @@ class DreamRobotZmqClient(AbstractRobotClient):
     #         ee_in_arm_base_pose = self._state.ee_in_arm_base_pose
     #     return np.linalg.inv(ee_in_arm_base_pose) @ camera_in_arm_base_pose
 
-
     def get_camera_in_arm_base(self, timeout: float = 5.0) -> np.ndarray:
+        return self.get_transform(transfrom_name="camera_in_arm_base_pose", timeout=timeout)
+
+    def get_ee_in_arm_base(self, timeout: float = 5.0) -> np.ndarray:
+        return self.get_transform(transfrom_name="ee_in_arm_base_pose", timeout=timeout)
+
+    def get_transform(self, transfrom_name: str, timeout: float = 5.0) -> np.ndarray:
         t0 = timeit.default_timer()
         with self._state_lock:
             while self._state is None:
@@ -402,8 +414,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None
-            camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
-        return camera_in_arm_base_pose
+            if not hasattr(self._state, transfrom_name):
+                logger.error(f"State message does not contain transform '{transfrom_name}'")
+                return None
+            transform = getattr(self._state, transfrom_name)
+        return transform
 
 
     def look_at_target(self, target_point: np.array, is_in_map: bool = True, blocking: bool = True, timeout: float = 10.0):
@@ -613,8 +628,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 # Compute error for all 6 joints
                 error = np.linalg.norm(joint_states[3:9] - angle)
                 
-                if error < 0.01:  # 1 degree threshold
+                if error < 0.1:  # 1 degree threshold
                     # print(f"[Camera Aim] ✅ Reached target")
+                    # waiting for 1 second to make sure data transport over
+                    # time.sleep(1)
                     return True
                 
                 steps += 1
@@ -669,12 +686,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
             t0 = timeit.default_timer()
             while not self._finish:
                 # self.gripper_to(gripper_target, blocking=False)
-                joint_state = self.get_joint_positions()
-                if joint_state is None:
+                joint_position = self.get_joint_position()
+                if joint_position is None:
                     continue
                 if verbose:
-                    print("Opening gripper:", joint_state[DreamIdx.GRIPPER])
-                gripper_err = np.abs(joint_state[DreamIdx.GRIPPER] - gripper_target)
+                    print("Opening gripper:", joint_position[DreamIdx.GRIPPER])
+                gripper_err = np.abs(joint_position[DreamIdx.GRIPPER] - gripper_target)
                 if gripper_err < self._gripper_tolerance:  # 0 ~ 830
                     return True
                 t1 = timeit.default_timer()
@@ -702,7 +719,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         if blocking:
             t0 = timeit.default_timer()
             while not self._finish:
-                joint_state = self.get_joint_positions()
+                joint_state = self.get_joint_position()
                 if joint_state is None:
                     continue
                 gripper_err = np.abs(joint_state[DreamIdx.GRIPPER] - gripper_target)
@@ -1212,7 +1229,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """
         if verbose:
             logger.info("-> sending", next_action)
-            cur_joints = self.get_joint_positions()
+            cur_joints = self.get_joint_position()
             print("Current robot states")
             print(" - base: ", cur_joints[0])
             print(" - base_theta: ", cur_joints[1])

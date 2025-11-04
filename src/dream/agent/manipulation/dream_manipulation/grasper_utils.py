@@ -16,6 +16,7 @@ from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
     DreamManipulationWrapper as ManipulationWrapper,
 )
 import dream.motion.constants as constants
+from dream.utils.geometry import point_global_to_base
 
 def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):
     if save_dir is not None:
@@ -202,6 +203,55 @@ def move_to_point(robot, point, base_node, gripper_node, move_mode=1, pitch_rota
     # robot.robot.arm_to(state, blocking=True)
 
 
+def pregrasp_open_loop(self, object_xyz: np.ndarray, distance_from_object: float = 0.35):
+    """Move to a pregrasp position in an open loop manner.
+
+    Args:
+        object_xyz (np.ndarray): Location to grasp
+        distance_from_object (float, optional): Distance from object. Defaults to 0.2.
+    """
+    self.robot.arm_to(constants.pregrasp, blocking=True)
+    xyt = self.robot.get_arm_base_in_map_xyt()
+    relative_object_xyz = point_global_to_base(object_xyz, xyt)
+    ee_in_arm_base_pose = self.robot.get_ee_in_arm_base()
+    ee_rotation = ee_in_arm_base_pose[:3, :3]
+    ee_position = ee_in_arm_base_pose[:3, 3]
+
+    vector_to_object = relative_object_xyz - ee_position
+    vector_to_object = vector_to_object / np.linalg.norm(vector_to_object)
+
+    print("Absolute object xyz was:", object_xyz)
+    print("Relative object xyz was:", relative_object_xyz)
+    shifted_object_xyz = relative_object_xyz - (distance_from_object * vector_to_object)
+    print("Pregrasp xyz:", shifted_object_xyz)
+    pregrasp_pose = np.eye(4)
+    pregrasp_pose[:3, :3] = ee_rotation
+    pregrasp_pose[:3, 3] = shifted_object_xyz
+
+    success, target_joint_angles, debug_info = self.robot._robot_model.manip_ik(
+        target_pose=pregrasp_pose, q_init=constants.pregrasp, is_radians=False)
+
+    print("Pregrasp joint angles: ")
+    print(" - joint1: ", target_joint_angles[0])
+    print(" - joint2: ", target_joint_angles[1])
+    print(" - joint3: ", target_joint_angles[2])
+    print(" - joint4: ", target_joint_angles[3])
+    print(" - joint5: ", target_joint_angles[4])
+    print(" - joint5: ", target_joint_angles[5])
+
+    # get point 10cm from object
+    if not success:
+        print("Failed to find a valid IK solution.")
+        self._success = False
+        return
+
+    print(f"{self.name}: Moving to pre-grasp position.")
+    self.robot.arm_to(target_joint_angles, blocking=True)
+    print("Moving tilt and pan to center object in image, ensure robot can see target object.")
+    self.robot.look_at_target(target_point=object_xyz, is_in_map=True, blocking=True)
+    print("... done.")
+
+
 def pickup(
     manip_wrapper,
     rotation,
@@ -217,7 +267,7 @@ def pickup(
     # print(f"pin_transformed frame {pin_transformed_frame}")
     manip_wrapper.robot.gripper_to(position=gripper_width)
 
-    success, joints_solution, debug_info = manip_wrapper.robot._robot_model.compute_arm_ik(
+    success, joints_solution, debug_info = manip_wrapper.robot._robot_model.manip_ik(
         ee_goal_in_arm_base, 
         q_init=arm_angles_deg, 
         is_radians=False, 
@@ -246,7 +296,8 @@ def pickup(
             manip_wrapper.robot.arm_to(angle=constants.look_front)
     
     if (not success) or (not picked):
-        print("AnyGrasp is not work, try to use close loop grasp founction")
+        print("AnyGrasp is not work, try to use Two Stage Heuristic grasp founction")
+
         
 
     return True

@@ -314,7 +314,7 @@ class DreamManipulationWrapper:
 
         self.updateJoints()
 
-        q = self.robot.get_joint_positions()
+        q = self.robot.get_joint_position()
         q[DreamIdx.GRIPPER] = OVERRIDE_STATES.get(
             "gripper", q[DreamIdx.GRIPPER]
         )

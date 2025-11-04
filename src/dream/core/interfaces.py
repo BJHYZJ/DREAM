@@ -321,12 +321,14 @@ class ServoObservations(BaseObservations):
     """Servo observations for visual servoing."""
     rgb: np.ndarray
     depth: np.ndarray
+    xyz: Optional[np.ndarray] = None
     camera_K: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None
     depth_scaling: Optional[float] = None
     color_shape: Optional[tuple] = None
     depth_shape: Optional[tuple] = None
+    # task_observations: Optional[Dict[str, Any]] = None
     is_simulation: bool = False
 
 
@@ -334,19 +336,26 @@ class ServoObservations(BaseObservations):
 class Observations(BaseObservations):
     """Full sensor observations with all data."""
     # Core data
-    timestamp: float
-    compass: np.ndarray
-    gps: np.ndarray
-    rgb: array.array
-    depth: array.array
-    xyz: np.ndarray
-    # lidar_points: array.array
+    timestamp: Optional[float] = None
+    compass: Optional[np.ndarray] = None
+    gps: Optional[np.ndarray] = None
+    rgb: Optional[array.array] = None
+    depth: Optional[array.array] = None
+    xyz: Optional[np.ndarray] = None
     node_id: Optional[int] = None
     camera_K: Optional[np.ndarray] = None
-    pose_graph: Dict[str, np.ndarray] = None
+    depth_K: Optional[np.ndarray] = None
+    image_scaling: Optional[float] = None
+    depth_scaling: Optional[float] = None
+    color_shape: Optional[tuple] = None
+    depth_shape: Optional[tuple] = None
+    pose_graph: Optional[Dict[str, np.ndarray]] = None
+    local_tf_graph: Optional[Dict[str, np.ndarray]] = None
+    base_in_map_pose: Optional[np.ndarray] = None
     camera_in_map_pose: Optional[np.ndarray] = None
     recv_address: Optional[str] = None
     step: Optional[int] = None
     at_goal: Optional[bool] = None
+    # task_observations: Optional[Dict[str, Any]] = None
     seq_id: int = -1
     is_simulation: Optional[bool] = False

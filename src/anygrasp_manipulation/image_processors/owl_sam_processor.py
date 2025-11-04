@@ -24,17 +24,17 @@ class OWLSAMProcessor(ImageProcessor):
             "google/owlv2-large-patch14-ensemble"
         ).to(self.device)
 
-        sam_checkpoint = f"../../checkpoints/sam2_hiera_small.pt"
-        sam_config = "sam2_hiera_s.yaml"
+        sam_checkpoint = f"../../checkpoints/sam2/sam2.1_hiera_small.pt"
+        sam_config = "configs/sam2.1/sam2.1_hiera_s.yaml"
         if not os.path.exists(sam_checkpoint):
             wget.download(
-                "https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_small.pt",
+                "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt",
                 out=sam_checkpoint,
             )
         sam2_model = build_sam2(
             sam_config, sam_checkpoint, device=self.device, apply_postprocessing=False
         )
-        self.mask_predictor = SAM2ImagePredictor(sam2_model)
+        self.sam_predictor = SAM2ImagePredictor(sam2_model)
 
     def detect_obj(
         self,
@@ -66,8 +66,8 @@ class OWLSAMProcessor(ImageProcessor):
 
         bounding_boxes = bounding_box.unsqueeze(0)
 
-        self.mask_predictor.set_image(image)
-        masks, _, _ = self.mask_predictor.predict(
+        self.sam_predictor.set_image(image)
+        masks, _, _ = self.sam_predictor.predict(
             point_coords=None, point_labels=None, box=bounding_boxes, multimask_output=False
         )
         if len(masks) == 0:

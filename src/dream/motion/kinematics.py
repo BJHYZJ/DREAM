@@ -186,7 +186,7 @@ class RangerxARMKinematics:
         """Return footprint for the robot. This is expected to be a mask."""
         return Footprint(width=0.50, length=0.74, width_offset=0.0, length_offset=0.0)
     
-    def compute_arm_ik(
+    def manip_ik(
         self,
         target_pose: np.ndarray,
         q_init: Optional[np.ndarray] = None,
@@ -277,9 +277,13 @@ class RangerxARMKinematics:
             'final_error': error,
             'final_error_norm': error_norm
         }
-        return False, None, debug_info
+        joint_angles = q[:6]
+        if return_degrees:
+            joint_angles = np.rad2deg(joint_angles)
+
+        return False, joint_angles, debug_info
     
-    def compute_arm_fk(
+    def manip_fk(
         self,
         joint_angles: np.ndarray,
         return_mm: bool = False,
@@ -474,7 +478,7 @@ class RangerxARMKinematics:
         for tilt in self.TILT_RANGE:
             arm_angles_deg_new = arm_angles_deg.copy()
             arm_angles_deg_new[4] = float(tilt)
-            ee_in_arm_base_pose_new = self.compute_arm_fk(
+            ee_in_arm_base_pose_new = self.manip_fk(
                 np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
             )
             camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
@@ -511,7 +515,7 @@ class RangerxARMKinematics:
         for pan in self.PAN_RANGE:
             arm_angles_deg_new = arm_angles_deg.copy()
             arm_angles_deg_new[0] = float(pan)
-            ee_in_arm_base_pose_new = self.compute_arm_fk(
+            ee_in_arm_base_pose_new = self.manip_fk(
                 np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
             )
             camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
@@ -551,7 +555,7 @@ class RangerxARMKinematics:
     #     for tilt in self.TILT_RANGE:
     #         arm_angles_deg_new = arm_angles_deg.copy()
     #         arm_angles_deg_new[4] = float(tilt)
-    #         ee_in_arm_base_pose_new = self.compute_arm_fk(
+    #         ee_in_arm_base_pose_new = self.manip_fk(
     #             np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
     #         )
     #         camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
@@ -590,7 +594,7 @@ class RangerxARMKinematics:
     #     for pan in self.PAN_RANGE:
     #         arm_angles_deg_new = arm_angles_deg.copy()
     #         arm_angles_deg_new[0] = float(pan)
-    #         ee_in_arm_base_pose_new = self.compute_arm_fk(
+    #         ee_in_arm_base_pose_new = self.manip_fk(
     #             np.deg2rad(arm_angles_deg_new), return_mm=False, return_pose=True
     #         )
     #         camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
@@ -641,7 +645,7 @@ class RangerxARMKinematics:
         arm_angles_deg_new = arm_angles_deg.copy()
         for tilt in self.TILT_RANGE:
             arm_angles_deg_new[4] = float(tilt)
-            ee_in_arm_base_pose_new = self.compute_arm_fk(np.deg2rad(arm_angles_deg_new))
+            ee_in_arm_base_pose_new = self.manip_fk(np.deg2rad(arm_angles_deg_new))
             camera_in_arm_base_pose_new = ee_in_arm_base_pose_new @ CAMERA_IN_EE
             
             tilt_err_new = self.cal_tilt_err(camera_in_arm_base_pose_new, target_in_arm_base)
@@ -712,7 +716,7 @@ class RangerxARMKinematics:
     #         ee_in_arm_base_pose_new = camera_in_arm_base_pose_new @ np.linalg.inv(camera_in_ee)
 
     #         q_init = np.deg2rad(arm_angles_deg)
-    #         success, arm_angles_deg_new, _ = self.compute_arm_ik(
+    #         success, arm_angles_deg_new, _ = self.manip_ik(
     #             ee_in_arm_base_pose_new,
     #             q_init=q_init,
     #             return_degrees=True,
@@ -882,8 +886,8 @@ if __name__ == "__main__":
     joints_deg = [0, -45, -90, 0, 110, 0]
     joints_rad = np.deg2rad(joints_deg)
     
-    position_m, rotation = kinematics.compute_arm_fk(joints_rad, return_mm=False, return_pose=False)
-    position_mm, _ = kinematics.compute_arm_fk(joints_rad, return_mm=True)
+    position_m, rotation = kinematics.manip_fk(joints_rad, return_mm=False, return_pose=False)
+    position_mm, _ = kinematics.manip_fk(joints_rad, return_mm=True)
     roll, pitch, yaw = np.rad2deg(R.from_matrix(rotation).as_euler('xyz'))
     
     print(f"Input joints (deg): {joints_deg}")
@@ -907,7 +911,7 @@ if __name__ == "__main__":
     print(f"Target position (mm): [{target_x}, {target_y}, {target_z}]")
     print(f"Target orientation (deg): roll={target_roll}, pitch={target_pitch}, yaw={target_yaw}")
     
-    success, joints_solution, debug_info = kinematics.compute_arm_ik(target_pose, verbose=False)
+    success, joints_solution, debug_info = kinematics.manip_ik(target_pose, verbose=False)
     
     if success:
         print(f"✓ IK converged in {debug_info['iterations']} iterations")
@@ -915,7 +919,7 @@ if __name__ == "__main__":
         print(f"  Solution (deg): {np.round(joints_solution, 2).tolist()}")
         
         # Verify with FK
-        pos_verify, rot_verify = kinematics.compute_arm_fk(np.deg2rad(joints_solution), return_mm=True)
+        pos_verify, rot_verify = kinematics.manip_fk(np.deg2rad(joints_solution), return_mm=True)
         print(f"  FK verification (mm): [{pos_verify[0]:.1f}, {pos_verify[1]:.1f}, {pos_verify[2]:.1f}]")
     else:
         print(f"✗ IK failed after {debug_info['iterations']} iterations")
