@@ -379,10 +379,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
         return self._pose_graph
 
 
-    def look_front(self, blocking: bool = True, timeout: float = 10.0):
+    def look_front(self, pause_slam: bool=False, blocking: bool=True, timeout: float = 10.0):
         """Let robot look to its front."""
         self.arm_to(
             angle=constants.look_front,
+            pause_slam=pause_slam,
             blocking=blocking,
             timeout=timeout,
             reliable=True,
@@ -421,18 +422,28 @@ class DreamRobotZmqClient(AbstractRobotClient):
         return transform
 
 
-    def look_at_target(self, target_point: np.array, is_in_map: bool = True, blocking: bool = True, timeout: float = 10.0):
-        self.look_at_target_tilt(target_point, is_in_map=is_in_map, blocking=blocking, timeout=timeout)
-        self.look_at_target_pan(target_point, is_in_map=is_in_map, blocking=blocking, timeout=timeout)
-        time.sleep(0.5)
+    def look_at_target(
+        self, 
+        target_point: np.array,
+        is_in_map: bool=True,
+        pause_slam: bool=False,
+        blocking: bool=True, 
+        timeout: float=10.0
+    ):
+        self.look_at_target_tilt(target_point, is_in_map=is_in_map, pause_slam=pause_slam, blocking=blocking, timeout=timeout)
+        self.look_at_target_pan(target_point, is_in_map=is_in_map, pause_slam=pause_slam, blocking=blocking, timeout=timeout)
+        # sleep for a while ensure image is newest
+        time.sleep(1)
+        print(f"look at target_point: {target_point}")
 
 
     def look_at_target_tilt(
         self, 
         target_point: np.array, 
-        is_in_map: bool = True, 
-        blocking: bool = True, 
-        timeout: float = 10.0
+        is_in_map: bool=True,
+        pause_slam: bool=False,
+        blocking: bool=True,
+        timeout: float=10.0
     ):
         """Let robot look at the target point."""
         if not self.in_manipulation_mode():
@@ -469,15 +480,16 @@ class DreamRobotZmqClient(AbstractRobotClient):
             ee_in_arm_base_pose=ee_in_arm_base_pose,
             camera_K=camera_K,
         )
-        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout)
+        self.arm_to(arm_angles_deg, pause_slam=pause_slam, blocking=blocking, timeout=timeout)
 
 
     def look_at_target_pan(
         self, 
         target_point: np.array, 
-        is_in_map: bool = True, 
-        blocking: bool = True, 
-        timeout: float = 10.0
+        is_in_map: bool=True,
+        pause_slam: bool=False,
+        blocking: bool=True,
+        timeout: float=10.0
     ):
         """Let robot look at the target point."""
         if not self.in_manipulation_mode():
@@ -514,29 +526,15 @@ class DreamRobotZmqClient(AbstractRobotClient):
             ee_in_arm_base_pose=ee_in_arm_base_pose,
             camera_K=camera_K,
         )
-        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout)
-
-
-    def arm_to_position(self, goal_positions: np.ndarray, blocking: bool = True, timeout: float = 10.0, reliable: bool = True):
-        # """Move the arm to a particular joint configuration."""
-        # if not self.in_manipulation_mode():
-        #     raise ValueError("Robot must be in manipulation mode to move to positions")
-        # if isinstance(goal_positions, list):
-        #     goal_positions = np.array(goal_positions)
-        # assert len(goal_positions) == 6, "goal pose must be a vector of size 6"
-        # next_action = {"move_to_positions": goal_positions, "wait": blocking}
-        # self.send_action(next_action, timeout=timeout, reliable=reliable)
-        assert 1 == 1
-
-
+        self.arm_to(arm_angles_deg, pause_slam=pause_slam, blocking=blocking, timeout=timeout)
 
     def base_to(
         self,
         xyt: Union[ContinuousNavigationAction, np.ndarray],
         relative: bool = False,
-        blocking: bool = True,
         timeout: float = 10.0,
         verbose: bool = False,
+        blocking: bool = True,
         reliable: bool = True,
     ):
         """Move to xyt in global coordinates or relative coordinates.
@@ -596,9 +594,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def arm_to(
         self,
         angle: np.ndarray,
-        blocking: bool = False,
-        timeout: float = 10.0,
-        reliable: bool = True,
+        pause_slam: bool=False,
+        blocking: bool=True,
+        timeout: float=10.0,
+        reliable: bool=True,
     ):
         """Move the arm to a particular configuration. servo angle control
 
@@ -608,7 +607,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             timeout: How long to wait for the motion to complete
             reliable: Whether to resend the action if it is not received
         """
-        next_action = {"servo_angle": angle, "wait": blocking}
+        next_action = {"servo_angle": angle, "wait": blocking, "pause_slam": pause_slam}
         self.send_action(next_action, timeout=timeout, reliable=reliable)
 
         if blocking:
@@ -644,12 +643,16 @@ class DreamRobotZmqClient(AbstractRobotClient):
             
             return False
 
-
-    def gripper_to(self, position: float, blocking: bool = True, reliable: bool = True):
+    def gripper_to(
+        self, 
+        position: float,
+        pause_slam: bool=False,
+        blocking: bool=True, 
+        reliable: bool=True,
+    ):
         """Set the position of the gripper."""
-        next_action = {"gripper": position, "wait": blocking}
+        next_action = {"gripper": position, "wait": blocking, "pause_slam": pause_slam}
         self.send_action(next_action, reliable=reliable)
-
         if blocking:
             time.sleep(0.5)
 
@@ -676,65 +679,24 @@ class DreamRobotZmqClient(AbstractRobotClient):
         self._last_step = -1
 
     def open_gripper(
-        self, blocking: bool = True, timeout: float = 10.0, verbose: bool = False
+        self,
+        blocking: bool = True,
+        reliable: bool=True
     ) -> bool:
         """Open the gripper based on hard-coded presets."""
         gripper_target = self._robot_model.GRIPPER_OPEN
         print("[ZMQ CLIENT] Opening gripper to", gripper_target)
-        self.gripper_to(gripper_target, blocking=False)
-        if blocking:
-            t0 = timeit.default_timer()
-            while not self._finish:
-                # self.gripper_to(gripper_target, blocking=False)
-                joint_position = self.get_joint_position()
-                if joint_position is None:
-                    continue
-                if verbose:
-                    print("Opening gripper:", joint_position[DreamIdx.GRIPPER])
-                gripper_err = np.abs(joint_position[DreamIdx.GRIPPER] - gripper_target)
-                if gripper_err < self._gripper_tolerance:  # 0 ~ 830
-                    return True
-                t1 = timeit.default_timer()
-                if t1 - t0 > timeout:
-                    print("[ZMQ CLIENT] Timeout waiting for gripper to open")
-                    break
-                # self.gripper_to(gripper_target, blocking=False)
-                time.sleep(0.01)
-            return False
-        return True
+        self.gripper_to(gripper_target, blocking=blocking, reliable=reliable)
 
     def close_gripper(
         self,
-        loose: bool = False,
         blocking: bool = True,
-        timeout: float = 10.0,
-        verbose: bool = False,
+        reliable: bool=True
     ) -> bool:
         """Close the gripper based on hard-coded presets."""
-        gripper_target = (
-            self._robot_model.GRIPPER_CLOSED_LOOSE if loose else self._robot_model.GRIPPER_CLOSED
-        )
+        gripper_target = self._robot_model.GRIPPER_CLOSED
         print("[ZMQ CLIENT] Closing gripper to", gripper_target)
-        self.gripper_to(gripper_target, blocking=False)
-        if blocking:
-            t0 = timeit.default_timer()
-            while not self._finish:
-                joint_state = self.get_joint_position()
-                if joint_state is None:
-                    continue
-                gripper_err = np.abs(joint_state[DreamIdx.GRIPPER] - gripper_target)
-                if verbose:
-                    print("Closing gripper:", gripper_err, gripper_target)
-                if gripper_err < self._gripper_tolerance:
-                    return True
-                t1 = timeit.default_timer()
-                if t1 - t0 > timeout:
-                    print("[ZMQ CLIENT] Timeout waiting for gripper to close")
-                    break
-                # self.gripper_to(gripper_target, blocking=False)
-                time.sleep(0.01)
-            return False
-        return True
+        self.gripper_to(gripper_target, blocking=blocking, reliable=reliable)
 
     def switch_to_navigation_mode(self):
         """Velocity control of the robot base."""

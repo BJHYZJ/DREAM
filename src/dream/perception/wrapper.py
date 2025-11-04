@@ -204,14 +204,12 @@ class OvmmPerception:
         self,
         obs: Observations,
         depth_threshold: Optional[float] = None,
-        ee: bool = False,
-        confidence_threshold=None,
     ) -> Observations:
         """Run with no postprocessing. Updates observation to add semantics."""
 
         semantic, instance, task_observations = self._segmentation.predict(
-            rgb=obs.rgb if not ee else obs.ee_rgb,
-            depth=obs.depth if not ee else obs.ee_depth,
+            rgb=obs.rgb,
+            depth=obs.depth,
             depth_threshold=depth_threshold,
             draw_instance_predictions=self._use_detic_viz,
         )

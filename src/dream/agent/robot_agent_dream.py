@@ -807,7 +807,7 @@ class RobotAgent(RobotAgentBase):
         print("*" * 20, f"look at {text}", "*" * 20)
         self.robot.look_at_target(target_point=target_point)
 
-        rotation, translation, depth, width, theta_cumulative = capture_and_process_image(
+        rotation, translation, depth, width, c2ab, obj_points, theta_cumulative = capture_and_process_image(
             mode="pick",
             obj=text,
             socket=self.manip_socket,
@@ -815,26 +815,19 @@ class RobotAgent(RobotAgentBase):
         )
 
         if rotation is None:
+            print("(ಥ﹏ಥ) Try all pose but anygrasp is failed.")
             return False
-
-        # if width < 0.05:
-        #     gripper_width = 450
-        # elif width < 0.075:
-        #     gripper_width = 520
-        # else:
-        #     gripper_width = 830
         
-        camera_in_arm_base= self.robot.get_camera_in_arm_base()
-        arm_angles_deg = self.robot.get_arm_joint_state()
-        # if skip_confirmation or input("Do you want to do this manipulation? Y or N ") != "N":
-        if skip_confirmation or True:
-            pickup(
+        if skip_confirmation or input("Do you want to do this manipulation? Y or N ") != "N":
+            success = pickup(
                 self.manip_wrapper,
                 rotation,
                 translation,
-                camera_in_arm_base=camera_in_arm_base,
-                arm_angles_deg=arm_angles_deg
+                camera_in_arm_base=c2ab,
+                object_points=obj_points,
             )
+            if not success:
+                print("(ಥ﹏ಥ) Pickup task failed.")
 
         # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map
         if theta_cumulative != 0:

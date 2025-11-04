@@ -687,7 +687,7 @@ class SparseVoxelMapDream(SparseVoxelMap):
         
         debug_text = ""
         target_point = None
-
+        # TODO center points number 
         if _res is not None:
         # if obs_id is not None and obs_id <= len(self.observations):
             rgb = self.observations[obs_id - 1].rgb

@@ -10,11 +10,12 @@
 import numpy as np
 import pinocchio as pin
 
-from dream.agent.manipulation.dream_manipulation.image_publisher import ImagePublisher
+from dream.agent.manipulation.dream_manipulation.image_publisher import ImagePublisher, DreamCamera
 from dream.agent.manipulation.dream_manipulation.place import Placing
 from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
     DreamManipulationWrapper as ManipulationWrapper,
 )
+from dream.agent.zmq_client_dream import DreamRobotZmqClient
 import dream.motion.constants as constants
 from dream.utils.geometry import point_global_to_base
 
@@ -116,7 +117,7 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         print(f"side retries : {side_retries}")
         print(f"tilt retries : {tilt_retries}")
 
-        translation, rotation, depth, width, retry_flag = image_publisher.publish_image(obj, mode)
+        translation, rotation, depth, width, c2ab, obj_points, retry_flag = image_publisher.publish_image(obj, mode)
 
         if retry_flag == 1:
             # base_trans = translation[0]
@@ -131,9 +132,9 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         elif retry_flag != 0 and side_retries == 3:
             print("Tried in all angles but couldn't succeed")
             if mode == "place":
-                return None, None
+                return None, None, None, None, None
             else:
-                return None, None, None, None
+                return None, None, None, None, None, None
 
         elif side_retries == 2 and tilt_retries == 3:
             manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
@@ -166,10 +167,10 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
 
     if mode == "pick":
         print("Pick: Returning translation, rotation, depth, width")
-        return rotation, translation, depth, width, theta_cumulative
+        return rotation, translation, depth, width, c2ab, obj_points, theta_cumulative
     else:
         print("Place: Returning translation, rotation")
-        return rotation, translation, theta_cumulative
+        return rotation, translation, c2ab, obj_points, theta_cumulative
 
 
 def move_to_point(robot, point, base_node, gripper_node, move_mode=1, pitch_rotation=0):
@@ -202,12 +203,11 @@ def move_to_point(robot, point, base_node, gripper_node, move_mode=1, pitch_rota
     # # state[0] -= 0.012
     # robot.robot.arm_to(state, blocking=True)
 
-
 def pregrasp_open_loop(self, object_xyz: np.ndarray, distance_from_object: float = 0.35):
     """Move to a pregrasp position in an open loop manner.
 
     Args:
-        object_xyz (np.ndarray): Location to grasp
+        object_xyz (np.ndarray): Location to grasp, xyz is in map frame
         distance_from_object (float, optional): Distance from object. Defaults to 0.2.
     """
     self.robot.arm_to(constants.pregrasp, blocking=True)
@@ -242,30 +242,33 @@ def pregrasp_open_loop(self, object_xyz: np.ndarray, distance_from_object: float
     # get point 10cm from object
     if not success:
         print("Failed to find a valid IK solution.")
-        self._success = False
         return
 
     print(f"{self.name}: Moving to pre-grasp position.")
     self.robot.arm_to(target_joint_angles, blocking=True)
-    print("Moving tilt and pan to center object in image, ensure robot can see target object.")
-    self.robot.look_at_target(target_point=object_xyz, is_in_map=True, blocking=True)
-    print("... done.")
 
+def heuristic_grasp_pose(object_points: np.ndarray):
+    pass
 
 def pickup(
-    manip_wrapper,
-    rotation,
-    translation,
-    camera_in_arm_base,
-    arm_angles_deg,
-    gripper_width=830,
+    manip_wrapper: ManipulationWrapper,
+    rotation: np.ndarray,
+    translation: np.ndarray,
+    camera_in_arm_base: np.ndarray,
+    object_points: np.ndarray,  # obj_points in camera
+    gripper_width: int=830,
+    distance_from_object: float=0.35
 ):
     ee_goal_in_camera_pose = np.eye(4)
     ee_goal_in_camera_pose[:3, :3] = rotation
     ee_goal_in_camera_pose[:3, 3] = translation
     ee_goal_in_arm_base = camera_in_arm_base @ ee_goal_in_camera_pose
-    # print(f"pin_transformed frame {pin_transformed_frame}")
+    
+    assert len(object_points.shape) == 2 and object_points.shape[1] == 3
+    object_points_arm_base = (camera_in_arm_base[:3, :3] @ object_points.T).T + camera_in_arm_base[:3, 3] # object points in arm base
+
     manip_wrapper.robot.gripper_to(position=gripper_width)
+    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
 
     success, joints_solution, debug_info = manip_wrapper.robot._robot_model.manip_ik(
         ee_goal_in_arm_base, 
@@ -273,31 +276,62 @@ def pickup(
         is_radians=False, 
         verbose=False
     )
-    
     picked = False
+    if not success:
+        # try use heuristic pickup
+        # transfer obj_points to arm base frame
+        heuristic_grasp_pose(object_points=object_points_arm_base)
+        return False
+
+    # Move to a pregrasp position in an open loop manner.
+    relative_xyz = np.median(object_points_arm_base, axis=0)  # arm base to object
+    ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
+    ee_rotation = ee_in_arm_base_pose[:3, :3]
+    ee_position = ee_in_arm_base_pose[:3, 3]
+
+    vector_to_object = relative_xyz - ee_position
+    vector_to_object = vector_to_object / np.linalg.norm(vector_to_object)
+
+    print("Relative object xyz was:", relative_xyz)
+    shifted_object_xyz = relative_xyz - (distance_from_object * vector_to_object)
+    print("Pregrasp xyz:", shifted_object_xyz)
+    pregrasp_pose = np.eye(4)
+    pregrasp_pose[:3, :3] = ee_rotation
+    pregrasp_pose[:3, 3] = shifted_object_xyz
+
+    success, target_joint_angles, debug_info = manip_wrapper.robot._robot_model.manip_ik(
+        target_pose=pregrasp_pose, q_init=constants.pregrasp, is_radians=False)
+
+    print("Pregrasp joint angles: ")
+    print(" - joint1: ", target_joint_angles[0])
+    print(" - joint2: ", target_joint_angles[1])
+    print(" - joint3: ", target_joint_angles[2])
+    print(" - joint4: ", target_joint_angles[3])
+    print(" - joint5: ", target_joint_angles[4])
+    print(" - joint5: ", target_joint_angles[5])
+
+    # get point 10cm from object
+    # when camera is close to object, pause slam will imporve slam system rubust
     if success:
-        print("set gripper to suit position.")
+        print(f"Moving to pre-grasp position.")
+        manip_wrapper.robot.arm_to(target_joint_angles, pause_slam=True, blocking=True)
+    else:
         # move arm to safty place
-        manip_wrapper.robot.arm_to(angle=constants.look_front)
-        # First, move joint6 to the target position. 
-        # This process prevents the gripper from colliding with the object during rotation.
-        joint6_change_deg = constants.look_front.copy()
-        joint6_change_deg[5] = joints_solution[5]
-        manip_wrapper.robot.arm_to(angle=joint6_change_deg)
-        manip_wrapper.robot.arm_to(angle=joints_solution)
-        picked = manip_wrapper.pickup(gripper_width)
-        if picked:
-            manip_wrapper.robot.arm_to(angle=constants.look_front)
-            # look at back and place to back
-            manip_wrapper.robot.arm_to(angle=constants.back_front)
-            manip_wrapper.robot.arm_to(angle=constants.back_place)
-            manip_wrapper.robot.gripper_to(position=830)
-            manip_wrapper.robot.arm_to(angle=constants.back_front)
-            manip_wrapper.robot.arm_to(angle=constants.look_front)
-    
-    if (not success) or (not picked):
-        print("AnyGrasp is not work, try to use Two Stage Heuristic grasp founction")
+        manip_wrapper.robot.look_front(pause_slam=True, blocking=True)
 
-        
+    print("set gripper to suit position.")
+    # First, move joint6 to the target position. 
+    # This process prevents the gripper from colliding with the object during rotation.
+    joint6_change_deg = manip_wrapper.robot.get_arm_joint_state()
+    joint6_change_deg[5] = joints_solution[5]
+    manip_wrapper.robot.arm_to(angle=joint6_change_deg)
 
+    # move to the target position
+    manip_wrapper.robot.arm_to(angle=joints_solution, pause_slam=True, blocking=True)
+    picked = manip_wrapper.pickup(width=gripper_width, pause_slam=True)
+    if not picked:
+        print("(ಥ﹏ಥ) It failed because I didn't do it properly...")
+        return False
+    # place_black, the camera will look at robot body, pause slam to avoid add robot mesh to scene
+    manip_wrapper.place_back(pause_slam=True)
     return True

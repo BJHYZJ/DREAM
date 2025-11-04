@@ -112,7 +112,9 @@ class ImagePublisher:
         rotation = recv_array(self.socket)
         self.socket.send_string("rotation received by robot")
         add_data = recv_array(self.socket)
-        self.socket.send_string(f"Additional data received robot")
+        self.socket.send_string(f"Additional data received by robot")
+        obj_points = recv_array(self.socket)
+        self.socket.send_string(f"object points received by robot")
 
         depth = add_data[0]
         width = add_data[1]
@@ -123,4 +125,4 @@ class ImagePublisher:
         print("rotation: ")
         print(rotation)
         print(self.socket.recv_string())
-        return translation, rotation, depth, width, retry
+        return translation, rotation, depth, width, c2ab, obj_points, retry

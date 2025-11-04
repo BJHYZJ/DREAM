@@ -24,7 +24,7 @@ class ImageProcessor(ABC):
 
         if save_file is not None:
             new_image.save(save_file)
-            new_image.show()
+            # new_image.show()
 
     def draw_bounding_boxes(
         self,
@@ -52,7 +52,7 @@ class ImageProcessor(ABC):
             else:
                 img_drw.rectangle([(box[0], box[1]), (box[2], box[3])], outline="white")
         new_image.save(save_file)
-        new_image.show()
+        # new_image.show()
         print(f"Saved Detection boxes at {save_file}")
 
     def draw_mask_on_image(

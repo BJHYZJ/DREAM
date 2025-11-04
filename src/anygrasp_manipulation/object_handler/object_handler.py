@@ -154,7 +154,7 @@ class ObjectHandler:
                     tries = tries + 1
                     print(f"Try no: {tries}")
                     data_msg = "No Objects detected, Have to try again"
-                    self.socket.send_data([[0], [0], [0, 0, 2], data_msg])
+                    self.socket.send_data([[0], [0], [0, 0, 2], [], data_msg])
                     if tries == 11:
                         return
                     continue
@@ -187,7 +187,7 @@ class ObjectHandler:
                     tries = tries + 1
                     print(f"Try no: {tries}")
                     data_msg = "No poses, Have to try again"
-                    self.socket.send_data([[0], [0], [0, 0, 2], data_msg])
+                    self.socket.send_data([[0], [0], [0, 0, 2], [], data_msg])
                     # self.socket.send_data("No poses, Have to try again")
                 else:
                     print(
@@ -239,7 +239,7 @@ class ObjectHandler:
         if self.cfgs.open_communication:
             data_msg = f"Object center in camera frame: {p_cam} is received."
             # self.socket.send_data([p_cam.tolist(), [0, 0, 1], data_msg])
-            self.socket.send_data([p_cam, [], [0, 0, 1], data_msg])
+            self.socket.send_data([p_cam, [], [0, 0, 1], [], data_msg])
 
 
     def place(self, points: np.ndarray, seg_mask: np.ndarray) -> bool:
@@ -338,6 +338,7 @@ class ObjectHandler:
                     np.array(transformed_point, dtype=np.float64),
                     [0],
                     [0, 0, 0],
+                    [],
                     data_msg,
                 ]
             )
@@ -559,6 +560,7 @@ class ObjectHandler:
                     filter_gg[0].translation,
                     filter_gg[0].rotation_matrix @ rotation_top_mat,
                     [filter_gg[0].depth, filter_gg[0].width, 0],
+                    object_points,
                     data_msg,
                 ]
             )

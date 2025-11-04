@@ -199,7 +199,8 @@ class DreamManipulationWrapper:
     #         reliable=False
     #     )
 
-    def pickup(self, width):
+
+    def pickup(self, width, pause_slam: bool=True):
         """
         Code for grasping the object
         Gripper closes gradually until it encounters resistance
@@ -207,7 +208,7 @@ class DreamManipulationWrapper:
         next_gripper_pos = width
         while True:
             self.robot.gripper_to(
-                max(next_gripper_pos, self.GRIPPER_MIN), blocking=True
+                max(next_gripper_pos, self.GRIPPER_MIN), pause_slam=pause_slam, blocking=True
             )
             curr_gripper_pose = self.robot.get_gripper_position()
             print('Robot means to move gripper to', next_gripper_pos)
@@ -225,6 +226,14 @@ class DreamManipulationWrapper:
                 next_gripper_pos = 0 # Make sure the gripper doesn't go below 0
 
             time.sleep(0.1)
+
+    def place_back(self, pause_slam: bool=True):
+        self.robot.look_front(pause_slam=pause_slam)
+        self.robot.arm_to(angle=constants.back_front, pause_slam=pause_slam)
+        self.robot.arm_to(angle=constants.back_place, pause_slam=pause_slam)
+        self.robot.gripper_to(position=self.GRIPPER_MAX, pause_slam=pause_slam)
+        self.robot.arm_to(angle=constants.back_front, pause_slam=pause_slam)
+        self.robot.look_front(pause_slam=pause_slam)
 
     def updateJoints(self):
         """

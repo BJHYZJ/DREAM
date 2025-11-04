@@ -37,6 +37,7 @@ from dream.motion.constants import DreamIdx
 from dream.utils.geometry import point_global_to_base
 from dream.utils.gripper import GripperArucoDetector
 from dream.utils.point_cloud import show_point_cloud
+from dream.core.interfaces import ServoObservations
 
 
 class GraspObjectOperation(ManagedOperation):
@@ -115,8 +116,8 @@ class GraspObjectOperation(ManagedOperation):
     _grasp_lift_offset: float = 0.0  # -0.05
 
     # Visual servoing config
-    track_image_center: bool = True  # Set to False if you want to use aruco marker, but since the position between gripper center and the image is fixed, this is not needed.
-    gripper_aruco_detector: GripperArucoDetector = None
+    # track_image_center: bool = True  # Set to False if you want to use aruco marker, but since the position between gripper center and the image is fixed, this is not needed.
+    # gripper_aruco_detector: GripperArucoDetector = None
     min_points_to_approach: int = 100
     detected_center_offset_x: int = 0  # -10
     detected_center_offset_y: int = 0  # -40
@@ -298,7 +299,7 @@ class GraspObjectOperation(ManagedOperation):
                 if iid < 0:
                     continue
 
-                rgb = servo.ee_rgb * (servo.instance == iid)[:, :, None].repeat(3, axis=-1)
+                rgb = servo.rgb * (servo.instance == iid)[:, :, None].repeat(3, axis=-1)
 
                 features = self.agent.encode_image(rgb)
                 score = self.agent.compare_features(text_features, features).item()
@@ -385,8 +386,8 @@ class GraspObjectOperation(ManagedOperation):
         # Find the best masks
         class_mask = self.get_class_mask(servo)
         instance_mask = servo.instance
-        if servo.ee_xyz is None:
-            servo.compute_ee_xyz()
+        if servo.xyz is None:
+            servo.compute_xyz()
 
         target_mask = None
         target_mask_pts = float("-inf")
@@ -527,9 +528,9 @@ class GraspObjectOperation(ManagedOperation):
         success = False
         prev_lift = float("Inf")
 
-        # Track the fingertips using aruco markers
-        if self.gripper_aruco_detector is None:
-            self.gripper_aruco_detector = GripperArucoDetector()
+        # # Track the fingertips using aruco markers
+        # if self.gripper_aruco_detector is None:
+        #     self.gripper_aruco_detector = GripperArucoDetector()
 
         # Track the last object location and the number of times we've failed to grasp
         current_xyz = None
@@ -565,27 +566,27 @@ class GraspObjectOperation(ManagedOperation):
         while timeit.default_timer() - t0 < max_duration:
 
             # Get servo observation
-            servo = self.robot.get_servo_observation()
-            joint_state = self.robot.get_joint_positions()
-            world_xyz = servo.get_ee_xyz_in_world_frame()
+            servo_obs: ServoObservations = self.robot.get_servo_observation()
+            joint_position = self.robot.get_joint_position()
+            ee_in_map_pos = self.robot.get_transform("ee_in_map_pose")[:3, 3]
 
             if not self.open_loop:
                 # Now compute what to do
-                base_x = joint_state[HelloStretchIdx.BASE_X]
-                wrist_pitch = joint_state[HelloStretchIdx.WRIST_PITCH]
-                arm = joint_state[HelloStretchIdx.ARM]
-                lift = joint_state[HelloStretchIdx.LIFT]
+                base_x = joint_position[DreamIdx.BASE_X]
+                roll = joint_position[DreamIdx.JOINT1]
+                pitch = joint_position[DreamIdx.JOINT5]
+                yaw = joint_position[DreamIdx.JOINT6]
 
             # Compute the center of the image that we will be tracking
-            if self.track_image_center:
-                center_x, center_y = servo.ee_rgb.shape[1] // 2, servo.ee_rgb.shape[0] * 13 // 20
-            else:
-                center = self.gripper_aruco_detector.detect_center(servo.ee_rgb)
-                if center is not None:
-                    center_y, center_x = np.round(center).astype(int)
-                    center_y += self.detected_center_offset_y
-                else:
-                    center_x, center_y = servo.ee_rgb.shape[1] // 2, servo.ee_rgb.shape[0] // 2
+            # if self.track_image_center:
+            center_x, center_y = servo_obs.color_shape[1] // 2, servo_obs.color_shape[0] // 2
+            # else:
+            #     center = self.gripper_aruco_detector.detect_center(servo.ee_rgb)
+            #     if center is not None:
+            #         center_y, center_x = np.round(center).astype(int)
+            #         center_y += self.detected_center_offset_y
+            #     else:
+            #         center_x, center_y = servo.ee_rgb.shape[1] // 2, servo.ee_rgb.shape[0] // 2
 
             # add offset to center
             center_x += self.detected_center_offset_x  # move closer to top
@@ -595,7 +596,7 @@ class GraspObjectOperation(ManagedOperation):
                 # This means that we are just using an open-vocabulary object detector to find the object so we need to update the vocabulary.
                 self.agent.semantic_sensor.update_vocabulary_list([self.target_object], 1)
                 self.agent.semantic_sensor.set_vocabulary(1)
-            servo = self.agent.semantic_sensor.predict(servo, ee=True)
+            servo = self.agent.semantic_sensor.predict(servo_obs)
             latest_mask = self.get_target_mask(servo, center=(center_x, center_y))
 
             # dilate mask
@@ -614,7 +615,7 @@ class GraspObjectOperation(ManagedOperation):
 
             target_mask = self.observations.get_latest_observation()
             if target_mask is None:
-                target_mask = np.zeros([servo.ee_rgb.shape[0], servo.ee_rgb.shape[1]], dtype=bool)
+                target_mask = np.zeros([servo.color_shape[0], servo.color_shape.shape[1]], dtype=bool)
 
             # Get depth
             if center_depth is not None and center_depth > 1e-8:
@@ -908,57 +909,23 @@ class GraspObjectOperation(ManagedOperation):
 
         # Now we should be able to see the object if we orient gripper properly
         # Get the end effector pose
-        obs = self.robot.get_observation()
-        joint_state = self.robot.get_joint_positions()
-        model = self.robot.get_robot_model()
+        # servo_obs = self.robot.get_servo_observation()
+        joint_position = self.robot.get_joint_position()
+        # robot_model = self.robot.get_robot_model()
 
-        if joint_state[HelloStretchIdx.GRIPPER] < 0.0:
+        if joint_position[DreamIdx.GRIPPER] < 0.0:
             self.robot.open_gripper(blocking=True)
 
-        # Get the current base pose of the robot
-        xyt = self.robot.get_base_pose()
+        # Get the current arm base pose of the robot
+        # xyt = self.robot.get_arm_base_in_map_xyt()
 
         # Note that these are in the robot's current coordinate frame;
         # they're not global coordinates, so this is ok to use to compute motions.
 
         # New ee pose = roughly the end of the arm
-        object_xyz = self.get_object_xyz()
-        relative_object_xyz = point_global_to_base(object_xyz, xyt)
-
-        # Compute the angles necessary
-        if self.use_pitch_from_vertical:
-            # head_pos = obs.camera_pose[:3, 3]
-            obs = self.robot.get_observation()
-            joint_state = obs.joint
-            model = self.robot.get_robot_model()
-
-            # link_gripper_s3_body is the the joint connecting the gripper with arm end effector
-            ee_pos, ee_rot = model.manip_fk(joint_state, node=self.node_for_grasp_pose)
-
-            # Convert quaternion to pose
-            pose = np.eye(4)
-            pose[:3, :3] = R.from_quat(ee_rot).as_matrix()
-            pose[:3, 3] = ee_pos
-
-            # Move back 0.35m from grasp coordinate
-            delta = np.eye(4)
-            delta[2, 3] = -0.35
-            pose = np.dot(pose, delta)
-
-            # New ee pose = roughly the end of the arm
-            ee_pos = pose[:3, 3]
-
-            # dy = np.abs(head_pos[1] - relative_object_xyz[1])
-            # dz = np.abs(head_pos[2] - relative_object_xyz[2])
-            dy = np.abs(ee_pos[1] - relative_object_xyz[1])
-            dz = np.abs(ee_pos[2] - relative_object_xyz[2])
-            pitch_from_vertical = np.arctan2(dy, dz)
-        else:
-            pitch_from_vertical = 0.0
-
-        # Compute final pregrasp joint state goal and send the robot there
-        joint_state[HelloStretchIdx.WRIST_PITCH] = self.offset_from_vertical + pitch_from_vertical
-        self.robot.arm_to(joint_state, head=constants.look_at_ee, blocking=True)
+        # object_xyz = self.get_object_xyz()
+        # Look at target object
+        # self.robot.look_at_target_tilt(target_point=object_xyz)
 
         if self.servo_to_grasp:
             # If we try to servo, then do this
@@ -995,81 +962,45 @@ class GraspObjectOperation(ManagedOperation):
             object_xyz (np.ndarray): Location to grasp
             distance_from_object (float, optional): Distance from object. Defaults to 0.2.
         """
-        xyt = self.robot.get_base_pose()
+        self.robot.arm_to(constants.pregrasp, blocking=True)
+        xyt = self.robot.get_arm_base_in_map_xyt()
         relative_object_xyz = point_global_to_base(object_xyz, xyt)
+        ee_in_arm_base_pose = self.robot.get_ee_in_arm_base()
+        ee_rotation = ee_in_arm_base_pose[:3, :3]
+        ee_position = ee_in_arm_base_pose[:3, 3]
 
-        joint_state = self.robot.get_joint_positions()
-
-        model = self.robot.get_robot_model()
-        ee_pos, ee_rot = model.manip_fk(joint_state)
-
-        # End effector should be at most 45 degrees inclined
-        rotation = R.from_quat(ee_rot)
-        rotation = rotation.as_euler("xyz")
-
-        # Track if the angle to the target object is too large (i.e. it's on the floor)
-        print("Rotation", rotation)
-        if rotation[1] > np.pi / 4:
-            rotation[1] = np.pi / 4
-        old_ee_rot = ee_rot
-        ee_rot = R.from_euler("xyz", rotation).as_quat()
-
-        vector_to_object = relative_object_xyz - ee_pos
+        vector_to_object = relative_object_xyz - ee_position
         vector_to_object = vector_to_object / np.linalg.norm(vector_to_object)
-
-        # It should not be more than 45 degrees inclined
-        vector_to_object[2] = max(vector_to_object[2], vector_to_object[1])
 
         print("Absolute object xyz was:", object_xyz)
         print("Relative object xyz was:", relative_object_xyz)
         shifted_object_xyz = relative_object_xyz - (distance_from_object * vector_to_object)
         print("Pregrasp xyz:", shifted_object_xyz)
+        pregrasp_pose = np.eye(4)
+        pregrasp_pose[:3, :3] = ee_rotation
+        pregrasp_pose[:3, 3] = shifted_object_xyz
 
-        # IK
-        target_joint_positions, _, _, success, _ = self.robot_model.manip_ik_for_grasp_frame(
-            shifted_object_xyz, ee_rot, q0=joint_state
-        )
+        success, target_joint_angles, debug_info = self.robot._robot_model.manip_ik(
+            target_pose=pregrasp_pose, q_init=constants.pregrasp, is_radians=False)
 
-        print("Pregrasp joint positions: ")
-        print(" - arm: ", target_joint_positions[HelloStretchIdx.ARM])
-        print(" - lift: ", target_joint_positions[HelloStretchIdx.LIFT])
-        print(" - roll: ", target_joint_positions[HelloStretchIdx.WRIST_ROLL])
-        print(" - pitch: ", target_joint_positions[HelloStretchIdx.WRIST_PITCH])
-        print(" - yaw: ", target_joint_positions[HelloStretchIdx.WRIST_YAW])
+        print("Pregrasp joint angles: ")
+        print(" - joint1: ", target_joint_angles[0])
+        print(" - joint2: ", target_joint_angles[1])
+        print(" - joint3: ", target_joint_angles[2])
+        print(" - joint4: ", target_joint_angles[3])
+        print(" - joint5: ", target_joint_angles[4])
+        print(" - joint5: ", target_joint_angles[5])
 
         # get point 10cm from object
         if not success:
             print("Failed to find a valid IK solution.")
             self._success = False
             return
-        elif (
-            target_joint_positions[HelloStretchIdx.ARM] < -0.05
-            or target_joint_positions[HelloStretchIdx.LIFT] < -0.05
-        ):
-            print(
-                f"{self.name}: Target joint state is invalid: {target_joint_positions}. Positions for arm and lift must be positive."
-            )
-            self._success = False
-            return
-
-        # Make sure arm and lift are positive
-        target_joint_positions[HelloStretchIdx.ARM] = max(
-            target_joint_positions[HelloStretchIdx.ARM], 0
-        )
-        target_joint_positions[HelloStretchIdx.LIFT] = max(
-            target_joint_positions[HelloStretchIdx.LIFT], 0
-        )
-
-        # Zero out roll and yaw
-        target_joint_positions[HelloStretchIdx.WRIST_YAW] = 0
-        target_joint_positions[HelloStretchIdx.WRIST_ROLL] = 0
-
-        # Lift the arm up a bit
-        target_joint_positions_lifted = target_joint_positions.copy()
-        target_joint_positions_lifted[HelloStretchIdx.LIFT] += self.lift_distance
 
         print(f"{self.name}: Moving to pre-grasp position.")
-        self.robot.arm_to(target_joint_positions, head=constants.look_at_ee, blocking=True)
+        self.robot.arm_to(target_joint_angles, blocking=True)
+        print("Moving tilt and pan to center object in image, ensure robot can see target object.")
+        self.robot.look_at_target(target_point=object_xyz, is_in_map=True, blocking=True)
         print("... done.")
 
     def grasp_open_loop(self, object_xyz: np.ndarray):
