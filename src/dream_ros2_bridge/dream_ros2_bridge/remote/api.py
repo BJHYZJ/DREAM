@@ -588,9 +588,6 @@ class DreamClient(AbstractRobotClient):
         """Get 3x3 matrix of camera intrisics K"""
         return torch.from_numpy(self.cam._ros_client.rgb_cam.K).float()
 
-    def set_servo_angle(self, angle, is_radian=False, wait=True):
-        self.manip.set_servo_angle(angle, is_radian=is_radian, wait=wait)
-
     def get_servo_angle(self):
         return self.manip.get_servo_angle()
 

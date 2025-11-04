@@ -26,6 +26,7 @@ import cv2
 # from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 import rclpy
 import sophuspy as sp
+from contextlib import contextmanager
 from control_msgs.action import FollowJointTrajectory
 from geometry_msgs.msg import PointStamped, Pose, PoseStamped, Twist
 from hello_helpers.joint_qpos_conversion import get_Idx
@@ -44,7 +45,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool, Empty, Float32, Float64MultiArray, String
-from std_srvs.srv import SetBool, Trigger
+from std_srvs.srv import SetBool, Trigger, Empty as EmptySrv
 from trajectory_msgs.msg import JointTrajectoryPoint
 
 
@@ -502,6 +503,9 @@ class DreamRosInterface(Node):
         self.goto_on_service = self.create_client(Trigger, "goto_controller/enable", callback_group=self.cb_srv_group)
         self.goto_off_service = self.create_client(Trigger, "goto_controller/disable", callback_group=self.cb_srv_group)
         self.set_yaw_service = self.create_client(SetBool, "goto_controller/set_yaw_tracking", callback_group=self.cb_srv_group)
+        # rtabmap pause and resume to avoid rtabmap update when pick and place
+        self._rtabmap_pause_client = self.create_client(EmptySrv, "/rtabmap/rtabmap/pause", callback_group=self.cb_srv_group)
+        self._rtabmap_resume_client = self.create_client(EmptySrv, "/rtabmap/rtabmap/resume", callback_group=self.cb_srv_group)
         # print("Wait for mode service...")
         # self.pos_mode_service.wait_for_service()
 
@@ -622,6 +626,46 @@ class DreamRosInterface(Node):
 
         # self.ros_joint_names = ROS_ARM_JOINTS
         self.joint_names = ROBOT_JOINTS
+
+    def _call_empty_service(self, client, timeout: float = 2.0) -> bool:
+        if client is None:
+            self.get_logger().warning("Service client is not initialized.")
+            return False
+        service_name = getattr(client, "srv_name", getattr(client, "service_name", "service"))
+        if not client.wait_for_service(timeout_sec=timeout):
+            self.get_logger().warning(f"Service {service_name} not available.")
+            return False
+        future = client.call_async(EmptySrv.Request())
+        start = time.time()
+        while rclpy.ok() and not future.done():
+            time.sleep(0.01)
+            if timeout and timeout > 0 and (time.time() - start) > timeout:
+                self.get_logger().warning(f"Timed out waiting for {service_name} response.")
+                return False
+        if not future.done():
+            self.get_logger().warning(f"Service {service_name} interrupted before completion.")
+            return False
+        try:
+            future.result()
+        except Exception as exc:  # pylint: disable=broad-except
+            self.get_logger().warning(f"Service {service_name} failed: {exc}")
+            return False
+        return True
+
+    def pause_rtabmap(self, timeout: float = 2.0) -> bool:
+        return self._call_empty_service(self._rtabmap_pause_client, timeout)
+
+    def resume_rtabmap(self, timeout: float = 2.0) -> bool:
+        return self._call_empty_service(self._rtabmap_resume_client, timeout)
+
+    @contextmanager
+    def rtabmap_paused(self, timeout: float = 2.0):
+        paused = self.pause_rtabmap(timeout=timeout)
+        try:
+            yield
+        finally:
+            if paused:
+                self.resume_rtabmap(timeout=timeout)
 
     # def _create_cameras(self, use_d405: bool = True):
     def _create_cameras(self):

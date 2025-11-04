@@ -277,14 +277,17 @@ class ZmqServer(BaseZmqServer):
                 print(f"Moving head to {action['servo_angle']}")
             if not self.client.in_manipulation_mode():
                 self.client.switch_to_manipulation_mode()
-            self.client.set_servo_angle(
+            pause_slam = action.get("pause_slam", False)
+            self.client.manip.set_servo_angle(
                 angle=action["servo_angle"],
-                wait=action['wait']
+                wait=action['wait'],
+                pause_slam=pause_slam,
             )
         elif "gripper" in action:
             if self.verbose or True:
                 print(f"Moving gripper to {action['gripper']}")
-            self.client.manip.set_gripper(action["gripper"])
+            pause_slam = action.get("pause_slam", False)
+            self.client.manip.set_gripper(action["gripper"], pause_slam=pause_slam)
         else:
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)
