@@ -310,7 +310,6 @@ def pickup(
         verbose=False
     )
     picked = False
-    success1 = False
     if not success1:
         print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
         # try use heuristic pickup
@@ -359,39 +358,6 @@ def pickup(
         )
         if not success2:
             return False
-
-        # desired_gripper_yaw = object_yaw + np.pi / 2.0
-        # desired_gripper_yaw = np.arctan2(
-        #     np.sin(desired_gripper_yaw),
-        #     np.cos(desired_gripper_yaw),
-        # )
-        # ee_rot = ee_in_arm_base_pose[:3, :3]
-        # current_gripper_yaw = np.arctan2(ee_rot[1, 0], ee_rot[0, 0])
-        # delta_yaw = np.arctan2(
-        #     np.sin(desired_gripper_yaw - current_gripper_yaw),
-        #     np.cos(desired_gripper_yaw - current_gripper_yaw),
-        # )
-        # print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
-        # Rz = np.array([
-        #     [np.cos(delta_yaw), -np.sin(delta_yaw), 0.0],
-        #     [np.sin(delta_yaw),  np.cos(delta_yaw), 0.0],
-        #     [0.0,                0.0,               1.0],
-        # ])
-        # ee_goal_in_arm_base_new = ee_goal_in_arm_base.copy()
-        # ee_goal_in_arm_base_new[:3, :3] = ee_goal_in_arm_base_new[:3, :3] @ Rz
-
-        # # Use the desired angle of joint 6 as the initial value of ik.
-        # arm_angles_deg_new = arm_angles_deg.copy()
-        # arm_angles_deg_new[5] += np.degrees(delta_yaw)
-        
-        # success2, joints_solution2, debug_info2 = manip_wrapper.robot._robot_model.manip_ik(
-        #     ee_goal_in_arm_base_new, 
-        #     q_init=arm_angles_deg_new, 
-        #     is_radians=False, 
-        #     verbose=False
-        # )
-        # if not success2:
-        #     return False
 
     if success1:
         joints_solution = joints_solution1
