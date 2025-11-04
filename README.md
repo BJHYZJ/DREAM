@@ -4,3 +4,10 @@
 
 rerun-sdk==0.26.1
 numpy==1.24.3
+
+
+网络端口被占用时
+
+```bash
+sudo lsof -i:4403
+```
