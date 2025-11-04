@@ -647,14 +647,14 @@ class DreamRobotZmqClient(AbstractRobotClient):
         self, 
         position: float,
         pause_slam: bool=False,
-        blocking: bool=True, 
-        reliable: bool=True,
+        blocking: bool=False, 
+        reliable: bool=False,
     ):
         """Set the position of the gripper."""
         next_action = {"gripper": position, "wait": blocking, "pause_slam": pause_slam}
         self.send_action(next_action, reliable=reliable)
         if blocking:
-            time.sleep(0.5)
+            time.sleep(0.1)
 
     def set_velocity(self, v: float, w: float):
         """Move to xyt in global coordinates or relative coordinates.
@@ -680,8 +680,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def open_gripper(
         self,
-        blocking: bool = True,
-        reliable: bool=True
+        blocking: bool=True,
+        reliable: bool=False
     ) -> bool:
         """Open the gripper based on hard-coded presets."""
         gripper_target = self._robot_model.GRIPPER_OPEN
@@ -690,8 +690,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def close_gripper(
         self,
-        blocking: bool = True,
-        reliable: bool=True
+        blocking: bool=True,
+        reliable: bool=False
     ) -> bool:
         """Close the gripper based on hard-coded presets."""
         gripper_target = self._robot_model.GRIPPER_CLOSED

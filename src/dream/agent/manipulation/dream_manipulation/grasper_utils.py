@@ -138,7 +138,6 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
 
         elif side_retries == 2 and tilt_retries == 3:
             manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
-            manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
             side_retries = 3
             theta_cumulative += 15
 
@@ -146,12 +145,10 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
             if tilt_retries == 3:
                 if side_retries == 0:
                     manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
-                    manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
                     side_retries = 1
                     theta_cumulative += 15
                 else:
                     manip_wrapper.move_to_position(base_theta=np.deg2rad(-30))
-                    manip_wrapper.robot.look_at_target(target_in_cam, is_in_map=False)
                     side_retries = 2
                     theta_cumulative -= 30
                 tilt_retries = 1
@@ -267,23 +264,7 @@ def pickup(
     assert len(object_points.shape) == 2 and object_points.shape[1] == 3
     object_points_arm_base = (camera_in_arm_base[:3, :3] @ object_points.T).T + camera_in_arm_base[:3, 3] # object points in arm base
 
-    manip_wrapper.robot.gripper_to(position=gripper_width)
-    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
-
-    success, joints_solution, debug_info = manip_wrapper.robot._robot_model.manip_ik(
-        ee_goal_in_arm_base, 
-        q_init=arm_angles_deg, 
-        is_radians=False, 
-        verbose=False
-    )
-    picked = False
-    if not success:
-        # try use heuristic pickup
-        # transfer obj_points to arm base frame
-        heuristic_grasp_pose(object_points=object_points_arm_base)
-        return False
-
-    # Move to a pregrasp position in an open loop manner.
+    # ================ Move to a pregrasp position in an open loop manner. ================
     relative_xyz = np.median(object_points_arm_base, axis=0)  # arm base to object
     ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
     ee_rotation = ee_in_arm_base_pose[:3, :3]
@@ -299,7 +280,7 @@ def pickup(
     pregrasp_pose[:3, :3] = ee_rotation
     pregrasp_pose[:3, 3] = shifted_object_xyz
 
-    success, target_joint_angles, debug_info = manip_wrapper.robot._robot_model.manip_ik(
+    success0, target_joint_angles, _ = manip_wrapper.robot._robot_model.manip_ik(
         target_pose=pregrasp_pose, q_init=constants.pregrasp, is_radians=False)
 
     print("Pregrasp joint angles: ")
@@ -312,12 +293,111 @@ def pickup(
 
     # get point 10cm from object
     # when camera is close to object, pause slam will imporve slam system rubust
-    if success:
+    if success0:
         print(f"Moving to pre-grasp position.")
         manip_wrapper.robot.arm_to(target_joint_angles, pause_slam=True, blocking=True)
+        # get new ee in arm base pose
+        ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
+
+    # ================ Move to target position by two stage. ================
+    manip_wrapper.robot.gripper_to(position=gripper_width, blocking=False, reliable=False)
+    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
+
+    success1, joints_solution1, debug_info1 = manip_wrapper.robot._robot_model.manip_ik(
+        ee_goal_in_arm_base, 
+        q_init=arm_angles_deg, 
+        is_radians=False, 
+        verbose=False
+    )
+    picked = False
+    success1 = False
+    if not success1:
+        print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
+        # try use heuristic pickup
+        # transfer obj_points to arm base frame
+        centered_pts = object_points_arm_base - np.median(object_points_arm_base, axis=0, keepdims=True)
+        cov = np.cov(centered_pts, rowvar=False)
+        eig_vals, eig_vecs = np.linalg.eigh(cov)
+        principal_axis = eig_vecs[:, np.argmax(eig_vals)]
+        object_yaw = np.arctan2(principal_axis[1], principal_axis[0])
+        object_yaw += np.pi / 2
+
+        ee_rot = ee_in_arm_base_pose[:3, :3]
+        current_gripper_yaw = np.arctan2(ee_rot[1, 0], ee_rot[0, 0])
+        delta_yaw = np.arctan2(
+            np.sin(object_yaw - current_gripper_yaw),
+            np.cos(object_yaw - current_gripper_yaw),
+        )
+        print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
+
+        # Build a new target pose that keeps pitch/roll but enforces yaw and a reasonable position
+        desired_position = np.median(object_points_arm_base, axis=0)
+        desired_position[2] = np.median(object_points_arm_base[:, 2]) + 0.015
+
+        Rz = np.array(
+            [
+                [np.cos(delta_yaw), -np.sin(delta_yaw), 0.0],
+                [np.sin(delta_yaw),  np.cos(delta_yaw), 0.0],
+                [0.0,                0.0,               1.0],
+            ]
+        )
+        R_current = ee_in_arm_base_pose[:3, :3]
+        R_desired = R_current @ Rz
+        ee_goal_in_arm_base_new = np.eye(4)
+        ee_goal_in_arm_base_new[:3, :3] = R_desired
+        ee_goal_in_arm_base_new[:3, 3] = desired_position
+
+        # Use yaw-updated configuration as IK seed
+        arm_angles_deg_new = arm_angles_deg.copy()
+        arm_angles_deg_new[5] += np.degrees(delta_yaw)
+
+        success2, joints_solution2, debug_info2 = manip_wrapper.robot._robot_model.manip_ik(
+            ee_goal_in_arm_base_new,
+            q_init=arm_angles_deg_new,
+            is_radians=False,
+            verbose=False,
+        )
+        if not success2:
+            return False
+
+        # desired_gripper_yaw = object_yaw + np.pi / 2.0
+        # desired_gripper_yaw = np.arctan2(
+        #     np.sin(desired_gripper_yaw),
+        #     np.cos(desired_gripper_yaw),
+        # )
+        # ee_rot = ee_in_arm_base_pose[:3, :3]
+        # current_gripper_yaw = np.arctan2(ee_rot[1, 0], ee_rot[0, 0])
+        # delta_yaw = np.arctan2(
+        #     np.sin(desired_gripper_yaw - current_gripper_yaw),
+        #     np.cos(desired_gripper_yaw - current_gripper_yaw),
+        # )
+        # print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
+        # Rz = np.array([
+        #     [np.cos(delta_yaw), -np.sin(delta_yaw), 0.0],
+        #     [np.sin(delta_yaw),  np.cos(delta_yaw), 0.0],
+        #     [0.0,                0.0,               1.0],
+        # ])
+        # ee_goal_in_arm_base_new = ee_goal_in_arm_base.copy()
+        # ee_goal_in_arm_base_new[:3, :3] = ee_goal_in_arm_base_new[:3, :3] @ Rz
+
+        # # Use the desired angle of joint 6 as the initial value of ik.
+        # arm_angles_deg_new = arm_angles_deg.copy()
+        # arm_angles_deg_new[5] += np.degrees(delta_yaw)
+        
+        # success2, joints_solution2, debug_info2 = manip_wrapper.robot._robot_model.manip_ik(
+        #     ee_goal_in_arm_base_new, 
+        #     q_init=arm_angles_deg_new, 
+        #     is_radians=False, 
+        #     verbose=False
+        # )
+        # if not success2:
+        #     return False
+
+    if success1:
+        joints_solution = joints_solution1
     else:
-        # move arm to safty place
-        manip_wrapper.robot.look_front(pause_slam=True, blocking=True)
+        assert success2, "success2 must be success in this place."
+        joints_solution = joints_solution2
 
     print("set gripper to suit position.")
     # First, move joint6 to the target position. 

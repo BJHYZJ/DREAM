@@ -69,7 +69,7 @@ class ImageProcessor(ABC):
         # placing mask over image
         alpha = 0.6
         highlighted_image = cv2.addWeighted(overlay_mask, alpha, image, 1, 0)
-        Image.fromarray(highlighted_image.astype(np.uint8)).show()
+        # Image.fromarray(highlighted_image.astype(np.uint8)).show()
         highlighted_image = cv2.cvtColor(highlighted_image, cv2.COLOR_RGB2BGR)
 
         cv2.imwrite(save_file, highlighted_image)
