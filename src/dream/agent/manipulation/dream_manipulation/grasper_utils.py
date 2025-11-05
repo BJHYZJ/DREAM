@@ -333,6 +333,8 @@ def pickup(
         verbose=False
     )
 
+    # pause slam to avoid robot body be scan to scene
+    manip_wrapper.robot.pause_slam(reliable=True)
     if pre_success:
         print(f"Moving to pre-grasp position.")
         print("Pregrasp joint angles: ")
@@ -344,8 +346,6 @@ def pickup(
         print(" - joint5: ", pregrasp_joint_angles[5])
         manip_wrapper.robot.arm_to(pregrasp_joint_angles, blocking=True)   
 
-    # pause slam to avoid robot body be scan to scene
-    manip_wrapper.robot.pause_slam(reliable=True)
     manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True)
     picked = manip_wrapper.pickup(width=gripper_width)
     if not picked:
