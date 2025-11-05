@@ -1000,7 +1000,7 @@ class GraspObjectOperation(ManagedOperation):
         print(f"{self.name}: Moving to pre-grasp position.")
         self.robot.arm_to(target_joint_angles, blocking=True)
         print("Moving tilt and pan to center object in image, ensure robot can see target object.")
-        self.robot.look_at_target(target_point=object_xyz, is_in_map=True, blocking=True)
+        self.robot.look_at_target(target_point=object_xyz, blocking=True)
         print("... done.")
 
     def grasp_open_loop(self, object_xyz: np.ndarray):

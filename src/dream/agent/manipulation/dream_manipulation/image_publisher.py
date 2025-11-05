@@ -9,7 +9,7 @@
 
 import cv2
 import numpy as np
-
+import time
 
 def send_array(socket, A, flags=0, copy=True, track=False):
     """send a numpy array with metadata"""
@@ -54,6 +54,8 @@ class DreamCamera:
         self.ix, self.iy = None, None
 
     def capture_image(self):
+        # When Network is bad, waiting for a while will import grasp success rate.
+        time.sleep(3)
         self.rgb_image, self.depth_image = self.robot.get_servo_images(compute_xyz=False)
         self.c2ab = self.robot.get_camera_in_arm_base(timeout=5.0)
         # self.rgb_image = np.rot90(self.rgb_image, k=1)[:, :, [2, 1, 0]]

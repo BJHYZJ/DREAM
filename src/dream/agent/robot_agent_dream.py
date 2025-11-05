@@ -793,23 +793,11 @@ class RobotAgent(RobotAgentBase):
         """
 
         self.robot.switch_to_manipulation_mode()
-        # self.robot.look_at_ee()
-        # self.robot.look_at_target_tilt(target_point=target_point)
-        # self.robot.look_at_target_pan(target_point=target_point)
-
-        # self.manip_wrapper.look_at_target_tilt(target_point=target_point)
-
-        # self.manip_wrapper.move_to_position(
-        #     gripper_pos=self.robot.get_robot_model().GRIPPER_OPEN,
-        #     target_point=target_point,
-        # )
-
-        print("*" * 20, f"look at {text}", "*" * 20)
-        self.robot.look_at_target(target_point=target_point)
 
         rotation, translation, depth, width, c2ab, obj_points, theta_cumulative = capture_and_process_image(
             mode="pick",
             obj=text,
+            tar_in_map=target_point,
             socket=self.manip_socket,
             manip_wrapper=self.manip_wrapper,
         )
@@ -823,7 +811,7 @@ class RobotAgent(RobotAgentBase):
                 self.manip_wrapper,
                 rotation,
                 translation,
-                camera_in_arm_base=c2ab,
+                c2ab=c2ab,
                 object_points=obj_points,
             )
             if not success:

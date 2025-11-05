@@ -237,6 +237,23 @@ class ZmqServer(BaseZmqServer):
             if "w" in base_velocity_action:
                 w = action["base_velocity"]["w"]
             self.client.nav.set_velocity(v, w)
+
+        elif action.get("slam_pause"):
+            timeout = action.get("slam_timeout", 2.0)
+            success = self.client.pause_slam(timeout=timeout)
+            if self.verbose:
+                print(f"Pausing SLAM (timeout={timeout}) -> {success}")
+            if not success:
+                logger.warning("Failed to pause SLAM via RTAB-Map service.")
+
+        elif action.get("slam_resume"):
+            timeout = action.get("slam_timeout", 2.0)
+            success = self.client.resume_slam(timeout=timeout)
+            if self.verbose:
+                print(f"Resuming SLAM (timeout={timeout}) -> {success}")
+            if not success:
+                logger.warning("Failed to resume SLAM via RTAB-Map service.")
+
         # elif "joint" in action:
         #     # This allows for executing motor commands on the robot relatively quickly
         #     if self.verbose:
@@ -266,6 +283,8 @@ class ZmqServer(BaseZmqServer):
         elif "move_to_positions" in action:
             if self.verbose:
                 print(f"Moving to positions {action['move_to_positions']}")
+            if not self.client.in_navigation_mode():
+                self.client.switch_to_manipulation_mode()
             _is_wait = action.get("wait", False)
             self.client.move_to_positions(
                 action["move_to_positions"],
@@ -276,18 +295,15 @@ class ZmqServer(BaseZmqServer):
             if self.verbose or True:
                 print(f"Moving head to {action['servo_angle']}")
             if not self.client.in_manipulation_mode():
-                self.client.switch_to_manipulation_mode()
-            pause_slam = action.get("pause_slam", False)
+                self.client.switch_to_navigation_mode()
             self.client.manip.set_servo_angle(
                 angle=action["servo_angle"],
                 wait=action['wait'],
-                pause_slam=pause_slam,
             )
         elif "gripper" in action:
             if self.verbose or True:
                 print(f"Moving gripper to {action['gripper']}")
-            pause_slam = action.get("pause_slam", False)
-            self.client.manip.set_gripper(action["gripper"], pause_slam=pause_slam)
+            self.client.manip.set_gripper(action["gripper"])
         else:
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)

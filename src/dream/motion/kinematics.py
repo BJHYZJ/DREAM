@@ -186,6 +186,12 @@ class RangerxARMKinematics:
         """Return footprint for the robot. This is expected to be a mask."""
         return Footprint(width=0.50, length=0.74, width_offset=0.0, length_offset=0.0)
     
+    def check_angle_valid(self, joint_angles: np.ndarray):
+        # avoid arm collison to back
+        if (-15.0 <= joint_angles[0] <= 15.0) and (joint_angles[4] < -55.0):
+            return False
+        return True
+
     def manip_ik(
         self,
         target_pose: np.ndarray,
@@ -239,9 +245,8 @@ class RangerxARMKinematics:
             
             if verbose and iteration % 20 == 0:
                 print(f"[IK] iter={iteration}, error_norm={error_norm:.6f}")
-            
             # Check convergence
-            if error_norm < self.IK_EPS:
+            if error_norm < self.IK_EPS and self.check_angle_valid(np.rad2deg(q[:6])):
                 joint_angles = q[:6]
                 if return_degrees:
                     joint_angles = np.rad2deg(joint_angles)

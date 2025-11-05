@@ -20,6 +20,6 @@ debug
 *.pyc
 *.pyo
 
-**/.TimeRecord
+src/anygrasp_manipulation/.TimeRecord
 
 src/anygrasp_manipulation/example_data

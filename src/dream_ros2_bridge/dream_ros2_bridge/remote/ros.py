@@ -627,7 +627,7 @@ class DreamRosInterface(Node):
         # self.ros_joint_names = ROS_ARM_JOINTS
         self.joint_names = ROBOT_JOINTS
 
-    def _call_empty_service(self, client, timeout: float = 2.0) -> bool:
+    def _call_empty_service(self, client, timeout: float=2.0) -> bool:
         if client is None:
             self.get_logger().warning("Service client is not initialized.")
             return False
@@ -652,14 +652,14 @@ class DreamRosInterface(Node):
             return False
         return True
 
-    def pause_rtabmap(self, timeout: float = 2.0) -> bool:
+    def pause_rtabmap(self, timeout: float=2.0) -> bool:
         return self._call_empty_service(self._rtabmap_pause_client, timeout)
 
-    def resume_rtabmap(self, timeout: float = 2.0) -> bool:
+    def resume_rtabmap(self, timeout: float=2.0) -> bool:
         return self._call_empty_service(self._rtabmap_resume_client, timeout)
 
     @contextmanager
-    def rtabmap_paused(self, timeout: float = 2.0):
+    def rtabmap_paused(self, timeout: float=2.0):
         paused = self.pause_rtabmap(timeout=timeout)
         try:
             yield

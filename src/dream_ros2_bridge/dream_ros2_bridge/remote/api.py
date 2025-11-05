@@ -220,9 +220,16 @@ class DreamClient(AbstractRobotClient):
         self.nav.disable()
         self.manip.disable()
         self._base_control_mode = ControlMode.IDLE
+
+    def pause_slam(self, timeout: float = 2.0) -> bool:
+        """Pause SLAM updates via RTAB-Map."""
+        return self._ros_client.pause_rtabmap(timeout=timeout)
+
+    def resume_slam(self, timeout: float = 2.0) -> bool:
+        """Resume SLAM updates via RTAB-Map."""
+        return self._ros_client.resume_rtabmap(timeout=timeout)
     
     def shutdown(self):
-        """关闭ROS客户端"""
         if hasattr(self, "_ros_client") and hasattr(self._ros_client, "shutdown"):
             self._ros_client.shutdown()
 

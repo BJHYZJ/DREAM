@@ -404,21 +404,12 @@ class DreamManipulationClient(AbstractControlModule):
         angle: np.ndarray,
         is_radian: bool = False,
         wait: bool = True,
-        pause_slam: bool = False,
     ):
-        if pause_slam:
-            with self._ros_client.rtabmap_paused():
-                self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
-        else:
-            self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+        self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
 
     @enforce_enabled
-    def set_gripper(self, target: int = 830, wait: bool = True, pause_slam: bool = False):
-        if pause_slam:
-            with self._ros_client.rtabmap_paused():
-                self._arm.set_gripper(target, wait=wait)
-        else:
-            self._arm.set_gripper(target, wait=wait)
+    def set_gripper(self, target: int = 830, wait: bool = True):
+        self._arm.set_gripper(target, wait=wait)
 
     @enforce_enabled
     def home(self):
