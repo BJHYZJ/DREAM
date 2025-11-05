@@ -165,7 +165,7 @@ class ObjectHandler:
                     retry = False
                     continue
 
-            bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
+            print(f"{self.query} detected !!!")
 
             # Center the robot
             if tries == 1 and self.cfgs.open_communication:
@@ -227,29 +227,40 @@ class ObjectHandler:
         """
         Center the robots base and camera to face the center of the Object Bounding box
         """
+        c2ab = self.cam.c2ab  # camera in arm base pose
+        R_c2ab = c2ab[:3, :3]
+        t_c2ab = c2ab[:3,  3]
         bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
         u = int((bbox_x_min + bbox_x_max) / 2)
         v = int((bbox_y_min + bbox_y_max) / 2)
         Z = self.cam.depths[v, u].item()
         X = (u - self.cam.cx) / self.cam.fx * Z
         Y = (v - self.cam.cy) / self.cam.fy * Z
-        p_cam = [X, Y, Z]
-        print(f"Object center in camera frame: {p_cam}")
+        p_cam = np.array([X, Y, Z])
+        p_arm_base = R_c2ab @ p_cam + t_c2ab
+        print(f"Object center in arm base frame: {p_arm_base.tolist()}")
 
         if self.cfgs.open_communication:
-            data_msg = f"Object center in camera frame: {p_cam} is received."
-            # self.socket.send_data([p_cam.tolist(), [0, 0, 1], data_msg])
-            self.socket.send_data([p_cam, [], [0, 0, 1], [], data_msg])
+            data_msg = f"Object center in arm base frame: {p_arm_base.tolist()} is received."
+            self.socket.send_data([p_arm_base, [], [0, 0, 1], [], data_msg])
 
 
-    def place(self, points: np.ndarray, seg_mask: np.ndarray) -> bool:
+    def place(
+        self, 
+        points: np.ndarray, 
+        seg_mask: np.ndarray
+    ) -> bool:
+        colors = self.cam.colors
+        c2ab = self.cam.c2ab  # camera in arm base pose
+        R_c2ab = c2ab[:3, :3]
+        t_c2ab = c2ab[:3,  3]
+
         points_x, points_y, points_z = points[:, :, 0], points[:, :, 1], points[:, :, 2]
         flat_x, flat_y, flat_z = (
             points_x.reshape(-1),
-            -points_y.reshape(-1),
-            -points_z.reshape(-1),
+            points_y.reshape(-1),
+            points_z.reshape(-1),
         )
-
         # Removing all points whose depth is zero(undetermined)
         zero_depth_seg_mask = (
             (flat_x != 0)
@@ -262,26 +273,15 @@ class ObjectHandler:
         flat_y = flat_y[zero_depth_seg_mask]
         flat_z = flat_z[zero_depth_seg_mask]
 
-        colors = self.cam.colors.reshape(-1, 3)[zero_depth_seg_mask]
+        filtered_colors = self.cam.colors.reshape(-1, 3)[zero_depth_seg_mask]
+        filtered_points = np.stack([flat_x, flat_y, flat_z], axis=-1)
 
-        # 3d point cloud in camera orientation
-        points1 = np.stack([flat_x, flat_y, flat_z], axis=-1)
+        object_pcd = o3d.geometry.PointCloud()
+        object_pcd.points = o3d.utility.Vector3dVector(filtered_points)
+        object_pcd.colors = o3d.utility.Vector3dVector(filtered_colors)
+        coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
+        o3d.visualization.draw_geometries([object_pcd, coordinate])
 
-        # Rotation matrix for camera tilt
-        # cam_to_3d_rot = np.array(
-        #     [
-        #         [1, 0, 0],
-        #         [0, math.cos(self.cam.head_tilt), math.sin(self.cam.head_tilt)],
-        #         [0, -math.sin(self.cam.head_tilt), math.cos(self.cam.head_tilt)],
-        #     ]
-        # )
-
-        pcd1 = o3d.geometry.PointCloud()
-        pcd1.points = o3d.utility.Vector3dVector(points1)
-        pcd1.colors = o3d.utility.Vector3dVector(colors)
-
-        # 3d point cloud with upright camera
-        transformed_points = np.dot(points1, cam_to_3d_rot)
 
         # Removing floor points from point cloud
         floor_mask = transformed_points[:, 1] > -1.25
@@ -292,8 +292,10 @@ class ObjectHandler:
         colors = colors[floor_mask]
 
         pcd2 = o3d.geometry.PointCloud()
-        pcd2.points = o3d.utility.Vector3dVector(transformed_points)
+        pcd2.points = o3d.utility.Vector3dVector(points1)
         pcd2.colors = o3d.utility.Vector3dVector(colors)
+
+
 
         # Projected Median in the xz plane [parallel to floor]
         xz = np.stack([transformed_x * 100, transformed_z * 100], axis=-1).astype(int)
@@ -350,12 +352,12 @@ class ObjectHandler:
         points: np.ndarray,
         seg_mask: np.ndarray,
         bbox: Bbox,
-        crop_flag: bool = False,
+        crop_flag: bool=False,
     ):
         colors = self.cam.colors
-        c2b = self.cam.c2ab  # camera in arm base pose
-        R_c2b = c2b[:3, :3]
-        t_c2b = c2b[:3,  3]
+        c2ab = self.cam.c2ab  # camera in arm base pose
+        R_c2ab = c2ab[:3, :3]
+        t_c2ab = c2ab[:3,  3]
         points_z = points[:, :, 2]
 
         rotation_top_mat = np.array([
@@ -442,8 +444,8 @@ class ObjectHandler:
             ix = max(0, min(ix, W - 1))
             iy = max(0, min(iy, H - 1))
             
-            R_base = R_c2b @ R_cam
-            p_base = (R_c2b @ p_cam) + t_c2b
+            R_base = R_c2ab @ R_cam
+            p_base = (R_c2ab @ p_cam) + t_c2ab
 
             approach_dir = R_base[:, 2]
 
@@ -555,12 +557,15 @@ class ObjectHandler:
 
         if self.cfgs.open_communication:
             data_msg = "Now you received the gripper pose, good luck."
+            # transform gg in camera to arm base by R_c2b and t_c2b
+            # R_c2b = c2b[:3, :3]
+            # t_c2b = c2b[:3,  3]
             self.socket.send_data(
                 [
-                    filter_gg[0].translation,
-                    filter_gg[0].rotation_matrix @ rotation_top_mat,
+                    (R_c2ab @ filter_gg[0].translation) + t_c2ab,  # translation in arm base pose
+                    R_c2ab @ (filter_gg[0].rotation_matrix @ rotation_top_mat),  # rotation in arm base pose
                     [filter_gg[0].depth, filter_gg[0].width, 0],
-                    object_points,
+                    (R_c2ab @ object_points.T).T + t_c2ab,  # object in arm base pose
                     data_msg,
                 ]
             )

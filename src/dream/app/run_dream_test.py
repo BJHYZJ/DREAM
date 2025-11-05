@@ -141,7 +141,6 @@ def main(
     executor = DreamTaskExecutor(
         robot,
         parameters,
-        visual_servo=visual_servo,
         match_method=match_method,
         device_id=device_id,
         output_path=output_path,
@@ -191,8 +190,8 @@ def main(
         #     if debug_llm:
         #         print("Parsed LLM Response:", llm_response)
 
-        # llm_response = [("pickup", 'eggplant'), ("place", 'plate')]
-        llm_response = [("place", 'chair')]
+        llm_response = [("pickup", 'eggplant')]
+        # llm_response = [("place", 'chair')]
 
         ok = executor(llm_response)
         target_object = None

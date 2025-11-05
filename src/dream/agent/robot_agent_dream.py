@@ -35,6 +35,7 @@ from dream.agent.manipulation.dream_manipulation.grasper_utils import (
     capture_and_process_image,
     move_to_point,
     pickup,
+    place,
     process_image_for_placing,
 )
 from dream.agent.robot_agent import RobotAgent as RobotAgentBase
@@ -688,6 +689,12 @@ class RobotAgent(RobotAgentBase):
 
         return traj
 
+
+    def get_voxel_map(self):
+        """Return the voxel map"""
+        return self.voxel_map
+    
+
     def navigate(self, text, max_step=10):
         # rr.init("Dream_robot", recording_id=uuid4(), spawn=True)
         finished = False
@@ -703,83 +710,49 @@ class RobotAgent(RobotAgentBase):
         print("Navigation finished!")
         return end_point
 
-    def place(
+
+    def place(        
         self,
         text,
-        local=True,
-        # init_tilt=INIT_HEAD_TILT,
-        base_node="camera_depth_optical_frame",
+        target_point: None,
+        skip_confirmation: bool = False,
     ):
-        """
-        An API for running placing. By calling this API, human will ask the robot to place whatever it holds
-        onto objects specified by text queries A
-        - hello_robot: a wrapper for home-robot StretchClient controller
-        - socoket: we use this to communicate with workstation to get estimated gripper pose
-        - text: queries specifying target object
-        - transform node: node name for coordinate systems of target gripper pose (usually the coordinate system on the robot gripper)
-        - base node: node name for coordinate systems of estimated gipper poses given by anygrasp
-        """
         self.robot.switch_to_manipulation_mode()
-        self.robot.look_at_ee()
-        self.manip_wrapper.move_to_position(head_pan=INIT_HEAD_PAN, head_tilt=init_tilt)
 
-        if not local:
-            rotation, translation = capture_and_process_image(
-                mode="place",
-                obj=text,
-                socket=self.manip_socket,
-                manip_wrapper=self.manip_wrapper,
-            )
-        else:
-            if self.owl_sam_detector is None:
-                from dream.perception.detection.owl import OWLSAMProcessor
-
-                self.owl_sam_detector = OWLSAMProcessor(confidence_threshold=0.1)
-            rotation, translation = process_image_for_placing(
-                obj=text,
-                hello_robot=self.manip_wrapper,
-                detection_model=self.owl_sam_detector,
-                save_dir=self.log,
-            )
-        print("Place: ", rotation, translation)
+        rotation, translation, obj_points, theta_cumulative = capture_and_process_image(
+            mode="place",
+            obj=text,
+            tar_in_map=target_point,
+            socket=self.manip_socket,
+            manip_wrapper=self.manip_wrapper,
+        )
 
         if rotation is None:
+            print("(ಥ﹏ಥ) Try all pose but not suit pose for place.")
             return False
 
-        # lift arm to the top before the robot extends the arm, prepare the pre-placing gripper pose
-        self.manip_wrapper.move_to_position(lift_pos=1.05)
-        self.manip_wrapper.move_to_position(wrist_yaw=0, wrist_pitch=0)
-
-        # Placing the object
-        move_to_point(self.manip_wrapper, translation, base_node, self.transform_node, move_mode=0)
-        self.manip_wrapper.move_to_position(gripper_pos=1, blocking=True)
-
-        # Lift the arm a little bit, and rotate the wrist roll of the robot in case the object attached on the gripper
-        self.manip_wrapper.move_to_position(
-            lift_pos=min(self.manip_wrapper.robot.get_six_joints()[1] + 0.3, 1.1)
-        )
-        self.manip_wrapper.move_to_position(wrist_roll=2.5, blocking=True)
-        self.manip_wrapper.move_to_position(wrist_roll=-2.5, blocking=True)
-
-        # Wait for some time and shrink the arm back
-        self.manip_wrapper.move_to_position(gripper_pos=1, lift_pos=1.05, arm_pos=0)
-        self.manip_wrapper.move_to_position(wrist_pitch=-1.57)
+        if skip_confirmation or input("Do you want to do this place manipulation? Y or N") != "N":
+            success = place(
+                self.manip_wrapper,
+                rotation,
+                translation,
+                obj_points=obj_points
+            )
+            if not success:
+                print("(ಥ﹏ಥ) Place task failed.")
+                return False
 
         # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map
-        self.manip_wrapper.move_to_position(
-            base_trans=-self.manip_wrapper.robot.get_six_joints()[0]
-        )
+        if theta_cumulative != 0:
+            self.manip_wrapper.move_to_position(base_theta=np.deg2rad(-theta_cumulative))
+
         return True
 
-    def get_voxel_map(self):
-        """Return the voxel map"""
-        return self.voxel_map
 
     def manipulate(
         self,
         text,
         target_point: None,
-        base_node="camera_depth_optical_frame",
         skip_confirmation: bool = False,
     ):
         """
@@ -794,7 +767,7 @@ class RobotAgent(RobotAgentBase):
 
         self.robot.switch_to_manipulation_mode()
 
-        rotation, translation, depth, width, c2ab, obj_points, theta_cumulative = capture_and_process_image(
+        rotation, translation, depth, width, obj_points, theta_cumulative = capture_and_process_image(
             mode="pick",
             obj=text,
             tar_in_map=target_point,
@@ -806,16 +779,16 @@ class RobotAgent(RobotAgentBase):
             print("(ಥ﹏ಥ) Try all pose but anygrasp is failed.")
             return False
         
-        if skip_confirmation or input("Do you want to do this manipulation? Y or N ") != "N":
+        if skip_confirmation or input("Do you want to do this pickup manipulation? Y or N ") != "N":
             success = pickup(
                 self.manip_wrapper,
                 rotation,
                 translation,
-                c2ab=c2ab,
                 object_points=obj_points,
             )
             if not success:
                 print("(ಥ﹏ಥ) Pickup task failed.")
+                return False
 
         # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map
         if theta_cumulative != 0:

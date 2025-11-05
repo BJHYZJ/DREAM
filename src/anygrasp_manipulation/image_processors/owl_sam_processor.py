@@ -46,7 +46,7 @@ class OWLSAMProcessor(ImageProcessor):
         visualize_mask: bool = False,
         mask_filename: str = None,
     ) -> Tuple[np.ndarray, List[int]]:
-        print("OWLSAM detection !!!")
+        # print("OWLSAM detection !!!")
         inputs = self.processor(text=[["a photo of a " + text]], images=image, return_tensors="pt")
         for input in inputs:
             inputs[input] = inputs[input].to(self.device)

@@ -48,7 +48,6 @@ class DreamTaskExecutor:
         robot: AbstractRobotClient,
         parameters: Parameters,
         match_method: str = "feature",
-        visual_servo: bool = False,
         device_id: int = 0,
         output_path: Optional[str] = None,
         server_ip: Optional[str] = "127.0.0.1",
@@ -64,7 +63,6 @@ class DreamTaskExecutor:
         self.discord_bot = discord_bot
 
         # Other parameters
-        self.visual_servo = visual_servo
         self.match_method = match_method
         self.skip_confirmations = skip_confirmations
         self.explore_iter = explore_iter
@@ -75,17 +73,8 @@ class DreamTaskExecutor:
         if not isinstance(self.robot, AbstractRobotClient):
             raise TypeError(f"Expected AbstractRobotClient, got {type(self.robot)}")
 
-        # Create semantic sensor if visual servoing is enabled
-        print("- Create semantic sensor if visual servoing is enabled")
-        if self.visual_servo:
-            self.semantic_sensor = create_semantic_sensor(
-                parameters=self.parameters,
-                device_id=device_id,
-                verbose=False,
-            )
-        else:
-            self.parameters["encoder"] = None
-            self.semantic_sensor = None
+        self.parameters["encoder"] = None
+        self.semantic_sensor = None
 
         print("- Start robot agent with data collection")
         self.agent = RobotAgent(
@@ -98,15 +87,6 @@ class DreamTaskExecutor:
             manipulation_only=manipulation_only,
         )
         self.agent.start()
-
-        # Create grasp object operation
-        if self.visual_servo:
-            self.grasp_object = GraspObjectOperation(
-                "grasp_the_object",
-                self.agent,
-            )
-        else:
-            self.grasp_object = None
 
         # Task stuff
         self.emote_task = EmoteTask(self.agent)
@@ -140,45 +120,24 @@ class DreamTaskExecutor:
         point: Optional[np.ndarray] = None,
         skip_confirmations: bool = False,
     ) -> None:
-        """Pick up an object.
-
-        Args:
-            target_object: The object to pick up.
-        """
+        """Pick up an object."""
         self.robot.switch_to_manipulation_mode()
-        # camera_in_map_pose = self.robot.get_head_pose()[:3, 3]
-        # self.robot.look_at_target_tilt(target_point=point)
-        # camera_xyz = camera_in_map_pose[:3, 3]
-        # if point is not None:
-        #     theta = compute_tilt(camera_xyz, point)
-        # else:
-        #     theta = None
-
-        # Grasp the object using operation if it's available
-        if self.grasp_object is not None:
-            self.robot.say("Grasping the " + str(target_object) + ".")
-            print("Using operation to grasp object:", target_object)
-            print(" - Point:", point)
-            # print(" - Theta:", theta)
-            # state = self.robot.get_arm_joint_state()
-            # state[1] = 1.0
-            # self.robot.arm_to(state, blocking=True)
-            self.grasp_object(
-                target_object=target_object,
-                object_xyz=point,
-                match_method="feature",
-                show_object_to_grasp=False,
-                show_servo_gui=True,
-                delete_object_after_grasp=False,
-            )
-            # This retracts the arm
-            self.robot.move_to_nav_posture()
-        else:
-            # Otherwise, use the self.agent's manipulation method
-            # This is from OK Robot
-            print("Using self.agent to grasp object:", target_object)
-            self.agent.manipulate(target_object, target_point=point, skip_confirmation=skip_confirmations)
+        print("Using self.agent to grasp object:", target_object)
+        self.agent.manipulate(target_object, target_point=point, skip_confirmation=skip_confirmations)
         self.robot.look_front()
+
+
+    def _place(
+        self, 
+        target_receptacle: str, 
+        point: Optional[np.ndarray], 
+        skip_confirmations: bool = False
+    ) -> None:
+        """Place an object."""
+        self.robot.switch_to_manipulation_mode()
+        self.agent.place(target_receptacle, target_point=point, skip_confirmation=skip_confirmations)
+        self.robot.look_front()
+
 
     def _take_picture(self, channel=None) -> None:
         """Take a picture with the head camera. Optionally send it to Discord."""
@@ -209,24 +168,6 @@ class DreamTaskExecutor:
                 message="End effector camera:",
                 content=numpy_image_to_bytes(obs.ee_rgb),
             )
-
-    def _place(self, target_receptacle: str, point: Optional[np.ndarray]) -> None:
-        """Place an object.
-
-        Args:
-            target_receptacle: The receptacle to place the object in.
-        """
-        self.robot.switch_to_manipulation_mode()
-        # camera_xyz = self.robot.get_head_pose()[:3, 3]
-        # if point is not None:
-        #     theta = compute_tilt(camera_xyz, point)
-        # else:
-        #     theta = -0.6
-
-        self.robot.say("Placing object on the " + str(target_receptacle) + ".")
-        # If you run this stack with visual servo, run it locally
-        self.agent.place(target_receptacle, local=self.visual_servo)
-        self.robot.move_to_nav_posture()
 
     def _hand_over(self) -> None:
         """Create a task to find a person, navigate to them, and extend the arm toward them"""

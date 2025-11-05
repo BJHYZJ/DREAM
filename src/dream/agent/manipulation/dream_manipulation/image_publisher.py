@@ -55,7 +55,7 @@ class DreamCamera:
 
     def capture_image(self):
         # When Network is bad, waiting for a while will import grasp success rate.
-        time.sleep(3)
+        time.sleep(10)
         self.rgb_image, self.depth_image = self.robot.get_servo_images(compute_xyz=False)
         self.c2ab = self.robot.get_camera_in_arm_base(timeout=5.0)
         # self.rgb_image = np.rot90(self.rgb_image, k=1)[:, :, [2, 1, 0]]
@@ -82,9 +82,11 @@ class ImagePublisher:
 
         ## Send RGB, depth and camera intrinsics data
         send_rgb_img(self.socket, image)
-        print(self.socket.recv_string())
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
         send_depth_img(self.socket, depth)
-        print(self.socket.recv_string())
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
         send_array(
             self.socket,
             np.array(
@@ -96,15 +98,19 @@ class ImagePublisher:
                 ]
             ),
         )
-        print(self.socket.recv_string())
-        send_array(self.socket, c2ab,)
-        print(self.socket.recv_string())
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
+        send_array(self.socket, c2ab)
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
 
         ## Sending Object text and Manipulation mode
         self.socket.send_string(text)
-        print(self.socket.recv_string())
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
         self.socket.send_string(mode)
-        print(self.socket.recv_string())
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
 
         ## Waiting for the base and camera transforms to center the object vertically and horizontally
         # self.socket.send_string("Waiting for gripper pose/ base and head trans from workstation")
@@ -121,10 +127,11 @@ class ImagePublisher:
         depth = add_data[0]
         width = add_data[1]
         retry = add_data[2]
-        print(f"Additional data received - {add_data}")
-        print("translation: ")
-        print(translation)
-        print("rotation: ")
-        print(rotation)
-        print(self.socket.recv_string())
-        return translation, rotation, depth, width, c2ab, obj_points, retry
+        # print(f"Additional data received - {add_data}")
+        # print("translation: ")
+        # print(translation)
+        # print("rotation: ")
+        # print(rotation)
+        # print(self.socket.recv_string())
+        self.socket.recv_string()
+        return translation, rotation, depth, width, obj_points, retry

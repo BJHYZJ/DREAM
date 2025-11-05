@@ -101,7 +101,7 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
     image_publisher = ImagePublisher(manip_wrapper.robot, socket)
 
     # Centering the object
-    head_tilt_angles = [0, -5, 5]
+    head_tilt_angles = [0, -5, 10]
     tilt_retries = 1
     side_retries = 0
     retry_flag = True
@@ -115,21 +115,18 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
 
     while retry_flag:
 
-        print("Capturing image: ")
-        print(f"retry flag : {retry_flag}")
-        print(f"side retries : {side_retries}")
-        print(f"tilt retries : {tilt_retries}")
+        print(f"Capturing image. retry flag : {retry_flag}, side retries : {side_retries}, tilt retries : {tilt_retries}")
 
-        translation, rotation, depth, width, c2ab, obj_points, retry_flag = image_publisher.publish_image(obj, mode)
+        # translation, rotation and obj_points have has been transform to the arm base
+        translation, rotation, depth, width, obj_points, retry_flag = image_publisher.publish_image(obj, mode)
 
         if retry_flag == 1:
-            # center robot by detected object translation
-            target_in_cam = np.array(translation).astype(np.float32)
-            obj_in_arm_base = c2ab[:3, :3] @ target_in_cam + c2ab[:3, 3]
+            print("=" * 20, "Center Robot", "=" * 20)
+            target_in_arm_base = np.array(translation).astype(np.float32)
             arm_base_in_map_pose = manip_wrapper.robot.get_transform(transfrom_name="arm_base_in_map_pose")  # arm base link
             base_in_map_pose = manip_wrapper.robot.get_transform(transfrom_name="base_in_map_pose")  # base_link
             # calculation for base rotation angle
-            target_in_map = (arm_base_in_map_pose[:3, :3] @ obj_in_arm_base.T).T + arm_base_in_map_pose[:3, 3]
+            target_in_map = arm_base_in_map_pose[:3, :3] @ target_in_arm_base + arm_base_in_map_pose[:3, 3]
             base_in_map_xyz = base_in_map_pose[:3, 3]
             base_x_axis =  base_in_map_pose[:3, :3] @ np.array([1, 0, 0])
             vec_to_obj = target_in_map - base_in_map_xyz
@@ -142,16 +139,13 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
                 print(f"Robot base theta is not suit for manipulation, rotate around {np.rad2deg(theta)}.")
                 manip_wrapper.move_to_position(base_theta=theta, blocking=True)
             manip_wrapper.robot.look_at_target(tar_in_map=target_in_map)
-            # manip_wrapper.move_to_position(
-            #     base_trans=base_trans, head_pan=head_pan, head_tilt=head_tilt
-            # )
 
         elif retry_flag != 0 and side_retries == 3:
             print("Tried in all angles but couldn't succeed")
             if mode == "place":
-                return None, None, None, None, None
+                return None, None, None, None
             else:
-                return None, None, None, None, None, None
+                return None, None, None, None, None, None, 
 
         elif side_retries == 2 and tilt_retries == 3:
             manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
@@ -181,10 +175,10 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
 
     if mode == "pick":
         print("Pick: Returning translation, rotation, depth, width")
-        return rotation, translation, depth, width, c2ab, obj_points, theta_cumulative
+        return rotation, translation, depth, width, obj_points, theta_cumulative
     else:
         print("Place: Returning translation, rotation")
-        return rotation, translation, c2ab, obj_points, theta_cumulative
+        return rotation, translation, obj_points, theta_cumulative
 
 
 def move_to_point(robot, point, base_node, gripper_node, move_mode=1, pitch_rotation=0):
@@ -232,20 +226,17 @@ def pregrasp_position(
 
 def pickup(
     manip_wrapper: ManipulationWrapper,
-    rotation: np.ndarray,
-    translation: np.ndarray,
-    c2ab: np.ndarray,
-    object_points: np.ndarray,  # obj_points in camera
+    rotation: np.ndarray,  # grasp rotation in arm base
+    translation: np.ndarray,  # grasp translation in arm base
+    object_points: np.ndarray,  # obj_points in arm base
     gripper_width: int=830,
     distance_from_object: float=0.35
 ):
-    ee_goal_in_camera_pose = np.eye(4)
-    ee_goal_in_camera_pose[:3, :3] = rotation
-    ee_goal_in_camera_pose[:3, 3] = translation
-    ee_goal_in_arm_base_pose = c2ab @ ee_goal_in_camera_pose
+    ee_goal_in_arm_base_pose = np.eye(4)
+    ee_goal_in_arm_base_pose[:3, :3] = rotation
+    ee_goal_in_arm_base_pose[:3, 3] = translation
     
     assert len(object_points.shape) == 2 and object_points.shape[1] == 3
-    object_points_in_arm_base = (c2ab[:3, :3] @ object_points.T).T + c2ab[:3, 3] # object points in arm base
 
     arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
     success0, joints_solution0, debug_info0 = manip_wrapper.robot._robot_model.manip_ik(
@@ -260,7 +251,7 @@ def pickup(
         ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
         # try use heuristic pickup
         # transfer obj_points to arm base frame
-        centered_pts = object_points_in_arm_base - np.median(object_points_in_arm_base, axis=0, keepdims=True)
+        centered_pts = object_points - np.median(object_points, axis=0, keepdims=True)
         cov = np.cov(centered_pts, rowvar=False)
         eig_vals, eig_vecs = np.linalg.eigh(cov)
         principal_axis = eig_vecs[:, np.argmax(eig_vals)]
@@ -276,8 +267,8 @@ def pickup(
         print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
 
         # Build a new target pose that keeps pitch/roll but enforces yaw and a reasonable position
-        desired_position = np.median(object_points_in_arm_base, axis=0)
-        desired_position[2] = np.median(object_points_in_arm_base[:, 2]) + 0.015
+        desired_position = np.median(object_points, axis=0)
+        desired_position[2] = np.median(object_points[:, 2]) + 0.015
 
         Rz = np.array(
             [
@@ -315,7 +306,7 @@ def pickup(
 
 
     # ================ process pregrasp while will imporve manipulation success rate ================
-    object_xyz = np.median(object_points_in_arm_base, axis=0) 
+    object_xyz = np.median(object_points, axis=0) 
     ee_xyz = manip_wrapper.robot.get_ee_in_arm_base()[:3, 3]
     pregrasp_xyz = pregrasp_position(
         object_xyz=object_xyz, 
@@ -356,3 +347,15 @@ def pickup(
     manip_wrapper.place_back()
     manip_wrapper.robot.resume_slam(reliable=True)
     return True
+
+
+def place(
+    manip_wrapper: ManipulationWrapper,
+    rotation: np.ndarray,  # grasp rotation in arm base
+    translation: np.ndarray,  # grasp translation in arm base
+    object_points: np.ndarray,  # obj_points in arm base
+    gripper_width: int=830,
+    distance_from_object: float=0.35    
+):
+    assert len(object_points.shape) == 2 and object_points.shape[1] == 3
+    assert 1 == 1
