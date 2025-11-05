@@ -225,7 +225,7 @@ class DreamTaskExecutor:
 
         self.robot.say("Placing object on the " + str(target_receptacle) + ".")
         # If you run this stack with visual servo, run it locally
-        self.agent.place(target_receptacle, init_tilt=theta, local=self.visual_servo)
+        self.agent.place(target_receptacle, local=self.visual_servo)
         self.robot.move_to_nav_posture()
 
     def _hand_over(self) -> None:
@@ -299,7 +299,6 @@ class DreamTaskExecutor:
                     point = None
 
                 # Pick up
-
                 if self.skip_confirmations:
                     if point is not None:
                         self._pickup(target_object, point=point)
@@ -328,7 +327,8 @@ class DreamTaskExecutor:
                     not self.skip_confirmations
                     and input("Do you want to run navigation? [Y/n]: ").upper() != "N"
                 ):
-                    point = self._find(args)
+                    # point = self._find(args)
+                    point = [0.0097, 0.4592, 0.0561]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None
