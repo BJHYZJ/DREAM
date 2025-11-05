@@ -33,10 +33,8 @@ from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
 )
 from dream.agent.manipulation.dream_manipulation.grasper_utils import (
     capture_and_process_image,
-    move_to_point,
     pickup,
     place,
-    process_image_for_placing,
 )
 from dream.agent.robot_agent import RobotAgent as RobotAgentBase
 from dream.audio.text_to_speech import get_text_to_speech
@@ -710,18 +708,18 @@ class RobotAgent(RobotAgentBase):
         print("Navigation finished!")
         return end_point
 
-
     def place(        
         self,
-        text,
+        back_object: str,
+        target_receptacle: str,
         target_point: None,
         skip_confirmation: bool = False,
     ):
         self.robot.switch_to_manipulation_mode()
 
-        rotation, translation, obj_points, theta_cumulative = capture_and_process_image(
+        rotation, translation, theta_cumulative = capture_and_process_image(
             mode="place",
-            obj=text,
+            obj=target_receptacle,
             tar_in_map=target_point,
             socket=self.manip_socket,
             manip_wrapper=self.manip_wrapper,
@@ -733,10 +731,10 @@ class RobotAgent(RobotAgentBase):
 
         if skip_confirmation or input("Do you want to do this place manipulation? Y or N") != "N":
             success = place(
-                self.manip_wrapper,
-                rotation,
-                translation,
-                obj_points=obj_points
+                socket=self.manip_socket,
+                manip_wrapper=self.manip_wrapper,
+                back_object=back_object,
+                translation=translation,
             )
             if not success:
                 print("(ಥ﹏ಥ) Place task failed.")
@@ -751,16 +749,16 @@ class RobotAgent(RobotAgentBase):
 
     def manipulate(
         self,
-        text,
+        target_object,
         target_point: None,
         skip_confirmation: bool = False,
     ):
         """
         An API for running manipulation. By calling this API, human will ask the robot to pick up objects
-        specified by text queries A
+        specified by target_object queries A
         - hello_robot: a wrapper for home-robot StretchClient controller
         - socoket: we use this to communicate with workstation to get estimated gripper pose
-        - text: queries specifying target object
+        - target_object: queries specifying target object
         - transform node: node name for coordinate systems of target gripper pose (usually the coordinate system on the robot gripper)
         - base node: node name for coordinate systems of estimated gipper poses given by anygrasp
         """
@@ -769,7 +767,7 @@ class RobotAgent(RobotAgentBase):
 
         rotation, translation, depth, width, obj_points, theta_cumulative = capture_and_process_image(
             mode="pick",
-            obj=text,
+            obj=target_object,
             tar_in_map=target_point,
             socket=self.manip_socket,
             manip_wrapper=self.manip_wrapper,

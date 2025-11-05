@@ -190,9 +190,9 @@ def main(
         #     if debug_llm:
         #         print("Parsed LLM Response:", llm_response)
 
-        llm_response = [("pickup", 'eggplant')]
-        # llm_response = [("place", 'chair')]
-
+        # llm_response = [("pickup", 'eggplant')]
+        llm_response = [("place", 'chair')]
+        executor.back_object = "eggplant"
         ok = executor(llm_response)
         target_object = None
         target_receptacle = None

@@ -41,6 +41,9 @@ class ObjectHandler:
         # self.lang_sam = LangSAMProcessor()
         self.rerun_frame = 1
 
+        self.robot_min_height = -0.3,
+        self.robot_max_height = 1.0
+
     def receive_input(self, tries):
         if self.cfgs.open_communication:
             print("\n\nWaiting for data from Robot")
@@ -66,7 +69,7 @@ class ObjectHandler:
             self.socket.send_data("text query received")
             print(f"Text - {self.query}")
 
-            # action -> ["pick", "place"]
+            # action -> ["pick", "place", "pick_back"]
             self.action = self.socket.recv_string()
             self.socket.send_data("Mode received")
             print(f"Manipualtion Mode - {self.action}")
@@ -168,7 +171,7 @@ class ObjectHandler:
             print(f"{self.query} detected !!!")
 
             # Center the robot
-            if tries == 1 and self.cfgs.open_communication:
+            if tries == 1 and self.cfgs.open_communication and self.action != "pick_back":
                 self.center_robot(bbox)
                 tries += 1
                 time.sleep(0.5)
@@ -178,8 +181,12 @@ class ObjectHandler:
 
             if self.action == "place":
                 retry = not self.place(points, seg_mask)
-            else:
+            elif self.action == "pick":
                 retry = not self.pickup(points, seg_mask, bbox, (tries == 11))
+            elif self.action == "pick_back":
+                retry = not self.pick_back(points, seg_mask)
+            else:
+                raise ValueError
 
             if retry:
                 if self.cfgs.open_communication:
@@ -188,40 +195,12 @@ class ObjectHandler:
                     print(f"Try no: {tries}")
                     data_msg = "No poses, Have to try again"
                     self.socket.send_data([[0], [0], [0, 0, 2], [], data_msg])
-                    # self.socket.send_data("No poses, Have to try again")
                 else:
                     print(
                         "Try with another object or tune grasper height and width parameters in demo.py"
                     )
                     retry = False
 
-    # def center_robot(self, bbox: Bbox):
-    #     """
-    #     Center the robots base and camera to face the center of the Object Bounding box
-    #     """
-
-    #     bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max = bbox
-
-    #     bbox_center = [
-    #         int((bbox_x_min + bbox_x_max) / 2),
-    #         int((bbox_y_min + bbox_y_max) / 2),
-    #     ]
-    #     depth_obj = self.cam.depths[bbox_center[1], bbox_center[0]]
-    #     print(
-    #         f"{self.query} height and depth: {((bbox_y_max - bbox_y_min) * depth_obj)/self.cam.fy}, {depth_obj}"
-    #     )
-
-    #     # base movement
-    #     dis = (bbox_center[0] - self.cam.cx) / self.cam.fx * depth_obj
-    #     print(f"Base displacement {dis}")
-
-    #     # camera tilt
-    #     tilt = math.atan((bbox_center[1] - self.cam.cy) / self.cam.fy)
-    #     print(f"Camera Tilt {tilt}")
-
-    #     if self.cfgs.open_communication:
-    #         data_msg = "Now you received the base and head trans, good luck."
-    #         self.socket.send_data([[-dis], [-tilt], [0, 0, 1], data_msg])
 
     def center_robot(self, bbox: Bbox):
         """
@@ -248,7 +227,7 @@ class ObjectHandler:
     def place(
         self, 
         points: np.ndarray, 
-        seg_mask: np.ndarray
+        seg_mask: np.ndarray,
     ) -> bool:
         colors = self.cam.colors
         c2ab = self.cam.c2ab  # camera in arm base pose
@@ -273,79 +252,57 @@ class ObjectHandler:
         flat_y = flat_y[zero_depth_seg_mask]
         flat_z = flat_z[zero_depth_seg_mask]
 
-        filtered_colors = self.cam.colors.reshape(-1, 3)[zero_depth_seg_mask]
-        filtered_points = np.stack([flat_x, flat_y, flat_z], axis=-1)
+        filtered_colors = colors.reshape(-1, 3)[zero_depth_seg_mask]
+        filtered_points = (R_c2ab @ np.stack([flat_x, flat_y, flat_z], axis=-1).T).T + t_c2ab  # object points in arm base frame
 
+        floor_mask = filtered_points[:, 2] < self.robot_min_height  # base footprint is -0.325
+        filtered_points = filtered_points[~floor_mask]
+        filtered_colors = filtered_colors[~floor_mask]
+
+        place_x, place_y = np.median(np.unique(filtered_points[:, :2], axis=0), axis=0)
+        x_margin, y_margin = 0.1, 0.1
+        x_mask = np.logical_and(filtered_points[:, 0] > (place_x - x_margin), filtered_points[:, 0] < (place_x + x_margin))
+        y_mask = np.logical_and(filtered_points[:, 1] > (place_y - y_margin), filtered_points[:, 1] < (place_y + y_margin))
+        z_mask = np.logical_and(filtered_points[:, 2] > self.robot_min_height, filtered_points[:, 2] < self.robot_max_height)
+        place_mask = np.logical_and(x_mask, y_mask, z_mask)
+        place_z = np.quantile(filtered_points[place_mask][:, 2], 0.95) + 0.05
+        
+        place_point = np.array(
+            [place_x, place_y, place_z],
+            dtype=np.float32
+        )
+        
         object_pcd = o3d.geometry.PointCloud()
         object_pcd.points = o3d.utility.Vector3dVector(filtered_points)
         object_pcd.colors = o3d.utility.Vector3dVector(filtered_colors)
-        coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-        o3d.visualization.draw_geometries([object_pcd, coordinate])
-
-
-        # Removing floor points from point cloud
-        floor_mask = transformed_points[:, 1] > -1.25
-        transformed_points = transformed_points[floor_mask]
-        transformed_x = transformed_points[:, 0]
-        transformed_y = transformed_points[:, 1]
-        transformed_z = transformed_points[:, 2]
-        colors = colors[floor_mask]
-
-        pcd2 = o3d.geometry.PointCloud()
-        pcd2.points = o3d.utility.Vector3dVector(points1)
-        pcd2.colors = o3d.utility.Vector3dVector(colors)
-
-
-
-        # Projected Median in the xz plane [parallel to floor]
-        xz = np.stack([transformed_x * 100, transformed_z * 100], axis=-1).astype(int)
-        unique_xz = np.unique(xz, axis=0)
-        unique_xz_x, unique_xz_z = unique_xz[:, 0], unique_xz[:, 1]
-        px, pz = np.median(unique_xz_x) / 100.0, np.median(unique_xz_z) / 100.0
-
-        x_margin, z_margin = 0.1, 0
-        x_mask = (transformed_x < (px + x_margin)) & (transformed_x > (px - x_margin))
-        y_mask = (transformed_y < 0) & (transformed_y > -1.1)
-        z_mask = (transformed_z < 0) & (transformed_z > (pz - z_margin))
-        mask = x_mask & y_mask & z_mask
-        py = np.max(transformed_y[mask])
-        point = np.array([px, py, pz])  # Final placing point in upright camera coordinate system
-
         geometries = []
-        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=0.1, height=0.04)
-        cylinder_rot = np.array([[1, 0, 0], [0, 0, -1], [0, 1, 0]])
-        cylinder.rotate(cylinder_rot)
-        cylinder.translate(cam_to_3d_rot @ point)
-        cylinder.rotate(cam_to_3d_rot)
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=0.02, height=0.02)
+        cylinder.translate(place_point)
         cylinder.paint_uniform_color([0, 1, 0])
         geometries.append(cylinder)
 
         if self.cfgs.debug:
             visualize_cloud_geometries(
-                pcd1,
+                object_pcd,
                 geometries,
                 save_file=self.save_dir + "/placing.jpg",
                 visualize=not self.cfgs.headless,
                 # rerun_name="proposed_placing_location",
             )
 
-        point[1] += 0.1
-        transformed_point = cam_to_3d_rot @ point
-        print(f"Placing point of Object relative to camera: {transformed_point}")
-
         if self.cfgs.open_communication:
-            data_msg = "Now you received the gripper pose, good luck."
+            data_msg = "Now you received the place pose, good luck."
             self.socket.send_data(
                 [
-                    np.array(transformed_point, dtype=np.float64),
+                    place_point,
                     [0],
                     [0, 0, 0],
                     [],
                     data_msg,
                 ]
             )
-
         return True
+
 
     def pickup(
         self,
@@ -386,26 +343,6 @@ class ObjectHandler:
         object_mask = mask & seg_mask
         object_points = points[object_mask]
         object_colors = colors[object_mask]
-
-        # mins = object_points.min(axis=0)
-        # maxs = object_points.max(axis=0)
-        # corners = np.array(np.meshgrid(
-        #     [mins[0], maxs[0]],
-        #     [mins[1], maxs[1]],
-        #     [mins[2], maxs[2]],
-        # )).T.reshape(-1, 3)
-
-        # filtered_points = filtered_points @ rotation_bottom_mat.T
-        # object_points = object_points @ rotation_bottom_mat.T
-        # corners = corners @ rotation_bottom_mat.T
-
-        # Grasp Prediction by Object Region
-        # gg is a list of grasps of type graspgroup in graspnetAPI
-        # lims = [
-        #     corners[:, 0].min(), corners[:, 0].max(), 
-        #     corners[:, 1].min(), corners[:, 1].max(), 
-        #     corners[:, 2].min(), corners[:, 2].max()
-        # ]
 
         lims = [
             object_points[:, 0].min(), object_points[:, 0].max(), 
@@ -554,18 +491,94 @@ class ObjectHandler:
                 save_file=f"{self.save_dir}/best_pose.jpg",
                 # rerun_name="selected_pose",
             )
-
+        
+        # transform object_points, grasp to arm base frame
+        # transform grasp rotation to right frame
+        object_points = (R_c2ab @ object_points.T).T + t_c2ab
+        translation = (R_c2ab @ filter_gg[0].translation) + t_c2ab
+        rotation = R_c2ab @ (filter_gg[0].rotation_matrix @ rotation_top_mat)
         if self.cfgs.open_communication:
             data_msg = "Now you received the gripper pose, good luck."
-            # transform gg in camera to arm base by R_c2b and t_c2b
-            # R_c2b = c2b[:3, :3]
-            # t_c2b = c2b[:3,  3]
             self.socket.send_data(
                 [
-                    (R_c2ab @ filter_gg[0].translation) + t_c2ab,  # translation in arm base pose
-                    R_c2ab @ (filter_gg[0].rotation_matrix @ rotation_top_mat),  # rotation in arm base pose
+                    translation,  # translation in arm base pose
+                    rotation,  # rotation in arm base pose
                     [filter_gg[0].depth, filter_gg[0].width, 0],
-                    (R_c2ab @ object_points.T).T + t_c2ab,  # object in arm base pose
+                    object_points,  # object in arm base pose
+                    data_msg,
+                ]
+            )
+        return True
+
+
+    def pick_back(
+        self,
+        points: np.ndarray,
+        seg_mask: np.ndarray,
+    ):
+        colors = self.cam.colors
+        c2ab = self.cam.c2ab  # camera in arm base pose
+        R_c2ab = c2ab[:3, :3]
+        t_c2ab = c2ab[:3,  3]
+        points_z = points[:, :, 2]
+
+        # Filtering points based on the distance from camera
+        mask = (
+            (points_z > self.cfgs.min_depth)
+            & (points_z < self.cfgs.max_depth)
+            & ~np.isnan(points_z)
+        )
+
+        # Get 3D bounding box from seg_mask (target object region)
+        # Combine depth mask with segmentation mask
+        object_mask = mask & seg_mask
+        object_points = points[object_mask]
+        object_colors = colors[object_mask]
+        object_points = (R_c2ab @ object_points.T).T + t_c2ab
+
+
+        pick_x, pick_y = np.median(np.unique(object_points[:, :2], axis=0), axis=0)
+        x_margin, y_margin = 0.05, 0.05
+        x_mask = np.logical_and(object_points[:, 0] > (pick_x - x_margin), object_points[:, 0] < (pick_x + x_margin))
+        y_mask = np.logical_and(object_points[:, 1] > (pick_y - y_margin), object_points[:, 1] < (pick_y + y_margin))
+        z_mask = np.logical_and(object_points[:, 2] > self.robot_min_height, object_points[:, 2] < self.robot_max_height)
+        pick_mask = np.logical_and(x_mask, y_mask, z_mask)
+        pick_zs = object_points[pick_mask][:, 2]
+        pick_z = np.quantile(pick_zs, 0.95)
+        object_height = pick_zs.max() - pick_zs.min()
+        pick_z -= min(0.05, object_height * 1 / 3)
+        
+        pick_point = np.array(
+            [pick_x, pick_y, pick_z],
+            dtype=np.float32
+        )
+        
+        object_pcd = o3d.geometry.PointCloud()
+        object_pcd.points = o3d.utility.Vector3dVector(object_points)
+        object_pcd.colors = o3d.utility.Vector3dVector(object_colors)
+        geometries = []
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=0.02, height=0.02)
+        cylinder.translate(pick_point)
+        cylinder.paint_uniform_color([0, 1, 0])
+        geometries.append(cylinder)
+
+        if self.cfgs.debug:
+            visualize_cloud_geometries(
+                object_pcd,
+                geometries,
+                save_file=self.save_dir + "/pick_back.jpg",
+                visualize=not self.cfgs.headless,
+                # rerun_name="proposed_placing_location",
+            )
+
+        if self.cfgs.open_communication:
+            data_msg = "Now you received the gripper (pick back) pose, good luck."
+            self.socket.send_data(
+                [
+                    pick_point,
+                    [0],
+                    [0, 0, 0],
+                    object_points,
                     data_msg,
                 ]
             )

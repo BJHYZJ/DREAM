@@ -56,6 +56,7 @@ class DreamTaskExecutor:
         mllm: bool = False,
         manipulation_only: bool = False,
         discord_bot=None,
+        back_object:str=None
     ) -> None:
         """Initialize the executor."""
         self.robot = robot
@@ -75,6 +76,8 @@ class DreamTaskExecutor:
 
         self.parameters["encoder"] = None
         self.semantic_sensor = None
+
+        self.back_object = back_object  # object has been pickup and place to back
 
         print("- Start robot agent with data collection")
         self.agent = RobotAgent(
@@ -123,19 +126,29 @@ class DreamTaskExecutor:
         """Pick up an object."""
         self.robot.switch_to_manipulation_mode()
         print("Using self.agent to grasp object:", target_object)
-        self.agent.manipulate(target_object, target_point=point, skip_confirmation=skip_confirmations)
+        success = self.agent.manipulate(target_object=target_object, target_point=point, skip_confirmation=skip_confirmations)
+        if not success:
+            self.robot.open_gripper()
+        else:
+            self.back_object = target_object
         self.robot.look_front()
 
 
     def _place(
-        self, 
+        self,
         target_receptacle: str, 
         point: Optional[np.ndarray], 
         skip_confirmations: bool = False
     ) -> None:
         """Place an object."""
         self.robot.switch_to_manipulation_mode()
-        self.agent.place(target_receptacle, target_point=point, skip_confirmation=skip_confirmations)
+        assert self.back_object, "back must have object."
+        self.agent.place(
+            back_object=self.back_object, 
+            target_receptacle=target_receptacle, 
+            target_point=point, 
+            skip_confirmation=skip_confirmations
+        )
         self.robot.look_front()
 
 
@@ -234,7 +247,7 @@ class DreamTaskExecutor:
                 ):
                     self.robot.move_to_nav_posture()
                     # point = self._find(args)
-                    point = [0.0097, 0.4592, 0.0561]
+                    point = [-0.1541,  0.4119, -0.0114]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None
@@ -269,7 +282,7 @@ class DreamTaskExecutor:
                     and input("Do you want to run navigation? [Y/n]: ").upper() != "N"
                 ):
                     # point = self._find(args)
-                    point = [0.0097, 0.4592, 0.0561]
+                    point = [-0.1541,  0.4119, -0.0114]
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None
