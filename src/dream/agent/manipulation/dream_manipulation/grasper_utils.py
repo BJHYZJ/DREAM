@@ -266,7 +266,7 @@ def pickup(
 
     if not success0:
         print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
-        manip_wrapper.robot.arm_to(angle=constants.look_down, blocking=True, reliable=True)
+        manip_wrapper.robot.arm_to(angle=constants.look_down, blocking=True, reliable=True)  # Important! It give a suit init pose to topdown pickup
         ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
         # try use heuristic pickup
         # transfer obj_points to arm base frame
@@ -286,8 +286,21 @@ def pickup(
         print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
 
         # Build a new target pose that keeps pitch/roll but enforces yaw and a reasonable position
-        desired_position = np.median(object_points, axis=0)
-        desired_position[2] = np.median(object_points[:, 2]) + 0.015
+        pick_x, pick_y = np.median(np.unique(object_points[:, :2], axis=0), axis=0)
+        x_margin, y_margin = 0.05, 0.05
+        x_mask = np.logical_and(object_points[:, 0] > (pick_x - x_margin), object_points[:, 0] < (pick_x + x_margin))
+        y_mask = np.logical_and(object_points[:, 1] > (pick_y - y_margin), object_points[:, 1] < (pick_y + y_margin))
+        z_mask = np.logical_and(object_points[:, 2] > -0.3, object_points[:, 2] < 1.0)
+        pick_mask = np.logical_and(x_mask, y_mask, z_mask)
+        pick_zs = object_points[pick_mask][:, 2]
+        pick_z = np.quantile(pick_zs, 0.95)
+        object_height = pick_zs.max() - pick_zs.min()
+        pick_z -=  min(0.05, object_height * 2 / 3)  # 0.40 is the back backet min height, lower than this will collision with computer
+        pick_z = max(pick_z, -0.3)
+        desired_position = np.array(
+            [pick_x, pick_y, pick_z],
+            dtype=np.float32
+        )
 
         Rz = np.array(
             [
@@ -372,7 +385,8 @@ def place(
     manip_wrapper: ManipulationWrapper,
     back_object: str,  # object in back
     translation: np.ndarray,  # grasp translation in arm base
-    distance_from_object: float=0.35 
+    gripper_width: int=830,
+    distance_from_object: float=0.4
 ):
     front_direction = np.array([1/np.sqrt(2), 0, -1/np.sqrt(2)])
     up_direction = np.array([0, 1, 0])
@@ -415,28 +429,27 @@ def place(
     # there has one success ik for place, now the robot need to pickup back object and then place...
     manip_wrapper.robot.arm_to(angle=constants.back_front, blocking=True, reliable=True)
     manip_wrapper.robot.arm_to(angle=constants.back_look, blocking=True, reliable=True)
-    translation, obj_points = capture_and_process_back_image(
+    translation_back, obj_points_back = capture_and_process_back_image(
         obj=back_object,
         socket=socket,
         manip_wrapper=manip_wrapper,
     )
 
-    if translation is None:
+    if translation_back is None:
         print(f"(ಥ﹏ಥ) Can't found {back_object} in back...")
         return False
 
     print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
     # move to suit place to see back object
-    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(constants.back_place, blocking=True, reliable=True)
     ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
     # try use heuristic pickup
     # transfer obj_points to arm base frame
-    centered_pts = obj_points - np.median(obj_points, axis=0, keepdims=True)
+    centered_pts = obj_points_back - np.median(obj_points_back, axis=0, keepdims=True)
     cov = np.cov(centered_pts, rowvar=False)
     eig_vals, eig_vecs = np.linalg.eigh(cov)
     principal_axis = eig_vecs[:, np.argmax(eig_vals)]
     object_yaw = np.arctan2(principal_axis[1], principal_axis[0])
-    object_yaw += np.pi / 2
 
     ee_rot = ee_in_arm_base_pose[:3, :3]
     current_gripper_yaw = np.arctan2(ee_rot[1, 0], ee_rot[0, 0])
@@ -445,9 +458,6 @@ def place(
         np.cos(object_yaw - current_gripper_yaw),
     )
     print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
-    # Build a new target pose that keeps pitch/roll but enforces yaw and a reasonable position
-    desired_position = np.median(obj_points, axis=0)
-    desired_position[2] = np.median(obj_points[:, 2]) + 0.015
     Rz = np.array(
         [
             [np.cos(delta_yaw), -np.sin(delta_yaw), 0.0],
@@ -459,9 +469,10 @@ def place(
     R_desired = R_current @ Rz
     ee_goal_in_arm_base_pose = np.eye(4)  # Overwrite the old ee_goal_in_arm_base_pose
     ee_goal_in_arm_base_pose[:3, :3] = R_desired
-    ee_goal_in_arm_base_pose[:3, 3] = desired_position
+    ee_goal_in_arm_base_pose[:3, 3] = translation_back
 
     # Use yaw-updated configuration as IK seed
+    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
     arm_angles_deg_new = arm_angles_deg.copy()
     arm_angles_deg_new[5] += np.degrees(delta_yaw)
 
@@ -484,7 +495,14 @@ def place(
     manip_wrapper.robot.arm_to(angle=arm_angles_deg_new, blocking=True)
     # then go to solution
     manip_wrapper.robot.arm_to(angle=joints_solution2, blocking=True)  # TODO 机械臂居然旋转了一圈再抓，看起来是IK的问题
-    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True)
+    pick_success = manip_wrapper.pickup(width=gripper_width)
+    if not pick_success:
+        print("(ಥ﹏ಥ) It failed because I didn't do it properly...")
+    # gripper object and move to safety place
+    back_place_safety = constants.back_place.copy()
+    back_place_safety[5] = joints_solution2[5]  # key the joint 5 position to avoid collision with backet
+    manip_wrapper.robot.arm_to(back_place_safety, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(constants.back_place, blocking=True, reliable=True)
     manip_wrapper.robot.arm_to(constants.back_front, blocking=True, reliable=True)
     manip_wrapper.robot.arm_to(constants.look_down, blocking=True, reliable=True)
 
@@ -500,6 +518,7 @@ def place(
     pregrasp_pose[:3, 3] = pregrasp_xyz
     pregrasp_pose[:3, :3] = place_pose[:3, :3]
 
+    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
     pre_success, pregrasp_joint_angles, _ = manip_wrapper.robot._robot_model.manip_ik(
         pregrasp_pose, 
         q_init=arm_angles_deg, 
@@ -508,7 +527,6 @@ def place(
     )
 
     # pause slam to avoid robot body be scan to scene
-    
     if pre_success:
         print(f"Moving to pre-grasp position.")
         print("Pregrasp joint angles: ")
