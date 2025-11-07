@@ -303,7 +303,7 @@ class ZmqServer(BaseZmqServer):
         elif "gripper" in action:
             if self.verbose or True:
                 print(f"Moving gripper to {action['gripper']}")
-            self.client.manip.set_gripper(action["gripper"])
+            self.client.manip.set_gripper(action["gripper"], wait=action['wait'])
         else:
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)
