@@ -188,7 +188,7 @@ class RangerxARMKinematics:
     
     def check_angle_valid(self, joint_angles: np.ndarray):
         # avoid arm collison to back
-        if (-15.0 <= joint_angles[0] <= 15.0) and (joint_angles[4] < -55.0):
+        if (-15.0 <= joint_angles[0] <= 15.0) and (joint_angles[1] < -55.0):
             return False
         return True
 

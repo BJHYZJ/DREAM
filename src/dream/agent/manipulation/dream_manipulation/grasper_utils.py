@@ -92,7 +92,6 @@ def capture_and_process_back_image(obj, socket, manip_wrapper: ManipulationWrapp
     image_publisher = ImagePublisher(manip_wrapper.robot, socket)
     retry_flag = True
     print("*" * 20, "detection object which will be place.", "*" * 20)
-    # manip_wrapper.robot.look_back()
 
     head_pan_retries = 1
     head_pan_angles = [0, -3, -3, -3, -3, -3, 18, 3, 3, 3, 3]
@@ -208,6 +207,38 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
         raise ValueError
 
 
+def select_gripper_yaw_from_object_points(object_points: np.ndarray) -> float:
+    """Return a yaw angle (in radians) for aligning the gripper closing direction with the object's short axis."""
+    if object_points.size == 0:
+        return 0.0
+
+    points_xy = object_points[:, :2]
+    centered_pts = points_xy - np.median(points_xy, axis=0, keepdims=True)
+
+    # Degenerate case: not enough spread to compute covariance
+    if np.allclose(centered_pts, 0):
+        return 0.0
+
+    cov = np.cov(centered_pts, rowvar=False)
+    if cov.shape == ():
+        cov = np.array([[cov]])
+
+    eig_vals, eig_vecs = np.linalg.eigh(cov)
+    long_axis = eig_vecs[:, np.argmax(eig_vals)]
+    long_axis = long_axis / np.linalg.norm(long_axis)
+    short_axis = np.array([-long_axis[1], long_axis[0]])
+
+    def span(axis: np.ndarray) -> float:
+        projections = centered_pts @ axis
+        return projections.max() - projections.min()
+
+    long_span = span(long_axis)
+    short_span = span(short_axis)
+    closing_axis = short_axis if long_span >= short_span else long_axis
+    yaw = np.arctan2(closing_axis[1], closing_axis[0])
+    return np.arctan2(np.sin(yaw), np.cos(yaw))
+
+
 # The function is to calculate the qpos of the end effector given the front and up vector
 # front is defined as the direction of the gripper
 # Up is defined as the reverse direction with special shape
@@ -247,7 +278,7 @@ def pickup(
     rotation: np.ndarray,  # grasp rotation in arm base
     translation: np.ndarray,  # grasp translation in arm base
     object_points: np.ndarray,  # obj_points in arm base
-    gripper_width: int=830,
+    gripper_open: int=830,
     distance_from_object: float=0.35
 ):
     ee_goal_in_arm_base_pose = np.eye(4)
@@ -270,19 +301,16 @@ def pickup(
         ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
         # try use heuristic pickup
         # transfer obj_points to arm base frame
-        centered_pts = object_points - np.median(object_points, axis=0, keepdims=True)
-        cov = np.cov(centered_pts, rowvar=False)
-        eig_vals, eig_vecs = np.linalg.eigh(cov)
-        principal_axis = eig_vecs[:, np.argmax(eig_vals)]
-        object_yaw = np.arctan2(principal_axis[1], principal_axis[0])
-        object_yaw += np.pi / 2
+        object_yaw = select_gripper_yaw_from_object_points(object_points)
 
-        ee_rot = ee_in_arm_base_pose[:3, :3]
-        current_gripper_yaw = np.arctan2(ee_rot[1, 0], ee_rot[0, 0])
+        closing_axis = ee_in_arm_base_pose[:3, 1]  # +Y points along the gripper closing direction
+        current_gripper_yaw = np.arctan2(closing_axis[1], closing_axis[0])
         delta_yaw = np.arctan2(
             np.sin(object_yaw - current_gripper_yaw),
             np.cos(object_yaw - current_gripper_yaw),
         )
+        if abs(delta_yaw) > np.pi / 2:
+            delta_yaw -= np.sign(delta_yaw) * np.pi
         print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
 
         # Build a new target pose that keeps pitch/roll but enforces yaw and a reasonable position
@@ -310,7 +338,7 @@ def pickup(
             ]
         )
         R_current = ee_in_arm_base_pose[:3, :3]
-        R_desired = R_current @ Rz
+        R_desired = Rz @ R_current
         ee_goal_in_arm_base_pose = np.eye(4)  # Overwrite the old ee_goal_in_arm_base_pose
         ee_goal_in_arm_base_pose[:3, :3] = R_desired
         ee_goal_in_arm_base_pose[:3, 3] = desired_position
@@ -369,13 +397,18 @@ def pickup(
         manip_wrapper.robot.arm_to(angle=pregrasp_joint_angles, blocking=True)   
 
     manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True)
-    picked = manip_wrapper.pickup(width=gripper_width)
+    picked = manip_wrapper.pickup(width=gripper_open)
     if not picked:
         print("(ಥ﹏ಥ) It failed because I didn't do it properly...")
         manip_wrapper.robot.resume_slam(reliable=True)
         return False
     # place_black, the camera will look at robot body, pause slam to avoid add robot mesh to scene
-    manip_wrapper.place_back()
+    manip_wrapper.robot.look_front()
+    manip_wrapper.robot.arm_to(angle=constants.back_front)
+    manip_wrapper.robot.arm_to(angle=constants.back_place)
+    manip_wrapper.robot.gripper_to(position=gripper_open)
+    manip_wrapper.robot.arm_to(angle=constants.back_front)
+    manip_wrapper.robot.look_front()
     manip_wrapper.robot.resume_slam(reliable=True)
     return True
 
@@ -388,7 +421,7 @@ def place(
     gripper_width: int=830,
     distance_from_object: float=0.4
 ):
-    front_direction = np.array([1/np.sqrt(2), 0, -1/np.sqrt(2)])
+    front_direction = np.array([0.0, 0.0, -1.0])
     up_direction = np.array([0, 1, 0])
     place_rotation = get_pose_from_front_up_end_effector(
         front=front_direction, up=up_direction
@@ -441,22 +474,19 @@ def place(
 
     print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
     # move to suit place to see back object
-    manip_wrapper.robot.arm_to(constants.back_place, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True)
     ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
-    # try use heuristic pickup
-    # transfer obj_points to arm base frame
-    centered_pts = obj_points_back - np.median(obj_points_back, axis=0, keepdims=True)
-    cov = np.cov(centered_pts, rowvar=False)
-    eig_vals, eig_vecs = np.linalg.eigh(cov)
-    principal_axis = eig_vecs[:, np.argmax(eig_vals)]
-    object_yaw = np.arctan2(principal_axis[1], principal_axis[0])
+    object_yaw = select_gripper_yaw_from_object_points(obj_points_back)
 
-    ee_rot = ee_in_arm_base_pose[:3, :3]
-    current_gripper_yaw = np.arctan2(ee_rot[1, 0], ee_rot[0, 0])
+    closing_axis = ee_in_arm_base_pose[:3, 1]  # +Y points along the gripper closing direction
+    # closing_axis = ee_rot[:, 1]
+    current_gripper_yaw = np.arctan2(closing_axis[1], closing_axis[0])
     delta_yaw = np.arctan2(
         np.sin(object_yaw - current_gripper_yaw),
         np.cos(object_yaw - current_gripper_yaw),
     )
+    if abs(delta_yaw) > np.pi / 2:
+        delta_yaw -= np.sign(delta_yaw) * np.pi
     print(f"Heuristic gripper yaw delta (deg): {np.degrees(delta_yaw):.2f}")
     Rz = np.array(
         [
@@ -466,7 +496,7 @@ def place(
         ]
     )
     R_current = ee_in_arm_base_pose[:3, :3]
-    R_desired = R_current @ Rz
+    R_desired = Rz @ R_current
     ee_goal_in_arm_base_pose = np.eye(4)  # Overwrite the old ee_goal_in_arm_base_pose
     ee_goal_in_arm_base_pose[:3, :3] = R_desired
     ee_goal_in_arm_base_pose[:3, 3] = translation_back
@@ -499,10 +529,10 @@ def place(
     if not pick_success:
         print("(ಥ﹏ಥ) It failed because I didn't do it properly...")
     # gripper object and move to safety place
-    back_place_safety = constants.back_place.copy()
-    back_place_safety[5] = joints_solution2[5]  # key the joint 5 position to avoid collision with backet
-    manip_wrapper.robot.arm_to(back_place_safety, blocking=True, reliable=True)
-    manip_wrapper.robot.arm_to(constants.back_place, blocking=True, reliable=True)
+    back_down_safety = constants.back_down.copy()
+    back_down_safety[5] = joints_solution2[5]  # key the joint 5 position to avoid collision with backet
+    manip_wrapper.robot.arm_to(back_down_safety, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True)
     manip_wrapper.robot.arm_to(constants.back_front, blocking=True, reliable=True)
     manip_wrapper.robot.arm_to(constants.look_down, blocking=True, reliable=True)
 

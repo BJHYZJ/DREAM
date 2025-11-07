@@ -388,15 +388,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
             reliable=True,
         )
 
-    def look_back(self, blocking: bool=True, reliable: bool=True, timeout: float = 10.0):
-        """Let robot look to its front."""
-        self.arm_to(
-            angle=constants.back_look,
-            blocking=blocking,
-            timeout=timeout,
-            reliable=reliable,
-        )
-
     # def get_camera_in_ee(self, timeout: float = 5.0) -> np.ndarray:
     #     t0 = timeit.default_timer()
     #     with self._state_lock:
@@ -675,7 +666,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def open_gripper(
         self,
-        blocking: bool=False,
+        blocking: bool=True,
         reliable: bool=True
     ) -> bool:
         """Open the gripper based on hard-coded presets."""

@@ -546,8 +546,8 @@ class ObjectHandler:
         pick_zs = object_points[pick_mask][:, 2]
         pick_z = np.quantile(pick_zs, 0.95)
         object_height = pick_zs.max() - pick_zs.min()
-        pick_z -= min(0.05, object_height * 1 / 3)
-        
+        pick_z -=  min(0.05, object_height * 2 / 3)  # 0.40 is the back backet min height, lower than this will collision with computer
+        pick_z = max(pick_z, 0.40)
         pick_point = np.array(
             [pick_x, pick_y, pick_z],
             dtype=np.float32

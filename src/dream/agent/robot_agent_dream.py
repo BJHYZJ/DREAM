@@ -729,7 +729,7 @@ class RobotAgent(RobotAgentBase):
             print("(ಥ﹏ಥ) Try all pose but not suit pose for place.")
             return False
 
-        if skip_confirmation or input("Do you want to do this place manipulation? Y or N") != "N":
+        if skip_confirmation or input("Do you want to do this place manipulation? Y or N ") != "N":
             success = place(
                 socket=self.manip_socket,
                 manip_wrapper=self.manip_wrapper,

@@ -199,7 +199,7 @@ class DreamManipulationWrapper:
     #     )
 
 
-    def pickup(self, width):
+    def pickup(self, width: int=830):
         """
         Code for grasping the object
         Gripper closes gradually until it encounters resistance
@@ -226,13 +226,6 @@ class DreamManipulationWrapper:
 
             time.sleep(0.1)
 
-    def place_back(self):
-        self.robot.look_front()
-        self.robot.arm_to(angle=constants.back_front)
-        self.robot.arm_to(angle=constants.back_place)
-        self.robot.gripper_to(position=self.GRIPPER_MAX)
-        self.robot.arm_to(angle=constants.back_front)
-        self.robot.look_front()
 
     def updateJoints(self):
         """
