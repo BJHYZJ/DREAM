@@ -13,6 +13,7 @@
 # LICENSE file in the root directory of this source tree.
 from typing import List, Optional
 
+from Cython import const
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from std_srvs.srv import Trigger
@@ -25,7 +26,7 @@ from .abstract import AbstractControlModule, enforce_enabled
 
 from xarm import version
 from xarm.wrapper import XArmAPI
-from dream.motion.constants import look_front, back_front
+from dream.motion import constants
 import numpy as np
 import time
 import traceback
@@ -45,12 +46,14 @@ class XARM6:
         self,
         interface="192.168.1.233",
         # The pose corresponds to the servo angle
-        init_servo_angle=look_front,
+        init_servo_angle=constants.look_front,
+        back_front_angle=constants.back_front
     ):
         self.pprint("xArm-Python-SDK Version:{}".format(version.__version__))
         self.alive = True
         self._arm = XArmAPI(interface, baud_checkset=False)
         self.init_servo_angle = init_servo_angle
+        self.back_front_angle = back_front_angle
         self._robot_init()
 
     # Robot Init
@@ -148,6 +151,9 @@ class XARM6:
         # This can proimise the initial position has the correct joint angle
         servo_pose = self.get_servo_angle()
         if servo_pose[0] > 135 or servo_pose[0] < -135:
+            back_front = self.back_front_angle.copy()
+            if servo_pose[0] < 0:
+                back_front[0] = -back_front[0]
             self._arm.set_servo_angle(
                 angle=back_front, is_radian=False, wait=True
             )
