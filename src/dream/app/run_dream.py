@@ -15,7 +15,7 @@ from dream.agent.task.dream import DreamTaskExecutor
 from dream.agent.zmq_client_dream import DreamRobotZmqClient
 from dream.core.parameters import get_parameters
 from dream.llms import LLMChatWrapper, PickupPromptBuilder, get_llm_choices, get_llm_client
-
+from dream.motion import constants
 
 @click.command()
 # by default you are running these codes on your workstation, not on your robot.
@@ -86,8 +86,8 @@ from dream.llms import LLMChatWrapper, PickupPromptBuilder, get_llm_choices, get
     "--match-method",
     "--match_method",
     type=click.Choice(["class", "feature"]),
-    default="feature",
-    help="feature for visual servoing",
+    default="class",
+    help="match method for visual servoing",
 )
 @click.option(
     "--mllm-for-visual-grounding",
@@ -105,7 +105,7 @@ def main(
     manual_wait,
     explore_iter: int = 3,
     mode: str = "navigation",
-    method: str = "dream",
+    match_method: str = "class",
     input_path: Optional[str] = None,
     output_path: Optional[str] = None,
     robot_ip: str = "",
@@ -141,8 +141,7 @@ def main(
     executor = DreamTaskExecutor(
         robot,
         parameters,
-        visual_servo=visual_servo,
-        match_method=kwargs["match_method"],
+        match_method=match_method,
         device_id=device_id,
         output_path=output_path,
         server_ip=server_ip,

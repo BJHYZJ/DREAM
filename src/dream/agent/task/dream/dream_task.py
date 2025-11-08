@@ -246,8 +246,7 @@ class DreamTaskExecutor:
                     and input("Do you want to run navigation? [Y/n]: ").upper() != "N"
                 ):
                     self.robot.move_to_nav_posture()
-                    # point = self._find(args)
-                    point = [-0.1541,  0.4119, -0.0114]
+                    point = self._find(args)
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None
@@ -281,8 +280,7 @@ class DreamTaskExecutor:
                     not self.skip_confirmations
                     and input("Do you want to run navigation? [Y/n]: ").upper() != "N"
                 ):
-                    # point = self._find(args)
-                    point = [-0.1541,  0.4119, -0.0114]
+                    point = self._find(args)
                 # Or the user explicitly tells that he or she does not want to run navigation.
                 else:
                     point = None

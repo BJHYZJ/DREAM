@@ -14,12 +14,13 @@
 # LICENSE file in the root directory of this source tree.
 
 import os
+import time
 import timeit
 from datetime import datetime
 from threading import Lock
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
-
+from threading import Lock, Thread
 import cv2
 import numpy as np
 import rerun as rr
@@ -42,13 +43,17 @@ from dream.core.interfaces import Observations
 from dream.core.parameters import Parameters
 from dream.core.robot import AbstractGraspClient, AbstractRobotClient
 from dream.mapping.instance import Instance
-from dream.mapping.voxel import SparseVoxelMapDream
-from dream.mapping.voxel import SparseVoxelMapNavigationSpaceDream
+from dream.mapping.voxel import SparseVoxelMap
+from dream.mapping.voxel import SparseVoxelMapNavigationSpace
 from dream.mapping.voxel import SparseVoxelMapProxy
 from dream.motion.algo.a_star import AStar
+from dream.motion import ConfigurationSpace, Planner, PlanResult
 from dream.perception.detection.owl import OwlPerception
 from dream.perception.encoders.siglip_encoder import MaskSiglipEncoder
 from dream.perception.wrapper import OvmmPerception
+from dream.utils.logger import Logger
+
+logger = Logger(__name__)
 
 # Manipulation hyperparameters
 INIT_LIFT_POS = 0.45
@@ -60,7 +65,7 @@ INIT_HEAD_PAN = -1.57
 INIT_HEAD_TILT = -0.65
 
 
-class RobotAgent(RobotAgentBase):
+class RobotAgent:
     """Basic demo code. Collects everything that we need to make this work."""
 
     def __init__(
@@ -69,12 +74,10 @@ class RobotAgent(RobotAgentBase):
         parameters: Union[Parameters, Dict[str, Any]],
         semantic_sensor: Optional[OvmmPerception] = None,
         grasp_client: Optional[AbstractGraspClient] = None,
-        voxel_map: Optional[SparseVoxelMapDream] = None,
         debug_instances: bool = True,
         show_instances_detected: bool = False,
         use_instance_memory: bool = False,
         realtime_updates: bool = False,
-        obs_sub_port: int = 4450,
         # re: int = 3,
         manip_port: int = 5557,
         log: Optional[str] = None,
@@ -202,125 +205,31 @@ class RobotAgent(RobotAgentBase):
 
         self._start_threads()
 
-    def create_obstacle_map(self, parameters):
-        """
-        This function creates the MaskSiglipEncoder, Owlv2 detector, voxel map util class and voxel map navigation space util class
-        """
 
-        # Initialize the encoder in different ways depending on the configuration
-        if self.manipulation_only:
-            self.encoder = None
-        else:
-            # Use SIGLip-so400m for accurate inference
-            # We personally feel that Siglipv1 is better than Siglipv2, but we still include the Siglipv2 in src/stretch/perception/encoders/ for future reference
-            self.encoder = MaskSiglipEncoder(
-                version="so400m", feature_matching_threshold=0.14, device=self.device
-            )
+    def _start_threads(self):
+        """Create threads and locks for real-time updates."""
 
-        # You can see a clear difference in hyperparameter selection in different querying strategies
-        # Running gpt4o is time consuming, so we don't want to waste more time on object detection or Siglip or voxelization
-        # On the other hand querying by feature similarity is fast and we want more fine grained details in semantic memory
-        if self.manipulation_only:
-            self.detection_model = None
-            semantic_memory_resolution = 0.1
-            image_shape = (360, 270)
-        elif self.mllm:
-            self.detection_model = OwlPerception(
-                version="owlv2-B-p16", device=self.device, confidence_threshold=0.01
-            )
-            semantic_memory_resolution = 0.1
-            image_shape = (360, 270)
-        else:
-            self.detection_model = OwlPerception(
-                version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.15
-            )
-            semantic_memory_resolution = 0.05
-            image_shape = (480, 360)
-        self.voxel_map = SparseVoxelMapDream(
-            resolution=parameters["voxel_size"],
-            semantic_memory_resolution=semantic_memory_resolution,
-            local_radius=parameters["local_radius"],
-            obs_min_height=parameters["obs_min_height"],
-            obs_max_height=parameters["obs_max_height"],
-            obs_min_density=parameters["obs_min_density"],
-            neg_obs_height=parameters["neg_obs_height"],
-            use_negative_obstacles=parameters["use_negative_obstacles"],
-            grid_resolution=0.1,
-            min_depth=parameters["min_depth"],
-            max_depth=parameters["max_depth"],
-            pad_obstacles=parameters["pad_obstacles"],
-            add_local_radius_points=parameters.get("add_local_radius_points", default=True),
-            remove_visited_from_obstacles=parameters.get(
-                "remove_visited_from_obstacles", default=False
-            ),
-            smooth_kernel_size=parameters.get("filters/smooth_kernel_size", -1),
-            use_median_filter=parameters.get("filters/use_median_filter", False),
-            median_filter_size=parameters.get("filters/median_filter_size", 5),
-            median_filter_max_error=parameters.get("filters/median_filter_max_error", 0.01),
-            use_derivative_filter=parameters.get("filters/use_derivative_filter", False),
-            derivative_filter_threshold=parameters.get("filters/derivative_filter_threshold", 0.5),
-            detection=self.detection_model,
-            encoder=self.encoder,
-            image_shape=image_shape,
-            log=self.log,
-            mllm=self.mllm,
-        )
-        self.space = SparseVoxelMapNavigationSpaceDream(
-            self.robot,
-            self.voxel_map,
-            rotation_step_size=parameters.get("motion_planner/rotation_step_size", 0.2),
-            dilate_frontier_size=parameters.get("motion_planner/frontier/dilate_frontier_size", 2),
-            dilate_obstacle_size=parameters.get("motion_planner/frontier/dilate_obstacle_size", 0),
-        )
-        self.planner = AStar(self.space)
+        # Track if we are still running
+        self._running = True
 
-    def setup_custom_blueprint(self):
-        main = rrb.Horizontal(
-            rrb.Spatial3DView(name="3D View", origin="world"),
-            rrb.Vertical(
-                rrb.TextDocumentView(name="text", origin="robot_monologue"),
-                rrb.Spatial2DView(name="image", origin="/observation_similar_to_text"),
-            ),
-            rrb.Vertical(
-                # rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
-                # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
-                rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
-                rrb.Spatial2DView(name="rgb_servo", origin='world/camera/rgb_servo')
-                # rrb.Spatial2DView(name="obj", origin="/world/camera/obj_mask"),
-            ),
-            column_shares=[2, 1, 1],
-        )
-        my_blueprint = rrb.Blueprint(
-            rrb.Vertical(main, rrb.TimePanel(state=True)),
-            collapse_panels=True,
-        )
-        rr.send_blueprint(my_blueprint)
+        # Locks
+        self._robot_lock = Lock()
+        self._obs_history_lock = Lock()
+        self._map_lock = Lock()
 
-    def compute_blur_metric(self, image):
-        """
-        Computes a blurriness metric for an image tensor using gradient magnitudes.
+        # Map updates
+        self._update_map_thread = Thread(target=self.update_map_loop)
+        self._update_map_thread.start()
 
-        Parameters:
-        - image (torch.Tensor): The input image tensor. Shape is [H, W, C].
+        self._get_observations_thread = None
 
-        Returns:
-        - blur_metric (float): The computed blurriness metric.
-        """
+    def update_map_loop(self):
+        """Threaded function that updates our voxel map in real-time."""
+        while self.robot.running and self._running:
+            with self._robot_lock:
+                self.update_map_with_pose_graph()
+            time.sleep(0.75)
 
-        # Convert the image to grayscale
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        # Compute gradients using the Sobel operator
-        Gx = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
-        Gy = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
-
-        # Compute gradient magnitude
-        G = cv2.magnitude(Gx, Gy)
-
-        # Compute the mean of gradient magnitudes
-        blur_metric = G.mean()
-
-        return blur_metric
 
     def update_map_with_pose_graph(self):
         """Update our voxel map using a pose graph"""
@@ -334,7 +243,7 @@ class RobotAgent(RobotAgentBase):
         # print("Updating past observations")
         self._obs_history_lock.acquire()
         for idx in range(len(self.obs_history)):
-            lidar_timestamp = self.obs_history[idx].lidar_timestamp
+            timestamp = self.obs_history[idx].timestamp
             gps_past = self.obs_history[idx].gps
 
             for vertex in self.pose_graph:
@@ -454,14 +363,218 @@ class RobotAgent(RobotAgentBase):
         # print(f"Done clearing out old observations. Time: {t6 - t5}")
         self._obs_history_lock.release()
 
+    def reset_object_plans(self):
+        """Clear stored object planning information."""
+
+        # Dictionary storing attempts to visit each object
+        self._object_attempts: Dict[int, int] = {}
+        self._cached_plans: Dict[int, PlanResult] = {}
+
+        # Objects that cannot be reached
+        self.unreachable_instances = set()
+
+
+    def start(
+        self,
+        goal: Optional[str] = None,
+        visualize_map_at_start: bool = False,
+        can_move: bool = True,
+        verbose: bool = True,
+    ) -> None:
+
+        # Call the robot's own startup hooks
+        started = self.robot.start()
+        if not started:
+            # update here
+            raise RuntimeError("Robot failed to start!")
+
+        if verbose:
+            print("ZMQ connection to robot started.")
+
+        if can_move:
+            # First, open the gripper...
+            self.robot.switch_to_manipulation_mode()
+            self.robot.open_gripper()
+
+            # Tuck the arm away
+            if verbose:
+                print("Sending arm to home...")
+            self.robot.move_to_nav_posture()
+            if verbose:
+                print("... done.")
+
+        # Move the robot into navigation mode
+        self.robot.switch_to_navigation_mode()
+        if verbose:
+            print("- Update map after switching to navigation posture")
+
+        # Add some debugging stuff - show what 3d point clouds look like
+        if visualize_map_at_start:
+            if not self._realtime_updates:
+                # self.update(visualize_map=False)  # Append latest observations
+                self.update()
+            print("- Visualize map after updating")
+            self.get_voxel_map().show(
+                orig=np.zeros(3),
+                xyt=self.robot.get_base_in_map_xyt(),
+                footprint=self.robot.get_robot_model().get_footprint(),
+                instances=self.semantic_sensor is not None,
+            )
+            self.print_found_classes(goal)
+
+
+    def print_found_classes(self, goal: Optional[str] = None, verbose: bool = False):
+        """Helper. print out what we have found according to detic."""
+        if self.semantic_sensor is None:
+            logger.warning("Tried to print classes without semantic sensor!")
+            return
+
+        instances = self.get_voxel_map().get_instances()
+        if goal is not None:
+            print(f"Looking for {goal}.")
+        print("So far, we have found these classes:")
+        for i, instance in enumerate(instances):
+            oid = int(instance.category_id.item())
+            name = self.semantic_sensor.get_class_name_for_id(oid)
+            print(i, name, instance.score)
+            if goal is not None:
+                if self.is_match_by_feature(instance, goal):
+                    if verbose:
+                        from matplotlib import pyplot as plt
+
+                        plt.imshow(instance.get_best_view().cropped_image.int())
+                        plt.show()
+
+
+    def create_obstacle_map(self, parameters):
+        """
+        This function creates the MaskSiglipEncoder, Owlv2 detector, voxel map util class and voxel map navigation space util class
+        """
+
+        # Initialize the encoder in different ways depending on the configuration
+        if self.manipulation_only:
+            self.encoder = None
+        else:
+            # Use SIGLip-so400m for accurate inference
+            # We personally feel that Siglipv1 is better than Siglipv2, but we still include the Siglipv2 in src/stretch/perception/encoders/ for future reference
+            self.encoder = MaskSiglipEncoder(
+                version="so400m", feature_matching_threshold=0.14, device=self.device
+            )
+
+        # You can see a clear difference in hyperparameter selection in different querying strategies
+        # Running gpt4o is time consuming, so we don't want to waste more time on object detection or Siglip or voxelization
+        # On the other hand querying by feature similarity is fast and we want more fine grained details in semantic memory
+        if self.manipulation_only:
+            self.detection_model = None
+            semantic_memory_resolution = 0.1
+            image_shape = (360, 270)
+        elif self.mllm:
+            self.detection_model = OwlPerception(
+                version="owlv2-B-p16", device=self.device, confidence_threshold=0.01
+            )
+            semantic_memory_resolution = 0.1
+            image_shape = (360, 270)
+        else:
+            self.detection_model = OwlPerception(
+                version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.15
+            )
+            semantic_memory_resolution = 0.05
+            image_shape = (480, 360)
+        self.voxel_map = SparseVoxelMap(
+            resolution=parameters["voxel_size"],
+            semantic_memory_resolution=semantic_memory_resolution,
+            local_radius=parameters["local_radius"],
+            obs_min_height=parameters["obs_min_height"],
+            obs_max_height=parameters["obs_max_height"],
+            obs_min_density=parameters["obs_min_density"],
+            neg_obs_height=parameters["neg_obs_height"],
+            use_negative_obstacles=parameters["use_negative_obstacles"],
+            grid_resolution=0.1,
+            min_depth=parameters["min_depth"],
+            max_depth=parameters["max_depth"],
+            pad_obstacles=parameters["pad_obstacles"],
+            add_local_radius_points=parameters.get("add_local_radius_points", default=True),
+            remove_visited_from_obstacles=parameters.get(
+                "remove_visited_from_obstacles", default=False
+            ),
+            smooth_kernel_size=parameters.get("filters/smooth_kernel_size", -1),
+            use_median_filter=parameters.get("filters/use_median_filter", False),
+            median_filter_size=parameters.get("filters/median_filter_size", 5),
+            median_filter_max_error=parameters.get("filters/median_filter_max_error", 0.01),
+            use_derivative_filter=parameters.get("filters/use_derivative_filter", False),
+            derivative_filter_threshold=parameters.get("filters/derivative_filter_threshold", 0.5),
+            detection=self.detection_model,
+            encoder=self.encoder,
+            image_shape=image_shape,
+            log=self.log,
+            mllm=self.mllm,
+        )
+        self.space = SparseVoxelMapNavigationSpace(
+            self.robot,
+            self.voxel_map,
+            rotation_step_size=parameters.get("motion_planner/rotation_step_size", 0.2),
+            dilate_frontier_size=parameters.get("motion_planner/frontier/dilate_frontier_size", 2),
+            dilate_obstacle_size=parameters.get("motion_planner/frontier/dilate_obstacle_size", 0),
+        )
+        self.planner = AStar(self.space)
+
+    def setup_custom_blueprint(self):
+        main = rrb.Horizontal(
+            rrb.Spatial3DView(name="3D View", origin="world"),
+            rrb.Vertical(
+                rrb.TextDocumentView(name="text", origin="robot_monologue"),
+                rrb.Spatial2DView(name="image", origin="/observation_similar_to_text"),
+            ),
+            rrb.Vertical(
+                # rrb.Spatial2DView(name="head_rgb", origin="/world/head_camera"),
+                # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
+                rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
+                rrb.Spatial2DView(name="rgb_servo", origin='world/camera/rgb_servo')
+                # rrb.Spatial2DView(name="obj", origin="/world/camera/obj_mask"),
+            ),
+            column_shares=[2, 1, 1],
+        )
+        my_blueprint = rrb.Blueprint(
+            rrb.Vertical(main, rrb.TimePanel(state=True)),
+            collapse_panels=True,
+        )
+        rr.send_blueprint(my_blueprint)
+
+    def compute_blur_metric(self, image):
+        """
+        Computes a blurriness metric for an image tensor using gradient magnitudes.
+
+        Parameters:
+        - image (torch.Tensor): The input image tensor. Shape is [H, W, C].
+
+        Returns:
+        - blur_metric (float): The computed blurriness metric.
+        """
+
+        # Convert the image to grayscale
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        # Compute gradients using the Sobel operator
+        Gx = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+        Gy = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+
+        # Compute gradient magnitude
+        G = cv2.magnitude(Gx, Gy)
+
+        # Compute the mean of gradient magnitudes
+        blur_metric = G.mean()
+
+        return blur_metric
+    
+
     def update(self):
         """Step the data collector. Get a single observation of the world. Remove bad points, such as those from too far or too near the camera. Update the 3d world representation."""
         # Sleep some time for the robot camera to focus
         # time.sleep(0.3)
         obs = self.robot.get_observation()
         self.obs_count += 1
-        rgb, depth, K, camera_in_map_pose = obs.rgb, obs.depth, obs.camera_K, obs.camera_in_map_pose
-        self.voxel_map.process_rgbd_images(rgb, depth, K, camera_in_map_pose)
+        rgb, depth, K, camera_in_map_pose, node_id = obs.rgb, obs.depth, obs.camera_K, obs.camera_in_map_pose, obs.node_id
+        self.voxel_map.process_rgbd_images(rgb, depth, K, camera_in_map_pose, node_id)
         if self.voxel_map.voxel_pcd._points is not None:
             self.rerun_visualizer.update_voxel_map(space=self.space)
         if self.voxel_map.semantic_memory._points is not None:
@@ -488,7 +601,7 @@ class RobotAgent(RobotAgentBase):
         print("*" * 10, "Rotate in place", "*" * 10)
         xyt = self.robot.get_base_in_map_xyt()
         # self.robot.arm_to(head_pan=0, head_tilt=-0.6, blocking=True)
-        for i in range(8):
+        for i in range(2):  # TODO range(8)
             xyt[2] += 2 * np.pi / 8
             self.robot.base_to(xyt, blocking=True)
             if not self._realtime_updates:

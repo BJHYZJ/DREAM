@@ -34,6 +34,7 @@ from scipy.spatial.transform import Rotation as R
 
 from transforms3d.quaternions import mat2quat
 from transforms3d.euler import quat2euler
+from dream.motion import constants
 
 def quat2rpy(quat):
     # Convert to numpy array
@@ -220,7 +221,7 @@ class RangerxARMKinematics:
         
         # Initialize joint configuration
         if q_init is None:
-            q = np.deg2rad([0, -45, -90, 0, 105, 0])
+            q = np.deg2rad(constants.look_down)
         else:
             if not is_radians:
                 q = np.deg2rad(q_init, dtype=float)

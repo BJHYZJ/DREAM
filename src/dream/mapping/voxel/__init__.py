@@ -14,5 +14,3 @@
 from .planners import plan_to_frontier
 from .voxel import SparseVoxelMap, SparseVoxelMapProxy
 from .voxel_map import SparseVoxelMapNavigationSpace
-from .voxel_dream import SparseVoxelMapDream
-from .voxel_map_dream import SparseVoxelMapNavigationSpaceDream

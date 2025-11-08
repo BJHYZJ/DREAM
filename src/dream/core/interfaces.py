@@ -336,23 +336,24 @@ class ServoObservations(BaseObservations):
 class Observations(BaseObservations):
     """Full sensor observations with all data."""
     # Core data
-    timestamp: Optional[float] = None
-    compass: Optional[np.ndarray] = None
-    gps: Optional[np.ndarray] = None
-    rgb: Optional[array.array] = None
-    depth: Optional[array.array] = None
+    timestamp:float
+    compass: np.ndarray
+    gps: np.ndarray
+    node_id: int
+    is_history_node: bool
+    rgb: array.array
+    depth: array.array
+    local_tf_graph: Dict[str, np.ndarray]
+    base_in_map_pose: np.ndarray
+    camera_in_map_pose: np.ndarray
+    pose_graph: Dict[str, np.ndarray]
+    camera_K: np.ndarray
     xyz: Optional[np.ndarray] = None
-    node_id: Optional[int] = None
-    camera_K: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None
     depth_scaling: Optional[float] = None
     color_shape: Optional[tuple] = None
     depth_shape: Optional[tuple] = None
-    pose_graph: Optional[Dict[str, np.ndarray]] = None
-    local_tf_graph: Optional[Dict[str, np.ndarray]] = None
-    base_in_map_pose: Optional[np.ndarray] = None
-    camera_in_map_pose: Optional[np.ndarray] = None
     recv_address: Optional[str] = None
     step: Optional[int] = None
     at_goal: Optional[bool] = None
