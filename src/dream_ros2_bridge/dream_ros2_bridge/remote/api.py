@@ -453,11 +453,12 @@ class DreamClient(AbstractRobotClient):
         
         nid = rtabmap_data.nodes[0].id
         is_history_node = False
+        # ensure self._last_node_id don not update when nid <= self._last_node_id
         if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
             print("[warning] 🛑 received history node")
             is_history_node = True
-
-        self._last_node_id = nid
+        else:
+            self._last_node_id = nid
 
 
         node = rtabmap_data.nodes[0]
