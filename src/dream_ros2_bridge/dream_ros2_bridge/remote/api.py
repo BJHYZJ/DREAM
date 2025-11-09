@@ -434,6 +434,95 @@ class DreamClient(AbstractRobotClient):
         """
         return self.nav.base_to(xyt, relative=relative, blocking=blocking)
 
+    # def get_full_observation(
+    #     self,
+    #     start_pose: Optional[np.ndarray] = None,
+    # ) -> RtabmapData:
+        
+    #     rtabmap_data = self._ros_client.get_rtabmapdata()
+    #     if rtabmap_data is None:
+    #         return None
+        
+    #     timestamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
+    #     last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
+    #     if last_timestamp is not None and timestamp <= last_timestamp:
+    #         # print("rtabmap data timestamp is not updated, Skipping...")
+    #         return
+
+    #     self.last_rtabmap_timestamp = timestamp
+        
+    #     nid = rtabmap_data.nodes[0].id
+    #     is_history_node = False
+    #     # ensure self._last_node_id don not update when nid <= self._last_node_id
+    #     if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
+    #         print("[warning] 🛑 received history node")
+    #         is_history_node = True
+    #     else:
+    #         self._last_node_id = nid
+
+
+    #     node = rtabmap_data.nodes[0]
+    #     node_id = node.id
+
+    #     rgb = node.data.left_compressed
+    #     depth = node.data.right_compressed
+    #     laser = node.data.laser_scan_compressed
+    #     if rgb is None or len(rgb) == 0:
+    #         print("get_full_observation: rgb is None or len(rgb) == 0")
+    #     if depth is None or len(depth) == 0:
+    #         print("get_full_observation: depth is None or len(depth) == 0")
+    #     if laser is None or len(laser) == 0:
+    #         print("get_full_observation: laser is None or len(laser) == 0")
+        
+    #     if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
+    #         print("=" * 32)
+
+    #     pose_graph_now = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
+
+    #     # Thread-safe update of pose graph
+    #     self._ros_client.update_pose_graph(pose_graph_now)
+    #     pose_graph = self._ros_client.get_pose_graph()
+        
+    #     local_tf = transform_to_sophus(node.data.local_transform[0])
+    #     self._ros_client.update_local_tf_graph(node_id, local_tf)
+    #     local_tf_graph = self._ros_client.get_local_tf_graph()
+
+    #     current_pose = pose_graph[node_id]
+
+    #     assert len(node.data.left_camera_info) > 0
+    #     left_ci = camera_info_to_dict(node.data.left_camera_info[0])
+    #     # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
+    #     camera_K = np.array(left_ci['K']).reshape(3, 3)
+
+    #     if start_pose is not None:
+    #         # use sophus to get the relative translation
+    #         relative_pose = start_pose.inverse() * current_pose
+    #     else:
+    #         relative_pose = current_pose
+    #     euler_angles = relative_pose.so3().log()
+
+    #     compass = np.array([euler_angles[-1]])
+    #     # GPS in robot coordinates
+    #     gps = relative_pose.translation()[:2]
+
+    #     full_observation = RtabmapData(
+    #         timestamp=timestamp,
+    #         compass=compass,
+    #         gps=gps,
+    #         node_id=node_id,
+    #         is_history_node=is_history_node,
+    #         rgb_compressed=rgb,
+    #         depth_compressed=depth,
+    #         # laser_compressed=laser,
+    #         camera_K=camera_K,
+    #         pose_graph=pose_graph,
+    #         local_tf_graph=local_tf_graph,
+    #         base_in_map_pose=current_pose.matrix(),
+    #         camera_in_map_pose=current_pose.matrix() @ local_tf.matrix(),
+    #     )
+    #     return full_observation
+
+
     def get_full_observation(
         self,
         start_pose: Optional[np.ndarray] = None,
@@ -460,32 +549,32 @@ class DreamClient(AbstractRobotClient):
         else:
             self._last_node_id = nid
 
-
         node = rtabmap_data.nodes[0]
         node_id = node.id
 
         rgb = node.data.left_compressed
         depth = node.data.right_compressed
-        laser = node.data.laser_scan_compressed
+        # laser = node.data.laser_scan_compressed
         if rgb is None or len(rgb) == 0:
             print("get_full_observation: rgb is None or len(rgb) == 0")
         if depth is None or len(depth) == 0:
             print("get_full_observation: depth is None or len(depth) == 0")
-        if laser is None or len(laser) == 0:
-            print("get_full_observation: laser is None or len(laser) == 0")
+        # if laser is None or len(laser) == 0:
+        #     print("get_full_observation: laser is None or len(laser) == 0")
         
-        if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
+        # if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
+        if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0):
             print("=" * 32)
 
-        pose_graph_now = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
+        pose_graph = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
 
         # Thread-safe update of pose graph
-        self._ros_client.update_pose_graph(pose_graph_now)
-        pose_graph = self._ros_client.get_pose_graph()
-        
+        # self._ros_client.update_pose_graph(pose_graph_now)
+        # pose_graph = self._ros_client.get_pose_graph()
+        # when loop detection happened, local_tf, rgb, depth, laser is same to history
         local_tf = transform_to_sophus(node.data.local_transform[0])
-        self._ros_client.update_local_tf_graph(node_id, local_tf)
-        local_tf_graph = self._ros_client.get_local_tf_graph()
+        # self._ros_client.update_local_tf_graph(node_id, local_tf)
+        # local_tf_graph = self._ros_client.get_local_tf_graph()
 
         current_pose = pose_graph[node_id]
 
@@ -513,14 +602,14 @@ class DreamClient(AbstractRobotClient):
             is_history_node=is_history_node,
             rgb_compressed=rgb,
             depth_compressed=depth,
-            # laser_compressed=laser,
             camera_K=camera_K,
             pose_graph=pose_graph,
-            local_tf_graph=local_tf_graph,
             base_in_map_pose=current_pose.matrix(),
-            camera_in_map_pose=current_pose.matrix() @ local_tf.matrix(),
+            camera_in_base_pose=local_tf.matrix(),
         )
         return full_observation
+
+
 
     def get_state_observation(
         self,

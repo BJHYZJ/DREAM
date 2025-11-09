@@ -275,23 +275,6 @@ class BaseObservations:
 
 
 @dataclass
-class RtabmapData(BaseObservations):
-    timestamp: float
-    compass: np.ndarray
-    gps: np.ndarray
-    node_id: int
-    is_history_node: bool
-    rgb_compressed: array.array
-    depth_compressed: array.array
-    # laser_compressed: array.array
-    camera_K: np.ndarray
-    pose_graph: Dict[str, np.ndarray]
-    local_tf_graph: Dict[str, np.ndarray]
-    base_in_map_pose: np.ndarray
-    camera_in_map_pose: np.ndarray
-
-
-@dataclass
 class StateObservations(BaseObservations):
     """State observations."""
     gps: np.ndarray  # (x, y) where positive x is forward, positive y is translation to left in meters
@@ -333,6 +316,21 @@ class ServoObservations(BaseObservations):
 
 
 @dataclass
+class RtabmapData(BaseObservations):
+    timestamp: float
+    compass: np.ndarray
+    gps: np.ndarray
+    node_id: int
+    is_history_node: bool
+    rgb_compressed: array.array
+    depth_compressed: array.array
+    camera_K: np.ndarray
+    pose_graph: Dict[str, np.ndarray]
+    base_in_map_pose: np.ndarray
+    camera_in_base_pose: Optional[np.ndarray] = None  # when history node has been published by rtabmap, camera_in_base_pose may be None
+
+
+@dataclass
 class Observations(BaseObservations):
     """Full sensor observations with all data."""
     # Core data
@@ -343,11 +341,11 @@ class Observations(BaseObservations):
     is_history_node: bool
     rgb: array.array
     depth: array.array
-    local_tf_graph: Dict[str, np.ndarray]
-    base_in_map_pose: np.ndarray
-    camera_in_map_pose: np.ndarray
-    pose_graph: Dict[str, np.ndarray]
     camera_K: np.ndarray
+    pose_graph: Dict[str, np.ndarray]
+    base_in_map_pose: np.ndarray  # base_in_map_pose is in pose_graph, base_in_map_pose == pose_graph[node_id]
+    camera_in_base_pose: Optional[np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None  # camera_in_map_pose = base_in_map_pose @ camera_in_base_pose
     xyz: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None

@@ -214,8 +214,8 @@ class DreamRosInterface(Node):
         self._is_homed = True
         self._is_runstopped = False
 
-        self._pose_graph = None
-        self._local_tf_graph = None
+        # self._pose_graph = None
+        # self._local_tf_graph = None
 
 
         self._lock_js = threading.Lock()
@@ -1028,28 +1028,28 @@ class DreamRosInterface(Node):
     def _place_result_callback(self, msg):
         self.place_complete = True
 
-    def get_pose_graph(self):
-        """Get robot's pose graph"""
-        return self._pose_graph
+    # def get_pose_graph(self):
+    #     """Get robot's pose graph"""
+    #     return self._pose_graph
 
-    def update_pose_graph(self, new_poses):
-        """Thread-safe update of pose graph
+    # def update_pose_graph(self, new_poses):
+    #     """Thread-safe update of pose graph
         
-        Args:
-            new_poses: Dictionary of node_id -> pose_dict
-        """
-        if self._pose_graph is None:
-            self._pose_graph = {}
-        for nid, p in new_poses.items():
-            self._pose_graph[nid] = p
+    #     Args:
+    #         new_poses: Dictionary of node_id -> pose_dict
+    #     """
+    #     if self._pose_graph is None:
+    #         self._pose_graph = {}
+    #     for nid, p in new_poses.items():
+    #         self._pose_graph[nid] = p
 
-    def get_local_tf_graph(self):
-        return self._local_tf_graph
+    # def get_local_tf_graph(self):
+    #     return self._local_tf_graph
 
-    def update_local_tf_graph(self, node_id, new_tf):
-        if self._local_tf_graph is None:
-            self._local_tf_graph = {}
-        self._local_tf_graph[node_id] = new_tf
+    # def update_local_tf_graph(self, node_id, new_tf):
+    #     if self._local_tf_graph is None:
+    #         self._local_tf_graph = {}
+    #     self._local_tf_graph[node_id] = new_tf
 
 
 
