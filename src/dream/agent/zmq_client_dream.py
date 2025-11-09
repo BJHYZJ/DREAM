@@ -1241,29 +1241,29 @@ class DreamRobotZmqClient(AbstractRobotClient):
             if output is None:
                 continue
 
-            if output["is_history_node"]:  # TODO (zhijie), loop detection is not working
-                if len(output["rgb"]) == 0:
-                    continue
-
             self._seq_id += 1
-            output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
-            output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
+            output["camera_in_map_pose"] = output["base_in_map_pose"] @ output["camera_in_base_pose"]
             output["seq_id"] = self._seq_id
 
-            rgb_height, rgb_width = output["rgb"].shape[:2]
+            # For history nodes that do not have RGB values, both depth and RGB values ​​should be set to None / np.array(B).
+            if not output["is_history_node"]:
+                output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
+                output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
+                rgb_height, rgb_width = output["rgb"].shape[:2]
 
-            if camera is None:
-                camera = Camera.from_K(
-                    output["camera_K"], width=rgb_width, height=rgb_height
-                )
+                if camera is None:
+                    camera = Camera.from_K(
+                        output["camera_K"], width=rgb_width, height=rgb_height
+                    )
+                output["xyz"] = camera.depth_to_xyz(output["depth"])
+                self._update_obs(output)
 
-            output["xyz"] = camera.depth_to_xyz(output["depth"])
+                if visualize and not shown_point_cloud:
+                    show_point_cloud(output["xyz"], output["rgb"] / 255.0, orig=np.zeros(3))
+                    shown_point_cloud = True
+            else:
+                print("History node Detection, use history information.")
 
-            if visualize and not shown_point_cloud:
-                show_point_cloud(output["xyz"], output["rgb"] / 255.0, orig=np.zeros(3))
-                shown_point_cloud = True
-
-            self._update_obs(output)
             self._update_pose_graph(output)
 
             t1 = timeit.default_timer()

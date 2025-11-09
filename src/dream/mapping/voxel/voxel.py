@@ -562,6 +562,7 @@ class SparseVoxelMap:
         np.save(self.log + "/depth" + str(self.obs_count) + ".npy", depth)
         np.save(self.log + "/intrinsics" + str(self.obs_count) + ".npy", intrinsics)
         np.save(self.log + "/pose" + str(self.obs_count) + ".npy", pose)
+        np.save(self.log + "/node_id" + str(self.obs_count) + ".npy", np.array(node_id, dtype=np.int32))
 
         # Update obstacle map
         self.voxel_pcd.clear_points(

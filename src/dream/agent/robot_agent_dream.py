@@ -601,7 +601,7 @@ class RobotAgent:
         print("*" * 10, "Rotate in place", "*" * 10)
         xyt = self.robot.get_base_in_map_xyt()
         # self.robot.arm_to(head_pan=0, head_tilt=-0.6, blocking=True)
-        for i in range(2):  # TODO range(8)
+        for i in range(8):  # TODO range(8)
             xyt[2] += 2 * np.pi / 8
             self.robot.base_to(xyt, blocking=True)
             if not self._realtime_updates:
