@@ -529,7 +529,10 @@ class DreamClient(AbstractRobotClient):
     ) -> RtabmapData:
         
         rtabmap_data = self._ros_client.get_rtabmapdata()
-        if rtabmap_data is None:
+        # Nodes with weight > 0 will remain in the graph and be used for loop/graph optimization; 
+        # nodes with weight <= 0 are just intermediate/local nodes, 
+        # which will be quickly discarded or kept in short-term memory and will not be written into the pose graph.
+        if rtabmap_data is None or rtabmap_data.nodes[0].weight <= 0:
             return None
         
         timestamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9

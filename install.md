@@ -206,15 +206,15 @@ pkill -9 -f ranger_base_node 强制清除node
 
 
 # 查看 topic 下的 某个key的数据
-ros2 topic echo /rtabmap_ranger_xarm/mapData --field graph --once
-ros2 topic echo /rtabmap_ranger_xarm/mapData --field nodes --once
+ros2 topic echo /dream/mapData --field graph --once
+ros2 topic echo /dream/mapData --field nodes --once
 # ros2 interface 用于查看操作消息接口定义的工具
 ros2 interface list | grep rtabmap_msgs
 ros2 interface show rtabmap_msgs/msg/MapData
 
 
 # 查看带宽是实际内存占用大小
-ros2 topic bw /rtabmap_ranger_xarm/mapData
+ros2 topic bw /dream/mapData
 # 输出里会给你：
   # 平均频率 (Hz)
   # 平均带宽 (MB/s)
@@ -222,11 +222,11 @@ ros2 topic bw /rtabmap_ranger_xarm/mapData
 
 
 # 只看节点数量
-ros2 topic echo /rtabmap/mapData --once | grep -c "id:"
+ros2 topic echo /dream/mapData --once | grep -c "id:"
 # 只看 graph 的部分
-ros2 topic echo /rtabmap_rangerrtabmap_xarm/mapData --once --field graph
+ros2 topic echo /dream/mapData --once --field graph
 # 只看 nodes 数组的长度（ROS 2 Iron 之后的 colcon-extensions支持 --field，更早版本要写脚本）
-ros2 topic echo /rtabmap/mapData --once --field nodes[0].id
+ros2 topic echo /dream/mapData --once --field nodes[0].id
 
 # 用 ros2 interface查看节点结构
 ros2 interface show rtabmap_msgs/msg/MapData
@@ -376,12 +376,12 @@ sudo lsof -i:4403
 
 暂停rtabmap
 ```bash
-ros2 service call /rtabmap/rtabmap/pause std_srvs/srv/Empty {}
+ros2 service call /dream_rtabmap/rtabmap/pause std_srvs/srv/Empty {}
 ```
 
 恢复rtabmap
 ```bash
-ros2 service call /rtabmap/rtabmap/resume std_srvs/srv/Empty {}
+ros2 service call /dream_rtabmap/rtabmap/resume std_srvs/srv/Empty {}
 ```
 
 
@@ -471,7 +471,7 @@ ros2 bag play /home/yanzj/DREAM_ws/DREAM_ws/rosbag2_2025_09_15-10_47_03 --clock 
 
 
 
-rtabmap/mapData
+dream/mapData
 ```
 std_msgs/Header header
         builtin_interfaces/Time stamp

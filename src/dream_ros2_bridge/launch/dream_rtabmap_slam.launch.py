@@ -36,7 +36,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
   imu_topic = LaunchConfiguration('imu_topic')
   imu_used =  imu_topic.perform(context) != ''
   
-  robot_ns = LaunchConfiguration('robot_ns')
+  namespace = LaunchConfiguration('namespace')
   
   rgb_image_topic = LaunchConfiguration('rgb_image_topic')
   rgb_camera_info_topic = LaunchConfiguration('rgb_camera_info_topic')
@@ -140,13 +140,13 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
   nodes = [
       Node(
           package='rtabmap_sync', executable='rgbd_sync', output='screen',
-          namespace=robot_ns,
+          namespace=namespace,
           parameters=[{'approx_sync': False, 'use_sim_time': use_sim_time}],  # approx_sync，控制 RGB 图像和深度图像的同步
           remappings=remappings),
 
       Node(
         package='rtabmap_slam', executable='rtabmap', output='screen',
-        namespace=robot_ns,
+        namespace=namespace,
         parameters=[shared_parameters, rtabmap_parameters, 
                     {'rgbd_cameras': 1}],
         remappings=remappings + [('scan_cloud', lidar_topic)],
@@ -155,7 +155,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
       Node(
         condition=IfCondition(LaunchConfiguration('use_rtabmap_viz')),
         package='rtabmap_viz', executable='rtabmap_viz', output='screen',
-        namespace=robot_ns,
+        namespace=namespace,
         parameters=[shared_parameters, rtabmap_parameters, 
                     {'subscribe_depth': False,
                      'subscribe_rgb': False, 
@@ -176,7 +176,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     nodes.append(
       Node(
         package='imu_filter_madgwick', executable='imu_filter_madgwick_node', output='screen',
-        namespace=robot_ns,
+        namespace=namespace,
         parameters=[{'use_mag': False, 
                       'world_frame':'enu', 
                       'publish_tf':False}],
@@ -222,7 +222,7 @@ def generate_launch_description():
       description='IMU topic (ignored if empty).'),
     
     DeclareLaunchArgument(
-      'robot_ns', default_value='rtabmap',
+      'namespace', default_value='dream_rtabmap',
       description='Robot namespace.'),
 
     DeclareLaunchArgument(

@@ -304,105 +304,7 @@ class DreamRosInterface(Node):
 
     def __del__(self):
         self.shutdown()
-
-
-    # def get_joint_state(self):
-    #     with self._lock_js:
-    #         arm_state, arm_velocity, arm_force = self._arm_client.get_joint_state()
-    #         gripper_pos = self._arm_client.get_gripper_state()
-
-    #     base_pose = self.get_base_in_map_pose()
-
-    #     if base_pose is None:
-    #         return None
-            
-    #     self.pos[:3] = sophus2xyt(base_pose)
-    #     self.pos[3:9] = self.arm_pos[:6]
-    #     self.pos[9] = self.gripper_pos
-    #     self.vel[:3] = self.vel_base
-    #     self.vel[3:9] = self.arm_vel[:6]
-    #     self.frc[3:9] = self.arm_frc[:6]
-    #     return [self.pos, self.vel, self.frc]
-
-
-    # def _process_joint_status(self, j_status) -> np.ndarray:
-    #     """Get joint status from ROS joint state message and convert it into the form we use for streaming position commands."""
-    #     pose = np.zeros(self.Idx.num_joints)
-    #     pose[self.Idx.LIFT] = j_status[ROS_LIFT_JOINT]
-    #     pose[self.Idx.ARM] = (
-    #         j_status[ROS_ARM_JOINTS[0]]
-    #         + j_status[ROS_ARM_JOINTS[1]]
-    #         + j_status[ROS_ARM_JOINTS[2]]
-    #         + j_status[ROS_ARM_JOINTS[3]]
-    #     )
-    #     # Set the gripper
-    #     pose[self.Idx.GRIPPER] = j_status[ROS_GRIPPER_FINGER]
-
-    #     # Check if we have wrist joints
-    #     if ROS_WRIST_ROLL in j_status:
-    #         pose[self.Idx.WRIST_ROLL] = j_status[ROS_WRIST_ROLL]
-    #         pose[self.Idx.WRIST_PITCH] = j_status[ROS_WRIST_PITCH]
-    #     # else:
-    #     #    pose[self.Idx.WRIST_ROLL] = 0
-    #     #    pose[self.Idx.WRIST_PITCH] = -np.pi / 4
-    #     # We always have yaw
-    #     pose[self.Idx.WRIST_YAW] = j_status[ROS_WRIST_YAW]
-
-    #     # Head joints
-    #     pose[self.Idx.HEAD_PAN] = j_status[ROS_HEAD_PAN]
-    #     pose[self.Idx.HEAD_TILT] = j_status[ROS_HEAD_TILT]
-    #     return pose
-
-    # def get_has_wrist(self) -> bool:
-    #     """Check if the robot has a wrist joint."""
-    #     # Wait until self.joint_status is populated
-    #     rate = self.create_rate(10)
-    #     while rclpy.ok():
-    #         with self._lock_js:
-    #             print("Waiting for joint status...", self.joint_status.keys())
-    #             if ROS_LIFT_JOINT in self.joint_status:
-    #                 break
-    #         rate.sleep()
-    #     print("Done waiting for joint status...", self.joint_status.keys())
-    #     return ROS_WRIST_ROLL in self.joint_status
-
-    # def send_joint_goals(
-    #     self, joint_goals: Dict[str, float], velocities: Optional[Dict[str, float]] = None
-    # ):
-    #     """Send joint goals to the robot. Goals are a dictionary of joint names and strings. Can optionally provide velicities as well."""
-
-    #     # with self._lock_js:
-    #         # joint_pose = self._process_joint_status(self.joint_status)
-    #     joint_pose = self._process_joint_status(self.joint_status)
-
-    #     # Use Idx to convert
-    #     if self.LIFT_JOINT in joint_goals:
-    #         joint_pose[self.Idx.LIFT] = joint_goals[self.LIFT_JOINT]
-    #     if self.ARM_JOINT in joint_goals:
-    #         joint_pose[self.Idx.ARM] = joint_goals[self.ARM_JOINT]
-    #     if self.WRIST_ROLL in joint_goals and ROS_WRIST_ROLL in self.joint_status:
-    #         # Only set wrist roll if we have it
-    #         joint_pose[self.Idx.WRIST_ROLL] = joint_goals[self.WRIST_ROLL]
-    #     if self.WRIST_PITCH in joint_goals and ROS_WRIST_PITCH in self.joint_status:
-    #         # Only set wrist pitch if we have it
-    #         joint_pose[self.Idx.WRIST_PITCH] = joint_goals[self.WRIST_PITCH]
-    #     # We always have yaw
-    #     if self.WRIST_YAW in joint_goals:
-    #         joint_pose[self.Idx.WRIST_YAW] = joint_goals[self.WRIST_YAW]
-    #     if self.GRIPPER_FINGER in joint_goals:
-    #         joint_pose[self.Idx.GRIPPER] = joint_goals[self.GRIPPER_FINGER]
-    #     if self.HEAD_PAN in joint_goals:
-    #         joint_pose[self.Idx.HEAD_PAN] = joint_goals[self.HEAD_PAN]
-    #     if self.HEAD_TILT in joint_goals:
-    #         joint_pose[self.Idx.HEAD_TILT] = joint_goals[self.HEAD_TILT]
-    #     if self.BASE_TRANSLATION_JOINT in joint_goals:
-    #         joint_pose[self.Idx.BASE_TRANSLATE] = joint_goals[self.BASE_TRANSLATION_JOINT]
-
-    #     # Create the message now that it's been computed
-    #     msg = Float64MultiArray()
-    #     msg.data = list(joint_pose)
-    #     self._joint_goal_publisher.publish(msg)
-    #     self.get_logger().info('Publishing: "%s"' % msg.data)
+        
 
     def send_trajectory_goals(
         self, joint_goals: Dict[str, float], velocities: Optional[Dict[str, float]] = None
@@ -504,8 +406,8 @@ class DreamRosInterface(Node):
         self.goto_off_service = self.create_client(Trigger, "goto_controller/disable", callback_group=self.cb_srv_group)
         self.set_yaw_service = self.create_client(SetBool, "goto_controller/set_yaw_tracking", callback_group=self.cb_srv_group)
         # rtabmap pause and resume to avoid rtabmap update when pick and place
-        self._rtabmap_pause_client = self.create_client(EmptySrv, "/rtabmap/rtabmap/pause", callback_group=self.cb_srv_group)
-        self._rtabmap_resume_client = self.create_client(EmptySrv, "/rtabmap/rtabmap/resume", callback_group=self.cb_srv_group)
+        self._rtabmap_pause_client = self.create_client(EmptySrv, "/dream/rtabmap/pause", callback_group=self.cb_srv_group)
+        self._rtabmap_resume_client = self.create_client(EmptySrv, "/dream/rtabmap/resume", callback_group=self.cb_srv_group)
         # print("Wait for mode service...")
         # self.pos_mode_service.wait_for_service()
 
@@ -575,9 +477,8 @@ class DreamRosInterface(Node):
         #     Path, "slam_toolbox/pose_graph", self._pose_graph_callback, 1
         # )
         # zhijie added
-        self._rtabmapdata_sub = self.create_subscription(MapData, "/rtabmap/mapData", self._rtabmapdata_callback, self.reliable_qos, callback_group=self.cb_rtabmapdata_group)
-
-        # self._rtabmapinfo_sub = self.create_subscription(Info, "/rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=self.cb_rtabmapinfo_group)
+        self._rtabmapdata_sub = self.create_subscription(MapData, "/dream_rtabmap/mapData", self._rtabmapdata_callback, self.reliable_qos, callback_group=self.cb_rtabmapdata_group)
+        # self._rtabmapinfo_sub = self.create_subscription(Info, "/dream_rtabmap/info", self._rtabmapinfo_callback, self.reliable_qos, callback_group=self.cb_rtabmapdata_group)
 
         # tf pose publisher
         self._tf_base_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_in_map_pose", self._tf_base_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
@@ -794,10 +695,10 @@ class DreamRosInterface(Node):
         # with self._lock_rtab:
         #     self.rtabmapdata = msg
 
-    def _rtabmapinfo_callback(self, msg):
-        """get position or navigation mode from dream ros"""
-        # self._rtabmapinfo = msg
-        assert 1 == 1
+    # def _rtabmapinfo_callback(self, msg):
+    #     """get position or navigation mode from dream ros"""
+    #     # self._rtabmapinfo = msg
+    #     assert 1 == 1
 
     # def _mode_callback(self, msg):
     #     """get position or navigation mode from dream ros"""
