@@ -130,7 +130,6 @@ class RobotAgent:
 
         # ==============================================
         self.obs_count = 0
-        self.obs_history: List[Observations] = []
 
         self.guarantee_instance_is_reachable = self.parameters.guarantee_instance_is_reachable
         self.use_scene_graph = self.parameters["use_scene_graph"]
@@ -166,6 +165,9 @@ class RobotAgent:
         self._frontier_step_dist = parameters["motion_planner"]["frontier"]["step_dist"]
         self._manipulation_radius = parameters["motion_planner"]["goals"]["manipulation_radius"]
         self._voxel_size = parameters["voxel_size"]
+
+        self._pose_trans_thresh: float = 0.05,  # metre
+        self._pose_rot_thresh: float = 1.0,  # degree
 
         # self.image_processor = VoxelMapImageProcessor(
         #     rerun=True,
@@ -214,8 +216,8 @@ class RobotAgent:
 
         # Locks
         self._robot_lock = Lock()
-        self._obs_history_lock = Lock()
-        self._map_lock = Lock()
+        # self._obs_history_lock = Lock()
+        # self._map_lock = Lock()
 
         # Map updates
         self._update_map_thread = Thread(target=self.update_map_loop)
@@ -228,140 +230,75 @@ class RobotAgent:
         while self.robot.running and self._running:
             with self._robot_lock:
                 self.update_map_with_pose_graph()
-            time.sleep(0.75)
 
 
     def update_map_with_pose_graph(self):
-        """Update our voxel map using a pose graph"""
-
+        """Update our voxel pointcloud and semantic memory using a pose graph"""
+        if len(self.voxel_map.observations) == 0:
+            return
+        
         t0 = timeit.default_timer()
-        self.pose_graph = self.robot.get_pose_graph()
+        pose_graph = self.robot.get_pose_graph()
+        pose_graph_ids = set(pose_graph.keys())
+        voxel_ids = {obs.node_id for obs in self.voxel_map.observations}
+        shared_ids = pose_graph_ids & voxel_ids
+        changed = False
+        if shared_ids:
+            for frame in self.voxel_map.observations:
+                if frame.node_id not in shared_ids:
+                    continue
+                optimized_base_in_map_pose = torch.tensor(
+                    pose_graph[frame.node_id].matrix(), dtype=torch.float32)
+                camera_pose_origin = frame.camera_pose
+                camera_pose_now = optimized_base_in_map_pose @ frame.local_tf
+                
+                rot_origin = camera_pose_origin[:3, :3]
+                trans_origin = camera_pose_origin[:3, 3]
+                rot_now = camera_pose_now[:3, :3]
+                trans_now = camera_pose_now[:3, 3]
 
-        t1 = timeit.default_timer()
+                trans_diff = np.linalg.norm(trans_now - trans_origin)
+                dr = rot_now @ rot_origin.T
+                trace = np.clip((np.trace(dr) - 1) / 2.0, -1.0, 1.0)
+                rot_diff = np.arccos(trace)
+
+                if trans_diff > self._pose_trans_thresh or rot_diff > self._pose_rot_thresh:
+                    changed = True
+                    frame.camera_pose = camera_pose_now
+                    if frame.base_pose is not None:
+                        frame.base_pose = optimized_base_in_map_pose
+
+        if changed:
+            self.voxel_map.reset()
+            for index, frame in enumerate(self.voxel_map.observations):
+                camera_pose = frame.camera_pose
+                camera_K = frame.camera_K
+                rgb = frame.rgb
+                depth = frame.depth
+                feats = frame.feats
+                base_pose = base_pose
+                self.voxel_map.add_to_voxel_pointcloud(
+                    camera_pose=camera_pose,
+                    rgb=rgb,
+                    camera_K=camera_K,
+                    depth=depth,
+                    base_pose=base_pose,
+                )
+
+                self.voxel_map.add_to_semantic_memory(
+                    camera_pose=camera_pose,
+                    rgb=rgb,
+                    camera_K=camera_K,
+                    depth=depth,
+                    feats=feats,
+                )
+                
+            t1 = timeit.default_timer()
+            print(f"update map with pose graph with {len(self.voxel_map.observations)} observation spend times: {t1 - t0}")
 
         # Update past observations based on our new pose graph
         # print("Updating past observations")
-        self._obs_history_lock.acquire()
-        for idx in range(len(self.obs_history)):
-            timestamp = self.obs_history[idx].timestamp
-            gps_past = self.obs_history[idx].gps
 
-            for vertex in self.pose_graph:
-                if abs(vertex[0] - lidar_timestamp) < 0.05:
-                    # print(f"Exact match found! {vertex[0]} and obs {idx}: {lidar_timestamp}")
-
-                    self.obs_history[idx].is_pose_graph_node = True
-                    self.obs_history[idx].gps = np.array([vertex[1], vertex[2]])
-                    self.obs_history[idx].compass = np.array(
-                        [
-                            vertex[3],
-                        ]
-                    )
-
-                    # print(
-                    #     f"obs gps: {self.obs_history[idx].gps}, compass: {self.obs_history[idx].compass}"
-                    # )
-
-                    if (
-                        self.obs_history[idx].task_observations is None
-                        and self.semantic_sensor is not None
-                    ):
-                        self.obs_history[idx] = self.semantic_sensor.predict(self.obs_history[idx])
-                # check if the gps is close to the gps of the pose graph node
-                elif (
-                    np.linalg.norm(gps_past - np.array([vertex[1], vertex[2]])) < 0.3
-                    and self.obs_history[idx].pose_graph_timestamp is None
-                ):
-                    # print(f"Close match found! {vertex[0]} and obs {idx}: {lidar_timestamp}")
-
-                    self.obs_history[idx].is_pose_graph_node = True
-                    self.obs_history[idx].pose_graph_timestamp = vertex[0]
-                    self.obs_history[idx].initial_pose_graph_gps = np.array([vertex[1], vertex[2]])
-                    self.obs_history[idx].initial_pose_graph_compass = np.array(
-                        [
-                            vertex[3],
-                        ]
-                    )
-
-                    if (
-                        self.obs_history[idx].task_observations is None
-                        and self.semantic_sensor is not None
-                    ):
-                        self.obs_history[idx] = self.semantic_sensor.predict(self.obs_history[idx])
-
-                elif self.obs_history[idx].pose_graph_timestamp == vertex[0]:
-                    # Calculate delta between old (initial pose graph) vertex gps and new vertex gps
-                    delta_gps = vertex[1:3] - self.obs_history[idx].initial_pose_graph_gps
-                    delta_compass = vertex[3] - self.obs_history[idx].initial_pose_graph_compass
-
-                    # Calculate new gps and compass
-                    new_gps = self.obs_history[idx].gps + delta_gps
-                    new_compass = self.obs_history[idx].compass + delta_compass
-
-                    # print(f"Updating obs {idx} with new gps: {new_gps}, compass: {new_compass}")
-                    self.obs_history[idx].gps = new_gps
-                    self.obs_history[idx].compass = new_compass
-
-        t2 = timeit.default_timer()
-        # print(f"Done updating past observations. Time: {t2- t1}")
-
-        # print("Updating voxel map")
-        t3 = timeit.default_timer()
-        # self.voxel_map.reset()
-        # for obs in self.obs_history:
-        #     if obs.is_pose_graph_node:
-        #         self.voxel_map.add_obs(obs)
-        if len(self.obs_history) > 0:
-            obs_history = self.obs_history[-5:]
-            blurness = [self.compute_blur_metric(obs.rgb) for obs in obs_history]
-            obs = obs_history[blurness.index(max(blurness))]
-            # obs = self.obs_history[-1]
-        else:
-            obs = None
-
-        self._obs_history_lock.release()
-
-        if obs is not None and self.robot.in_navigation_mode():
-            self.voxel_map.process_rgbd_images(obs.rgb, obs.depth, obs.camera_K, obs.camera_in_map_pose)
-
-        robot_center = np.zeros(3)
-        robot_center[:2] = self.robot.get_base_in_map_xyt()[:2]
-
-        t4 = timeit.default_timer()
-        # print(f"Done updating voxel map. Time: {t4 - t3}")
-
-        if self.use_scene_graph:
-            self._update_scene_graph()
-            self.scene_graph.get_relationships()
-
-        t5 = timeit.default_timer()
-        # print(f"Done updating scene graph. Time: {t5 - t4}")
-
-        self._obs_history_lock.acquire()
-
-        # print(f"Total observation count: {len(self.obs_history)}")
-
-        # Clear out observations that are too old and are not pose graph nodes
-        if len(self.obs_history) > 500:
-            # print("Clearing out old observations")
-            # Remove 10 oldest observations that are not pose graph nodes
-            del_count = 0
-            del_idx = 0
-            while del_count < 15 and len(self.obs_history) > 0 and del_idx < len(self.obs_history):
-                # print(f"Checking obs {self.obs_history[del_idx].lidar_timestamp}. del_count: {del_count}, len: {len(self.obs_history)}, is_pose_graph_node: {self.obs_history[del_idx].is_pose_graph_node}")
-                if not self.obs_history[del_idx].is_pose_graph_node:
-                    # print(f"Deleting obs {self.obs_history[del_idx].lidar_timestamp}")
-                    del self.obs_history[del_idx]
-                    del_count += 1
-                else:
-                    del_idx += 1
-
-                    if del_idx >= len(self.obs_history):
-                        break
-
-        t6 = timeit.default_timer()
-        # print(f"Done clearing out old observations. Time: {t6 - t5}")
-        self._obs_history_lock.release()
 
     def reset_object_plans(self):
         """Clear stored object planning information."""
@@ -573,9 +510,32 @@ class RobotAgent:
         # time.sleep(0.3)
         obs = self.robot.get_observation()
         self.obs_count += 1
-        rgb, depth, K, camera_in_map_pose, node_id = obs.rgb, obs.depth, obs.camera_K, obs.camera_in_map_pose, obs.node_id
-        self.voxel_map.process_rgbd_images(rgb, depth, K, camera_in_map_pose, node_id)
-        if self.voxel_map.voxel_pcd._points is not None:
+        # Since the pose graph only contains the poses of the base_in_map_pose, 
+        # the camera_in_base_pose need to be stored separately for subsequent pose updates.
+        (
+            rgb,
+            depth,
+            K,
+            camera_in_map_pose,
+            local_tf,
+            node_id,
+        ) = (
+            obs.rgb,
+            obs.depth,
+            obs.camera_K,
+            obs.camera_in_map_pose,
+            obs.camera_in_base_pose,
+            obs.node_id,
+        )
+        self.voxel_map.process_rgbd_images(
+            rgb=rgb, 
+            depth=depth, 
+            intrinsics=K, 
+            pose=camera_in_map_pose, 
+            local_tf=local_tf, 
+            node_id=node_id
+        )
+        if self.voxel_map.voxel_pointcloud._points is not None:
             self.rerun_visualizer.update_voxel_map(space=self.space)
         if self.voxel_map.semantic_memory._points is not None:
             self.rerun_visualizer.log_custom_pointcloud(

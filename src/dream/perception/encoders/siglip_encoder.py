@@ -176,7 +176,7 @@ class MaskSiglipEncoder(SiglipEncoder):
         feat = F.normalize(feat, dim=1)
         return feat.permute(0, 2, 3, 1)
 
-    def run_mask_siglip(self, image, image_shape):
+    def run_mask_siglip(self, image, image_shape=None):
         """
         Run mask siglip
         Input:

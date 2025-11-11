@@ -312,6 +312,7 @@ class ServoObservations(BaseObservations):
     color_shape: Optional[tuple] = None
     depth_shape: Optional[tuple] = None
     # task_observations: Optional[Dict[str, Any]] = None
+    step: Optional[int] = None
     is_simulation: bool = False
 
 
@@ -328,6 +329,8 @@ class RtabmapData(BaseObservations):
     camera_K: Optional[np.ndarray] = None
     base_in_map_pose: Optional[np.ndarray] = None
     camera_in_base_pose: Optional[np.ndarray] = None  # when history node has been published by rtabmap, camera_in_base_pose may be None
+    step: Optional[int] = None
+    is_simulation: bool = False
 
 
 @dataclass

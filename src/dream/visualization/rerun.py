@@ -425,7 +425,7 @@ class RerunVisualizer:
             labels="robot",
             colors=[255, 0, 0, 255],
         )
-        rr.log("world/robot/arrow", rb_arrow, static=True)
+        # rr.log("world/robot/arrow", rb_arrow, static=True)
         rr.log(
             "world/robot/blob",
             rr.Points3D([0, 0, 0], colors=[255, 0, 0, 255], radii=0.13),
@@ -542,7 +542,7 @@ class RerunVisualizer:
         rr.set_time("realtime", timestamp=time.time())
 
         t0 = timeit.default_timer()
-        points, _, _, rgb = space.voxel_map.voxel_pcd.get_pointcloud()
+        points, _, _, rgb = space.voxel_map.voxel_pointcloud.get_pointcloud()
         if rgb is None:
             return
 
@@ -692,7 +692,7 @@ class RerunVisualizer:
 
     def step(self, obs, state, servo):
         """Log all the data"""
-        if obs and state and servo:
+        if state and servo:
             # Use the actual data timestamp if available, otherwise fall back to current time
             now_timestamp = time.time()
             # data_timestamp = state["timestamp"]
@@ -716,7 +716,8 @@ class RerunVisualizer:
                 # self.log_ee_frame(servo)
 
                 # Cameras use the lower-res servo object
-                self.log_camera(obs)
+                if obs and not obs.just_pose_graph:
+                    self.log_camera(obs)
                 self.log_camera_servo(servo)
                 # self.log_ee_camera(servo)
 

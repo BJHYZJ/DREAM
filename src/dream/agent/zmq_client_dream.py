@@ -663,6 +663,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         self._state_thread = None
         self._finish = False
         self._last_step = -1
+        self._obs_step = -1
 
     def open_gripper(
         self,
@@ -780,7 +781,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def _wait_for_base_motion(
         self,
         block_id: int,
-        verbose: bool = False,
+        verbose: bool = True,
         timeout: float = 10.0,
         moving_threshold: Optional[float] = None,
         angle_threshold: Optional[float] = None,
@@ -828,12 +829,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
             with self._state_lock:
                 if self._state is None:
-                    print("waiting for obs")
-                    continue
-
-            with self._obs_lock:
-                if self._obs is None:
-                    print("waiting for obs")
+                    print("waiting for state")
                     continue
 
             xyt = self.get_base_in_map_xyt()
@@ -918,14 +914,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def is_up_to_date(self, no_action=False):
         """Check if the robot is up to date with the latest observation"""
         with self._obs_lock:
-            if no_action:
-                obs_ok = self._obs is not None and self._obs.step >= self._last_step
-            else:
-                obs_ok = (
-                    self._obs is not None
-                    and self._obs.step >= self._last_step
-                    and self._obs.step >= self._iter - 1
-                )
+            obs_step = getattr(self, "_obs_step", -1)
+
+        if no_action:
+            obs_ok = obs_step >= self._last_step
+        else:
+            obs_ok = obs_step >= self._last_step and obs_step >= self._iter - 1
         return obs_ok
 
     def is_state_up_to_date(self, min_step: Optional[int] = None) -> bool:
@@ -945,16 +939,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """Send a message to the robot"""
         with self._send_lock:
             self.send_socket.send_pyobj(message)
-
-
-    def out_of_date(self):
-        """Check if the robot is out of date with the latest observation. This is used to determine if we should wait for the robot to catch up."""
-        with self._obs_lock:
-            obs_ood = self._obs is not None and self._obs.step < self._last_step
-        with self._state_lock:
-            state_ood = self._state is not None and self._state.step < self._last_step
-        return obs_ood or state_ood
-
 
 
     def at_goal(self) -> bool:
@@ -1342,6 +1326,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             # Convert dictionary to Observations object for consistency
             self._obs = Observations.from_dict(obs)
             self._last_step = obs["step"]
+            self._obs_step = obs["step"]
             if self._iter <= 0:
                 self._iter = max(self._last_step, self._iter)
 
@@ -1350,6 +1335,8 @@ class DreamRobotZmqClient(AbstractRobotClient):
         with self._obs_lock:
             if "pose_graph" in obs:
                 self._pose_graph = obs["pose_graph"]
+            if "step" in obs:
+                self._obs_step = max(self._obs_step, obs["step"])
 
     def _update_state(self, state: dict) -> None:
         """Update state internally with lock. This is expected to be much more responsive than using full observations, which should be reserved for higher level control.

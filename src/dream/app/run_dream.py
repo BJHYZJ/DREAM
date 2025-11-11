@@ -168,40 +168,35 @@ def main(
 
     # Parse things and listen to the user
     ok = True
-    try:
-        while ok:
-            say_this = None
-            if llm_client is None:
-                # Call the LLM client and parse
-                explore = input(
-                    "Enter desired mode [E (explore and mapping) / M (Open vocabulary pick and place)]: "
-                )
-                if explore.upper() == "E":
-                    llm_response = [("explore", None)]
-                else:
-                    if target_object is None or len(target_object) == 0:
-                        target_object = input("Enter the target object: ")
-                    if target_receptacle is None or len(target_receptacle) == 0:
-                        target_receptacle = input("Enter the target receptacle: ")
-                    llm_response = [("pickup", target_object), ("place", target_receptacle)]
-            else:
-                # Call the LLM client and parse
-                llm_response = chat_wrapper.query(verbose=debug_llm)
-                if debug_llm:
-                    print("Parsed LLM Response:", llm_response)
 
-            ok = executor(llm_response)
-            target_object = None
-            target_receptacle = None
-    except KeyboardInterrupt:
-        print("\nReceived interrupt signal (Ctrl+C). Shutting down...")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        # Always stop the robot, even if interrupted
-        print("Stopping robot...")
-        robot.stop()
-        print("Robot stopped successfully.")
+    while ok:
+        say_this = None
+        if llm_client is None:
+            # Call the LLM client and parse
+            explore = input(
+                "Enter desired mode [E (explore and mapping) / M (Open vocabulary pick and place)]: "
+            )
+            if explore.upper() == "E":
+                llm_response = [("explore", None)]
+            else:
+                if target_object is None or len(target_object) == 0:
+                    target_object = input("Enter the target object: ")
+                if target_receptacle is None or len(target_receptacle) == 0:
+                    target_receptacle = input("Enter the target receptacle: ")
+                llm_response = [("pickup", target_object), ("place", target_receptacle)]
+        else:
+            # Call the LLM client and parse
+            llm_response = chat_wrapper.query(verbose=debug_llm)
+            if debug_llm:
+                print("Parsed LLM Response:", llm_response)
+
+        ok = executor(llm_response)
+        target_object = None
+        target_receptacle = None
+
+    print("Stopping robot...")
+    robot.stop()
+    print("Robot stopped successfully.")
 
 
 if __name__ == "__main__":
