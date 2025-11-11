@@ -317,16 +317,16 @@ class ServoObservations(BaseObservations):
 
 @dataclass
 class RtabmapData(BaseObservations):
-    timestamp: float
-    compass: np.ndarray
-    gps: np.ndarray
-    node_id: int
-    is_history_node: bool
-    rgb_compressed: array.array
-    depth_compressed: array.array
-    camera_K: np.ndarray
-    pose_graph: Dict[str, np.ndarray]
-    base_in_map_pose: np.ndarray
+    timestamp: float = None
+    pose_graph: Dict[str, np.ndarray] = None
+    compass: Optional[np.ndarray] = None
+    gps: Optional[np.ndarray] = None
+    node_id: Optional[int] = None
+    is_history_node: Optional[bool] = None
+    rgb_compressed: Optional[array.array] = None
+    depth_compressed: Optional[array.array] = None
+    camera_K: Optional[np.ndarray] = None
+    base_in_map_pose: Optional[np.ndarray] = None
     camera_in_base_pose: Optional[np.ndarray] = None  # when history node has been published by rtabmap, camera_in_base_pose may be None
 
 
@@ -335,17 +335,17 @@ class Observations(BaseObservations):
     """Full sensor observations with all data."""
     # Core data
     timestamp:float
-    compass: np.ndarray
-    gps: np.ndarray
-    node_id: int
-    is_history_node: bool
+    pose_graph: Dict[str, np.ndarray]
+    compass: Optional[np.ndarray] = None
+    gps: Optional[np.ndarray] = None
+    node_id: Optional[int] = None
+    is_history_node: Optional[bool] = None
     rgb: array.array | np.ndarray = None
     depth: array.array | np.ndarray = None
     camera_K: array.array | np.ndarray = None
     base_in_map_pose: Optional[np.ndarray] = None  # base_in_map_pose is in pose_graph, base_in_map_pose == pose_graph[node_id]
     camera_in_base_pose: Optional[np.ndarray] = None
     camera_in_map_pose: Optional[np.ndarray] = None  # camera_in_map_pose = base_in_map_pose @ camera_in_base_pose
-    pose_graph: Optional[Dict[str, np.ndarray]] = None
     xyz: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None

@@ -318,27 +318,27 @@ def main(
     recv_port: int = 4402,
     local: bool = False,
 ):
+    # try:
+    rclpy.init()
+    server = ZmqServer(
+        send_port=send_port,
+        recv_port=recv_port,
+        use_remote_computer=(not local),
+    )
+    server.start()
     try:
-        rclpy.init()
-        server = ZmqServer(
-            send_port=send_port,
-            recv_port=recv_port,
-            use_remote_computer=(not local),
-        )
-        server.start()
-        try:
-            while rclpy.ok() and server.running:
-                time.sleep(1.0)
-        except KeyboardInterrupt:
-            print("\nReceived interrupt signal, shutting down...")
-        finally:
-            server.shutdown()
-            
-    except Exception as e:
-        print(f"Error in main: {e}")
+        while rclpy.ok() and server.running:
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        print("\nReceived interrupt signal, shutting down...")
     finally:
-        if rclpy.ok():
-            rclpy.shutdown()
+        server.shutdown()
+            
+    # except Exception as e:
+    #     print(f"Error in main: {e}")
+    # finally:
+    #     if rclpy.ok():
+    #         rclpy.shutdown()
 
 
 if __name__ == "__main__":

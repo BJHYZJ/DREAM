@@ -57,14 +57,12 @@ from dream_ros2_bridge.ros.streaming_activator import StreamingActivator
 from dream_ros2_bridge.ros.utils import matrix_from_pose_msg
 from dream_ros2_bridge.ros.visualizer import Visualizer
 from rtabmap_msgs.msg import MapData, Info
+from rtabmap_msgs.srv import GetNodeData
 from geometry_msgs.msg import PoseStamped
 
 DEFAULT_COLOR_TOPIC = "/camera/color"
 DEFAULT_DEPTH_TOPIC = "/camera/aligned_depth_to_color"
 DEFAULT_LIDAR_TOPIC = '/livox/lidar'
-# DEFAULT_LIDAR_TOPIC = "/scan"
-# DEFAULT_EE_COLOR_TOPIC = "/gripper_camera/color"
-# DEFAULT_EE_DEPTH_TOPIC = "/gripper_camera/aligned_depth_to_color"
 
 def pose_to_dict(p):
     return {
@@ -126,11 +124,8 @@ class DreamRosInterface(Node):
         depth_topic: Optional[str] = None,
         depth_buffer_size: Optional[int] = None,
         init_lidar: bool = True,
-        lidar_topic: Optional[str] = None,
         verbose: bool = False,
 
-        ee_color_topic: Optional[str] = None,
-        ee_depth_topic: Optional[str] = None,
     ):
         super().__init__("robot_user_client")
         # Verbosity for the ROS client
@@ -244,10 +239,11 @@ class DreamRosInterface(Node):
         # Initialize cameras
         self._color_topic = DEFAULT_COLOR_TOPIC if color_topic is None else color_topic
         self._depth_topic = DEFAULT_DEPTH_TOPIC if depth_topic is None else depth_topic
-        # self._ee_color_topic = DEFAULT_EE_COLOR_TOPIC if ee_color_topic is None else ee_color_topic
-        # self._ee_depth_topic = DEFAULT_EE_DEPTH_TOPIC if ee_depth_topic is None else ee_depth_topic
+
         self._lidar_topic = '/livox/lidar'
         self._depth_buffer_size = depth_buffer_size
+
+        self._last_rtabmap_timestamp = None
 
         # self._streaming_activator = StreamingActivator(self)
         # streaming_ok = self._streaming_activator.activate_streaming()
@@ -406,8 +402,9 @@ class DreamRosInterface(Node):
         self.goto_off_service = self.create_client(Trigger, "goto_controller/disable", callback_group=self.cb_srv_group)
         self.set_yaw_service = self.create_client(SetBool, "goto_controller/set_yaw_tracking", callback_group=self.cb_srv_group)
         # rtabmap pause and resume to avoid rtabmap update when pick and place
-        self._rtabmap_pause_client = self.create_client(EmptySrv, "/dream/rtabmap/pause", callback_group=self.cb_srv_group)
-        self._rtabmap_resume_client = self.create_client(EmptySrv, "/dream/rtabmap/resume", callback_group=self.cb_srv_group)
+        self._rtabmap_pause_client = self.create_client(EmptySrv, "/dream_rtabmap/rtabmap/pause", callback_group=self.cb_srv_group)
+        self._rtabmap_resume_client = self.create_client(EmptySrv, "/dream_rtabmap/rtabmap/resume", callback_group=self.cb_srv_group)
+        self._rtabmap_get_node_data_client = self.create_client(GetNodeData, "/dream_rtabmap/rtabmap/get_node_data", callback_group=self.cb_srv_group)
         # print("Wait for mode service...")
         # self.pos_mode_service.wait_for_service()
 
@@ -575,22 +572,7 @@ class DreamRosInterface(Node):
         print("Creating cameras...")
         self.rgb_cam = RosCamera(self, self._color_topic)
         self.dpt_cam = RosCamera(self, self._depth_topic)
-        # if use_d405:
-        #     self.ee_rgb_cam = RosCamera(
-        #         self,
-        #         self._ee_color_topic,
-        #         rotations=0,
-        #         image_ext="/image_rect_raw",
-        #     )
-        #     self.ee_dpt_cam = RosCamera(
-        #         self,
-        #         self._ee_depth_topic,
-        #         rotations=0,
-        #         image_ext="/image_raw",
-        #     )
-        # else:
-        #     self.ee_rgb_cam = None
-        #     self.ee_dpt_cam = None
+
         self.filter_depth = self._depth_buffer_size is not None
     
     def _create_lidar(self):
@@ -665,6 +647,12 @@ class DreamRosInterface(Node):
         with self._lock_rtab:
             self.rtabmapdata = msg
         
+    # def _rtabmapinfo_callback(self, msg):
+    #     """get position or navigation mode from dream ros"""
+    #     # self._rtabmapinfo = msg
+    #     # 从rtabmap info中获取ref_id，查看新加入的最新的ref_id，并将其发送到远程服务器中
+    #     assert 1 == 1
+
         # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9
         # now_timestamp = self.get_clock().now().to_msg()
         # now_timestamp = now_timestamp.sec + now_timestamp.nanosec / 1e9
@@ -694,11 +682,6 @@ class DreamRosInterface(Node):
         # self._last_node_id = nid
         # with self._lock_rtab:
         #     self.rtabmapdata = msg
-
-    # def _rtabmapinfo_callback(self, msg):
-    #     """get position or navigation mode from dream ros"""
-    #     # self._rtabmapinfo = msg
-    #     assert 1 == 1
 
     # def _mode_callback(self, msg):
     #     """get position or navigation mode from dream ros"""
@@ -814,7 +797,52 @@ class DreamRosInterface(Node):
 
     def get_rtabmapdata(self):
         with self._lock_rtab:
-            return self.rtabmapdata
+            data = self.rtabmapdata
+        if data is None:
+            return None
+        timestamp = data.header.stamp.sec + data.header.stamp.nanosec / 1e9
+        if self._last_rtabmap_timestamp is not None and timestamp <= self._last_rtabmap_timestamp:
+            return None
+        self._last_rtabmap_timestamp = timestamp
+        return data
+
+    def get_node_data(
+        self, 
+        node_ids: list, 
+        images: bool=True, 
+        scan: bool=False, 
+        grid: bool=False, 
+        user_data: bool=False, 
+        timeout_sec: float=5.0
+    ) -> Optional[list]:
+
+        if not self._rtabmap_get_node_data_client.wait_for_service(timeout_sec=timeout_sec):
+            self.get_logger().warn(f"GetNodeData service not available")
+            return None
+        
+        request = GetNodeData.Request()
+        request.ids = node_ids
+        request.images = images
+        request.scan = scan
+        request.grid = grid
+        request.user_data = user_data
+        
+        try:
+            future = self._rtabmap_get_node_data_client.call_async(request)
+            deadline = time.time() + timeout_sec
+
+            while time.time() < deadline:
+                if future.done():
+                    response = future.result()
+                    if response is not None:
+                        return response.data
+                    return None
+                time.sleep(0.01)
+
+            self.get_logger().warn("GetNodeData timed out")
+            return None
+        except Exception:
+            return None
 
     def get_vel_base(self):
         with self._lock_odom:
