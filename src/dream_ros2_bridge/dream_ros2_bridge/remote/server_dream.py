@@ -89,14 +89,14 @@ class ZmqServer(BaseZmqServer):
             return None
         data = {
             "timestamp": obs.timestamp,
+            "pose_graph": obs.pose_graph,
+            "just_pose_graph": obs.just_pose_graph,
             "compass": obs.compass,
             "gps": obs.gps,
             "node_id": obs.node_id,
-            "is_history_node": obs.is_history_node,
             "rgb": obs.rgb_compressed,
             "depth": obs.depth_compressed,
             "camera_K": obs.camera_K,
-            "pose_graph": obs.pose_graph,
             "base_in_map_pose": obs.base_in_map_pose,
             "camera_in_base_pose": obs.camera_in_base_pose,
             "recv_address": self.recv_address,
