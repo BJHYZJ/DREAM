@@ -317,12 +317,12 @@ class ServoObservations(BaseObservations):
 
 @dataclass
 class RtabmapData(BaseObservations):
-    timestamp: float = None
-    pose_graph: Dict[str, np.ndarray] = None
+    timestamp: float
+    pose_graph: Dict[str, np.ndarray]
+    just_pose_graph: bool
     compass: Optional[np.ndarray] = None
     gps: Optional[np.ndarray] = None
     node_id: Optional[int] = None
-    is_history_node: Optional[bool] = None
     rgb_compressed: Optional[array.array] = None
     depth_compressed: Optional[array.array] = None
     camera_K: Optional[np.ndarray] = None
@@ -336,10 +336,10 @@ class Observations(BaseObservations):
     # Core data
     timestamp:float
     pose_graph: Dict[str, np.ndarray]
+    just_pose_graph: bool
     compass: Optional[np.ndarray] = None
     gps: Optional[np.ndarray] = None
     node_id: Optional[int] = None
-    is_history_node: Optional[bool] = None
     rgb: array.array | np.ndarray = None
     depth: array.array | np.ndarray = None
     camera_K: array.array | np.ndarray = None

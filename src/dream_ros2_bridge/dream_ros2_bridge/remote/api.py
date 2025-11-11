@@ -508,16 +508,7 @@ class DreamClient(AbstractRobotClient):
 
         current_node = rtabmap_data.nodes[0]
         current_node_id = current_node.id
-        is_history_node = False
 
-        if self._last_node_id is not None and current_node_id <= self._last_node_id:
-            print("[warning] 🛑 received history node")
-            is_history_node = True
-        else:
-            self._last_node_id = current_node_id
-
-        assert len(rtabmap_data.nodes) == 1, "nodes has more than one node not happend!"
-        
         # Always use the latest pose graph
         pose_graph = {
             nid: pose_to_sophus(pose)
@@ -525,6 +516,18 @@ class DreamClient(AbstractRobotClient):
                 rtabmap_data.graph.poses_id, rtabmap_data.graph.poses
             )
         }
+
+        if self._last_node_id is not None and current_node_id <= self._last_node_id:
+            print("[warning] 🛑 received history node")
+            return RtabmapData(
+                timestamp=timestamp,
+                pose_graph=pose_graph,
+                just_pose_graph=True,
+            )
+        else:
+            self._last_node_id = current_node_id
+
+        assert len(rtabmap_data.nodes) == 1, "nodes has more than one node not happend!"
 
         # ================ send the latest node added to the pose graph. ================
         pose_ids = set(rtabmap_data.graph.poses_id)
@@ -588,7 +591,7 @@ class DreamClient(AbstractRobotClient):
                         compass=compass,
                         gps=gps,
                         node_id=latest_node_id,
-                        is_history_node=is_history_node,
+                        just_pose_graph=False,
                         rgb_compressed=rgb,
                         depth_compressed=depth,
                         camera_K=camera_K,
@@ -600,6 +603,7 @@ class DreamClient(AbstractRobotClient):
         return RtabmapData(
             timestamp=timestamp,
             pose_graph=pose_graph,
+            just_pose_graph=True,
         )
 
 
