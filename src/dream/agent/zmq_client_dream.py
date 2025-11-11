@@ -821,9 +821,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
             # Minor delay at the end - give it time to get new messages
             time.sleep(0.01)
 
-            if not self.is_up_to_date():
+            if not self.is_state_up_to_date(min_step=block_id):
                 if verbose:
-                    print("Waiting for client to receive and process action")
+                    print("Waiting for latest state message")
                 continue
 
             with self._state_lock:
@@ -927,6 +927,19 @@ class DreamRobotZmqClient(AbstractRobotClient):
                     and self._obs.step >= self._iter - 1
                 )
         return obs_ok
+
+    def is_state_up_to_date(self, min_step: Optional[int] = None) -> bool:
+        """Check if the low-level state stream has caught up to a requested step."""
+        with self._state_lock:
+            if self._state is None or self._state.step is None:
+                return False
+            state_step = self._state.step
+
+        if min_step is None:
+            latest_command = getattr(self, "_iter", 0) - 1
+            min_step = max(latest_command, -1)
+
+        return state_step >= min_step
 
     def send_message(self, message: dict):
         """Send a message to the robot"""
@@ -1242,11 +1255,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 continue
 
             self._seq_id += 1
-            output["camera_in_map_pose"] = output["base_in_map_pose"] @ output["camera_in_base_pose"]
             output["seq_id"] = self._seq_id
 
             # For history nodes that do not have RGB values, both depth and RGB values ​​should be set to None / np.array(B).
-            if not output["is_history_node"]:
+            if not output["just_pose_graph"]:
+                output["camera_in_map_pose"] = output["base_in_map_pose"] @ output["camera_in_base_pose"]
                 output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
                 output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
                 rgb_height, rgb_width = output["rgb"].shape[:2]
@@ -1256,13 +1269,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
                         output["camera_K"], width=rgb_width, height=rgb_height
                     )
                 output["xyz"] = camera.depth_to_xyz(output["depth"])
-                self._update_obs(output)
 
                 if visualize and not shown_point_cloud:
                     show_point_cloud(output["xyz"], output["rgb"] / 255.0, orig=np.zeros(3))
                     shown_point_cloud = True
-            else:
-                print("History node Detection, use history information.")
+                
+                self._update_obs(output)
 
             self._update_pose_graph(output)
 
@@ -1456,7 +1468,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
             self._rerun_thread.start()
 
         t0 = timeit.default_timer()
-        while self._obs is None or self._state is None or self._servo is None:
+        # while self._obs is None or self._state is None or self._servo is None:
+        # self._obs just update when robot is moving
+        while self._state is None or self._servo is None:
             time.sleep(0.1)
             t1 = timeit.default_timer()
             if t1 - t0 > 10.0:
