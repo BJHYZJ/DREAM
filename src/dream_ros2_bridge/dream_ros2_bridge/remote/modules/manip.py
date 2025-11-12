@@ -176,7 +176,7 @@ class XARM6:
 
     def _sync_servo_command_with_real_state(self):
         """Align controller command with actual encoder state to avoid TF jumps."""
-        real_angles = self._arm.get_servo_angle(is_radian=False, is_real=True)
+        real_angles = self.get_servo_angle(is_radian=False, is_real=True)
         if real_angles is None:
             return
         self._arm.set_servo_angle(angle=real_angles, is_radian=False, wait=False)
