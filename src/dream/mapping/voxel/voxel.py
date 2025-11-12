@@ -772,7 +772,7 @@ class SparseVoxelMap:
                 _, feats = rgb.squeeze(), feats.squeeze()
 
         valid_xyz = world_xyz[valid_depth]
-        feats = feats[valid_depth]
+        features = feats[valid_depth]
         valid_rgb = rgb.permute(1, 2, 0)[valid_depth]
         
         if len(valid_xyz) != 0:
@@ -781,23 +781,23 @@ class SparseVoxelMap:
                 return
             if valid_xyz is not None:
                 valid_xyz = valid_xyz[selected_indices]
-            if feats is not None:
-                feats = feats[selected_indices]
+            if features is not None:
+                features = features[selected_indices]
             if valid_rgb is not None:
                 valid_rgb = valid_rgb[selected_indices]
             if weights is not None:
                 weights = weights[selected_indices]
 
             valid_xyz = valid_xyz.to(self.device)
-            if feats is not None:
-                feats = feats.to(self.device)
+            if features is not None:
+                features = features.to(self.device)
             if valid_rgb is not None:
                 valid_rgb = valid_rgb.to(self.device)
             if weights is not None:
                 weights = weights.to(self.device)
             self.semantic_memory.add(
                 points=valid_xyz,
-                features=feats,
+                features=features,
                 rgb=valid_rgb,
                 weights=weights,
                 obs_count=self.obs_count,

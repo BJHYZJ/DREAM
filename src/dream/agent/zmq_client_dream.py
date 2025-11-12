@@ -227,7 +227,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
             if output_path is not None and not output_path.exists():
                 output_path.mkdir(parents=True, exist_ok=True)
 
-            self._rerun = RerunVisualizer(output_path=output_path)
+            self._rerun = RerunVisualizer(output_path=output_path, footprint=self._robot_model.get_footprint())
         else:
             self._rerun = None
             self._rerun_thread = None
@@ -373,10 +373,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def _extract_joint_state(self, joint_states):
         """Helper to convert from the general-purpose config including full robot state, into the command space used in just the manip controller. Extracts just lift/arm/wrist information."""
         return joint_states[constants.ARM_INDEX]
-
-    def get_pose_graph(self) -> np.ndarray:
-        """Get the robot's SLAM pose graph"""
-        return self._pose_graph
 
 
     def look_front(self, blocking: bool=True, timeout: float = 10.0):
@@ -662,8 +658,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
         self._thread = None
         self._state_thread = None
         self._finish = False
-        self._last_step = -1
-        self._obs_step = -1
+        self._last_step = -1  # just update by state
+        # ensure obs and pose graph is newest
+        self._obs_seq = -1
+        self._delivered_obs_seq = -1
+        self._pose_graph_seq = -1
+        self._delivered_pose_graph_seq = -1
 
     def open_gripper(
         self,
@@ -911,27 +911,38 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """return a model of the robot for planning"""
         return self._robot_model
 
+    def _latest_command_step(self) -> int:
+        """Return the most recent command step we expect the robot to have executed."""
+        return max(self._iter - 1, -1)
+
     def is_up_to_date(self, no_action=False):
-        """Check if the robot is up to date with the latest observation"""
+        """Check if the robot is up to date with the latest observation.
+
+        Args:
+            no_action (bool): when True we only require that an observation exists; when False
+                we also ensure the observation has caught up to the latest commanded step.
+        """
         with self._obs_lock:
-            obs_step = getattr(self, "_obs_step", -1)
+            obs_step = None if self._obs is None else self._obs.step
+
+        if obs_step is None:
+            return False
 
         if no_action:
-            obs_ok = obs_step >= self._last_step
-        else:
-            obs_ok = obs_step >= self._last_step and obs_step >= self._iter - 1
-        return obs_ok
+            return True
+
+        return obs_step >= self._latest_command_step()
 
     def is_state_up_to_date(self, min_step: Optional[int] = None) -> bool:
         """Check if the low-level state stream has caught up to a requested step."""
         with self._state_lock:
-            if self._state is None or self._state.step is None:
-                return False
-            state_step = self._state.step
+            state_step = None if self._state is None else self._state.step
+
+        if state_step is None:
+            return False
 
         if min_step is None:
-            latest_command = getattr(self, "_iter", 0) - 1
-            min_step = max(latest_command, -1)
+            min_step = self._latest_command_step()
 
         return state_step >= min_step
 
@@ -969,91 +980,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """
         next_action = {"load_map": filename}
         self.send_action(next_action)
-
-    def get_observation(self, max_iter: int = 5):
-        """Get the current observation. This uses the FULL observation track. Expected to be syncd with RGBD."""
-        iteration = 0
-        while not self.is_up_to_date(no_action=True) and iteration < max_iter:
-            if self.is_up_to_date(no_action=True):
-                iteration += 1
-            time.sleep(0.1)
-        time.sleep(0.1)
-
-        with self._obs_lock:
-            if self._obs is None:
-                return None
-
-            return self._obs
-
-    # def get_images(self, compute_xyz=False):
-    #     """Get the current RGB and depth images from the robot.
-
-    #     Args:
-    #         compute_xyz (bool): whether to compute the XYZ image
-
-    #     Returns:
-    #         rgb (np.ndarray): the RGB image
-    #         depth (np.ndarray): the depth image
-    #         xyz (np.ndarray): the XYZ image if compute_xyz is True
-    #     """
-    #     obs = self.get_observation()
-    #     if compute_xyz:
-    #         return obs.rgb, obs.depth, obs.xyz
-    #     else:
-    #         return obs.rgb, obs.depth
-
-    # def get_camera_K(self):
-    #     """Get the camera intrinsics.
-
-    #     Returns:
-    #         camera_K (np.ndarray): the camera intrinsics
-    #     """
-    #     obs = self.get_observation()
-    #     return obs.camera_K
-
-    # def get_head_pose(self):
-    #     """Get the head pose.
-
-    #     Returns:
-    #         head_pose (np.ndarray): the head pose as a SE(3) matrix [R | t]
-    #     """
-    #     obs = self.get_observation()
-    #     return obs.camera_in_map_pose
-
-    def get_servo_observation(self):
-        """Get the current servo observation.
-
-        Returns:
-            ServoObservations: the current servo observation
-        """
-        with self._servo_lock:
-            return self._servo
-    
-    def get_servo_images(self, compute_xyz=False):
-        """Get the current RGB and depth images from the robot.
-
-        Args:
-            compute_xyz (bool): whether to compute the XYZ image
-
-        Returns:
-            rgb (np.ndarray): the RGB image
-            depth (np.ndarray): the depth image
-            xyz (np.ndarray): the XYZ image if compute_xyz is True
-        """
-        servo_obs = self.get_servo_observation()
-        if compute_xyz:
-            return servo_obs.rgb, servo_obs.depth, servo_obs.xyz
-        else:
-            return servo_obs.rgb, servo_obs.depth       
-
-    def get_servo_camera_K(self):
-        """Get the camera intrinsics.
-
-        Returns:
-            camera_K (np.ndarray): the camera intrinsics
-        """
-        servo_obs = self.get_servo_observation()
-        return servo_obs.camera_K
 
 
     def execute_trajectory(
@@ -1320,23 +1246,102 @@ class DreamRobotZmqClient(AbstractRobotClient):
         while not self._finish:
             self._rerun.step(self._obs, self._state, self._servo)
 
+
+    def get_servo_observation(self):
+        """Get the current servo observation.
+
+        Returns:
+            ServoObservations: the current servo observation
+        """
+        with self._servo_lock:
+            return self._servo
+    
+    def get_servo_images(self, compute_xyz=False):
+        """Get the current RGB and depth images from the robot.
+
+        Args:
+            compute_xyz (bool): whether to compute the XYZ image
+
+        Returns:
+            rgb (np.ndarray): the RGB image
+            depth (np.ndarray): the depth image
+            xyz (np.ndarray): the XYZ image if compute_xyz is True
+        """
+        servo_obs = self.get_servo_observation()
+        if compute_xyz:
+            return servo_obs.rgb, servo_obs.depth, servo_obs.xyz
+        else:
+            return servo_obs.rgb, servo_obs.depth       
+
+    def get_servo_camera_K(self):
+        """Get the camera intrinsics.
+
+        Returns:
+            camera_K (np.ndarray): the camera intrinsics
+        """
+        servo_obs = self.get_servo_observation()
+        return servo_obs.camera_K
+
+
+    def get_observation(self, max_iter: int = 5, *, wait_for_new: bool = False):
+        """Get the current observation. This uses the FULL observation track. Expected to be syncd with RGBD.
+
+        Args:
+            max_iter: Deprecated; retained for backwards compatibility.
+            wait_for_new: if True, block until an observation arrives that has not been delivered yet.
+        """
+        while True:
+            while not self.is_up_to_date(no_action=True):
+                time.sleep(0.1)
+
+            with self._obs_lock:
+                if self._obs is None:
+                    continue
+                if not wait_for_new:
+                    return self._obs
+                if (
+                    self._obs_seq is not None
+                    and self._obs_seq > self._delivered_obs_seq
+                ):
+                    self._delivered_obs_seq = self._obs_seq
+                    return self._obs
+            time.sleep(0.05)
+
+    def get_pose_graph(self, *, wait_for_new: bool = False) -> np.ndarray:
+        """Get the robot's SLAM pose graph.
+
+        Args:
+            wait_for_new: if True, block until a new pose graph arrives that has not been delivered yet.
+        """
+        while True:
+            with self._obs_lock:
+                if self._pose_graph is not None:
+                    if not wait_for_new:
+                        return self._pose_graph
+                    if (
+                        self._pose_graph_seq is not None
+                        and self._pose_graph_seq > self._delivered_pose_graph_seq
+                    ):
+                        self._delivered_pose_graph_seq = self._pose_graph_seq
+                        return self._pose_graph
+            time.sleep(0.05)
+
     def _update_obs(self, obs: dict):
         """Update observation internally with lock"""
         with self._obs_lock:
-            # Convert dictionary to Observations object for consistency
             self._obs = Observations.from_dict(obs)
-            self._last_step = obs["step"]
-            self._obs_step = obs["step"]
-            if self._iter <= 0:
-                self._iter = max(self._last_step, self._iter)
+            self._obs_seq = self._obs_seq + 1 if self._obs_seq is not None else 0
 
     def _update_pose_graph(self, obs):
         """Update internal pose graph"""
         with self._obs_lock:
             if "pose_graph" in obs:
                 self._pose_graph = obs["pose_graph"]
-            if "step" in obs:
-                self._obs_step = max(self._obs_step, obs["step"])
+                seq_id = obs.get("seq_id")
+                if seq_id is None:
+                    self._pose_graph_seq = self._pose_graph_seq + 1 if self._pose_graph_seq is not None else 0
+                else:
+                    self._pose_graph_seq = seq_id
 
     def _update_state(self, state: dict) -> None:
         """Update state internally with lock. This is expected to be much more responsive than using full observations, which should be reserved for higher level control.
@@ -1358,20 +1363,14 @@ class DreamRobotZmqClient(AbstractRobotClient):
             self._control_mode = self._state.control_mode
             self._at_goal = self._state.at_goal
 
+            if self._iter <= 0:
+                self._iter = max(self._last_step, self._iter)
+
     def _update_servo(self, message):
         """Servo messages"""
-        if message is None or self._state is None:
+        if self._state is None:
+            # self._servo is using with self._state, must ensure self._state is ok
             return
-
-        # color_image = compression.from_webp(message["ee_cam/color_image"])
-        # if "ee_cam/color_image" in message:
-        #     color_image = compression.from_jpg(message["ee_cam/color_image"])
-        #     depth_image = compression.from_jp2(message["ee_cam/depth_image"])
-        #     depth_image = depth_image / 1000
-        # else:
-        #     color_image = None
-        #     depth_image = None
-        #     image_scaling = None
 
         # Get head information from the message as well
         rgb = compression.from_jpg(message["rgb"])

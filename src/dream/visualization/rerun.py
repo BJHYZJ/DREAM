@@ -23,6 +23,7 @@ from dream.core.interfaces import Observations, ServoObservations, StateObservat
 from dream.mapping.scene_graph import SceneGraph
 from dream.mapping.voxel.voxel_map import SparseVoxelMapNavigationSpace
 from dream.motion import DreamIdx
+from dream.motion.robot import Footprint
 from dream.perception.wrapper import OvmmPerception
 from dream.utils.logger import Logger
 from dream.visualization import urdf_visualizer
@@ -202,6 +203,7 @@ class RerunVisualizer:
         show_cameras_in_3d_view: bool = False,
         show_camera_point_clouds: bool = True,
         output_path=None,
+        footprint: Footprint=None
     ):
         """Rerun visualizer class
         Args:
@@ -226,6 +228,8 @@ class RerunVisualizer:
 
         if output_path is not None:
             rr.save(output_path / "rerun_log.rrd")
+        
+        self.footprint = footprint
         
         # Serve web viewer if open_browser is True
         if open_browser:
@@ -407,35 +411,50 @@ class RerunVisualizer:
 
     def log_robot_xyt(self, state: StateObservations):
         """Log robot world pose"""
-        # 直接使用base_pose_in_map，它已经包含了完整的位置和旋转信息
         base_pose = state.base_in_map_pose
-        
-        # 检查是否是历史数据（通过检查时间戳或添加调试信息）
-        # print(f"Base pose timestamp: {time.time()}")
-        # print(f"Base pose position: {base_pose[:3, 3]}")
-        # print(base_pose)
-        # 分解变换矩阵
         rotation_matrix = base_pose[:3, :3]
         translation_vector = base_pose[:3, 3]
         
         rb_arrow = rr.Arrows3D(
             origins=[0, 0, 0],
-            vectors=[0.4, 0, 0],
+            vectors=[0.6, 0, 0],
             radii=0.02,
             labels="robot",
             colors=[255, 0, 0, 255],
         )
-        # rr.log("world/robot/arrow", rb_arrow, static=True)
-        rr.log(
-            "world/robot/blob",
-            rr.Points3D([0, 0, 0], colors=[255, 0, 0, 255], radii=0.13),
-        )
+
+        rr.log("world/robot/arrow", rb_arrow, static=True)
+        if self.footprint:
+            footprint_box = self.footprint.get_box()
+            half_sizes = footprint_box / 2.0
+            foot_center = np.array(
+                [
+                    self.footprint.length_offset,
+                    self.footprint.width_offset,
+                    half_sizes[2],
+                ]
+            )
+            rr.log(
+                "world/robot/footprint",
+                rr.Boxes3D(
+                    half_sizes=[half_sizes],
+                    centers=[foot_center.tolist()],
+                    colors=[[255, 0, 0, 80]],
+                    fill_mode=rr.components.FillMode.Solid,
+                ),
+                static=True,
+            )
+        else:
+            rr.log(
+                "world/robot/blob",
+                rr.Points3D([0, 0, 0], colors=[255, 0, 0, 255], radii=0.13),
+            )
         rr.log(
             "world/robot",
             rr.Transform3D(
                 translation=translation_vector,
                 mat3x3=rotation_matrix,
-                axis_length=0.7,
+                axis_length=0.0,
             ),
         )
 
