@@ -47,20 +47,29 @@ class XARM6:
         interface="192.168.1.233",
         # The pose corresponds to the servo angle
         init_servo_angle=constants.look_front,
-        back_front_angle=constants.back_front
+        back_front_angle=constants.back_front,
+        ros_client=None,
     ):
         self.pprint("xArm-Python-SDK Version:{}".format(version.__version__))
         self.alive = True
         self._arm = XArmAPI(interface, baud_checkset=False)
         self.init_servo_angle = init_servo_angle
         self.back_front_angle = back_front_angle
+        self.ros_client = ros_client
         self._robot_init()
 
     # Robot Init
     def _robot_init(self):
         self._arm.clean_warn()
         self._arm.clean_error()
-        self._arm.motion_enable(True)
+        # ensure xarm start send error joints pose to rtabmap
+        if self.ros_client is not None:
+            with self.ros_client.rtabmap_paused():
+                self._arm.motion_enable(True)
+                self._sync_servo_command_with_real_state()
+                time.sleep(1)
+        else:
+            self._arm.motion_enable(True)
         self._arm.set_mode(0)
         self._arm.set_state(0)
         self._arm.set_gripper_enable(True)
@@ -165,6 +174,13 @@ class XARM6:
     def set_servo_angle(self, angle, is_radian=False, wait=True):
         self._arm.set_servo_angle(angle=angle, is_radian=is_radian, wait=wait)
 
+    def _sync_servo_command_with_real_state(self):
+        """Align controller command with actual encoder state to avoid TF jumps."""
+        real_angles = self._arm.get_servo_angle(is_radian=False, is_real=True)
+        if real_angles is None:
+            return
+        self._arm.set_servo_angle(angle=real_angles, is_radian=False, wait=False)
+
     def get_servo_angle(self, is_radian=False, is_real=False):
         if not self.is_alive:
             # raise ValueError("Robot is not alive!")
@@ -256,7 +272,7 @@ class DreamManipulationClient(AbstractControlModule):
         self._robot_model = robot_model
 
         self._init_base_pose = None
-        self._arm = XARM6()
+        self._arm = XARM6(ros_client=self._ros_client)
 
     # Enable / disable
 

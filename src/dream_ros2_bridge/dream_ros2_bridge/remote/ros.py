@@ -646,11 +646,11 @@ class DreamRosInterface(Node):
 
         with self._lock_rtab:
             self.rtabmapdata = msg
+            # print(f"msg.nodes[0].id: {msg.nodes[0].id}")
         
     # def _rtabmapinfo_callback(self, msg):
     #     """get position or navigation mode from dream ros"""
-    #     # self._rtabmapinfo = msg
-    #     # 从rtabmap info中获取ref_id，查看新加入的最新的ref_id，并将其发送到远程服务器中
+    #     print(f"ref_id: {msg.ref_id}, Memory/Small_movement/: {msg.stats_values[msg.stats_keys.index('Memory/Small_movement/')]}")
     #     assert 1 == 1
 
         # timestamp = msg.header.stamp.sec + msg.header.stamp.nanosec / 1e9

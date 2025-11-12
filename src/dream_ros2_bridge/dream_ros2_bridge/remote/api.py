@@ -540,14 +540,17 @@ class DreamClient(AbstractRobotClient):
 
         if new_pose_ids:
             # Only send the latest node added to the pose graph.
-            newest_pose_id = max(new_pose_ids)
+            newest_pose_id = max(new_pose_ids)  # 
             diff = current_node_id - newest_pose_id
-            print(
-                f"now node id is {current_node_id}, added id: {new_pose_ids}, "
-                f"newest: {newest_pose_id}, diff: {diff}"
+            max_uploaded_id = max(self._uploaded_ids) if self._uploaded_ids else None
+            is_newer_than_uploaded = (
+                max_uploaded_id is None or newest_pose_id > max_uploaded_id
             )
-            
-            if newest_pose_id not in self._uploaded_ids:
+            if newest_pose_id not in self._uploaded_ids and is_newer_than_uploaded:
+                print(
+                    f"now node id is {current_node_id}, added id: {new_pose_ids}, "
+                    f"newest: {newest_pose_id}, diff: {diff}"
+                )
                 node_data_list = self._ros_client.get_node_data(
                     node_ids=[newest_pose_id],
                 )

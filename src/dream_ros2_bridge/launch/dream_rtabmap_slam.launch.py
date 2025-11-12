@@ -218,7 +218,8 @@ def generate_launch_description():
       description='Odometry topic from SLAM system (e.g., FAST-LIO2).'),
 
     DeclareLaunchArgument(
-      'imu_topic', default_value='/camera/imu',  # with realsense-d435i imu information
+      # 'imu_topic', default_value='/camera/imu',  # with realsense-d435i imu information
+      'imu_topic', default_value='/livox/imu',  # /camera/imu with realsense-d435i imu information
       description='IMU topic (ignored if empty).'),
     
     DeclareLaunchArgument(
