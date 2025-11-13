@@ -285,12 +285,12 @@ class RobotAgent:
                     if frame.node_id in effected_ids:
                         self.voxel_map.voxel_pointcloud.clear_points_in_view(
                             intrinsics=frame.camera_K,
-                            pose=frame.camera_pose,
+                            camera_pose=frame.camera_pose,
                             image_shape=frame.rgb.shape[:2],
                         )
                         self.voxel_map.semantic_memory.clear_points_in_view(
                             intrinsics=frame.camera_K,
-                            pose=frame.camera_pose,
+                            camera_pose=frame.camera_pose,
                             image_shape=frame.rgb.shape[:2],
                         )
                 # re-add observations to the map by new pose
@@ -298,7 +298,7 @@ class RobotAgent:
                     if frame.node_id in effected_ids:
                         optimized_base_in_map_pose = torch.tensor(
                             pose_graph[frame.node_id].matrix(), dtype=torch.float32)
-                        frame.camera_pose = optimized_base_in_map_pose @ frame.local_tf  
+                        frame.camera_pose = optimized_base_in_map_pose @ frame.local_tf
                         frame.base_pose = optimized_base_in_map_pose             
 
                     self.voxel_map.add_to_voxel_pointcloud(
@@ -539,7 +539,8 @@ class RobotAgent:
             rgb,
             depth,
             K,
-            camera_in_map_pose,
+            camera_pose,
+            base_pose,
             local_tf,
             node_id,
         ) = (
@@ -547,6 +548,7 @@ class RobotAgent:
             obs.depth,
             obs.camera_K,
             obs.camera_in_map_pose,
+            obs.base_in_map_pose,
             obs.camera_in_base_pose,
             obs.node_id,
         )
@@ -557,9 +559,10 @@ class RobotAgent:
                 rgb=rgb, 
                 depth=depth, 
                 intrinsics=K, 
-                pose=camera_in_map_pose, 
+                camera_pose=camera_pose,
+                base_pose=base_pose, 
                 local_tf=local_tf, 
-                node_id=node_id
+                node_id=node_id,
             )
             if self.voxel_map.voxel_pointcloud._points is not None:
                 self.rerun_visualizer.update_voxel_map(space=self.space)

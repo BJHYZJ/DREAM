@@ -113,39 +113,6 @@ class SparseVoxelMap:
         log="test",
         mllm=False,
     ):
-        # super().__init__(
-        #     resolution=resolution,
-        #     feature_dim=feature_dim,
-        #     grid_size=grid_size,
-        #     grid_resolution=grid_resolution,
-        #     obs_min_height=obs_min_height,
-        #     obs_max_height=obs_max_height,
-        #     obs_min_density=obs_min_density,
-        #     smooth_kernel_size=smooth_kernel_size,
-        #     neg_obs_height=neg_obs_height,
-        #     add_local_radius_points=add_local_radius_points,
-        #     remove_visited_from_obstacles=remove_visited_from_obstacles,
-        #     local_radius=local_radius,
-        #     min_depth=min_depth,
-        #     max_depth=max_depth,
-        #     pad_obstacles=pad_obstacles,
-        #     background_instance_label=background_instance_label,
-        #     instance_memory_kwargs=instance_memory_kwargs,
-        #     voxel_kwargs=voxel_kwargs,
-        #     encoder=encoder,
-        #     map_2d_device=map_2d_device,
-        #     device=device,
-        #     use_instance_memory=use_instance_memory,
-        #     use_median_filter=use_median_filter,
-        #     median_filter_size=median_filter_size,
-        #     median_filter_max_error=median_filter_max_error,
-        #     use_derivative_filter=use_derivative_filter,
-        #     derivative_filter_threshold=derivative_filter_threshold,
-        #     prune_detected_objects=prune_detected_objects,
-        #     add_local_radius_every_step=add_local_radius_every_step,
-        #     min_points_per_voxel=min_points_per_voxel,
-        #     use_negative_obstacles=use_negative_obstacles,
-        # )
 
         # TODO: We an use fastai.store_attr() to get rid of this boilerplate code
         self.feature_dim = feature_dim
@@ -240,12 +207,12 @@ class SparseVoxelMap:
         self.point_update_threshold = point_update_threshold
         self._history_soft: Optional[Tensor] = None
 
-        # Create sparse voxelized pointcloud with semantic for localize target object
+        # voxelized pointcloud with semantic for localize target object
         self.semantic_memory = VoxelizedPointcloud(
             voxel_size=semantic_memory_resolution
         ).to(self.device)
 
-        # Create dense voxelized pointcloud for path planning
+        # voxelized pointcloud for path planning
         self.voxel_pointcloud = VoxelizedPointcloud(
             voxel_size=self.voxel_resolution,
             dim_mins=None,
@@ -547,7 +514,7 @@ class SparseVoxelMap:
         rgb: np.ndarray, 
         depth: np.ndarray, 
         intrinsics: np.ndarray, 
-        pose: np.ndarray, 
+        camera_pose: np.ndarray, 
         local_tf: np.ndarray,
         node_id: int,
         base_pose: Optional[Tensor] = None,
@@ -565,28 +532,69 @@ class SparseVoxelMap:
         np.save(self.log + "/rgb" + str(self.obs_count) + ".npy", rgb)
         np.save(self.log + "/depth" + str(self.obs_count) + ".npy", depth)
         np.save(self.log + "/intrinsics" + str(self.obs_count) + ".npy", intrinsics)
-        np.save(self.log + "/pose" + str(self.obs_count) + ".npy", pose)
+        np.save(self.log + "/camera_pose" + str(self.obs_count) + ".npy", camera_pose)
+        np.save(self.log + "/base_pose" + str(self.obs_count) + ".npy", base_pose)
         np.save(self.log + "/local_tf" + str(self.obs_count) + ".npy", local_tf)
         np.save(self.log + "/node_id" + str(self.obs_count) + ".npy", np.array(node_id, dtype=np.int32))
 
         rgb = torch.Tensor(rgb)
         depth = torch.Tensor(depth)
         intrinsics = torch.Tensor(intrinsics)
-        pose = torch.Tensor(pose)
+        camera_pose = torch.Tensor(camera_pose)
+        base_pose = torch.Tensor(base_pose)
         local_tf = torch.Tensor(local_tf)
 
+        # Resize depth/rgb and scale intrinsics once here
+        if self.image_shape is not None:
+            Ht, Wt = self.image_shape
+            H0, W0 = depth.shape
+
+            # depth: nearest
+            depth = F.interpolate(
+                depth.unsqueeze(0).unsqueeze(0), size=(Ht, Wt), mode="nearest"
+            ).squeeze(0).squeeze(0)
+
+            # rgb: bilinear
+            if rgb.ndim == 3 and rgb.shape[-1] == 3:
+                rgb_chw = rgb.permute(2, 0, 1).unsqueeze(0)
+                rgb_chw = F.interpolate(rgb_chw, size=(Ht, Wt), mode="bilinear", align_corners=False)
+                rgb = rgb_chw.squeeze(0).permute(1, 2, 0)
+
+            # scale intrinsics
+            scale_x = float(Wt) / float(W0)
+            scale_y = float(Ht) / float(H0)
+            intrinsics[0, 0] = intrinsics[0, 0] * scale_x
+            intrinsics[1, 1] = intrinsics[1, 1] * scale_y
+            intrinsics[0, 2] = intrinsics[0, 2] * scale_x
+            intrinsics[1, 2] = intrinsics[1, 2] * scale_y
+
+        # Precompute depth filters and masks once
+        if self.use_median_filter:
+            median_depth = torch.from_numpy(median_filter(depth, size=self.median_filter_size))
+            median_filter_error = (depth - median_depth).abs()
+
+        # Unified valid depth mask for both pipelines (complete filtering)
+        valid_depth = (depth > self.min_depth) & (depth < self.max_depth)
+        if self.use_derivative_filter:
+            edges = get_edges(depth, threshold=self.derivative_filter_threshold)
+            valid_depth = valid_depth & (~edges)
+        if self.use_median_filter:
+            valid_depth = valid_depth & (median_filter_error < self.median_filter_max_error).bool()
+
         self.add_to_voxel_pointcloud(
-            camera_pose=pose,
+            camera_pose=camera_pose,
             rgb=rgb,
             depth=depth,
+            valid_depth=valid_depth,
             camera_K=intrinsics,
             base_pose=base_pose,
         )
 
         feats = self.add_to_semantic_memory(
-            camera_pose=pose,
+            camera_pose=camera_pose,
             rgb=rgb,
             depth=depth,
+            valid_depth=valid_depth,
             camera_K=intrinsics,
             return_feats=True,
         )
@@ -594,7 +602,7 @@ class SparseVoxelMap:
         # add observations before we start changing things
         self.observations.append(
             Frame(
-                camera_pose=pose,
+                camera_pose=camera_pose,
                 local_tf=local_tf,
                 camera_K=intrinsics,
                 rgb=rgb,
@@ -616,49 +624,31 @@ class SparseVoxelMap:
         rgb: Tensor,
         camera_K: Optional[Tensor]=None,
         depth: Optional[Tensor]=None,
+        valid_depth: Optional[Tensor]=None,
         feats: Optional[Tensor]=None,
         base_pose: Optional[Tensor]=None,
     ):
-        """Add this to our history of observations. Also update the current running map.
-
-        Parameters:
-            camera_pose(Tensor): [4,4] cam_to_world matrix
-            rgb(Tensor): N x 3 color points
-            camera_K(Tensor): [3,3] camera instrinsics matrix -- usually pinhole model
-            feats(Tensor): N x D point cloud features; D == 3 for RGB is most common
-            base_pose(Tensor): optional location of robot base
-        """
-        # TODO: switch to using just Obs struct?
-        # Shape checking
-        assert rgb.ndim == 3 or rgb.ndim == 2, f"{rgb.ndim=}: must be 2 or 3"
-        if isinstance(rgb, np.ndarray):
-            rgb = torch.from_numpy(rgb)
-        if isinstance(camera_pose, np.ndarray):
-            camera_pose = torch.from_numpy(camera_pose)
-        if depth is not None:
-            assert (
-                rgb.shape[:-1] == depth.shape
-            ), f"depth and rgb image sizes must match; got {rgb.shape=} {depth.shape=}"
-        assert camera_K is not None and depth is not None
-
-        if depth is not None:
-            assert depth.ndim == 2
-        if camera_K is not None:
-            assert camera_K.ndim == 2, "camera intrinsics K must be a 3x3 matrix"
-        assert (
-            camera_pose.ndim == 2 and camera_pose.shape[0] == 4 and camera_pose.shape[1] == 4
-        ), "Camera pose must be a 4x4 matrix representing a pose in SE(3)"
-
+        """Add this to our history of observations. Also update the current running map."""
         # Clear invalid points
         self.voxel_pointcloud.clear_points(
-            depth=depth, intrinsics=camera_K, pose=camera_pose
+            depth=depth, 
+            intrinsics=camera_K, 
+            camera_pose=camera_pose
         )
         # Then add the new environment points to voxel_pointcloud
         # Apply a median filter to remove bad depth values when mapping and exploring
         # This is not strictly necessary but the idea is to clean up bad pixels
-        if depth is not None and self.use_median_filter:
-            median_depth = torch.from_numpy(median_filter(depth, size=self.median_filter_size))
-            median_filter_error = (depth - median_depth).abs()
+        # Pre-filtering should be done in process_rgbd_images; fallback if not provided
+        if valid_depth is None:
+            if self.use_median_filter:
+                median_depth = torch.from_numpy(median_filter(depth, size=self.median_filter_size))
+                median_filter_error = (depth - median_depth).abs()
+            valid_depth = (depth > self.min_depth) & (depth < self.max_depth)
+            if self.use_derivative_filter:
+                edges = get_edges(depth, threshold=self.derivative_filter_threshold)
+                valid_depth = valid_depth & (~edges)
+            if self.use_median_filter:
+                valid_depth = valid_depth & (median_filter_error < self.median_filter_max_error).bool()
 
         # Get full_world_xyz
         full_world_xyz = unproject_masked_depth_to_xyz_coordinates(  # Batchable!
@@ -666,19 +656,6 @@ class SparseVoxelMap:
             pose=camera_pose.unsqueeze(0),
             inv_intrinsics=torch.linalg.inv(camera_K[:3, :3]).unsqueeze(0),
         )
-        
-        valid_depth = torch.full_like(rgb[:, 0], fill_value=True, dtype=torch.bool)
-        if depth is not None:
-            valid_depth = (depth > self.min_depth) & (depth < self.max_depth)
-
-            if self.use_derivative_filter:
-                edges = get_edges(depth, threshold=self.derivative_filter_threshold)
-                valid_depth = valid_depth & ~edges
-
-            if self.use_median_filter:
-                valid_depth = (
-                    valid_depth & (median_filter_error < self.median_filter_max_error).bool()
-                )
 
         # Add to voxel grid
         if feats is not None:
@@ -701,11 +678,13 @@ class SparseVoxelMap:
                 rgb = rgb[selected_indices]
             self.voxel_pointcloud.add(world_xyz, features=feats, rgb=rgb, weights=None)
 
+        # Update visited map (prefer robot base; fallback to camera if desired)
         if self._add_local_radius_points:
-            # TODO: just get this from camera_pose?
-            self._update_visited(camera_pose[:3, 3].to(self.map_2d_device))
-        if base_pose is not None:
-            self._update_visited(base_pose.to(self.map_2d_device))
+            if base_pose is not None:
+                self._update_visited(base_pose[:3, 3].to(self.map_2d_device))
+            else:
+                # Fallback: use camera position when base not available
+                self._update_visited(camera_pose[:3, 3].to(self.map_2d_device))
 
         # Increment sequence counter
         self._seq += 1
@@ -717,6 +696,7 @@ class SparseVoxelMap:
         rgb: Tensor,
         camera_K: Optional[Tensor]=None,
         depth: Optional[Tensor]=None,
+        valid_depth: Optional[torch.Tensor]=None,
         weights: Optional[torch.Tensor]=None,
         feats: Optional[Tensor]=None,
         return_feats: bool=False,
@@ -726,45 +706,31 @@ class SparseVoxelMap:
         Add pixel points into the semantic memory
         """
         # Adding all points to voxelizedPointCloud is useless and expensive, we should exclude threshold of all points
+        # Assume depth/rgb/camera_K are already resized and scaled in process_rgbd_images
+       
+        self.semantic_memory.clear_points(
+            depth=depth, 
+            intrinsics=camera_K, 
+            camera_pose=camera_pose, 
+            min_samples_clear=10
+        )
+       
         rgb = rgb.permute(2, 0, 1).to(torch.uint8)
-        
-        if self.image_shape is not None:
-            h, w = self.image_shape
-            h_image, w_image = depth.shape
-            depth = F.interpolate(
-                depth.unsqueeze(0).unsqueeze(0),
-                size=self.image_shape,
-                mode="nearest",  # bilinear causes noise points to appear between the camera and obstacles.
-                # align_corners=False,
-            ).squeeze()
-            if rgb.ndim == 3:
-                rgb = rgb.unsqueeze(0)
-            rgb = F.interpolate(  # NCHW
-                rgb, 
-                size=self.image_shape, 
-                mode="bilinear", 
-                align_corners=False
-            ).squeeze()  # rgb.shape is [3, H, W]
-
-            camera_K = np.copy(camera_K)
-            camera_K[0, 0] *= w / w_image
-            camera_K[1, 1] *= h / h_image
-            camera_K[0, 2] *= w / w_image
-            camera_K[1, 2] *= h / h_image
-        
         height, width = depth.squeeze().shape
         camera = Camera.from_K(np.array(camera_K), width=width, height=height)
         camera_xyz = camera.depth_to_xyz(np.array(depth))
         world_xyz = torch.Tensor(camera_xyz_to_global_xyz(camera_xyz, np.array(camera_pose)))
-
-        median_depth = torch.from_numpy(median_filter(depth, size=5))
-        median_filter_error = (depth - median_depth).abs()
-        valid_depth = torch.logical_and(depth < self.max_depth, depth > self.min_depth)
-        valid_depth = valid_depth & (median_filter_error < 0.01).bool()
-
-        self.semantic_memory.clear_points(
-            depth=depth, intrinsics=camera_K, pose=camera_pose, min_samples_clear=10
-        )
+        
+        # valid_depth is expected to be precomputed in process_rgbd_images; fallback if not provided
+        if valid_depth is None:
+            if depth is not None and self.use_median_filter:
+                median_depth = torch.from_numpy(median_filter(depth, size=self.median_filter_size))
+                median_filter_error = (depth - median_depth).abs()
+            else:
+                median_filter_error = torch.zeros_like(depth)
+            valid_depth = torch.logical_and(depth < self.max_depth, depth > self.min_depth)
+            if self.use_median_filter:
+                valid_depth = valid_depth & (median_filter_error < 0.01).bool()
 
         if feats is None:
             with torch.no_grad():
@@ -788,13 +754,15 @@ class SparseVoxelMap:
             if weights is not None:
                 weights = weights[selected_indices]
 
-            valid_xyz = valid_xyz.to(self.device)
-            if features is not None:
+            if valid_xyz is not None and len(valid_xyz) != 0:
+                valid_xyz = valid_xyz.to(self.device)
+            if features is not None and len(features) != 0:
                 features = features.to(self.device)
-            if valid_rgb is not None:
+            if valid_rgb is not None and len(valid_rgb) != 0:
                 valid_rgb = valid_rgb.to(self.device)
-            if weights is not None:
+            if weights is not None and len(weights) != 0:
                 weights = weights.to(self.device)
+
             self.semantic_memory.add(
                 points=valid_xyz,
                 features=features,

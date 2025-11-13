@@ -417,7 +417,7 @@ class RerunVisualizer:
         
         rb_arrow = rr.Arrows3D(
             origins=[0, 0, 0],
-            vectors=[0.6, 0, 0],
+            vectors=[0.8, 0, 0],
             radii=0.02,
             labels="robot",
             colors=[255, 0, 0, 255],

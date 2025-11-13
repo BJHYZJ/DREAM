@@ -310,15 +310,15 @@ class VoxelizedPointcloud:
         self, 
         depth: torch.Tensor, 
         intrinsics: torch.Tensor, 
-        pose: torch.Tensor,
+        camera_pose: torch.Tensor,  # camera in map pose
         min_samples_clear=None,
         depth_in_view_max_distance: float=2.5,
         depth_in_view_min_distance: float=0.01
     ):
-        if self._points is not None:
-            xys = project_points(self._points.detach().cpu(), intrinsics, pose).int()
+        if self._points is not None and len(self._points) != 0:
+            xys = project_points(self._points.detach().cpu(), intrinsics, camera_pose).int()
             xys = xys[:, [1, 0]]
-            proj_depth = get_depth_values(self._points.detach().cpu(), pose)
+            proj_depth = get_depth_values(self._points.detach().cpu(), camera_pose)
             H, W = depth.shape
 
             in_view = (
@@ -387,18 +387,18 @@ class VoxelizedPointcloud:
     def clear_points_in_view(
         self, 
         intrinsics: torch.Tensor, 
-        pose: torch.Tensor,
-        iamge_shape: Tuple[int, int],
+        camera_pose: torch.Tensor,
+        image_shape: Tuple[int, int],
         min_samples_clear=None,
         depth_in_view_max_distance: float=2.5,
         depth_in_view_min_distance: float=0.01
     ):
-        """Remove all map points that would be visible from the given pose/intrinsics."""
-        if self._points is not None:
-            xys = project_points(self._points.detach().cpu(), intrinsics, pose).int()
+        """Remove all map points that would be visible from the given camera_pose/intrinsics."""
+        if self._points is not None and len(self._points) != 0:
+            xys = project_points(self._points.detach().cpu(), intrinsics, camera_pose).int()
             xys = xys[:, [1, 0]]
-            proj_depth = get_depth_values(self._points.detach().cpu(), pose)
-            H, W = iamge_shape
+            proj_depth = get_depth_values(self._points.detach().cpu(), camera_pose)
+            H, W = image_shape
 
             in_view = (
                 (xys[:, 0] >= 0)
@@ -409,7 +409,7 @@ class VoxelizedPointcloud:
                 & (proj_depth < depth_in_view_max_distance)
             )
 
-            if in_view.any():
+            if not in_view.any():
                 return
 
             keep_mask = torch.ones(len(self._points), dtype=torch.bool)
