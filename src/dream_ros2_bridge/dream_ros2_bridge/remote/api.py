@@ -404,94 +404,6 @@ class DreamClient(AbstractRobotClient):
         """
         return self.nav.base_to(xyt, relative=relative, blocking=blocking)
 
-    # def get_full_observation(
-    #     self,
-    #     start_pose: Optional[np.ndarray] = None,
-    # ) -> RtabmapData:
-        
-    #     rtabmap_data = self._ros_client.get_rtabmapdata()
-    #     if rtabmap_data is None:
-    #         return None
-        
-    #     timestamp = rtabmap_data.header.stamp.sec + rtabmap_data.header.stamp.nanosec / 1e9
-    #     last_timestamp = getattr(self, 'last_rtabmap_timestamp', None)
-    #     if last_timestamp is not None and timestamp <= last_timestamp:
-    #         # print("rtabmap data timestamp is not updated, Skipping...")
-    #         return
-
-    #     self.last_rtabmap_timestamp = timestamp
-        
-    #     nid = rtabmap_data.nodes[0].id
-    #     is_history_node = False
-    #     # ensure self._last_node_id don not update when nid <= self._last_node_id
-    #     if getattr(self, '_last_node_id', None) is not None and nid <= self._last_node_id:
-    #         print("[warning] 🛑 received history node")
-    #         is_history_node = True
-    #     else:
-    #         self._last_node_id = nid
-
-
-    #     node = rtabmap_data.nodes[0]
-    #     node_id = node.id
-
-    #     rgb = node.data.left_compressed
-    #     depth = node.data.right_compressed
-    #     laser = node.data.laser_scan_compressed
-    #     if rgb is None or len(rgb) == 0:
-    #         print("get_full_observation: rgb is None or len(rgb) == 0")
-    #     if depth is None or len(depth) == 0:
-    #         print("get_full_observation: depth is None or len(depth) == 0")
-    #     if laser is None or len(laser) == 0:
-    #         print("get_full_observation: laser is None or len(laser) == 0")
-        
-    #     if (rgb is None or len(rgb) == 0) or (depth is None or len(depth) == 0) or (laser is None or len(laser) == 0):
-    #         print("=" * 32)
-
-    #     pose_graph_now = {nid: pose_to_sophus(p) for nid, p in zip(rtabmap_data.graph.poses_id, rtabmap_data.graph.poses)}
-
-    #     # Thread-safe update of pose graph
-    #     self._ros_client.update_pose_graph(pose_graph_now)
-    #     pose_graph = self._ros_client.get_pose_graph()
-        
-    #     local_tf = transform_to_sophus(node.data.local_transform[0])
-    #     self._ros_client.update_local_tf_graph(node_id, local_tf)
-    #     local_tf_graph = self._ros_client.get_local_tf_graph()
-
-    #     current_pose = pose_graph[node_id]
-
-    #     assert len(node.data.left_camera_info) > 0
-    #     left_ci = camera_info_to_dict(node.data.left_camera_info[0])
-    #     # right_ci = camera_info_to_dict(node.data.right_camera_info[0]) if len(node.data.right_camera_info) > 0 else None
-    #     camera_K = np.array(left_ci['K']).reshape(3, 3)
-
-    #     if start_pose is not None:
-    #         # use sophus to get the relative translation
-    #         relative_pose = start_pose.inverse() * current_pose
-    #     else:
-    #         relative_pose = current_pose
-    #     euler_angles = relative_pose.so3().log()
-
-    #     compass = np.array([euler_angles[-1]])
-    #     # GPS in robot coordinates
-    #     gps = relative_pose.translation()[:2]
-
-    #     full_observation = RtabmapData(
-    #         timestamp=timestamp,
-    #         compass=compass,
-    #         gps=gps,
-    #         node_id=node_id,
-    #         is_history_node=is_history_node,
-    #         rgb_compressed=rgb,
-    #         depth_compressed=depth,
-    #         # laser_compressed=laser,
-    #         camera_K=camera_K,
-    #         pose_graph=pose_graph,
-    #         local_tf_graph=local_tf_graph,
-    #         base_in_map_pose=current_pose.matrix(),
-    #         camera_in_map_pose=current_pose.matrix() @ local_tf.matrix(),
-    #     )
-    #     return full_observation
-
     def get_full_observation(
         self,
         start_pose: Optional[np.ndarray] = None,
@@ -506,18 +418,23 @@ class DreamClient(AbstractRobotClient):
             + rtabmap_data.header.stamp.nanosec / 1e9
         )
 
-        current_node = rtabmap_data.nodes[0]
-        current_node_id = current_node.id
+        node = rtabmap_data.nodes[0]
+        graph = rtabmap_data.graph
+        node_id = node.id
 
         # Always use the latest pose graph
+        # note that the latest node in the pose graph cannot be included in this judgment, 
+        # as it may only be an intermediate node.
+        assert max(graph.poses_id) == graph.poses_id[-1]
         pose_graph = {
             nid: pose_to_sophus(pose)
             for nid, pose in zip(
-                rtabmap_data.graph.poses_id, rtabmap_data.graph.poses
+                graph.poses_id, graph.poses
             )
         }
 
-        if self._last_node_id is not None and current_node_id <= self._last_node_id:
+        # if history node, don't need to delete pose_graph[node_id], cause it pose is new
+        if self._last_node_id is not None and node_id <= self._last_node_id:
             print("[warning] 🛑 received history node")
             return RtabmapData(
                 timestamp=timestamp,
@@ -525,89 +442,160 @@ class DreamClient(AbstractRobotClient):
                 just_pose_graph=True,
             )
         else:
-            self._last_node_id = current_node_id
+            self._last_node_id = node_id
 
-        assert len(rtabmap_data.nodes) == 1, "nodes has more than one node not happend!"
+        current_pose = pose_graph[node_id]
+        del pose_graph[node_id]
+        rgb = node.data.left_compressed
+        depth = node.data.right_compressed
+        
+        local_tf = transform_to_sophus(node.data.local_transform[0])
+        left_ci = camera_info_to_dict(node.data.left_camera_info[0])
+        camera_K = np.array(left_ci['K']).reshape(3, 3)
 
-        # ================ send the latest node added to the pose graph. ================
-        pose_ids = set(rtabmap_data.graph.poses_id)
-        pose_ids.discard(current_node_id)
-        new_pose_ids = set()
+        
+        if start_pose is not None:
+            # use sophus to get the relative translation
+            relative_pose = start_pose.inverse() * current_pose
+        else:
+            relative_pose = current_pose
+        euler_angles = relative_pose.so3().log()
 
-        if self._last_poses_id is not None:
-            new_pose_ids = pose_ids - self._last_poses_id
-        self._last_poses_id = pose_ids
-
-        if new_pose_ids:
-            # Only send the latest node added to the pose graph.
-            newest_pose_id = max(new_pose_ids)  # 
-            diff = current_node_id - newest_pose_id
-            max_uploaded_id = max(self._uploaded_ids) if self._uploaded_ids else None
-            is_newer_than_uploaded = (
-                max_uploaded_id is None or newest_pose_id > max_uploaded_id
-            )
-            if newest_pose_id not in self._uploaded_ids and is_newer_than_uploaded:
-                print(
-                    f"now node id is {current_node_id}, added id: {new_pose_ids}, "
-                    f"newest: {newest_pose_id}, diff: {diff}"
-                )
-                node_data_list = self._ros_client.get_node_data(
-                    node_ids=[newest_pose_id],
-                )
-                self._uploaded_ids.add(newest_pose_id)
-
-                if node_data_list:
-                    latest_node = node_data_list[0]
-                    latest_node_id = latest_node.id
-                    rgb = latest_node.data.left_compressed or None
-                    depth = latest_node.data.right_compressed or None
-                    
-                    if rgb is None or len(rgb) == 0:
-                        print("get_full_observation: rgb is None or len(rgb) == 0")
-                    if depth is None or len(depth) == 0:
-                        print("get_full_observation: depth is None or len(depth) == 0")
-
-                    local_tf = transform_to_sophus(
-                        latest_node.data.local_transform[0]
-                    )
-                    assert len(latest_node.data.left_camera_info) > 0
-                    left_ci = camera_info_to_dict(
-                        latest_node.data.left_camera_info[0]
-                    )
-                    camera_K = np.array(left_ci["K"]).reshape(3, 3)
-
-
-                    current_pose = pose_graph[latest_node_id]
-
-                    if start_pose is not None:
-                        # use sophus to get the relative translation
-                        relative_pose = start_pose.inverse() * current_pose
-                    else:
-                        relative_pose = current_pose
-
-                    euler_angles = relative_pose.so3().log()
-                    compass = np.array([euler_angles[-1]])
-                    gps = relative_pose.translation()[:2]  # GPS in robot coordinates
-
-                    return RtabmapData(
-                        timestamp=timestamp,
-                        compass=compass,
-                        gps=gps,
-                        node_id=latest_node_id,
-                        just_pose_graph=False,
-                        rgb_compressed=rgb,
-                        depth_compressed=depth,
-                        camera_K=camera_K,
-                        pose_graph=pose_graph,
-                        base_in_map_pose=current_pose.matrix(),
-                        camera_in_base_pose=local_tf.matrix(),
-                    )
+        compass = np.array([euler_angles[-1]])
+        # GPS in robot coordinates
+        gps = relative_pose.translation()[:2]
 
         return RtabmapData(
             timestamp=timestamp,
+            compass=compass,
+            gps=gps,
+            node_id=node_id,
+            just_pose_graph=False,
+            rgb_compressed=rgb,
+            depth_compressed=depth,
+            camera_K=camera_K,
             pose_graph=pose_graph,
-            just_pose_graph=True,
+            base_in_map_pose=current_pose.matrix(),
+            camera_in_base_pose=local_tf.matrix(),
         )
+
+
+    # def get_full_observation(
+    #     self,
+    #     start_pose: Optional[np.ndarray] = None,
+    # ) -> RtabmapData:
+        
+    #     rtabmap_data = self._ros_client.get_rtabmapdata()
+    #     if rtabmap_data is None:
+    #         return None
+        
+    #     timestamp = (
+    #         rtabmap_data.header.stamp.sec
+    #         + rtabmap_data.header.stamp.nanosec / 1e9
+    #     )
+
+    #     current_node = rtabmap_data.nodes[0]
+    #     current_node_id = current_node.id
+
+    #     # Always use the latest pose graph
+    #     pose_graph = {
+    #         nid: pose_to_sophus(pose)
+    #         for nid, pose in zip(
+    #             rtabmap_data.graph.poses_id, rtabmap_data.graph.poses
+    #         )
+    #     }
+
+    #     if self._last_node_id is not None and current_node_id <= self._last_node_id:
+    #         print("[warning] 🛑 received history node")
+    #         return RtabmapData(
+    #             timestamp=timestamp,
+    #             pose_graph=pose_graph,
+    #             just_pose_graph=True,
+    #         )
+    #     else:
+    #         self._last_node_id = current_node_id
+
+    #     assert len(rtabmap_data.nodes) == 1, "nodes has more than one node not happend!"
+
+    #     # ================ send the latest node added to the pose graph. ================
+    #     pose_ids = set(rtabmap_data.graph.poses_id)
+    #     pose_ids.discard(current_node_id)
+    #     new_pose_ids = set()
+
+    #     if self._last_poses_id is not None:
+    #         new_pose_ids = pose_ids - self._last_poses_id
+    #     self._last_poses_id = pose_ids
+
+    #     if new_pose_ids:
+    #         # Only send the latest node added to the pose graph.
+    #         newest_pose_id = max(new_pose_ids)  # 
+    #         diff = current_node_id - newest_pose_id
+    #         max_uploaded_id = max(self._uploaded_ids) if self._uploaded_ids else None
+    #         is_newer_than_uploaded = (
+    #             max_uploaded_id is None or newest_pose_id > max_uploaded_id
+    #         )
+    #         if newest_pose_id not in self._uploaded_ids and is_newer_than_uploaded:
+    #             print(
+    #                 f"now node id is {current_node_id}, added id: {new_pose_ids}, "
+    #                 f"newest: {newest_pose_id}, diff: {diff}"
+    #             )
+    #             node_data_list = self._ros_client.get_node_data(
+    #                 node_ids=[newest_pose_id],
+    #             )
+    #             self._uploaded_ids.add(newest_pose_id)
+
+    #             if node_data_list:
+    #                 latest_node = node_data_list[0]
+    #                 latest_node_id = latest_node.id
+    #                 rgb = latest_node.data.left_compressed or None
+    #                 depth = latest_node.data.right_compressed or None
+                    
+    #                 if rgb is None or len(rgb) == 0:
+    #                     print("get_full_observation: rgb is None or len(rgb) == 0")
+    #                 if depth is None or len(depth) == 0:
+    #                     print("get_full_observation: depth is None or len(depth) == 0")
+
+    #                 local_tf = transform_to_sophus(
+    #                     latest_node.data.local_transform[0]
+    #                 )
+    #                 assert len(latest_node.data.left_camera_info) > 0
+    #                 left_ci = camera_info_to_dict(
+    #                     latest_node.data.left_camera_info[0]
+    #                 )
+    #                 camera_K = np.array(left_ci["K"]).reshape(3, 3)
+
+
+    #                 current_pose = pose_graph[latest_node_id]
+
+    #                 if start_pose is not None:
+    #                     # use sophus to get the relative translation
+    #                     relative_pose = start_pose.inverse() * current_pose
+    #                 else:
+    #                     relative_pose = current_pose
+
+    #                 euler_angles = relative_pose.so3().log()
+    #                 compass = np.array([euler_angles[-1]])
+    #                 gps = relative_pose.translation()[:2]  # GPS in robot coordinates
+
+    #                 return RtabmapData(
+    #                     timestamp=timestamp,
+    #                     compass=compass,
+    #                     gps=gps,
+    #                     node_id=latest_node_id,
+    #                     just_pose_graph=False,
+    #                     rgb_compressed=rgb,
+    #                     depth_compressed=depth,
+    #                     camera_K=camera_K,
+    #                     pose_graph=pose_graph,
+    #                     base_in_map_pose=current_pose.matrix(),
+    #                     camera_in_base_pose=local_tf.matrix(),
+    #                 )
+
+    #     return RtabmapData(
+    #         timestamp=timestamp,
+    #         pose_graph=pose_graph,
+    #         just_pose_graph=True,
+    #     )
 
 
     def get_state_observation(
