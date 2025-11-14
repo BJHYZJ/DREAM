@@ -651,20 +651,19 @@ class DreamClient(AbstractRobotClient):
 
     def get_servo_observation(self) -> ServoObservations:
         images = self.cam.get_images(compute_xyz=False)
+        camera_in_arm_base_pose = self.get_camera_in_arm_base_pose()
         # ee_in_map_pose = self.get_ee_in_map_pose()
         # camera_in_map_pose = self.get_camera_in_map_pose()
 
-        # if images is None or ee_in_map_pose is None or camera_in_map_pose is None:
-        #     print("get_servo_observation: images is None or ee_in_map_pose is None or camera_in_map_pose is None")
-        #     return None
+        if images is None or camera_in_arm_base_pose is None:
+            return None
 
         rgb, depth = images[0], images[1]
         
         return ServoObservations(
             rgb=rgb,
             depth=depth,
-            # ee_in_map_pose=ee_in_map_pose,
-            # camera_in_map_pose=camera_in_map_pose,
+            camera_in_arm_base_pose=camera_in_arm_base_pose.matrix(),
         )
 
 

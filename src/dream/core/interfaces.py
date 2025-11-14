@@ -304,6 +304,7 @@ class ServoObservations(BaseObservations):
     """Servo observations for visual servoing."""
     rgb: np.ndarray
     depth: np.ndarray
+    camera_in_arm_base_pose: Optional[np.ndarray] = None
     xyz: Optional[np.ndarray] = None
     camera_K: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
@@ -360,4 +361,5 @@ class Observations(BaseObservations):
     at_goal: Optional[bool] = None
     # task_observations: Optional[Dict[str, Any]] = None
     seq_id: int = -1
+    is_pose_graph_node: Optional[bool] = False
     is_simulation: Optional[bool] = False
