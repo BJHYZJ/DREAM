@@ -138,7 +138,8 @@ class ZmqServer(BaseZmqServer):
 
     def get_servo_message(self) -> Dict[str, Any]:
         obs = self.client.get_servo_observation()
-        if obs is None:
+        camera_in_arm_base_pose = self.client.get_camera_in_arm_base_pose()
+        if obs is None or camera_in_arm_base_pose is None:
             return None
         color_image, depth_image = self._rescale_color_and_depth(
             obs.rgb, obs.depth, self.image_scaling
@@ -150,6 +151,7 @@ class ZmqServer(BaseZmqServer):
         message = {
             "rgb": compressed_color_image,
             "depth": compressed_depth_image,
+            "camera_in_arm_base_pose": camera_in_arm_base_pose.matrix(),
             "camera_K": scale_camera_matrix(
                 self.client.rgb_cam.get_K(), self.image_scaling
             ),
