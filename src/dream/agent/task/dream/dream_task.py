@@ -110,7 +110,7 @@ class DreamTaskExecutor:
         if point is None:
             logger.error("Navigation Failure: Could not find the object {}".format(target_object))
             return None
-        cv2.imwrite(self.agent.voxel_map.log + "/" + target_object + ".jpg", self.robot.get_observation().rgb[:, :, [2, 1, 0]])
+        cv2.imwrite(self.agent.voxel_map.log + "/" + target_object + ".jpg", self.robot.get_observation(wait_for_new=True).rgb[:, :, [2, 1, 0]])
         # self.robot.switch_to_navigation_mode()
         # xyt = self.robot.get_base_in_map_xyt()
         # xyt[2] = xyt[2] + np.pi / 2

@@ -201,7 +201,7 @@ class RerunVisualizer:
         server_memory_limit: str = "4GB",
         collapse_panels: bool = True,
         show_cameras_in_3d_view: bool = False,
-        show_camera_point_clouds: bool = True,
+        show_camera_point_clouds: bool = False,
         output_path=None,
         footprint: Footprint=None
     ):
@@ -392,8 +392,8 @@ class RerunVisualizer:
                     colors=np.uint8(rgb),
                 ),
             )
-        else:
-            log_to_rerun("world/camera/depth", rr.depthimage(obs.depth))
+        # else:
+        #     log_to_rerun("world/camera/depth", rr.DepthImage(obs.depth))
 
         if self.show_cameras_in_3d_view:
             rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
@@ -561,7 +561,7 @@ class RerunVisualizer:
         rr.set_time("realtime", timestamp=time.time())
 
         t0 = timeit.default_timer()
-        points, _, _, rgb = space.voxel_map.voxel_pointcloud.get_pointcloud()
+        points, _, _, rgb = space.voxel_map.semantic_memory.get_pointcloud()
         if rgb is None:
             return
 

@@ -144,7 +144,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
         # Variables we set here should not change
         self._iter = -1  # Tracks number of actions set, never reset this
-        self._seq_id = 0  # Number of messages we received
+
         self._started = False
 
         # Resend all actions immediately - helps if we are losing packets or something?
@@ -659,11 +659,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
         self._state_thread = None
         self._finish = False
         self._last_step = -1  # just update by state
-        # ensure obs and pose graph is newest
-        self._obs_seq = -1
-        self._delivered_obs_seq = -1
-        self._pose_graph_seq = -1
-        self._delivered_pose_graph_seq = -1
+        # ensure obs and pose graph is newest (legacy seq)
+        # Local versions based on content changes
+        self._obs_version = -1
+        self._delivered_obs_version = -1
+        self._pose_graph_version = -1
+        self._delivered_pose_graph_version = -1
 
     def open_gripper(
         self,
@@ -915,24 +916,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """Return the most recent command step we expect the robot to have executed."""
         return max(self._iter - 1, -1)
 
-    def is_up_to_date(self, no_action=False):
-        """Check if the robot is up to date with the latest observation.
-
-        Args:
-            no_action (bool): when True we only require that an observation exists; when False
-                we also ensure the observation has caught up to the latest commanded step.
-        """
-        with self._obs_lock:
-            obs_step = None if self._obs is None else self._obs.step
-
-        if obs_step is None:
-            return False
-
-        if no_action:
-            return True
-
-        return obs_step >= self._latest_command_step()
-
     def is_state_up_to_date(self, min_step: Optional[int] = None) -> bool:
         """Check if the low-level state stream has caught up to a requested step."""
         with self._state_lock:
@@ -1164,9 +1147,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
             if output is None:
                 continue
 
-            self._seq_id += 1
-            output["seq_id"] = self._seq_id
-
             # For history nodes that do not have RGB values, both depth and RGB values ​​should be set to None / np.array(B).
             if not output["just_pose_graph"]:
                 output["camera_in_map_pose"] = output["base_in_map_pose"] @ output["camera_in_base_pose"]
@@ -1269,9 +1249,9 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """
         servo_obs = self.get_servo_observation()
         if compute_xyz:
-            return servo_obs.rgb, servo_obs.depth, servo_obs.xyz
+            return servo_obs.rgb, servo_obs.depth, servo_obs.camera_in_arm_base_pose, servo_obs.xyz
         else:
-            return servo_obs.rgb, servo_obs.depth       
+            return servo_obs.rgb, servo_obs.depth, servo_obs.camera_in_arm_base_pose      
 
     def get_servo_camera_K(self):
         """Get the camera intrinsics.
@@ -1283,31 +1263,29 @@ class DreamRobotZmqClient(AbstractRobotClient):
         return servo_obs.camera_K
 
 
-    def get_observation(self, max_iter: int = 5, *, wait_for_new: bool = False):
+    # def get_observation(self, wait_for_new: bool=False):
+    def get_observation(self):
         """Get the current observation. This uses the FULL observation track. Expected to be syncd with RGBD.
 
         Args:
-            max_iter: Deprecated; retained for backwards compatibility.
             wait_for_new: if True, block until an observation arrives that has not been delivered yet.
         """
         while True:
-            while not self.is_up_to_date(no_action=True):
-                time.sleep(0.1)
-
             with self._obs_lock:
-                if self._obs is None:
-                    continue
-                if not wait_for_new:
+                if self._obs is not None:
+                    # if not wait_for_new:
                     return self._obs
-                if (
-                    self._obs_seq is not None
-                    and self._obs_seq > self._delivered_obs_seq
-                ):
-                    self._delivered_obs_seq = self._obs_seq
-                    return self._obs
+                    # # use local content-based versioning
+                    # if (
+                    #     self._obs_version is not None
+                    #     and self._obs_version != self._delivered_obs_version
+                    # ):
+                    #     self._delivered_obs_version = self._obs_version
+                    #     return self._obs
             time.sleep(0.05)
 
-    def get_pose_graph(self, *, wait_for_new: bool = False) -> np.ndarray:
+    # def get_pose_graph(self, *, wait_for_new: bool = False) -> np.ndarray:
+    def get_pose_graph(self) -> np.ndarray:
         """Get the robot's SLAM pose graph.
 
         Args:
@@ -1316,32 +1294,31 @@ class DreamRobotZmqClient(AbstractRobotClient):
         while True:
             with self._obs_lock:
                 if self._pose_graph is not None:
-                    if not wait_for_new:
-                        return self._pose_graph
-                    if (
-                        self._pose_graph_seq is not None
-                        and self._pose_graph_seq > self._delivered_pose_graph_seq
-                    ):
-                        self._delivered_pose_graph_seq = self._pose_graph_seq
-                        return self._pose_graph
+                    # if not wait_for_new:
+                    return self._pose_graph
+                    # # use local content-based versioning
+                    # if (
+                    #     self._pose_graph_version is not None
+                    #     and self._pose_graph_version != self._delivered_pose_graph_version
+                    # ):
+                    #     self._delivered_pose_graph_version = self._pose_graph_version
+                    #     return self._pose_graph
             time.sleep(0.05)
 
     def _update_obs(self, obs: dict):
         """Update observation internally with lock"""
         with self._obs_lock:
             self._obs = Observations.from_dict(obs)
-            self._obs_seq = self._obs_seq + 1 if self._obs_seq is not None else 0
+            self._obs_version = self._obs_version + 1 if self._obs_version is not None else 0
 
     def _update_pose_graph(self, obs):
         """Update internal pose graph"""
         with self._obs_lock:
-            if "pose_graph" in obs:
-                self._pose_graph = obs["pose_graph"]
-                seq_id = obs.get("seq_id")
-                if seq_id is None:
-                    self._pose_graph_seq = self._pose_graph_seq + 1 if self._pose_graph_seq is not None else 0
-                else:
-                    self._pose_graph_seq = seq_id
+            self._pose_graph = {
+                "timestamp": obs["timestamp"],
+                "pose_graph": obs["pose_graph"],
+            }
+            self._pose_graph_version = self._pose_graph_version + 1 if self._pose_graph_version is not None else 0
 
     def _update_state(self, state: dict) -> None:
         """Update state internally with lock. This is expected to be much more responsive than using full observations, which should be reserved for higher level control.

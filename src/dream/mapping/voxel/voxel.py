@@ -16,7 +16,7 @@ import skimage
 import warnings
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Literal
 from threading import Lock
 
 import copy
@@ -25,8 +25,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import open3d as o3d
+import zstandard as zstd
 from PIL import Image
 from scipy.ndimage import maximum_filter, median_filter
+from sklearn.decomposition import PCA
 from torch import Tensor
 from dataclasses import dataclass
 
@@ -51,37 +53,28 @@ class Frame:
     camera_K: Any
     rgb: Any
     depth: Any
-    feats: Any
-    node_id: Any
-    instance: Any
-    instance_classes: Any
-    instance_scores: Any
+    valid_depth: Any
+    obs_id: Any
     base_pose: Any
-    info: Any
+    feats: Any
+    is_pose_graph_node: bool=False
+    info: Any = None
 
 logger = logging.getLogger(__name__)
 
-
 class SparseVoxelMap:
 
-    DEFAULT_INSTANCE_MAP_KWARGS = dict(
-        du_scale=1,
-        instance_association="bbox_iou",
-        log_dir_overwrite_ok=True,
-        mask_cropped_instances="False",
-    )
     debug_valid_depth: bool = False
     debug_instance_memory_processing_time: bool = False
 
     def __init__(
         self,
-        resolution: float = 0.01,
-        semantic_memory_resolution: float = 0.05,
+        voxel_resolution: float = 0.01,
         feature_dim: int = 3,
         grid_size: Tuple[int, int] = None,
         grid_resolution: float = 0.05,
-        obs_min_height: float = 0.1,
-        obs_max_height: float = 1.8,
+        obs_min_height: float = -0.1,
+        obs_max_height: float = 1.5,
         obs_min_density: float = 10,
         smooth_kernel_size: int = 2,
         neg_obs_height: float = 0.0,
@@ -92,12 +85,10 @@ class SparseVoxelMap:
         max_depth: float = 2.5,
         pad_obstacles: int = 0,
         background_instance_label: int = -1,
-        instance_memory_kwargs: Dict[str, Any] = {},
         voxel_kwargs: Dict[str, Any] = {},
         encoder=None,
         map_2d_device: str = "cpu",
         device: Optional[str] = None,
-        use_instance_memory: bool = False,
         use_median_filter: bool = False,
         median_filter_size: int = 5,
         median_filter_max_error: float = 0.01,
@@ -110,6 +101,7 @@ class SparseVoxelMap:
         point_update_threshold: float = 0.9,
         detection=None,
         image_shape=(480, 360),
+        compression_features: bool=False,  # save memroy, but slowly
         log="test",
         mllm=False,
     ):
@@ -149,16 +141,12 @@ class SparseVoxelMap:
         self.derivative_filter_threshold = derivative_filter_threshold
 
         self.grid_resolution = grid_resolution
-        self.voxel_resolution = resolution
+        self.voxel_resolution = voxel_resolution
         self.min_depth = min_depth
         self.max_depth = max_depth
         self.pad_obstacles = int(pad_obstacles)
         self.background_instance_label = background_instance_label
 
-        self.instance_memory_kwargs = update(
-            copy.deepcopy(self.DEFAULT_INSTANCE_MAP_KWARGS), instance_memory_kwargs
-        )
-        self.use_instance_memory = use_instance_memory
         self.voxel_kwargs = voxel_kwargs
         self.encoder = encoder
         self.map_2d_device = map_2d_device
@@ -199,42 +187,32 @@ class SparseVoxelMap:
             create_disk(self._disk_size, (2 * self._disk_size) + 1)
         ).to(map_2d_device)
 
-        self.grid = GridParams(grid_size=grid_size, resolution=resolution, device=map_2d_device)
+        self.grid = GridParams(grid_size=grid_size, resolution=self.grid_resolution, device=map_2d_device)
         self.grid_size = self.grid.grid_size
         self.grid_origin = self.grid.grid_origin
-        self.resolution = self.grid.resolution
 
         self.point_update_threshold = point_update_threshold
         self._history_soft: Optional[Tensor] = None
 
-        # voxelized pointcloud with semantic for localize target object
+        # voxelized pointcloud with semantic for localize target object and path planning
         self.semantic_memory = VoxelizedPointcloud(
-            voxel_size=semantic_memory_resolution
-        ).to(self.device)
-
-        # voxelized pointcloud for path planning
-        self.voxel_pointcloud = VoxelizedPointcloud(
             voxel_size=self.voxel_resolution,
             dim_mins=None,
             dim_maxs=None,
             feature_pool_method="mean",
             **self.voxel_kwargs,
-        )
+        ).to(self.device)
 
         # Clear out the entire voxel map.
-        self.observations: List[Frame] = []
-        # Create an instance memory to associate bounding boxes in space
-        if self.use_instance_memory:
-            self.instances = InstanceMemory(
-                num_envs=1,
-                encoder=self.encoder,
-                **self.instance_memory_kwargs,
-            )
-        else:
-            self.instances = None
+        self.observations: dict[int, Frame] = dict()
 
         self.image_shape = image_shape
-        self.obs_count = 0
+        self.compression_features = compression_features
+        if self.compression_features:
+            self._zstd_level = 3
+            self._zstd_compressor = zstd.ZstdCompressor(level=self._zstd_level)
+            self._zstd_decompressor = zstd.ZstdDecompressor()
+
         self.detection_model = detection
         self.log = log
         self._seq = 0
@@ -256,11 +234,6 @@ class SparseVoxelMap:
         # Stores points in 2d coords where robot has been
         self._visited = torch.zeros(self.grid_size, device=self.map_2d_device)
 
-        # Store instances detected (all of them for now)
-        if self.use_instance_memory:
-            self.instances.reset()
-
-        self.voxel_pointcloud.reset()
         self.semantic_memory.reset()
 
         # Store 2d map information
@@ -331,11 +304,11 @@ class SparseVoxelMap:
 
         # Convert metric measurements to discrete
         # Gets the xyz correctly - for now everything is assumed to be within the correct distance of origin
-        xyz, _, counts, _ = self.voxel_pointcloud.get_pointcloud()
+        xyz, _, counts, _ = self.semantic_memory.get_pointcloud()
         # print(counts)
         # if xyz is not None:
         #     counts = torch.ones(xyz.shape[0])
-        obs_ids = self.voxel_pointcloud._obs_counts
+        obs_ids = self.semantic_memory._obs_counts
         if xyz is None:
             xyz = torch.zeros((0, 3))
             counts = torch.zeros((0))
@@ -487,7 +460,6 @@ class SparseVoxelMap:
         if xyz is None:
             xyz = torch.zeros((0, 3))
 
-        device = xyz.device
         xyz = ((xyz / self.grid_resolution) + self.grid_origin).long()
         xyz[xyz[:, -1] < 0, -1] = 0
 
@@ -509,6 +481,77 @@ class SparseVoxelMap:
         )
         return alignment_heuristics
 
+
+    def feature_compression(
+        self,
+        feature: Optional[torch.Tensor],
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Compress an HWC feature map already on CPU using symmetric int8 quantization + zstd.
+        """
+        if feature is None:
+            return None
+        if not torch.is_tensor(feature):
+            feature = torch.as_tensor(feature)
+        x = feature.detach().to(torch.float32)
+        if x.ndim != 3:
+            raise ValueError("feature_compression expects an HWC tensor")
+
+        chw = x.permute(2, 0, 1).contiguous()
+        chw = torch.clamp(chw, -1.0, 1.0)
+        quant_scale = 1.0 / 127.0
+        q = torch.clamp((chw / quant_scale).round(), -127, 127).to(torch.int8)
+        if q.device.type != "cpu":
+            q = q.cpu()
+        payload = self._zstd_compressor.compress(q.numpy().tobytes())
+
+        return {
+            "data": payload,
+            "shape": tuple(q.shape),
+            "layout": "chw",
+            "scale": quant_scale,
+            "codec": "zstd",
+        }
+
+    def feature_decompression(
+        self,
+        package: Any,
+        dtype: torch.dtype = torch.float32,
+        device: Optional[Union[str, torch.device]] = None,
+    ) -> Optional[torch.Tensor]:
+        """
+        Decompress feature package produced by feature_compression.
+        """
+        if package is None:
+            return None
+
+        if torch.is_tensor(package):
+            out = package
+        elif isinstance(package, dict) and package.get("layout") == "chw":
+            codec = package.get("codec", "zstd")
+            shape = tuple(package["shape"])
+            scale = float(package.get("scale", 1.0 / 127.0))
+
+            if codec == "zstd":
+                buffer = self._zstd_decompressor.decompress(package["data"])
+            elif codec == "raw":
+                buffer = package["data"]
+            else:
+                raise ValueError(f"Unknown codec '{codec}'")
+
+            arr = np.frombuffer(buffer, dtype=np.int8).reshape(shape)
+            chw = torch.from_numpy(arr.astype(np.int8)).to(torch.float32) * scale
+            out = chw.permute(1, 2, 0).contiguous()
+        else:
+            raise ValueError("Unsupported feature package for decompression")
+
+        if dtype is not None:
+            out = out.to(dtype)
+        if device is not None:
+            out = out.to(device)
+        return out
+        
+
     def process_rgbd_images(
         self, 
         rgb: np.ndarray, 
@@ -516,26 +559,19 @@ class SparseVoxelMap:
         intrinsics: np.ndarray, 
         camera_pose: np.ndarray, 
         local_tf: np.ndarray,
-        node_id: int,
-        base_pose: Optional[Tensor] = None,
+        obs_id: int,
+        base_pose: Optional[Tensor]=None,
+        save_all_obs: bool=False,
         **info,
     ):
         """
         Process rgbd images for DREAM
         """
-        # Log input data
-        if not os.path.exists(self.log):
-            os.mkdir(self.log)
-        self.obs_count += 1
-
-        cv2.imwrite(self.log + "/rgb" + str(self.obs_count) + ".jpg", rgb[:, :, [2, 1, 0]])
-        np.save(self.log + "/rgb" + str(self.obs_count) + ".npy", rgb)
-        np.save(self.log + "/depth" + str(self.obs_count) + ".npy", depth)
-        np.save(self.log + "/intrinsics" + str(self.obs_count) + ".npy", intrinsics)
-        np.save(self.log + "/camera_pose" + str(self.obs_count) + ".npy", camera_pose)
-        np.save(self.log + "/base_pose" + str(self.obs_count) + ".npy", base_pose)
-        np.save(self.log + "/local_tf" + str(self.obs_count) + ".npy", local_tf)
-        np.save(self.log + "/node_id" + str(self.obs_count) + ".npy", np.array(node_id, dtype=np.int32))
+        if save_all_obs:
+            cv2.imwrite(self.log + "/rgb" + str(obs_id) + ".jpg", rgb[:, :, [2, 1, 0]])
+            np.save(self.log + "/rgb" + str(obs_id) + ".npy", rgb)
+            np.save(self.log + "/depth" + str(obs_id) + ".npy", depth)
+            np.save(self.log + "/intrinsics" + str(obs_id) + ".npy", intrinsics)
 
         rgb = torch.Tensor(rgb)
         depth = torch.Tensor(depth)
@@ -581,124 +617,48 @@ class SparseVoxelMap:
         if self.use_median_filter:
             valid_depth = valid_depth & (median_filter_error < self.median_filter_max_error).bool()
 
-        self.add_to_voxel_pointcloud(
-            camera_pose=camera_pose,
-            rgb=rgb,
-            depth=depth,
-            valid_depth=valid_depth,
-            camera_K=intrinsics,
-            base_pose=base_pose,
-        )
 
         feats = self.add_to_semantic_memory(
             camera_pose=camera_pose,
             rgb=rgb,
             depth=depth,
+            obs_id=obs_id,
             valid_depth=valid_depth,
             camera_K=intrinsics,
+            base_pose=base_pose,
             return_feats=True,
         )
 
+        # Compressed features to reduce memory consumption
+        if self.compression_features:
+            compressed_feats = self.feature_compression(feature=feats)
+
         # add observations before we start changing things
-        self.observations.append(
-            Frame(
-                camera_pose=camera_pose,
-                local_tf=local_tf,
-                camera_K=intrinsics,
-                rgb=rgb,
-                depth=depth,
-                feats=feats,
-                node_id=node_id,
-                instance=None,
-                instance_classes=None,
-                instance_scores=None,
-                base_pose=base_pose,
-                info=info,
-            )
+        assert obs_id not in self.observations.keys(), "obs_id must be incremented."
+        self.observations[obs_id] = Frame(
+            camera_pose=camera_pose,
+            local_tf=local_tf,
+            camera_K=intrinsics,
+            rgb=rgb,
+            depth=depth,
+            valid_depth=valid_depth,
+            obs_id=obs_id,
+            base_pose=base_pose,
+            feats=compressed_feats if self.compression_features else feats,
+            info=info,
         )
-
-
-    def add_to_voxel_pointcloud(
-        self,
-        camera_pose: Tensor,
-        rgb: Tensor,
-        camera_K: Optional[Tensor]=None,
-        depth: Optional[Tensor]=None,
-        valid_depth: Optional[Tensor]=None,
-        feats: Optional[Tensor]=None,
-        base_pose: Optional[Tensor]=None,
-    ):
-        """Add this to our history of observations. Also update the current running map."""
-        # Clear invalid points
-        self.voxel_pointcloud.clear_points(
-            depth=depth, 
-            intrinsics=camera_K, 
-            camera_pose=camera_pose
-        )
-        # Then add the new environment points to voxel_pointcloud
-        # Apply a median filter to remove bad depth values when mapping and exploring
-        # This is not strictly necessary but the idea is to clean up bad pixels
-        # Pre-filtering should be done in process_rgbd_images; fallback if not provided
-        if valid_depth is None:
-            if self.use_median_filter:
-                median_depth = torch.from_numpy(median_filter(depth, size=self.median_filter_size))
-                median_filter_error = (depth - median_depth).abs()
-            valid_depth = (depth > self.min_depth) & (depth < self.max_depth)
-            if self.use_derivative_filter:
-                edges = get_edges(depth, threshold=self.derivative_filter_threshold)
-                valid_depth = valid_depth & (~edges)
-            if self.use_median_filter:
-                valid_depth = valid_depth & (median_filter_error < self.median_filter_max_error).bool()
-
-        # Get full_world_xyz
-        full_world_xyz = unproject_masked_depth_to_xyz_coordinates(  # Batchable!
-            depth=depth.unsqueeze(0).unsqueeze(1),
-            pose=camera_pose.unsqueeze(0),
-            inv_intrinsics=torch.linalg.inv(camera_K[:3, :3]).unsqueeze(0),
-        )
-
-        # Add to voxel grid
-        if feats is not None:
-            feats = feats[valid_depth].reshape(-1, feats.shape[-1])
-        rgb = rgb[valid_depth].reshape(-1, 3)
-        world_xyz = full_world_xyz.view(-1, 3)[valid_depth.flatten()]
-
-        # TODO: weights could also be confidence, inv distance from camera, etc
-        if world_xyz.nelement() > 0:
-            selected_indices = torch.randperm(len(world_xyz))[
-                : int((1 - self.point_update_threshold) * len(world_xyz))
-            ]
-            if len(selected_indices) == 0:
-                return
-            if world_xyz is not None:
-                world_xyz = world_xyz[selected_indices]
-            if feats is not None:
-                feats = feats[selected_indices]
-            if rgb is not None:
-                rgb = rgb[selected_indices]
-            self.voxel_pointcloud.add(world_xyz, features=feats, rgb=rgb, weights=None)
-
-        # Update visited map (prefer robot base; fallback to camera if desired)
-        if self._add_local_radius_points:
-            if base_pose is not None:
-                self._update_visited(base_pose[:3, 3].to(self.map_2d_device))
-            else:
-                # Fallback: use camera position when base not available
-                self._update_visited(camera_pose[:3, 3].to(self.map_2d_device))
-
-        # Increment sequence counter
-        self._seq += 1
-
 
     def add_to_semantic_memory(
         self,
         camera_pose: Tensor,
         rgb: Tensor,
-        camera_K: Optional[Tensor]=None,
-        depth: Optional[Tensor]=None,
+        obs_id: int,
+        camera_K: Tensor,
+        depth: Tensor,
         valid_depth: Optional[torch.Tensor]=None,
         weights: Optional[torch.Tensor]=None,
         feats: Optional[Tensor]=None,
+        base_pose: Optional[Tensor]=None,
         return_feats: bool=False,
         threshold: float = 0.95,
     ):
@@ -721,16 +681,20 @@ class SparseVoxelMap:
         camera_xyz = camera.depth_to_xyz(np.array(depth))
         world_xyz = torch.Tensor(camera_xyz_to_global_xyz(camera_xyz, np.array(camera_pose)))
         
-        # valid_depth is expected to be precomputed in process_rgbd_images; fallback if not provided
+        # Then add the new environment points to semantic memory voxelized pointcloud
+        # Apply a median filter to remove bad depth values when mapping and exploring
+        # This is not strictly necessary but the idea is to clean up bad pixels
+        # Pre-filtering should be done in process_rgbd_images; fallback if not provided
         if valid_depth is None:
             if depth is not None and self.use_median_filter:
                 median_depth = torch.from_numpy(median_filter(depth, size=self.median_filter_size))
                 median_filter_error = (depth - median_depth).abs()
-            else:
-                median_filter_error = torch.zeros_like(depth)
             valid_depth = torch.logical_and(depth < self.max_depth, depth > self.min_depth)
+            if self.use_derivative_filter:
+                edges = get_edges(depth, threshold=self.derivative_filter_threshold)
+                valid_depth = valid_depth & (~edges)
             if self.use_median_filter:
-                valid_depth = valid_depth & (median_filter_error < 0.01).bool()
+                valid_depth = valid_depth & (median_filter_error < self.median_filter_max_error).bool()
 
         if feats is None:
             with torch.no_grad():
@@ -741,7 +705,7 @@ class SparseVoxelMap:
         features = feats[valid_depth]
         valid_rgb = rgb.permute(1, 2, 0)[valid_depth]
         
-        if len(valid_xyz) != 0:
+        if world_xyz.nelement() != 0:
             selected_indices = torch.randperm(len(valid_xyz))[: int((1 - threshold) * len(valid_xyz))]
             if len(selected_indices) == 0:
                 return
@@ -754,23 +718,34 @@ class SparseVoxelMap:
             if weights is not None:
                 weights = weights[selected_indices]
 
-            if valid_xyz is not None and len(valid_xyz) != 0:
+            if valid_xyz is not None and valid_xyz.nelement() != 0:
                 valid_xyz = valid_xyz.to(self.device)
-            if features is not None and len(features) != 0:
+            if features is not None and features.nelement() != 0:
                 features = features.to(self.device)
-            if valid_rgb is not None and len(valid_rgb) != 0:
+            if valid_rgb is not None and valid_rgb.nelement() != 0:
                 valid_rgb = valid_rgb.to(self.device)
-            if weights is not None and len(weights) != 0:
+            if weights is not None and weights.nelement() != 0:
                 weights = weights.to(self.device)
 
             self.semantic_memory.add(
                 points=valid_xyz,
+                obs_id=obs_id,
                 features=features,
                 rgb=valid_rgb,
                 weights=weights,
-                obs_count=self.obs_count,
             )
-        
+
+        # Update visited map (prefer robot base; fallback to camera if desired)
+        if self._add_local_radius_points:
+            if base_pose is not None:
+                self._update_visited(base_pose[:3, 3].to(self.map_2d_device))
+            else:
+                # Fallback: use camera position when base not available
+                self._update_visited(camera_pose[:3, 3].to(self.map_2d_device))
+
+        # Increment sequence counter
+        self._seq += 1
+
         if return_feats:
             return feats
 
@@ -1296,43 +1271,29 @@ class SparseVoxelMap:
         assert pickle_file_name.exists(), f"No file found at {pickle_file_name}"
         with pickle_file_name.open("rb") as f:
             data = pickle.load(f)
-        for i, (camera_pose, xyz, rgb, feats, depth, base_pose, K, world_xyz, node_id) in enumerate(
+        for i, (camera_pose, rgb, feats, depth, base_pose, K, obs_id) in enumerate(
             zip(
                 data["camera_poses"],
                 data["rgb"],
-                data["feats"],
                 data["depth"],
                 data["base_poses"],
                 data["camera_K"],
-                data["world_xyz"],
-                data['node_id']
+                data['obs_id']
             )
         ):
             # Handle the case where we dont actually want to load everything
             if num_frames > 0 and i >= num_frames:
                 break
 
-            camera_pose = self.fix_data_type(camera_pose)
-            xyz = self.fix_data_type(xyz)
-            rgb = self.fix_data_type(rgb)
-            depth = self.fix_data_type(depth)
-            intrinsics = self.fix_data_type(K)
-            if feats is not None:
-                feats = self.fix_data_type(feats)
-            base_pose = self.fix_data_type(base_pose)
-            self.voxel_pointcloud.clear_points(depth, intrinsics, camera_pose)
-            self.add_to_voxel_pointcloud(
-                camera_pose=camera_pose,
-                xyz=xyz,
-                rgb=rgb,
-                feats=feats,
-                depth=depth,
-                base_pose=base_pose,
-                camera_K=K,
-                node_id=node_id,
-            )
+            # camera_pose = self.fix_data_type(camera_pose)
+            # rgb = self.fix_data_type(rgb)
+            # depth = self.fix_data_type(depth)
+            # intrinsics = self.fix_data_type(K)
+            # if feats is not None:
+            #     feats = self.fix_data_type(feats)
+            # base_pose = self.fix_data_type(base_pose)
+            # TODO
 
-            self.obs_count += 1
         self.semantic_memory._points = data["combined_xyz"]
         self.semantic_memory._features = data["combined_feats"]
         self.semantic_memory._weights = data["combined_weights"]
@@ -1359,19 +1320,17 @@ class SparseVoxelMap:
         data["base_poses"] = []
         data["rgb"] = []
         data["depth"] = []
-        data["feats"] = []
-        data['node_id'] = []
-        for frame in self.observations:
+        data['obs_id'] = []
+        for obs_id, obs in self.observations.items():
             # add it to pickle
             # TODO: switch to using just Obs struct?
-            data["camera_poses"].append(frame.camera_pose)
-            data["base_poses"].append(frame.base_pose)
-            data["camera_K"].append(frame.camera_K)
-            data["rgb"].append(frame.rgb)
-            data["depth"].append(frame.depth)
-            data["feats"].append(frame.feats)
-            data['node_id'].append(frame.node_id)
-            for k, v in frame.info.items():
+            data["camera_poses"].append(obs.camera_pose)
+            data["base_poses"].append(obs.base_pose)
+            data["camera_K"].append(obs.camera_K)
+            data["rgb"].append(obs.rgb)
+            data["depth"].append(obs.depth)
+            data['obs_id'].append(obs.obs_id)
+            for k, v in obs.info.items():
                 if k not in data:
                     data[k] = []
                 data[k].append(v)

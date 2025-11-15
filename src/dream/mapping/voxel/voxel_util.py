@@ -252,7 +252,6 @@ class VoxelizedPointcloud:
         self._obs_counts = None
         self._mins = self.dim_mins
         self._maxs = self.dim_maxs
-        self.obs_count = 1
 
     def remove(
         self,
@@ -306,6 +305,7 @@ class VoxelizedPointcloud:
         else:
             raise ValueError("Must specify either bounds or both point and radius to remove points")
 
+
     def clear_points(
         self, 
         depth: torch.Tensor, 
@@ -315,117 +315,40 @@ class VoxelizedPointcloud:
         depth_in_view_max_distance: float=2.5,
         depth_in_view_min_distance: float=0.01
     ):
-        if self._points is not None and len(self._points) != 0:
+        if self._points is not None:
             xys = project_points(self._points.detach().cpu(), intrinsics, camera_pose).int()
             xys = xys[:, [1, 0]]
             proj_depth = get_depth_values(self._points.detach().cpu(), camera_pose)
             H, W = depth.shape
 
-            in_view = (
-                (xys[:, 0] >= 0)
-                & (xys[:, 0] < H)
-                & (xys[:, 1] >= 0)
-                & (xys[:, 1] < W)
-            )
-
-            keep_mask = torch.ones(len(self._points), dtype=torch.bool)
-            if in_view.any():
-                visible_indices = torch.nonzero(in_view, as_tuple=False).squeeze(-1)
-                view_xys = xys[visible_indices]
-                proj_depth_in_view = proj_depth[visible_indices]
+            # Some points are projected to (i, j) on image plane and i, j might be smaller than 0 or greater than image size
+            # which will lead to Index Error.
+            valid_xys = xys.clone()
+            valid_xys[(xys[:, 0] < 0) | (xys[:, 0] >= H) | (xys[:, 1] < 0) | (xys[:, 1] >= W)] = 0
+            indices = (
+                (xys[:, 0] < 0)
+                | (xys[:, 0] >= H)
+                | (xys[:, 1] < 0)
+                | (xys[:, 1] >= W)
                 # the points are projected to the image frame but is blocked by some obstacles
-                occluded = depth[view_xys[:, 0], view_xys[:, 1]] < (proj_depth_in_view - 0.1)
+                | (depth[valid_xys[:, 0], valid_xys[:, 1]] < (proj_depth - 0.1))
                 # the points are projected to the image frame but they are behind camera
-                behind_camera = depth[view_xys[:, 0], view_xys[:, 1]] < depth_in_view_min_distance
-                # depth is too small
-                too_small = proj_depth_in_view < depth_in_view_min_distance
+                | (depth[valid_xys[:, 0], valid_xys[:, 1]] < depth_in_view_min_distance)
+                | (proj_depth < depth_in_view_min_distance)
                 # depth is too large
-                too_far = proj_depth_in_view > depth_in_view_max_distance
-
-                removal = occluded | behind_camera | too_small | too_far
-                keep_mask[visible_indices] = ~removal
-
-            valid_mask = keep_mask.to(self._points.device)
-            self._points = self._points[valid_mask]
-            if self._features is not None:
-                self._features = self._features[valid_mask]
-            if self._weights is not None:
-                self._weights = self._weights[valid_mask]
-            if self._rgb is not None:
-                self._rgb = self._rgb[valid_mask]
-            if self._obs_counts is not None:
-                self._obs_counts = self._obs_counts[valid_mask]
-
-            if (
-                self._points is not None
-                and len(self._points) > 0
-                and min_samples_clear is not None
-                and min_samples_clear > 0
-            ):
-                dbscan = DBSCAN(eps=self.voxel_size * 4, min_samples=min_samples_clear)
-                cluster_vertices = torch.cat(
-                    (
-                        self._points.detach().cpu(),
-                        self._obs_counts.detach().cpu().reshape(-1, 1) * 1000,
-                    ),
-                    -1,
-                ).numpy()
-                clusters = dbscan.fit(cluster_vertices)
-                labels = clusters.labels_
-                indices = labels != -1
-                self._points = self._points[indices]
-                if self._features is not None:
-                    self._features = self._features[indices]
-                if self._weights is not None:
-                    self._weights = self._weights[indices]
-                if self._rgb is not None:
-                    self._rgb = self._rgb[indices]
-                if self._obs_counts is not None:
-                    self._obs_counts = self._obs_counts[indices]
-
-
-    def clear_points_in_view(
-        self, 
-        intrinsics: torch.Tensor, 
-        camera_pose: torch.Tensor,
-        image_shape: Tuple[int, int],
-        min_samples_clear=None,
-        depth_in_view_max_distance: float=2.5,
-        depth_in_view_min_distance: float=0.01
-    ):
-        """Remove all map points that would be visible from the given camera_pose/intrinsics."""
-        if self._points is not None and len(self._points) != 0:
-            xys = project_points(self._points.detach().cpu(), intrinsics, camera_pose).int()
-            xys = xys[:, [1, 0]]
-            proj_depth = get_depth_values(self._points.detach().cpu(), camera_pose)
-            H, W = image_shape
-
-            in_view = (
-                (xys[:, 0] >= 0)
-                & (xys[:, 0] < H)
-                & (xys[:, 1] >= 0)
-                & (xys[:, 1] < W)
-                & (proj_depth > depth_in_view_min_distance)
-                & (proj_depth < depth_in_view_max_distance)
+                | (proj_depth > depth_in_view_max_distance)
             )
 
-            if not in_view.any():
-                return
-
-            keep_mask = torch.ones(len(self._points), dtype=torch.bool)
-            keep_mask[in_view] = False
-
-            valid_mask = keep_mask.to(self._points.device)
-
-            self._points = self._points[valid_mask]
+            indices = indices.to(self._points.device)
+            self._points = self._points[indices]
             if self._features is not None:
-                self._features = self._features[valid_mask]
+                self._features = self._features[indices]
             if self._weights is not None:
-                self._weights = self._weights[valid_mask]
+                self._weights = self._weights[indices]
             if self._rgb is not None:
-                self._rgb = self._rgb[valid_mask]
+                self._rgb = self._rgb[indices]
             if self._obs_counts is not None:
-                self._obs_counts = self._obs_counts[valid_mask]
+                self._obs_counts = self._obs_counts[indices]
 
             if (
                 self._points is not None
@@ -453,17 +376,167 @@ class VoxelizedPointcloud:
                     self._rgb = self._rgb[indices]
                 if self._obs_counts is not None:
                     self._obs_counts = self._obs_counts[indices]
+
+
+
+    # def clear_points(
+    #     self, 
+    #     depth: torch.Tensor, 
+    #     intrinsics: torch.Tensor, 
+    #     camera_pose: torch.Tensor,  # camera in map pose
+    #     min_samples_clear=None,
+    #     depth_in_view_max_distance: float=2.5,
+    #     depth_in_view_min_distance: float=0.01
+    # ):
+    #     if self._points is not None and len(self._points) != 0:
+    #         xys = project_points(self._points.detach().cpu(), intrinsics, camera_pose).int()
+    #         xys = xys[:, [1, 0]]
+    #         proj_depth = get_depth_values(self._points.detach().cpu(), camera_pose)
+    #         H, W = depth.shape
+
+    #         in_view = (
+    #             (xys[:, 0] >= 0)
+    #             & (xys[:, 0] < H)
+    #             & (xys[:, 1] >= 0)
+    #             & (xys[:, 1] < W)
+    #         )
+
+    #         keep_mask = torch.ones(len(self._points), dtype=torch.bool)
+    #         if in_view.any():
+    #             visible_indices = torch.nonzero(in_view, as_tuple=False).squeeze(-1)
+    #             view_xys = xys[visible_indices]
+    #             proj_depth_in_view = proj_depth[visible_indices]
+    #             # the points are projected to the image frame but is blocked by some obstacles
+    #             occluded = depth[view_xys[:, 0], view_xys[:, 1]] < (proj_depth_in_view - 0.1)
+    #             # the points are projected to the image frame but they are behind camera
+    #             behind_camera = depth[view_xys[:, 0], view_xys[:, 1]] < depth_in_view_min_distance
+    #             # depth is too small
+    #             too_small = proj_depth_in_view < depth_in_view_min_distance
+    #             # depth is too large
+    #             too_far = proj_depth_in_view > depth_in_view_max_distance
+
+    #             removal = occluded | behind_camera | too_small | too_far
+    #             keep_mask[visible_indices] = ~removal
+
+    #         valid_mask = keep_mask.to(self._points.device)
+    #         self._points = self._points[valid_mask]
+    #         if self._features is not None:
+    #             self._features = self._features[valid_mask]
+    #         if self._weights is not None:
+    #             self._weights = self._weights[valid_mask]
+    #         if self._rgb is not None:
+    #             self._rgb = self._rgb[valid_mask]
+    #         if self._obs_counts is not None:
+    #             self._obs_counts = self._obs_counts[valid_mask]
+
+    #         if (
+    #             self._points is not None
+    #             and len(self._points) > 0
+    #             and min_samples_clear is not None
+    #             and min_samples_clear > 0
+    #         ):
+    #             dbscan = DBSCAN(eps=self.voxel_size * 4, min_samples=min_samples_clear)
+    #             cluster_vertices = torch.cat(
+    #                 (
+    #                     self._points.detach().cpu(),
+    #                     self._obs_counts.detach().cpu().reshape(-1, 1) * 1000,
+    #                 ),
+    #                 -1,
+    #             ).numpy()
+    #             clusters = dbscan.fit(cluster_vertices)
+    #             labels = clusters.labels_
+    #             indices = labels != -1
+    #             self._points = self._points[indices]
+    #             if self._features is not None:
+    #                 self._features = self._features[indices]
+    #             if self._weights is not None:
+    #                 self._weights = self._weights[indices]
+    #             if self._rgb is not None:
+    #                 self._rgb = self._rgb[indices]
+    #             if self._obs_counts is not None:
+    #                 self._obs_counts = self._obs_counts[indices]
+
+
+    # def clear_points_in_view(
+    #     self, 
+    #     intrinsics: torch.Tensor, 
+    #     camera_pose: torch.Tensor,
+    #     image_shape: Tuple[int, int],
+    #     min_samples_clear=None,
+    #     depth_in_view_max_distance: float=2.5,
+    #     depth_in_view_min_distance: float=0.01
+    # ):
+    #     """Remove all map points that would be visible from the given camera_pose/intrinsics."""
+    #     if self._points is not None and len(self._points) != 0:
+    #         xys = project_points(self._points.detach().cpu(), intrinsics, camera_pose).int()
+    #         xys = xys[:, [1, 0]]
+    #         proj_depth = get_depth_values(self._points.detach().cpu(), camera_pose)
+    #         H, W = image_shape
+
+    #         in_view = (
+    #             (xys[:, 0] >= 0)
+    #             & (xys[:, 0] < H)
+    #             & (xys[:, 1] >= 0)
+    #             & (xys[:, 1] < W)
+    #             & (proj_depth > depth_in_view_min_distance)
+    #             & (proj_depth < depth_in_view_max_distance)
+    #         )
+
+    #         if not in_view.any():
+    #             return
+
+    #         keep_mask = torch.ones(len(self._points), dtype=torch.bool)
+    #         keep_mask[in_view] = False
+
+    #         valid_mask = keep_mask.to(self._points.device)
+
+    #         self._points = self._points[valid_mask]
+    #         if self._features is not None:
+    #             self._features = self._features[valid_mask]
+    #         if self._weights is not None:
+    #             self._weights = self._weights[valid_mask]
+    #         if self._rgb is not None:
+    #             self._rgb = self._rgb[valid_mask]
+    #         if self._obs_counts is not None:
+    #             self._obs_counts = self._obs_counts[valid_mask]
+
+    #         if (
+    #             self._points is not None
+    #             and len(self._points) > 0
+    #             and min_samples_clear is not None
+    #             and min_samples_clear > 0
+    #         ):
+    #             dbscan = DBSCAN(eps=self.voxel_size * 4, min_samples=min_samples_clear)
+    #             cluster_vertices = torch.cat(
+    #                 (
+    #                     self._points.detach().cpu(),
+    #                     self._obs_counts.detach().cpu().reshape(-1, 1) * 1000,
+    #                 ),
+    #                 -1,
+    #             ).numpy()
+    #             clusters = dbscan.fit(cluster_vertices)
+    #             labels = clusters.labels_
+    #             indices = labels != -1
+    #             self._points = self._points[indices]
+    #             if self._features is not None:
+    #                 self._features = self._features[indices]
+    #             if self._weights is not None:
+    #                 self._weights = self._weights[indices]
+    #             if self._rgb is not None:
+    #                 self._rgb = self._rgb[indices]
+    #             if self._obs_counts is not None:
+    #                 self._obs_counts = self._obs_counts[indices]
 
 
 
     def add(
         self,
         points: Tensor,
+        obs_id: int,
         features: Optional[Tensor],
         rgb: Optional[Tensor],
         weights: Optional[Tensor] = None,
         min_weight_per_voxel: float = 10.0,
-        obs_count: Optional[int] = None,
     ):
         """Add a feature pointcloud to the voxel grid.
 
@@ -479,11 +552,7 @@ class VoxelizedPointcloud:
         if weights is None:
             weights = torch.ones_like(points[..., 0])
 
-        if obs_count is None:
-            obs_counts = torch.ones_like(weights) * self.obs_count
-        else:
-            obs_counts = torch.ones_like(weights) * obs_count
-        self.obs_count += 1
+        obs_counts = torch.ones_like(weights) * obs_id
 
         # Update voxel grid bounds
         # This isn't strictly necessary since the functions below can infer the bounds

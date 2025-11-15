@@ -55,16 +55,9 @@ class DreamCamera:
 
     def capture_image(self):
         # When Network is bad, waiting for a while will import grasp success rate.
-        time.sleep(5)
-        self.rgb_image, self.depth_image = self.robot.get_servo_images(compute_xyz=False)
-        self.c2ab = self.robot.get_camera_in_arm_base(timeout=5.0)
-        # self.rgb_image = np.rot90(self.rgb_image, k=1)[:, :, [2, 1, 0]]
-        # self.depth_image = np.rot90(self.depth_image, k=1)
-        # self.points = np.rot90(self.points, k=1)
-
-        # self.rgb_image = cv2.cvtColor(self.rgb_image, cv2.COLOR_BGR2RGB)
-
-        return self.rgb_image, self.depth_image, self.c2ab
+        time.sleep(3)
+        rgb_image, depth_image, c2ab = self.robot.get_servo_images(compute_xyz=False)
+        return rgb_image, depth_image, c2ab
 
 
 class ImagePublisher:
