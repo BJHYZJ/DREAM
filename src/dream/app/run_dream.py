@@ -150,12 +150,15 @@ def main(
         manipulation_only=manipulation_only,
     )
 
-    if not manipulation_only:
-        if input_path is None:
-            start_command = [("rotate_in_place", "")]
-        else:
-            start_command = [("read_from_pickle", input_path)]
-        executor(start_command)
+    # if not manipulation_only:
+    #     if input_path is None:
+    #         start_command = [("rotate_in_place", "")]
+    #     else:
+    #         start_command = [("read_from_pickle", input_path)]
+    #     executor(start_command)
+
+    start_command = [("find", "eggplant")]
+    executor(start_command)
 
     # Create the prompt we will use to control the robot
     prompt = PickupPromptBuilder()

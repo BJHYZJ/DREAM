@@ -375,10 +375,11 @@ class DreamRobotZmqClient(AbstractRobotClient):
         return joint_states[constants.ARM_INDEX]
 
 
-    def look_front(self, blocking: bool=True, timeout: float = 10.0):
+    def look_front(self, speed=50, blocking: bool=True, timeout: float = 10.0):
         """Let robot look to its front."""
         self.arm_to(
             angle=constants.look_front,
+            speed=speed,
             blocking=blocking,
             timeout=timeout,
             reliable=True,
@@ -575,6 +576,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def arm_to(
         self,
         angle: np.ndarray,
+        speed: int=20,
         blocking: bool=True,
         timeout: float=10.0,
         reliable: bool=True,
@@ -590,7 +592,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         """
         if not self.in_manipulation_mode():
             self.switch_to_manipulation_mode()
-        next_action = {"servo_angle": angle, "wait": blocking}
+        next_action = {"servo_angle": angle, "speed": speed, "wait": blocking}
         self.send_action(next_action, timeout=timeout, reliable=reliable)
 
         if blocking:

@@ -715,7 +715,7 @@ class RobotAgent:
                     0.03,
                 )
 
-    def look_around(self):
+    def look_around(self, speed: int=50):
         print("*" * 10, "Look around to check", "*" * 10)
         # for pan in [0.6, -0.2, -1.0, -1.8]:
         #     tilt = -0.6
@@ -724,7 +724,7 @@ class RobotAgent:
             constants.look_left_1, constants.look_left_2, 
             constants.look_right_1, constants.look_right_2
         ]:
-            self.robot.arm_to(angle=angle, blocking=True)
+            self.robot.arm_to(angle=angle, speed=speed, blocking=True)
             if not self._realtime_updates:
                 self.update()
 
@@ -741,14 +741,20 @@ class RobotAgent:
     def execute_action(
         self,
         text: str,
+        arm_speed=40,
     ):
-        if not self._realtime_updates:
-            self.robot.look_front()
-            self.look_around()
-            self.robot.look_front()
-            self.robot.switch_to_navigation_mode()
+        # if not self._realtime_updates:
+            # self.robot.look_front()
+            # self.look_around()
+            # self.robot.look_front()
+            # self.robot.switch_to_navigation_mode()
 
+        self.robot.look_front(speed=arm_speed)
+        self.look_around(speed=arm_speed)
+        self.robot.look_front(speed=arm_speed)
         self.robot.switch_to_navigation_mode()
+
+        # self.robot.switch_to_navigation_mode()
 
         start = self.robot.get_base_in_map_xyt()
         res = self.process_text(text, start)

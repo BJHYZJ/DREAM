@@ -36,7 +36,7 @@ local_radius: 0.5  # Area around the robot to mark as explored (kind of a hack)
 add_local_every_step: False
 remove_visited_from_obstacles: False
 min_depth: 0.25
-max_depth: 2.5
+max_depth: 3.5
 
 # Object detection parameters
 # Recommendations for this part: 

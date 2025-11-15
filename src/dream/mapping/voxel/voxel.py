@@ -672,7 +672,8 @@ class SparseVoxelMap:
             depth=depth, 
             intrinsics=camera_K, 
             camera_pose=camera_pose, 
-            min_samples_clear=10
+            min_samples_clear=10,
+            depth_in_view_max_distance=self.max_depth
         )
        
         rgb = rgb.permute(2, 0, 1).to(torch.uint8)
