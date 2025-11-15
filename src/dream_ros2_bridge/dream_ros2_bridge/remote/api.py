@@ -448,6 +448,7 @@ class DreamClient(AbstractRobotClient):
         del pose_graph[node_id]
         rgb = node.data.left_compressed
         depth = node.data.right_compressed
+        assert len(rgb) != 0 and len(depth) != 0
         
         local_tf = transform_to_sophus(node.data.local_transform[0])
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
