@@ -469,7 +469,7 @@ class DreamClient(AbstractRobotClient):
             timestamp=timestamp,
             compass=compass,
             gps=gps,
-            node_id=node_id,
+            obs_id=node_id,
             just_pose_graph=False,
             rgb_compressed=rgb,
             depth_compressed=depth,

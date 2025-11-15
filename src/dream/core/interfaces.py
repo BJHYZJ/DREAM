@@ -324,7 +324,7 @@ class RtabmapData(BaseObservations):
     just_pose_graph: bool
     compass: Optional[np.ndarray] = None
     gps: Optional[np.ndarray] = None
-    node_id: Optional[int] = None
+    obs_id: Optional[int] = None
     rgb_compressed: Optional[array.array] = None
     depth_compressed: Optional[array.array] = None
     camera_K: Optional[np.ndarray] = None
@@ -343,7 +343,7 @@ class Observations(BaseObservations):
     just_pose_graph: bool
     compass: Optional[np.ndarray] = None
     gps: Optional[np.ndarray] = None
-    node_id: Optional[int] = None
+    obs_id: Optional[int] = None
     rgb: array.array | np.ndarray = None
     depth: array.array | np.ndarray = None
     camera_K: array.array | np.ndarray = None

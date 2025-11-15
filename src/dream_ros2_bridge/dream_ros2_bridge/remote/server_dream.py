@@ -93,7 +93,7 @@ class ZmqServer(BaseZmqServer):
             "just_pose_graph": obs.just_pose_graph,
             "compass": obs.compass,
             "gps": obs.gps,
-            "node_id": obs.node_id,
+            "obs_id": obs.obs_id,
             "rgb": obs.rgb_compressed,
             "depth": obs.depth_compressed,
             "camera_K": obs.camera_K,
