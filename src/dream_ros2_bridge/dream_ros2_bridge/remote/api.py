@@ -427,7 +427,7 @@ class DreamClient(AbstractRobotClient):
         # as it may only be an intermediate node.
         assert max(graph.poses_id) == graph.poses_id[-1]
         pose_graph = {
-            nid: pose_to_sophus(pose)
+            nid: pose_to_sophus(pose).matrix()
             for nid, pose in zip(
                 graph.poses_id, graph.poses
             )
