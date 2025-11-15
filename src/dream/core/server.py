@@ -214,7 +214,7 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.report_steps == 0:
                 print(f"[SEND RTABMAP DATE] time taken = {dt} avg = {sum_time/steps}")
 
-            time.sleep(1e-1)
+            time.sleep(1e-4)
             # time.sleep(1)
             t0 = timeit.default_timer()
 
@@ -260,7 +260,7 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.fast_report_steps == 0:
                 print(f"[RECV] time taken = {dt} avg = {sum_time/steps}")
 
-            time.sleep(1e-2)
+            time.sleep(1e-4)
             t0 = timeit.default_timer()
 
     def spin_send_state(self):
@@ -292,7 +292,7 @@ class BaseZmqServer(CommsNode, ABC):
             if self.verbose or steps % self.fast_report_steps == 0:
                 print(f"[SEND STATE] time taken = {dt} avg = {sum_time/steps}")
 
-            time.sleep(1e-2)  # 提高发送频率到10Hz，让base_pose_in_map更实时
+            time.sleep(1e-4)  # 提高发送频率到10Hz，让base_pose_in_map更实时
             t0 = timeit.default_timer()
 
     def spin_send_servo(self):
@@ -324,7 +324,7 @@ class BaseZmqServer(CommsNode, ABC):
                     f"[SEND SERVO] time taken = {dt} avg = {sum_time/steps}"
                 )
 
-            time.sleep(1e-2)
+            time.sleep(1e-4)
             t0 = timeit.default_timer()
 
     def __del__(self):
