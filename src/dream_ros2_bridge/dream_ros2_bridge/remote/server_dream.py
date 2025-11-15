@@ -299,6 +299,7 @@ class ZmqServer(BaseZmqServer):
                 self.client.switch_to_navigation_mode()
             self.client.manip.set_servo_angle(
                 angle=action["servo_angle"],
+                speed=action["speed"],
                 wait=action['wait'],
             )
         elif "gripper" in action:

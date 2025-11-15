@@ -11,6 +11,7 @@
 #
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
+from re import S
 from typing import List, Optional
 
 from Cython import const
@@ -164,22 +165,22 @@ class XARM6:
             if servo_pose[0] < 0:
                 back_front[0] = -back_front[0]
             self._arm.set_servo_angle(
-                angle=back_front, is_radian=False, wait=True
+                angle=back_front, speed=20, is_radian=False, wait=True
             )
         time.sleep(0.1)
         self._arm.set_servo_angle(
-            angle=self.init_servo_angle, is_radian=False, wait=True
+            angle=self.init_servo_angle, speed=20, is_radian=False, wait=True
         )
 
-    def set_servo_angle(self, angle, is_radian=False, wait=True):
-        self._arm.set_servo_angle(angle=angle, is_radian=is_radian, wait=wait)
+    def set_servo_angle(self, angle, speed=20, is_radian=False, wait=True):
+        self._arm.set_servo_angle(angle=angle, speed=speed, is_radian=is_radian, wait=wait)
 
     def _sync_servo_command_with_real_state(self):
         """Align controller command with actual encoder state to avoid TF jumps."""
         real_angles = self.get_servo_angle(is_radian=False, is_real=True)
         if real_angles is None:
             return
-        self._arm.set_servo_angle(angle=real_angles, is_radian=False, wait=False)
+        self._arm.set_servo_angle(angle=real_angles, speed=20, is_radian=False, wait=False)
 
     def get_servo_angle(self, is_radian=False, is_real=False):
         if not self.is_alive:
@@ -424,10 +425,11 @@ class DreamManipulationClient(AbstractControlModule):
     def set_servo_angle(
         self,
         angle: np.ndarray,
+        speed: int,
         is_radian: bool = False,
         wait: bool = True,
     ):
-        self._arm.set_servo_angle(angle, is_radian=is_radian, wait=wait)
+        self._arm.set_servo_angle(angle, speed=speed, is_radian=is_radian, wait=wait)
 
     @enforce_enabled
     def set_gripper(self, target: int = 830, wait: bool = True):
