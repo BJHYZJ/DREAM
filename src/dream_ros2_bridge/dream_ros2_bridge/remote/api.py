@@ -444,7 +444,7 @@ class DreamClient(AbstractRobotClient):
         else:
             self._last_node_id = node_id
 
-        current_pose = pose_graph[node_id]
+        current_pose = pose2sophus(pose_graph[node_id])
         del pose_graph[node_id]
         rgb = node.data.left_compressed
         depth = node.data.right_compressed

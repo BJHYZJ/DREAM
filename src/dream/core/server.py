@@ -34,9 +34,9 @@ logger = Logger(__name__)
 class BaseZmqServer(CommsNode, ABC):
 
     # How often should we print out info about our performance
-    report_steps = 100
-    fast_report_steps = 1000
-    servo_report_steps = 1000
+    report_steps = 50
+    fast_report_steps = 200
+    servo_report_steps = 100
     skip_duplicate_steps: bool = True
 
     def __init__(
@@ -185,13 +185,13 @@ class BaseZmqServer(CommsNode, ABC):
     # ==================================================================
 
     def spin_send(self):
-        """Send the full state of the robot to the client."""
+        """Send the full observations of the robot to the client."""
 
         # Create a dream client to get information
         sum_time: float = 0
         steps: int = 0
         t0 = timeit.default_timer()
-        print("Starting to send full state")
+        print("Starting to send full observations")
         while self.is_running():
             data = self.get_full_observation_message()
 
@@ -201,7 +201,7 @@ class BaseZmqServer(CommsNode, ABC):
                 continue
 
             if steps == 0:
-                logger.info(f"[SEND LARGE IMAGE STATE] message keys: {data.keys()}")
+                logger.info(f"[SEND RTABMAP DATE] message keys: {data.keys()}")
 
             self.send_socket.send_pyobj(data)
 
@@ -212,7 +212,7 @@ class BaseZmqServer(CommsNode, ABC):
             steps += 1
             t0 = t1
             if self.verbose or steps % self.report_steps == 0:
-                print(f"[SEND FULL STATE] time taken = {dt} avg = {sum_time/steps}")
+                print(f"[SEND RTABMAP DATE] time taken = {dt} avg = {sum_time/steps}")
 
             time.sleep(1e-1)
             # time.sleep(1)
@@ -258,7 +258,7 @@ class BaseZmqServer(CommsNode, ABC):
             steps += 1
             t0 = t1
             if self.verbose or steps % self.fast_report_steps == 0:
-                logger.info(f"[RECV] time taken = {dt} avg = {sum_time/steps}")
+                print(f"[RECV] time taken = {dt} avg = {sum_time/steps}")
 
             time.sleep(1e-2)
             t0 = timeit.default_timer()
@@ -279,7 +279,7 @@ class BaseZmqServer(CommsNode, ABC):
             # logger.info(f"{message['base_pose_in_map']}")
 
             if steps == 0:
-                logger.info(f"[SEND MINIMAL STATE] message keys: {message.keys()}")
+                logger.info(f"[SEND STATE] message keys: {message.keys()}")
 
             self.send_state_socket.send_pyobj(message)
 
@@ -290,7 +290,7 @@ class BaseZmqServer(CommsNode, ABC):
             steps += 1
             t0 = t1
             if self.verbose or steps % self.fast_report_steps == 0:
-                logger.info(f"[SEND FAST STATE] time taken = {dt} avg = {sum_time/steps}")
+                print(f"[SEND STATE] time taken = {dt} avg = {sum_time/steps}")
 
             time.sleep(1e-2)  # 提高发送频率到10Hz，让base_pose_in_map更实时
             t0 = timeit.default_timer()
@@ -309,7 +309,7 @@ class BaseZmqServer(CommsNode, ABC):
                 continue
 
             if steps == 0:
-                logger.info(f"[SEND SERVO STATE] message keys: {message.keys()}")
+                logger.info(f"[SEND SERVO] message keys: {message.keys()}")
 
             self.send_servo_socket.send_pyobj(message)
 
@@ -320,8 +320,8 @@ class BaseZmqServer(CommsNode, ABC):
             steps += 1
             t0 = t1
             if self.verbose or steps % self.servo_report_steps == 1:
-                logger.info(
-                    f"[SEND SERVO STATE] time taken = {dt} avg = {sum_time/steps} rate={1/(sum_time/steps)}"
+                print(
+                    f"[SEND SERVO] time taken = {dt} avg = {sum_time/steps}"
                 )
 
             time.sleep(1e-2)
