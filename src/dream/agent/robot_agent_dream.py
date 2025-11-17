@@ -419,7 +419,7 @@ class RobotAgent:
                 print(f"[Update map with pose graph realtime] spend time: {t2 - t0}, observations length: {len(obs_ids_now)}")
                 print("=" * 60)
 
-        time.sleep(0.5)
+        time.sleep(1)
 
     def reset_object_plans(self):
         """Clear stored object planning information."""
@@ -586,29 +586,28 @@ class RobotAgent:
         # Sleep some time for the robot camera to focus
         # time.sleep(0.3)
         obs = self.robot.get_observation()
-        # Since the pose graph only contains the poses of the base_in_map_pose, 
-        # the camera_in_base_pose need to be stored separately for subsequent pose updates.
-        self.voxel_map.process_rgbd_images(
-            rgb=obs.rgb, 
-            depth=obs.depth, 
-            intrinsics=obs.camera_K, 
-            camera_pose=obs.camera_in_map_pose,
-            base_pose=obs.base_in_map_pose, 
-            local_tf=obs.camera_in_base_pose, 
-            obs_id=obs.obs_id,
-        )
-        if visualize_map:
-            if self.voxel_map.semantic_memory._points is not None and \
-                    len(self.voxel_map.semantic_memory._points) != 0:
-                self.rerun_visualizer.update_voxel_map(space=self.space)
-            if self.voxel_map.semantic_memory._points is not None and \
-                    len(self.voxel_map.semantic_memory._points) != 0:
-                self.rerun_visualizer.log_custom_pointcloud(
-                    "world/semantic_memory/pointcloud",
-                    self.voxel_map.semantic_memory._points.detach().cpu(),
-                    self.voxel_map.semantic_memory._rgb.detach().cpu() / 255.0,
-                    0.03,
-                )
+        with self._voxel_map_lock:
+            self.voxel_map.process_rgbd_images(
+                rgb=obs.rgb, 
+                depth=obs.depth, 
+                intrinsics=obs.camera_K, 
+                camera_pose=obs.camera_in_map_pose,
+                base_pose=obs.base_in_map_pose, 
+                local_tf=obs.camera_in_base_pose, 
+                obs_id=obs.obs_id,
+            )
+            if visualize_map:
+                if self.voxel_map.semantic_memory._points is not None and \
+                        len(self.voxel_map.semantic_memory._points) != 0:
+                    self.rerun_visualizer.update_voxel_map(space=self.space)
+                if self.voxel_map.semantic_memory._points is not None and \
+                        len(self.voxel_map.semantic_memory._points) != 0:
+                    self.rerun_visualizer.log_custom_pointcloud(
+                        "world/semantic_memory/pointcloud",
+                        self.voxel_map.semantic_memory._points.detach().cpu(),
+                        self.voxel_map.semantic_memory._rgb.detach().cpu() / 255.0,
+                        0.03,
+                    )
 
     def look_around(self, speed: int=50):
         print("*" * 10, "Look around to check", "*" * 10)
@@ -706,61 +705,60 @@ class RobotAgent:
         localized_point = None
         waypoints = None
 
-        if text is not None and text != "" and self.space.traj is not None:
-            print("saved traj", self.space.traj)
-            traj_target_point = self.space.traj[-1]
-            with self._voxel_map_lock:
+        # add voxel map lock ensure voxel map not update when path planning
+        with self._voxel_map_lock:  
+
+            if text is not None and text != "" and self.space.traj is not None:
+                print("saved traj", self.space.traj)
+                traj_target_point = self.space.traj[-1]
                 if self.voxel_map.verify_point(text, traj_target_point):
                     localized_point = traj_target_point
                     debug_text += "## Last visual grounding results looks fine so directly use it.\n"
 
-        print("Target verification finished")
-
-        if text is not None and text != "" and localized_point is None:
-            with self._voxel_map_lock:
+            print("Target verification finished")
+            if text is not None and text != "" and localized_point is None:
                 (
                     localized_point,
                     debug_text,
                     obs,
                     pointcloud,
                 ) = self.voxel_map.localize_text(text, debug=True, return_debug=True)
-            print("Target point selected!")
+                print("Target point selected!")
 
-        # Do Frontier based exploration
-        if text is None or text == "" or localized_point is None:
-            debug_text += "## Navigation fails, so robot starts exploring environments.\n"
-            localized_point = self.space.sample_frontier(self.planner, start_pose, text)
-            mode = "exploration"
+            # Do Frontier based exploration
+            if text is None or text == "" or localized_point is None:
+                debug_text += "## Navigation fails, so robot starts exploring environments.\n"
+                localized_point = self.space.sample_frontier(self.planner, start_pose, text)
+                mode = "exploration"
 
-        if obs is not None and mode == "navigation":
-            with self._voxel_map_lock:
+            if obs is not None and mode == "navigation":
                 print(obs, len(self.voxel_map.observations))
                 obs = self.voxel_map.find_obs_id_for_text(text)
                 rgb = self.voxel_map.observations[obs].rgb
-            self.rerun_visualizer.log_custom_2d_image("/observation_similar_to_text", rgb)
+                self.rerun_visualizer.log_custom_2d_image("/observation_similar_to_text", rgb)
 
-        if localized_point is None:
-            return []
+            if localized_point is None:
+                return []
 
-        # TODO: Do we really need this line?
-        if len(localized_point) == 2:
-            localized_point = np.array([localized_point[0], localized_point[1], 0])
+            # TODO: Do we really need this line?
+            if len(localized_point) == 2:
+                localized_point = np.array([localized_point[0], localized_point[1], 0])
 
-        point = self.space.sample_navigation(
-            start=start_pose, 
-            point=localized_point, 
-            planner=self.planner
-        )
+            point = self.space.sample_navigation(
+                start=start_pose, 
+                point=localized_point, 
+                planner=self.planner
+            )
 
-        print("Navigation endpoint selected")
+            print("Navigation endpoint selected")
 
-        waypoints = None
+            waypoints = None
 
-        if point is None:
-            res = None
-            print("Unable to find any target point, some exception might happen")
-        else:
-            res = self.planner.plan(start_pose, point)
+            if point is None:
+                res = None
+                print("Unable to find any target point, some exception might happen")
+            else:
+                res = self.planner.plan(start_pose, point)
 
         if res is not None and res.success:
             waypoints = [pt.state for pt in res.trajectory]

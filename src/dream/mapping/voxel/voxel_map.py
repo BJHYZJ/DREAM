@@ -18,7 +18,6 @@ import torch
 import time
 import skimage
 import skimage.morphology
-
 from typing import Dict, List, Optional, Tuple, Union
 from collections import deque
 
@@ -26,7 +25,8 @@ from dream.motion import Footprint
 from dream.utils.morphology import binary_dilation, get_edges
 from dream.core.robot import RobotModel
 from dream.mapping.grid import GridParams
-from .voxel import SparseVoxelMap, SparseVoxelMapProxy
+from dream.mapping.voxel import SparseVoxelMap, SparseVoxelMapProxy
+from dream.motion.algo.a_star import AStar
 
 
 class SparseVoxelMapNavigationSpace:
@@ -126,17 +126,11 @@ class SparseVoxelMapNavigationSpace:
                 theta = theta + 2 * np.pi
         return theta
 
-    def debug_robot_position(self, start: torch.Tensor, planner):
-        """调试机器人当前位置"""
-        import matplotlib.pyplot as plt
-        import numpy as np
-        
-        print(f"[DEBUG] Robot position: ({start[0]:.3f}, {start[1]:.3f}, {start[2]:.3f})")
-        
+    def debug_robot_position(self, start: torch.Tensor, planner: AStar, debug: bool=False):
+        """debug robot current position"""
         obstacles, explored = self.voxel_map.get_2d_map()
 
         start_pt = planner.to_pt(start)
-        print(f"[DEBUG] Robot grid position: ({start_pt[0]}, {start_pt[1]})")
         
         crop_size = 50
         x0 = max(0, start_pt[0] - crop_size//2)
@@ -149,8 +143,6 @@ class SparseVoxelMapNavigationSpace:
         
         robot_x_rel = start_pt[0] - x0
         robot_y_rel = start_pt[1] - y0
-        
-        plt.figure(figsize=(15, 10))
         
         mask = self.get_oriented_mask(start[2])
         dim = mask.shape[0]
@@ -171,39 +163,42 @@ class SparseVoxelMapNavigationSpace:
                         if mask.cpu().numpy()[mask_x, mask_y] > 0:
                             footprint_contour[i, j] = 1
         
-        # Sub-image 1: Obstacle map + robot footprint
-        plt.subplot(221)
-        plt.imshow(crop_obs.cpu().numpy(), cmap='Reds', alpha=0.7)
-        plt.contour(footprint_contour, levels=[0.5], colors='green', linewidths=3, alpha=0.8)
-        plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-        plt.title(f"Obstacles + Robot Footprint\nRed=obstacles, Green=robot outline, Blue=center")
-        plt.legend()
-        
-        # Sub-image 2: Exploring the map + robot footprint
-        plt.subplot(222)
-        plt.imshow(crop_exp.cpu().numpy(), cmap='Greens', alpha=0.7)
-        plt.contour(footprint_contour, levels=[0.5], colors='blue', linewidths=3, alpha=0.8)
-        plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-        plt.title(f"Explored + Robot Footprint\nGreen=explored, Blue=robot outline, Red=center")
-        plt.legend()
-        
-        # Sub-map 3: Obstacle map (pure obstacles)
-        plt.subplot(223)
-        plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
-        plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-        plt.title(f"Obstacles Only\nRed=obstacles, Blue=robot center")
-        plt.legend()
-        
-        # Sub-map 4: Exploration Map (Pure Exploration)
-        plt.subplot(224)
-        plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
-        plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-        plt.title(f"Explored Only\nGreen=explored, Red=robot center")
-        plt.legend()
-        
-        plt.suptitle(f"Robot Position Analysis (cropped {crop_size}x{crop_size})\nRobot at grid ({start_pt[0]}, {start_pt[1]})", fontsize=14)
-        plt.tight_layout()
-        plt.show()
+
+        if debug:
+            plt.figure(figsize=(15, 10))
+            # Sub-image 1: Obstacle map + robot footprint
+            plt.subplot(221)
+            plt.imshow(crop_obs.cpu().numpy(), cmap='Reds', alpha=0.7)
+            plt.contour(footprint_contour, levels=[0.5], colors='green', linewidths=3, alpha=0.8)
+            plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+            plt.title(f"Obstacles + Robot Footprint\nRed=obstacles, Green=robot outline, Blue=center")
+            plt.legend()
+            
+            # Sub-image 2: Exploring the map + robot footprint
+            plt.subplot(222)
+            plt.imshow(crop_exp.cpu().numpy(), cmap='Greens', alpha=0.7)
+            plt.contour(footprint_contour, levels=[0.5], colors='blue', linewidths=3, alpha=0.8)
+            plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+            plt.title(f"Explored + Robot Footprint\nGreen=explored, Blue=robot outline, Red=center")
+            plt.legend()
+            
+            # Sub-map 3: Obstacle map (pure obstacles)
+            plt.subplot(223)
+            plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
+            plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+            plt.title(f"Obstacles Only\nRed=obstacles, Blue=robot center")
+            plt.legend()
+            
+            # Sub-map 4: Exploration Map (Pure Exploration)
+            plt.subplot(224)
+            plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
+            plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+            plt.title(f"Explored Only\nGreen=explored, Red=robot center")
+            plt.legend()
+            
+            plt.suptitle(f"Robot Position Analysis (cropped {crop_size}x{crop_size})\nRobot at grid ({start_pt[0]}, {start_pt[1]})", fontsize=14)
+            plt.tight_layout()
+            plt.show()
 
 
     def _get_theta_index(self, theta: float) -> int:
@@ -351,7 +346,7 @@ class SparseVoxelMapNavigationSpace:
 
 
     def sample_target_point(
-        self, start: torch.Tensor, point: torch.Tensor, planner, exploration: bool = False
+        self, start: torch.Tensor, point: torch.Tensor, planner: AStar, exploration: bool = False
     ) -> Optional[np.ndarray]:
         """Sample a position near the mask and return.
 
