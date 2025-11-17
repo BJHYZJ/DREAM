@@ -205,8 +205,7 @@ class RobotAgent:
                     depth=obs.depth, 
                     intrinsics=obs.camera_K, 
                     camera_pose=obs.camera_in_map_pose,
-                    base_pose=obs.base_in_map_pose, 
-                    local_tf=obs.camera_in_base_pose, 
+                    base_pose=obs.base_in_map_pose,
                     obs_id=obs.obs_id,
                 )
 
@@ -289,9 +288,8 @@ class RobotAgent:
                     obs = self.voxel_map.observations[sid]
                     assert obs.is_pose_graph_node, "The is_pose_graph_node should set to True when Node in pose_graph."
                     
-                    optimized_base_in_map_pose = torch.tensor(
+                    camera_pose_now = torch.tensor(
                         pose_graph[sid], dtype=torch.float32)
-                    camera_pose_now = optimized_base_in_map_pose @ obs.local_tf
                     
                     rot_origin = obs.camera_pose[:3, :3]
                     trans_origin = obs.camera_pose[:3, 3]
@@ -315,11 +313,9 @@ class RobotAgent:
             def re_add_semantic_memory(obs):
                 # update obs pose from pose graph
                 if obs.obs_id in pose_graph:
-                    optimized_base_in_map = torch.tensor(
-                        pose_graph[obs.obs_id], dtype=torch.float32
-                    )
-                    obs.base_pose = optimized_base_in_map
-                    obs.camera_pose = optimized_base_in_map @ obs.local_tf
+                    camera_pose_now = torch.tensor(
+                        pose_graph[sid], dtype=torch.float32)
+                    obs.camera_pose = camera_pose_now
 
                 features = obs.feats
                 if self.voxel_map.compression_features and features is not None:
@@ -328,13 +324,13 @@ class RobotAgent:
 
                 self.voxel_map.add_to_semantic_memory(
                     camera_pose=obs.camera_pose,
+                    base_pose=obs.base_pose,
                     rgb=obs.rgb,
                     obs_id=obs.obs_id,
                     camera_K=obs.camera_K,
                     depth=obs.depth,
                     valid_depth=obs.valid_depth,
                     feats=features,
-                    base_pose=obs.base_pose,
                 )    
 
             update_length = 0
@@ -484,11 +480,13 @@ class RobotAgent:
         if self.manipulation_only:
             self.detection_model = None
             image_shape = (360, 270)
+            voxel_resolution = 0.1
         elif self.mllm:
             self.detection_model = OwlPerception(
                 version="owlv2-B-p16", device=self.device, confidence_threshold=0.01
             )
             image_shape = (360, 270)
+            voxel_resolution = 0.1
         else:
             self.detection_model = OwlPerception(
                 version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.15
@@ -503,7 +501,7 @@ class RobotAgent:
             obs_min_height=parameters["obs_min_height"],
             obs_max_height=parameters["obs_max_height"],
             obs_min_density=parameters["obs_min_density"],
-            grid_resolution=0.1,
+            grid_resolution=parameters["grid_resolution"],
             min_depth=parameters["min_depth"],
             max_depth=parameters["max_depth"],
             pad_obstacles=parameters["pad_obstacles"],
@@ -592,8 +590,7 @@ class RobotAgent:
                 depth=obs.depth, 
                 intrinsics=obs.camera_K, 
                 camera_pose=obs.camera_in_map_pose,
-                base_pose=obs.base_in_map_pose, 
-                local_tf=obs.camera_in_base_pose, 
+                base_pose=obs.base_in_map_pose,
                 obs_id=obs.obs_id,
             )
             if visualize_map:

@@ -1151,7 +1151,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
             # For history nodes that do not have RGB values, both depth and RGB values ​​should be set to None / np.array(B).
             if not output["just_pose_graph"]:
-                output["camera_in_map_pose"] = output["base_in_map_pose"] @ output["camera_in_base_pose"]
                 output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
                 output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
                 rgb_height, rgb_width = output["rgb"].shape[:2]

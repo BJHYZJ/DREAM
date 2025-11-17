@@ -19,7 +19,8 @@ open_vocab_category_map_file: example_cat_map.json
 tts_engine: "gTTS"
 
 # Sparse Voxel Map parameters
-voxel_size: 0.1
+voxel_size: 0.05
+grid_resolution: 0.05
 ground_max_height: -0.35  # sensor to ground height is more than 0.325 (base to base_footprint)
 obs_min_height: 0.2 # Ignore things less than this high when planning motions
 obs_max_height: 1.5  # Ignore things over this height (eg ceilings)

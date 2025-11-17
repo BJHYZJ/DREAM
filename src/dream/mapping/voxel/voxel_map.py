@@ -99,7 +99,7 @@ class SparseVoxelMapNavigationSpace:
         Args:
             orientation_resolution: number of bins to break it into
         """
-        self._footprint = self.robot.get_robot_model().get_footprint()
+        self._footprint: Footprint = self.robot.get_robot_model().get_footprint()
         self._orientation_resolution = 64
         self._oriented_masks = []
 
@@ -330,7 +330,6 @@ class SparseVoxelMapNavigationSpace:
             plt.title("Robot Footprint Mask")
             plt.colorbar()
             
-            # 显示碰撞叠加结果
             plt.subplot(236)
             collision_vis = (crop_obs & mask).cpu().numpy().astype(float)
             safe_vis = (crop_exp & mask).cpu().numpy().astype(float) * 0.5
@@ -395,7 +394,7 @@ class SparseVoxelMapNavigationSpace:
                 continue
             # if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.35:
             #     continue
-            if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.7:
+            if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.85:
                 i = (point[0] - selected_target[0]) // abs(point[0] - selected_target[0])
                 j = (point[1] - selected_target[1]) // abs(point[1] - selected_target[1])
                 index_i = int(selected_target[0].int() + i)
@@ -565,7 +564,7 @@ class SparseVoxelMapNavigationSpace:
         xy = self.voxel_map.grid_coords_to_xy(pt)  # type: ignore
         return float(xy[0]), float(xy[1])
 
-    def sample_navigation(self, start, planner, point, mode="navigation"):
+    def sample_navigation(self, start, planner: AStar, point, mode="navigation"):
         # plt.clf()
         if point is None:
             # start_pt = self.to_pt(start)

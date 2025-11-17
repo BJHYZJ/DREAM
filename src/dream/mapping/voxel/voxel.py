@@ -49,13 +49,12 @@ from dream.perception.detection.owl import OwlPerception
 @dataclass
 class Frame:
     camera_pose: Any  # camera_in_map_pose
-    local_tf: Any  # camera_in_base_pose, for pose update in loop detection
+    base_pose: Any
     camera_K: Any
     rgb: Any
     depth: Any
     valid_depth: Any
     obs_id: Any
-    base_pose: Any
     feats: Any
     is_pose_graph_node: bool=False
     info: Any = None
@@ -533,9 +532,8 @@ class SparseVoxelMap:
         depth: np.ndarray, 
         intrinsics: np.ndarray, 
         camera_pose: np.ndarray, 
-        local_tf: np.ndarray,
+        base_pose: np.ndarray,
         obs_id: int,
-        base_pose: Optional[Tensor]=None,
         save_all_obs: bool=False,
         **info,
     ):
@@ -553,7 +551,6 @@ class SparseVoxelMap:
         intrinsics = torch.Tensor(intrinsics)
         camera_pose = torch.Tensor(camera_pose)
         base_pose = torch.Tensor(base_pose)
-        local_tf = torch.Tensor(local_tf)
 
         # Resize depth/rgb and scale intrinsics once here
         if self.image_shape is not None:
@@ -595,12 +592,12 @@ class SparseVoxelMap:
 
         feats = self.add_to_semantic_memory(
             camera_pose=camera_pose,
+            base_pose=base_pose,
             rgb=rgb,
             depth=depth,
             obs_id=obs_id,
             valid_depth=valid_depth,
             camera_K=intrinsics,
-            base_pose=base_pose,
             return_feats=True,
         )
 
@@ -612,13 +609,12 @@ class SparseVoxelMap:
         assert obs_id not in self.observations.keys(), "obs_id must be incremented."
         self.observations[obs_id] = Frame(
             camera_pose=camera_pose,
-            local_tf=local_tf,
+            base_pose=base_pose,
             camera_K=intrinsics,
             rgb=rgb,
             depth=depth,
             valid_depth=valid_depth,
             obs_id=obs_id,
-            base_pose=base_pose,
             feats=compressed_feats if self.compression_features else feats,
             info=info,
         )
@@ -626,6 +622,7 @@ class SparseVoxelMap:
     def add_to_semantic_memory(
         self,
         camera_pose: Tensor,
+        base_pose: Tensor,
         rgb: Tensor,
         obs_id: int,
         camera_K: Tensor,
@@ -633,7 +630,6 @@ class SparseVoxelMap:
         valid_depth: Optional[torch.Tensor]=None,
         weights: Optional[torch.Tensor]=None,
         feats: Optional[Tensor]=None,
-        base_pose: Optional[Tensor]=None,
         return_feats: bool=False,
         threshold: float = 0.95,
     ):
@@ -1202,8 +1198,6 @@ class SparseVoxelMap:
         return True
 
 
-
-
     def _update_visited(self, base_pose: Tensor):
         """Update 2d map of where robot has visited"""
         # Add exploration here
@@ -1239,12 +1233,11 @@ class SparseVoxelMap:
         assert pickle_file_name.exists(), f"No file found at {pickle_file_name}"
         with pickle_file_name.open("rb") as f:
             data = pickle.load(f)
-        for i, (camera_pose, rgb, feats, depth, base_pose, K, obs_id) in enumerate(
+        for i, (camera_pose, rgb, feats, depth, K, obs_id) in enumerate(
             zip(
                 data["camera_poses"],
                 data["rgb"],
                 data["depth"],
-                data["base_poses"],
                 data["camera_K"],
                 data['obs_id']
             )
