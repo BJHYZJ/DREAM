@@ -98,6 +98,7 @@ class ZmqServer(BaseZmqServer):
             "depth": obs.depth_compressed,
             "camera_K": obs.camera_K,
             "camera_in_map_pose": obs.camera_in_map_pose,
+            "base_in_map_pose": obs.base_in_map_pose,
             "recv_address": self.recv_address,
             "step": self._last_step,
             "at_goal": self.client.at_goal(),

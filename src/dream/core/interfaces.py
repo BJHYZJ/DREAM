@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Optional, Union
 import array
+from click import Option
 import numpy as np
 import sophuspy as sp
 
@@ -329,6 +330,7 @@ class RtabmapData(BaseObservations):
     depth_compressed: Optional[array.array] = None
     camera_K: Optional[np.ndarray] = None
     camera_in_map_pose: Optional[np.ndarray] = None
+    base_in_map_pose: Optional[np.ndarray] = None
     step: Optional[int] = None
     is_simulation: bool = False
 
@@ -347,6 +349,7 @@ class Observations(BaseObservations):
     depth: array.array | np.ndarray = None
     camera_K: array.array | np.ndarray = None
     camera_in_map_pose: Optional[np.ndarray] = None  # camera_in_map_pose = base_in_map_pose @ camera_in_base_pose
+    base_in_map_pose: Optional[np.ndarray] = None
     xyz: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
     image_scaling: Optional[float] = None

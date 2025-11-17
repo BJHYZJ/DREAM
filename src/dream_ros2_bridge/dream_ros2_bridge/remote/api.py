@@ -407,7 +407,8 @@ class DreamClient(AbstractRobotClient):
     def get_full_observation(self) -> RtabmapData:
         
         rtabmap_data = self._ros_client.get_rtabmapdata()
-        if rtabmap_data is None:
+        base_in_map_pose = self.get_base_in_map_pose()
+        if rtabmap_data is None or base_in_map_pose is None:
             return None
         
         timestamp = (
@@ -468,7 +469,7 @@ class DreamClient(AbstractRobotClient):
             camera_K=camera_K,
             pose_graph=pose_graph,
             camera_in_map_pose=current_pose.matrix(),
-            # camera_in_base_pose=local_tf.matrix(),
+            base_in_map_pose=base_in_map_pose.matrix(),
         )
 
 
