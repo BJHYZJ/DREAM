@@ -433,9 +433,13 @@ class DreamClient(AbstractRobotClient):
             )
         }
 
+        rgb = node.data.left_compressed
+        depth = node.data.right_compressed
+
         # if history node, don't need to delete pose_graph[node_id], cause it pose is new
-        if self._last_node_id is not None and node_id <= self._last_node_id:
-            print("[warning] 🛑 received history node")
+        if (self._last_node_id is not None and node_id <= self._last_node_id) or \
+            (len(rgb) == 0) or (len(depth) == 0):
+            print("[warning] 🛑 received history node or empty node")
             return RtabmapData(
                 timestamp=timestamp,
                 pose_graph=pose_graph,
@@ -446,9 +450,6 @@ class DreamClient(AbstractRobotClient):
 
         current_pose = pose2sophus(pose_graph[node_id])
         del pose_graph[node_id]
-        rgb = node.data.left_compressed
-        depth = node.data.right_compressed
-        assert len(rgb) != 0 and len(depth) != 0
         
         local_tf = transform_to_sophus(node.data.local_transform[0])
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
