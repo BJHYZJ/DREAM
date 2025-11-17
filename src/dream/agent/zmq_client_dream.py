@@ -580,7 +580,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         blocking: bool=True,
         timeout: float=10.0,
         reliable: bool=True,
-        sleep_time: int=1,
+        # sleep_time: int=1,
     ):
         """Move the arm to a particular configuration. servo angle control
 
@@ -615,7 +615,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if error < 0.1:  # 1 degree threshold
                     # print(f"[Camera Aim] ✅ Reached target")
                     # waiting for 1 second to make sure data transport over
-                    time.sleep(sleep_time)
+                    # time.sleep(sleep_time)
                     return True
                 
                 steps += 1

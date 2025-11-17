@@ -581,15 +581,15 @@ class RobotAgent:
                 version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.15
             )
             voxel_resolution = 0.05
-            image_shape = (480, 360)
+            # image_shape = (480, 360)
+            image_shape = (360, 720)
         self.voxel_map = SparseVoxelMap(
             voxel_resolution=parameters["voxel_size"] if voxel_resolution is None else voxel_resolution,
             local_radius=parameters["local_radius"],
+            ground_max_height=parameters["ground_max_height"],
             obs_min_height=parameters["obs_min_height"],
             obs_max_height=parameters["obs_max_height"],
             obs_min_density=parameters["obs_min_density"],
-            neg_obs_height=parameters["neg_obs_height"],
-            use_negative_obstacles=parameters["use_negative_obstacles"],
             grid_resolution=0.1,
             min_depth=parameters["min_depth"],
             max_depth=parameters["max_depth"],
@@ -727,6 +727,8 @@ class RobotAgent:
             self.robot.arm_to(angle=angle, speed=speed, blocking=True)
             if not self._realtime_updates:
                 self.update()
+            else:
+                time.sleep(1)  # waiting for 1 second
 
     def rotate_in_place(self):
         print("*" * 10, "Rotate in place", "*" * 10)
@@ -847,7 +849,7 @@ class RobotAgent:
             with self._voxel_map_lock:
                 print(obs, len(self.voxel_map.observations))
                 obs = self.voxel_map.find_obs_id_for_text(text)
-                rgb = self.voxel_map.observations[obs - 1].rgb
+                rgb = self.voxel_map.observations[obs].rgb
             self.rerun_visualizer.log_custom_2d_image("/observation_similar_to_text", rgb)
 
         if localized_point is None:

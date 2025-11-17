@@ -157,7 +157,7 @@ def main(
     #         start_command = [("read_from_pickle", input_path)]
     #     executor(start_command)
 
-    start_command = [("find", "eggplant")]
+    start_command = [("find", "red pepper")]
     executor(start_command)
 
     # Create the prompt we will use to control the robot
