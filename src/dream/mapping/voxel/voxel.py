@@ -43,7 +43,6 @@ from dream.utils.data_tools.dict import update
 from dream.visualization.urdf_visualizer import URDFVisualizer
 from dream.utils.visualization import create_disk
 from dream.mapping.grid import GridParams
-from dream.mapping.instance import Instance, InstanceMemory
 from dream.motion import Footprint, DreamIdx, PlanResult, RobotModel
 from dream.perception.detection.owl import OwlPerception
 
@@ -64,10 +63,6 @@ class Frame:
 logger = logging.getLogger(__name__)
 
 class SparseVoxelMap:
-
-    debug_valid_depth: bool = False
-    debug_instance_memory_processing_time: bool = False
-
     def __init__(
         self,
         voxel_resolution: float = 0.01,
@@ -86,7 +81,6 @@ class SparseVoxelMap:
         min_depth: float = 0.25,
         max_depth: float = 2.5,
         pad_obstacles: int = 0,
-        background_instance_label: int = -1,
         voxel_kwargs: Dict[str, Any] = {},
         encoder=None,
         map_2d_device: str = "cpu",
@@ -149,7 +143,6 @@ class SparseVoxelMap:
         self.min_depth = min_depth
         self.max_depth = max_depth
         self.pad_obstacles = int(pad_obstacles)
-        self.background_instance_label = background_instance_label
 
         self.voxel_kwargs = voxel_kwargs
         self.encoder = encoder

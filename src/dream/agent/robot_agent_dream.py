@@ -42,10 +42,8 @@ from dream.audio.text_to_speech import get_text_to_speech
 from dream.core.interfaces import Observations
 from dream.core.parameters import Parameters
 from dream.core.robot import AbstractGraspClient, AbstractRobotClient
-from dream.mapping.instance import Instance
 from dream.mapping.voxel import SparseVoxelMap
 from dream.mapping.voxel import SparseVoxelMapNavigationSpace
-from dream.mapping.voxel import SparseVoxelMapProxy
 from dream.motion.algo.a_star import AStar
 from dream.motion import ConfigurationSpace, Planner, PlanResult
 from dream.perception.detection.owl import OwlPerception
@@ -54,16 +52,6 @@ from dream.perception.wrapper import OvmmPerception
 from dream.utils.logger import Logger
 
 logger = Logger(__name__)
-
-# Manipulation hyperparameters
-INIT_LIFT_POS = 0.45
-INIT_WRIST_PITCH = -1.57
-INIT_ARM_POS = 0
-INIT_WRIST_ROLL = 0
-INIT_WRIST_YAW = 0
-INIT_HEAD_PAN = -1.57
-INIT_HEAD_TILT = -0.65
-
 
 class RobotAgent:
     """Basic demo code. Collects everything that we need to make this work."""
@@ -74,9 +62,7 @@ class RobotAgent:
         parameters: Union[Parameters, Dict[str, Any]],
         semantic_sensor: Optional[OvmmPerception] = None,
         grasp_client: Optional[AbstractGraspClient] = None,
-        debug_instances: bool = True,
-        show_instances_detected: bool = False,
-        use_instance_memory: bool = False,
+
         # re: int = 3,
         manip_port: int = 5557,
         log: Optional[str] = None,
@@ -93,8 +79,6 @@ class RobotAgent:
             raise RuntimeError(f"parameters of unsupported type: {type(parameters)}")
         self.robot = robot
         self.grasp_client = grasp_client
-        self.debug_instances = debug_instances
-        self.show_instances_detected = show_instances_detected
 
         self.semantic_sensor = semantic_sensor
         self.pos_err_threshold = parameters["trajectory_pos_err_threshold"]
@@ -128,10 +112,8 @@ class RobotAgent:
         self.create_obstacle_map(parameters)
 
         # ==============================================
-        self.guarantee_instance_is_reachable = self.parameters.guarantee_instance_is_reachable
         self.use_scene_graph = self.parameters["use_scene_graph"]
         self.tts = get_text_to_speech(self.parameters["tts_engine"])
-        self._use_instance_memory = use_instance_memory
         self._realtime_updates = self.parameters["agent"]["use_realtime_updates"]
 
         # ==============================================
@@ -142,8 +124,6 @@ class RobotAgent:
         # ==============================================
         # Task-level parameters
         # Grasping parameters
-        self.current_receptacle: Instance = None
-        self.current_object: Instance = None
         self.target_object = None
         self.target_receptacle = None
         # ==============================================
@@ -173,23 +153,10 @@ class RobotAgent:
         self._pose_graph_timestamp = None
         self._obs_timestamp = None
 
-        # self.image_processor = VoxelMapImageProcessor(
-        #     rerun=True,
-        #     rerun_visualizer=self.robot._rerun,
-        #     log="dream_log/" + datetime.now().strftime("%Y%m%d_%H%M%S"),
-        #     robot=self.robot,
-        # )  # type: ignore
-        # self.encoder = self.image_processor.get_encoder()
         context = zmq.Context()
         self.manip_socket = context.socket(zmq.REQ)
         self.manip_socket.connect("tcp://" + server_ip + ":" + str(manip_port))
 
-        # if re == 1 or re == 2:
-        #     stretch_gripper_max = 0.3
-        #     end_link = "link_straight_gripper"
-        # else:
-        #     stretch_gripper_max = 0.64
-        #     end_link = "link_gripper_s3_body"
         end_link = "gripper"
         self.transform_node = end_link
         self.manip_wrapper = ManipulationWrapper(
@@ -198,8 +165,6 @@ class RobotAgent:
         self.robot.move_to_nav_posture()
 
         self.reset_object_plans()
-
-        # self.re = re
 
         # Store the current scene graph computed from detected objects
         self.scene_graph = None
@@ -212,13 +177,11 @@ class RobotAgent:
 
     def _start_threads(self):
         """Create threads and locks for real-time updates."""
-
-        # Track if we are still running
+        # Create Lock for voxel map
         self._voxel_map_lock = Lock()
+
         # Map updates
         self._update_map_thread = Thread(target=self.update_map_loop)
-        if self._realtime_updates:
-            self._update_map_thread = Thread(target=self.update_map_loop_realtime)
         self._update_map_thread.start()
 
         if self._realtime_updates:
@@ -267,18 +230,12 @@ class RobotAgent:
             time.sleep(0.5)
 
 
-    def update_map_loop_realtime(self):
-        """Threaded function that updates our voxel map in real-time."""
-        while self.robot.running:
-            self.update_map_with_pose_graph_realtime()
-
     def update_map_loop(self):
         """Threaded function that updates our voxel map in real-time."""
         while self.robot.running:
-            # self.update_map_with_pose_graph()
-            assert 1 == 2
+            self.update_map_with_pose_graph()
 
-    def update_map_with_pose_graph_realtime(
+    def update_map_with_pose_graph(
         self, 
         verbose: bool=True
     ) -> None:
@@ -457,7 +414,7 @@ class RobotAgent:
                 if not obs.is_pose_graph_node:
                     obs.feats = None
 
-            if verbose:
+            if verbose and False:
                 t2 = timeit.default_timer()
                 print(f"[Update map with pose graph realtime] spend time: {t2 - t0}, observations length: {len(obs_ids_now)}")
                 print("=" * 60)
@@ -471,14 +428,10 @@ class RobotAgent:
         self._object_attempts: Dict[int, int] = {}
         self._cached_plans: Dict[int, PlanResult] = {}
 
-        # Objects that cannot be reached
-        self.unreachable_instances = set()
-
 
     def start(
         self,
         goal: Optional[str] = None,
-        visualize_map_at_start: bool = False,
         can_move: bool = True,
         verbose: bool = True,
     ) -> None:
@@ -508,46 +461,6 @@ class RobotAgent:
         self.robot.switch_to_navigation_mode()
         if verbose:
             print("- Update map after switching to navigation posture")
-
-        # Add some debugging stuff - show what 3d point clouds look like
-        if visualize_map_at_start:
-            if not self._realtime_updates:
-                # self.update(visualize_map=False)  # Append latest observations
-                self.update()
-            print("- Visualize map after updating")
-            with self._voxel_map_lock:
-                self.voxel_map.show(
-                    orig=np.zeros(3),
-                    xyt=self.robot.get_base_in_map_xyt(),
-                    footprint=self.robot.get_robot_model().get_footprint(),
-                    instances=self.semantic_sensor is not None,
-                )
-            self.print_found_classes(goal)
-
-
-    def print_found_classes(self, goal: Optional[str] = None, verbose: bool = False):
-        """Helper. print out what we have found according to detic."""
-        if self.semantic_sensor is None:
-            logger.warning("Tried to print classes without semantic sensor!")
-            return
-
-        with self._voxel_map_lock:
-            instances = self.voxel_map.get_instances()
-            if goal is not None:
-                print(f"Looking for {goal}.")
-            print("So far, we have found these classes:")
-            for i, instance in enumerate(instances):
-                oid = int(instance.category_id.item())
-                name = self.semantic_sensor.get_class_name_for_id(oid)
-                print(i, name, instance.score)
-                if goal is not None:
-                    if self.is_match_by_feature(instance, goal):
-                        if verbose:
-                            from matplotlib import pyplot as plt
-
-                            plt.imshow(instance.get_best_view().cropped_image.int())
-                            plt.show()
-
 
     def create_obstacle_map(self, parameters):
         """
@@ -675,32 +588,14 @@ class RobotAgent:
         obs = self.robot.get_observation()
         # Since the pose graph only contains the poses of the base_in_map_pose, 
         # the camera_in_base_pose need to be stored separately for subsequent pose updates.
-        (
-            rgb,
-            depth,
-            K,
-            camera_pose,
-            base_pose,
-            local_tf,
-            node_id,
-        ) = (
-            obs.rgb,
-            obs.depth,
-            obs.camera_K,
-            obs.camera_in_map_pose,
-            obs.base_in_map_pose,
-            obs.camera_in_base_pose,
-            obs.node_id,
-        )
-
         self.voxel_map.process_rgbd_images(
-            rgb=rgb, 
-            depth=depth, 
-            intrinsics=K, 
-            camera_pose=camera_pose,
-            base_pose=base_pose, 
-            local_tf=local_tf, 
-            node_id=node_id,
+            rgb=obs.rgb, 
+            depth=obs.depth, 
+            intrinsics=obs.camera_K, 
+            camera_pose=obs.camera_in_map_pose,
+            base_pose=obs.base_in_map_pose, 
+            local_tf=obs.camera_in_base_pose, 
+            obs_id=obs.obs_id,
         )
         if visualize_map:
             if self.voxel_map.semantic_memory._points is not None and \
@@ -745,18 +640,10 @@ class RobotAgent:
         text: str,
         arm_speed=40,
     ):
-        # if not self._realtime_updates:
-            # self.robot.look_front()
-            # self.look_around()
-            # self.robot.look_front()
-            # self.robot.switch_to_navigation_mode()
-
         self.robot.look_front(speed=arm_speed)
         self.look_around(speed=arm_speed)
         self.robot.look_front(speed=arm_speed)
         self.robot.switch_to_navigation_mode()
-
-        # self.robot.switch_to_navigation_mode()
 
         start = self.robot.get_base_in_map_xyt()
         res = self.process_text(text, start)
@@ -944,7 +831,7 @@ class RobotAgent:
 
 
     def get_voxel_map(self):
-        """Return the voxel map"""
+        """Return the voxel map in use by this model"""
         return self.voxel_map
     
 
