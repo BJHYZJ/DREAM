@@ -202,7 +202,7 @@ def generate_launch_description():
       description='Use rtabmap_viz'),
 
     DeclareLaunchArgument(
-      'frame_id', default_value='camera_link',  # default base_link, now, when arm is moving, rtabmap keyframe will added.
+      'frame_id', default_value='camera_color_optical_frame',  # default base_link, now, when arm is moving, rtabmap keyframe will added.
       description='Base frame of the robot.'),
     
     DeclareLaunchArgument(

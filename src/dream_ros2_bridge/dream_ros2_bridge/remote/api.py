@@ -404,10 +404,7 @@ class DreamClient(AbstractRobotClient):
         """
         return self.nav.base_to(xyt, relative=relative, blocking=blocking)
 
-    def get_full_observation(
-        self,
-        start_pose: Optional[np.ndarray] = None,
-    ) -> RtabmapData:
+    def get_full_observation(self) -> RtabmapData:
         
         rtabmap_data = self._ros_client.get_rtabmapdata()
         if rtabmap_data is None:
@@ -451,21 +448,14 @@ class DreamClient(AbstractRobotClient):
         current_pose = pose2sophus(pose_graph[node_id])
         del pose_graph[node_id]
         
-        local_tf = transform_to_sophus(node.data.local_transform[0])
+        # local_tf = transform_to_sophus(node.data.local_transform[0])
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
         camera_K = np.array(left_ci['K']).reshape(3, 3)
 
-        
-        if start_pose is not None:
-            # use sophus to get the relative translation
-            relative_pose = start_pose.inverse() * current_pose
-        else:
-            relative_pose = current_pose
-        euler_angles = relative_pose.so3().log()
-
+        euler_angles = current_pose.so3().log()
         compass = np.array([euler_angles[-1]])
         # GPS in robot coordinates
-        gps = relative_pose.translation()[:2]
+        gps = current_pose.translation()[:2]
 
         return RtabmapData(
             timestamp=timestamp,
@@ -477,8 +467,8 @@ class DreamClient(AbstractRobotClient):
             depth_compressed=depth,
             camera_K=camera_K,
             pose_graph=pose_graph,
-            base_in_map_pose=current_pose.matrix(),
-            camera_in_base_pose=local_tf.matrix(),
+            camera_in_map_pose=current_pose.matrix(),
+            # camera_in_base_pose=local_tf.matrix(),
         )
 
 

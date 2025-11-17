@@ -328,8 +328,7 @@ class RtabmapData(BaseObservations):
     rgb_compressed: Optional[array.array] = None
     depth_compressed: Optional[array.array] = None
     camera_K: Optional[np.ndarray] = None
-    base_in_map_pose: Optional[np.ndarray] = None
-    camera_in_base_pose: Optional[np.ndarray] = None  # when history node has been published by rtabmap, camera_in_base_pose may be None
+    camera_in_map_pose: Optional[np.ndarray] = None
     step: Optional[int] = None
     is_simulation: bool = False
 
@@ -347,8 +346,6 @@ class Observations(BaseObservations):
     rgb: array.array | np.ndarray = None
     depth: array.array | np.ndarray = None
     camera_K: array.array | np.ndarray = None
-    base_in_map_pose: Optional[np.ndarray] = None  # base_in_map_pose is in pose_graph, base_in_map_pose == pose_graph[node_id]
-    camera_in_base_pose: Optional[np.ndarray] = None
     camera_in_map_pose: Optional[np.ndarray] = None  # camera_in_map_pose = base_in_map_pose @ camera_in_base_pose
     xyz: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None
