@@ -9,7 +9,7 @@
 # Some code may be adapted from other open-source works with their respective licenses. Original
 # license information maybe found below, if so.
 
-import importlib.resources as importlib_resources
+# import importlib.resources as importlib_resources
 import re
 import timeit
 
@@ -18,11 +18,12 @@ import urchin as urdf_loader
 from trimesh import Trimesh
 
 from dream.motion import DreamIdx
+from pathlib import Path
 
 urdf_name = f"urdf/rangerminiv3_with_xarm6.urdf"
 
 # python 3.10
-pkg_path = importlib_resources.files("dream_ros2_bridge")
+pkg_path = Path("src/dream_ros2_bridge")
 
 urdf_file_path = pkg_path / urdf_name
 mesh_files_directory_path = pkg_path / "meshes"

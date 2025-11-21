@@ -9,7 +9,7 @@
         <visual>
             <origin rpy="3.14 0 3.14" xyz="0 0 0.0"/>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/ranger_mini3.dae"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/ranger_mini3.dae"/>
             </geometry>
             <material name="">
                 <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1"/>
@@ -32,7 +32,7 @@
         <visual>
             <origin rpy="1.57 0 3.14" xyz="-0.248 -0.113 0.155"/>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel_right.dae" />
+                <mesh filename="src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel_right.dae" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -91,7 +91,7 @@
         <visual>
             <origin rpy="1.57 0 3.14" xyz="-0.248 -0.113 0.155"/>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel_right.dae"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel_right.dae"/>
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -150,7 +150,7 @@
         <visual>
             <origin rpy="1.57 0 3.14" xyz="-0.248 -0.125 -0.192"/>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel.dae"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel.dae"/>
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -209,7 +209,7 @@
         <visual>
             <origin rpy="1.57 0.0 3.14" xyz="-0.248 -0.125 -0.192"/>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel.dae"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/ranger_mini_v3_wheel.dae"/>
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1"/>
@@ -290,14 +290,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link_base.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link_base.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="White"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link_base.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link_base.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
@@ -311,14 +311,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link1.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link1.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="White"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link1.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link1.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
@@ -341,14 +341,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link2.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link2.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="White"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link2.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link2.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
@@ -371,14 +371,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link3.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link3.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="White"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link3.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link3.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
@@ -401,14 +401,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link4.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link4.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="White"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link4.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link4.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
@@ -431,14 +431,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link5.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link5.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="White"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link5.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link5.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
@@ -461,14 +461,14 @@
         </inertial>
         <visual>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/link6.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/link6.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <material name="Silver"/>
         </visual>
         <collision>
             <geometry>
-                <mesh filename="/home/yanzj/workspace/DREAM/src/dream_ros2_bridge/meshes/end_tool.stl"/>
+                <mesh filename="src/dream_ros2_bridge/meshes/end_tool.stl"/>
             </geometry>
             <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>

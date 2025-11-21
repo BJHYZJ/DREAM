@@ -19,5 +19,7 @@ debug
 *.pyo
 rerun_log
 src/anygrasp_manipulation/.TimeRecord
-
+MinkowskiEngine
 src/anygrasp_manipulation/example_data
+
+src/anygrasp_manipulation/pointnet2/pointnet2/_ext.cpython-310-x86_64-linux-gnu.so

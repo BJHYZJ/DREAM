@@ -263,7 +263,7 @@ def get_pose_from_front_up_end_effector(front, up):
 def pregrasp_position(
     object_xyz: np.ndarray,  # arm base
     ee_xyz: np.ndarray,  # arm base
-    distance_from_object: float=0.35
+    distance_from_object: float=0.25
 ) -> np.ndarray:
     vector_to_object = object_xyz - ee_xyz
     vector_to_object = vector_to_object / np.linalg.norm(vector_to_object)
@@ -279,7 +279,7 @@ def pickup(
     translation: np.ndarray,  # grasp translation in arm base
     object_points: np.ndarray,  # obj_points in arm base
     gripper_open: int=830,
-    distance_from_object: float=0.35
+    distance_from_object: float=0.25
 ):
     ee_goal_in_arm_base_pose = np.eye(4)
     ee_goal_in_arm_base_pose[:3, :3] = rotation
@@ -416,7 +416,7 @@ def place(
     back_object: str,  # object in back
     translation: np.ndarray,  # grasp translation in arm base
     gripper_width: int=830,
-    distance_from_object: float=0.4
+    distance_from_object: float=0.3
 ):
     front_direction = np.array([0.0, 0.0, -1.0])
     up_direction = np.array([0, 1, 0])

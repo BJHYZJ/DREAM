@@ -27,6 +27,12 @@ sudo make install
 sudo ldconfig
 
 
+# Modify the radar range using LivoxViewer2
+https://github.com/Livox-SDK/livox_ros_driver2/issues/199
+# It is recommended to configure FOV in Windows, because using LivoxViewer2 on Ubuntu 22.04 will result in an error, and the official documentation does not provide an explanation.
+https://github.com/Livox-SDK/livox_ros_driver2/issues/145
+
+
 echo 'alias realsense-viewer=/usr/local/bin/realsense-viewer' >> ~/.bashrc
 source ~/.bashrc
 
@@ -103,7 +109,7 @@ pip install -e ./src/  # -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Downgrade the NumPy version to be compatible with all libraries.
 pip install numpy==1.23.5
-pip install pip install transforms3d==0.3.1
+pip install transforms3d==0.3.1
 ```
 
 # config ~/.bashrc
@@ -128,36 +134,50 @@ export PYDEVD_WARN_EVALUATION_TIMEOUT=10
 ```
 
 
+# Install DREAM (cuda-12.1)
+```bash
+sudo apt update
+sudo apt install libasound2-dev
+sudo apt install portaudio19-dev
+
+
+git clone https://github.com/BJHYZJ/DREAM.git --recursive
+cd DREAM
+conda create -n dream python=3.10 -y
+conda activate dream
+pip install -e ./src/
+
+pip install rerun-sdk==0.26.1
+pip install numpy==1.23.5
+pip install transforms3d==0.3.1
+pip install zstd
+```
+
+
 
 # anygrasp environment setup (cuda-12.1)
 ```bash
-git clone git@github.com:BJHYZJ/DREAM.git
-# 更新submodule
-git submodule update --remote --recursive
-
 export PYTHONNOUSERSITE=1
 conda create -n anygrasp python=3.10 -y
 conda activate anygrasp
-pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu121  -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-pip install ipython cmake pybind11 ninja scipy==1.10.1 scikit-learn==1.4.0 pandas==2.0.3 hydra-core opencv-python openai-clip timm matplotlib==3.7.2 imageio timm open3d numpy-quaternion more-itertools pyliblzfse einops transformers pytorch-lightning wget gdown tqdm zmq torch_geometric numpy==1.23.0  # -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install torch==2.3.1+cu121 torchvision==0.18.1+cu121 torchaudio==2.3.1 -f https://download.pytorch.org/whl/cu121/torch_stable.html
 
-pip install protobuf==3.19.0
 
-conda install "setuptools <65"
-pip install git+https://github.com/pccws/MinkowskiEngine  # -i https://pypi.tuna.tsinghua.edu.cn/simple
+# pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu121 
+pip install ipython scipy==1.10.1 scikit-learn==1.4.0 pandas==2.0.3 hydra-core opencv-python openai-clip timm matplotlib==3.7.2 imageio timm open3d numpy-quaternion more-itertools pyliblzfse einops transformers pytorch-lightning wget gdown tqdm zmq torch_geometric numpy==1.23.0  # -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# if you meet ` No module named 'distutils.msvccompiler` error, use: conda install "setuptools <65" 
+pip install --upgrade setuptools==59.8.0 
+```
+
+
+Then, Reference [Here](https://github.com/Julie-tang00/Common-envs-issues/blob/main/Cuda12-MinkowskiEngine) Install MinkowskiEngine
+```bash
 # pip install graspnetAPI
 export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True  # reference https://github.com/graspnet/graspnetAPI/issues/43
 pip install git+https://github.com/graspnet/graspnetAPI.git
 
 pip install git+https://github.com/luca-medeiros/lang-segment-anything.git  # -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-rerun-sdk==0.26.1
-pip install numpy==1.23.5
-pip install pip install transforms3d==0.3.1
-pip install xarm-python-sdk
 
 # set lib_cxx.so and gsnet.so
 ```bash
@@ -167,7 +187,18 @@ cp third_party/anygrasp_sdk/license_registration/lib_cxx_versions/lib_cxx.cpytho
 
 ```bash
 cd src/anygrasp_manipulation/pointnet2
-pip install -e .
+python -m pip install --upgrade "pip>=23" "setuptools>=64"
+pip install --no-build-isolation -e .
+
+pip install rerun-sdk==0.26.1
+pip install numpy==1.23.5
+pip install transforms3d==0.3.1
+
+# make dir
+cd ../../../
+checkpoints
+mkdir -p checkpoints/anygrasp
+mkdir -p checkpoints/sam
 ```
 
 
@@ -175,25 +206,24 @@ pip install -e .
 # use anygrasp
 get computer id
 ```bash
+sudo apt install libssl-dev
 cd src/anygrasp_manipulation
 ./anygrasp_license_registration/license_checker -f  
+# if meet: libcrypto.so.1.1: cannot open shared object file: No such file or directory
+# wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+# sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+# sudo apt-get install -f
+# Then retry it
 ```
 get license from [src/anygrasp_manipulation/anygrasp_license_registration/README.md](src/anygrasp_manipulation/anygrasp_license_registration/README.md)
 
 put license to `src/anygrasp_manipulation/license`
 and copy anygrasp checkpoints to ./checkpoints/anygrasp
 
-You can check license states via
+# You can check license states via
 ```bash
 ./anygrasp_license_registration/license_checker -c license/licenseCfg.json
 ```
-
-run anygrasp_manipulation
-```bash
-conda activate anygrasp
-python demo.py --open_communication --port 5557
-```
-
 
 # install Segment-anything-2
 ```bash
@@ -202,6 +232,16 @@ cd third_party/segment-anything-2
 pip install -e .
 pip install numpy==1.23.5  # numpy的版本会被覆盖，重新安装一次
 ```
+
+
+run anygrasp_manipulation
+```bash
+conda activate anygrasp
+python demo.py --open_communication --port 5557
+```
+
+
+
 
 
 ```bash
@@ -340,27 +380,6 @@ sudo ip link set can0 up type can bitrate 500000
 ```bash
 # rtabmap config in ~/.bashrc
 
-
-# RTAM-Map
-export RCUTILS_LOGGING_USE_STDOUT=1
-export RCUTILS_LOGGING_BUFFERED_STREAM=1
-# Optional, but if you like colored logs:
-export RCUTILS_COLORIZED_OUTPUT=1
-export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp     
-# Cyclone prefers multicast by default, if your router got too much spammed,
-# disable multicast with (https://github.com/ros2/rmw_cyclonedds/issues/489):
-export CYCLONEDDS_URI="<Disc><DefaultMulticastAddress>0.0.0.0</></>"
-
-```
-
-
-
-```bash
-# 通过LivoxViewer2来修改雷达的范围
-https://github.com/Livox-SDK/livox_ros_driver2/issues/199?utm_source=chatgpt.com
-# 建议在windows中设置fov，因为ubuntu22.04使用LivoxViewer2会报错，官方也没有给出解释
-https://github.com/Livox-SDK/livox_ros_driver2/issues/145
-```
 
 
 
