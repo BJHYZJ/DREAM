@@ -29,7 +29,6 @@ import sophuspy as sp
 from contextlib import contextmanager
 from control_msgs.action import FollowJointTrajectory
 from geometry_msgs.msg import PointStamped, Pose, PoseStamped, Twist
-from hello_helpers.joint_qpos_conversion import get_Idx
 
 # from nav2_msgs.srv import LoadMap, SaveMap
 from nav_msgs.msg import Odometry, Path

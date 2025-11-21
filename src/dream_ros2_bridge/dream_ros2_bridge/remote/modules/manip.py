@@ -13,7 +13,6 @@
 # LICENSE file in the root directory of this source tree.
 from typing import List, Optional
 
-from Cython import const
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from std_srvs.srv import Trigger

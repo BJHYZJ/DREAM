@@ -67,8 +67,6 @@ def get_joint_limits(urdf):
     return joint_limits
 
 
-# Available with
-# from hello_helpers import hello_misc
 def angle_diff_rad(target_rad, current_rad):
     # I've written this type of function many times before, and it's
     # always been annoying and tricky. This time, I looked on the web:

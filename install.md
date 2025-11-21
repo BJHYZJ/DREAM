@@ -157,6 +157,7 @@ pip install git+https://github.com/luca-medeiros/lang-segment-anything.git  # -i
 rerun-sdk==0.26.1
 pip install numpy==1.23.5
 pip install pip install transforms3d==0.3.1
+pip install xarm-python-sdk
 
 # set lib_cxx.so and gsnet.so
 ```bash
@@ -447,6 +448,7 @@ ros2 service call /dream_rtabmap/rtabmap/resume std_srvs/srv/Empty {}
 
 vscode debug for ros2 环境生成
 ```bash
+cd ~/DREAM_ws
 bash -lc 'source /opt/ros/humble/setup.bash && source ./DREAM_ws/install/setup.bash && env' \
         | awk -F= 'BEGIN{OFS="="} /^[A-Za-z_][A-Za-z0-9_]*=/{gsub(/\0/,"",$2); print $1"="$2}' \
         > .vscode/ros2.env
