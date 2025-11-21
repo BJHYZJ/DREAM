@@ -534,7 +534,7 @@ class SparseVoxelMap:
         camera_pose: np.ndarray, 
         base_pose: np.ndarray,
         obs_id: int,
-        save_all_obs: bool=False,
+        save_all_obs: bool=True,
         **info,
     ):
         """
@@ -545,6 +545,7 @@ class SparseVoxelMap:
             np.save(self.log + "/rgb" + str(obs_id) + ".npy", rgb)
             np.save(self.log + "/depth" + str(obs_id) + ".npy", depth)
             np.save(self.log + "/intrinsics" + str(obs_id) + ".npy", intrinsics)
+            np.save(self.log + "/camera_pose" + str(obs_id) + ".npy", camera_pose)
 
         rgb = torch.Tensor(rgb)
         depth = torch.Tensor(depth)
