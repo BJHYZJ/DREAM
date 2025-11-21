@@ -1,76 +1,135 @@
-setuptools==59.8.0
-
-
-cd DREAM_ws/src/stretch_mujoco/third_party/robocasa/
-pip install -e .
-cd ../robosuit
-pip install -e .
-
-python robocasa/scripts/download_kitchen_assets.py   # Caution: Assets to be downloaded are around 5GB.
-python robocasa/scripts/setup_macros.py              # Set up system variables.
-
-cd ../../
-pip install -e .  # install stretch_mujoco
-
-
-
-https://github.com/hello-robot/stretch_tutorials/blob/2ccee6617dc8bb7bfa5b2c8438185dec5f99e053/ros2/remote_compute.md
-
-
+# Install in hardware
 
 ```bash
-# mkdir -p ~/ament_ws/src
-# cd ~/ament_ws/src/
-git clone https://github.com/hello-robot/stretch_ros2
+
+# install livox-SDK
+cd ~
+git clone https://github.com/Livox-SDK/Livox-SDK2.git
+cd ./Livox-SDK2/
+mkdir build
+cd build
+cmake .. && make -j
+sudo make install
+
+# install librealsense for realsense-viewer
+cd ~
+git clone https://github.com/IntelRealSense/librealsense.git
+cd librealsense
+git checkout v2.56.5
+
+sudo apt update
+sudo apt install cmake make g++ libglfw3-dev libusb-1.0-0-dev libgtk-3-dev pkg-config -y
+
+mkdir build && cd build
+cmake .. -DBUILD_EXAMPLES=true
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+
+
+echo 'alias realsense-viewer=/usr/local/bin/realsense-viewer' >> ~/.bashrc
+source ~/.bashrc
+
+
+# Config MID-360
+# https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
+
+# install DREAM
+mkdir -p ~/DREAM_ws/DREAM_ws/src
+cd ~/DREAM_ws/
+git clone https://github.com/BJHYZJ/DREAM.git
+
+# install dependency
+cd ~/DREAM_ws/DREAM_ws/src
+ln -s ~/DREAM_ws/DREAM/src/dream_ros2_bridge .
 git clone https://github.com/hello-binit/ros2_numpy -b humble
-git clone https://github.com/IntelRealSense/realsense-ros.git -b ros2-master  # default ros2-development
-# git clone https://github.com/Slamtec/sllidar_ros2.git -b main
-# git clone https://github.com/hello-binit/respeaker_ros2.git -b humble
-# git clone https://github.com/hello-binit/audio_common.git -b humble
+git clone https://github.com/IntelRealSense/realsense-ros.git -b ros2-master
 git clone https://github.com/Livox-SDK/livox_ros_driver2.git
 git clone https://github.com/Ericsii/FAST_LIO_ROS2.git --recursive
-git clone https://github.com/westonrobot/ugv_sdk.git
-git clone https://github.com/westonrobot/ranger_ros2.git
-git clone https://github.com/xArm-Developer/xarm_ros2.git --recursive -b humbleccc
-
-git clone https://github.com/introlab/rtabmap.git
-git clone --branch ros2 https://github.com/introlab/rtabmap_ros.git
-
+git clone https://github.com/BJHYZJ/ugv_sdk.git
+git clone https://github.com/BJHYZJ/ranger_ros2.git
+git clone https://github.com/xArm-Developer/xarm_ros2.git --recursive -b humble
 
 # Make sure to uninstall any rtabmap binaries:
-sudo apt remove ros-$ROS_DISTRO-rtabmap*
-
+# sudo apt remove ros-$ROS_DISTRO-rtabmap*
 git clone https://github.com/introlab/rtabmap.git
 git clone --branch ros2 https://github.com/introlab/rtabmap_ros.git
 
+sudo apt install libasio-dev libboost-all-dev
 
-```
 
-
-```bash
+# build
 cd livox_ros_driver2
 cp package_ROS2.xml package.xml
 cp -rf launch_ROS2/ launch/
 
-cd ../..
+cd ~/DREAM_ws/DREAM_ws
 source /opt/ros/humble/setup.bash
 rosdep install --rosdistro=humble -iyr --skip-keys="librealsense2" --from-paths 
 rosdep update && rosdep install --from-paths src --ignore-src -r -y
 
+# If you meed sudo resdep init timeout problem:
+
+# sudo mkdir -p /etc/ros/rosdep/sources.list.d/
+# sudo curl -o /etc/ros/rosdep/sources.list.d/20-default.list -L https://mirrors.tuna.tsinghua.edu.cn/github-raw/ros/rosdistro/master/rosdep/sources.list.d/20-default.list
+# rosdep update
+
+
+
 source /opt/ros/humble/setup.bash
-export MAKEFLAGS="-j3" # Can be ignored if you have a lot of RAM (>16GB)
+# export MAKEFLAGS="-j3" # Can be ignored if you have a lot of RAM (>16GB)
 colcon build --symlink-install --cmake-args -DHUMBLE_ROS=humble -DCMAKE_BUILD_TYPE=Release
 
 # To build with rgbd_cameras>1 support and/or subscribe_user_data support:
 colcon build --symlink-install --cmake-args -DRTABMAP_SYNC_MULTI_RGBD=ON -DRTABMAP_SYNC_USER_DATA=ON -DCMAKE_BUILD_TYPE=Release
 
-# cd src/livox_ros_driver2
-# rm package.xml
-# rm -rf launch/
-cd ../..
+
+# pip install, install in system not conda
+# Ensure you install cuda-12.1
+sudo apt update
+sudo apt install portaudio19-dev
+sudo apt install libfuse2
+sudo apt update
+sudo apt install \
+  ros-humble-joint-state-publisher \
+  ros-humble-joint-state-publisher-gui \
+  ros-humble-robot-state-publisher
+
+
+
+cd ~/DREAM_ws/DREAM
+pip install "meson>=0.63.3" ninja  # solution: meson-python: error: meson executable "meson" not found
+pip install -e ./src/  # -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# Downgrade the NumPy version to be compatible with all libraries.
+pip install numpy==1.23.5
+pip install pip install transforms3d==0.3.1
 ```
 
-anygrasp environment setup (cuda-12.1)
+# config ~/.bashrc
+```bash
+# CUDA
+export CUDA_HOME=/usr/local/cuda-12.1
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+# RTAM-Map
+export RCUTILS_LOGGING_USE_STDOUT=1
+export RCUTILS_LOGGING_BUFFERED_STREAM=1
+# Optional, but if you like colored logs:
+export RCUTILS_COLORIZED_OUTPUT=1
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+# Cyclone prefers multicast by default, if your router got too much spammed,
+# disable multicast with (https://github.com/ros2/rmw_cyclonedds/issues/489):
+export CYCLONEDDS_URI="<Disc><DefaultMulticastAddress>0.0.0.0</></>"
+export PYDEVD_WARN_EVALUATION_TIMEOUT=10
+```
+
+
+
+# anygrasp environment setup (cuda-12.1)
 ```bash
 git clone git@github.com:BJHYZJ/DREAM.git
 # 更新submodule
@@ -98,6 +157,7 @@ pip install git+https://github.com/luca-medeiros/lang-segment-anything.git  # -i
 rerun-sdk==0.26.1
 pip install numpy==1.23.5
 pip install pip install transforms3d==0.3.1
+pip install xarm-python-sdk
 
 # set lib_cxx.so and gsnet.so
 ```bash
@@ -388,6 +448,7 @@ ros2 service call /dream_rtabmap/rtabmap/resume std_srvs/srv/Empty {}
 
 vscode debug for ros2 环境生成
 ```bash
+cd ~/DREAM_ws
 bash -lc 'source /opt/ros/humble/setup.bash && source ./DREAM_ws/install/setup.bash && env' \
         | awk -F= 'BEGIN{OFS="="} /^[A-Za-z_][A-Za-z0-9_]*=/{gsub(/\0/,"",$2); print $1"="$2}' \
         > .vscode/ros2.env
