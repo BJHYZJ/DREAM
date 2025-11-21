@@ -11,6 +11,28 @@ cd build
 cmake .. && make -j
 sudo make install
 
+# install librealsense for realsense-viewer
+cd ~
+git clone https://github.com/IntelRealSense/librealsense.git
+cd librealsense
+git checkout v2.56.5
+
+sudo apt update
+sudo apt install cmake make g++ libglfw3-dev libusb-1.0-0-dev libgtk-3-dev pkg-config -y
+
+mkdir build && cd build
+cmake .. -DBUILD_EXAMPLES=true
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+
+
+echo 'alias realsense-viewer=/usr/local/bin/realsense-viewer' >> ~/.bashrc
+source ~/.bashrc
+
+
+# Config MID-360
+# https://github.com/IntelRealSense/librealsense/blob/master/doc/distribution_linux.md
 
 # install DREAM
 mkdir -p ~/DREAM_ws/DREAM_ws/src
@@ -19,12 +41,13 @@ git clone https://github.com/BJHYZJ/DREAM.git
 
 # install dependency
 cd ~/DREAM_ws/DREAM_ws/src
+ln -s ~/DREAM_ws/DREAM/src/dream_ros2_bridge .
 git clone https://github.com/hello-binit/ros2_numpy -b humble
 git clone https://github.com/IntelRealSense/realsense-ros.git -b ros2-master
 git clone https://github.com/Livox-SDK/livox_ros_driver2.git
 git clone https://github.com/Ericsii/FAST_LIO_ROS2.git --recursive
-git clone https://github.com/westonrobot/ugv_sdk.git
-git clone https://github.com/westonrobot/ranger_ros2.git
+git clone https://github.com/BJHYZJ/ugv_sdk.git
+git clone https://github.com/BJHYZJ/ranger_ros2.git
 git clone https://github.com/xArm-Developer/xarm_ros2.git --recursive -b humble
 
 # Make sure to uninstall any rtabmap binaries:
@@ -64,9 +87,17 @@ colcon build --symlink-install --cmake-args -DRTABMAP_SYNC_MULTI_RGBD=ON -DRTABM
 # pip install, install in system not conda
 # Ensure you install cuda-12.1
 sudo apt update
+sudo apt install portaudio19-dev
+sudo apt install libfuse2
+sudo apt update
+sudo apt install \
+  ros-humble-joint-state-publisher \
+  ros-humble-joint-state-publisher-gui \
+  ros-humble-robot-state-publisher
+
+
 
 cd ~/DREAM_ws/DREAM
-sudo apt install portaudio19-dev
 pip install "meson>=0.63.3" ninja  # solution: meson-python: error: meson executable "meson" not found
 pip install -e ./src/  # -i https://pypi.tuna.tsinghua.edu.cn/simple
 
@@ -75,7 +106,30 @@ pip install numpy==1.23.5
 pip install pip install transforms3d==0.3.1
 ```
 
-anygrasp environment setup (cuda-12.1)
+# config ~/.bashrc
+```bash
+# CUDA
+export CUDA_HOME=/usr/local/cuda-12.1
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+# RTAM-Map
+export RCUTILS_LOGGING_USE_STDOUT=1
+export RCUTILS_LOGGING_BUFFERED_STREAM=1
+# Optional, but if you like colored logs:
+export RCUTILS_COLORIZED_OUTPUT=1
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+# Cyclone prefers multicast by default, if your router got too much spammed,
+# disable multicast with (https://github.com/ros2/rmw_cyclonedds/issues/489):
+export CYCLONEDDS_URI="<Disc><DefaultMulticastAddress>0.0.0.0</></>"
+export PYDEVD_WARN_EVALUATION_TIMEOUT=10
+```
+
+
+
+# anygrasp environment setup (cuda-12.1)
 ```bash
 git clone git@github.com:BJHYZJ/DREAM.git
 # 更新submodule
