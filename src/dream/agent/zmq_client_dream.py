@@ -16,7 +16,7 @@ import timeit
 from pathlib import Path
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+from datetime import datetime
 import click
 import numpy as np
 import zmq
@@ -223,8 +223,12 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
         if enable_rerun_server:
             from dream.visualization.rerun import RerunVisualizer
+            
+            if output_path is None:
+                current_datetime = datetime.now()
+                output_path = Path("rerun_log/debug_" + current_datetime.strftime("%Y-%m-%d_%H-%M-%S"))
 
-            if output_path is not None and not output_path.exists():
+            if not output_path.exists():
                 output_path.mkdir(parents=True, exist_ok=True)
 
             self._rerun = RerunVisualizer(output_path=output_path, footprint=self._robot_model.get_footprint())

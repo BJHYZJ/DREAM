@@ -10,7 +10,7 @@
 from typing import Optional
 
 import click
-
+import traceback
 from dream.agent.task.dream import DreamTaskExecutor
 from dream.agent.zmq_client_dream import DreamRobotZmqClient
 from dream.core.parameters import get_parameters
@@ -135,6 +135,7 @@ def main(
     robot = DreamRobotZmqClient(
         robot_ip=robot_ip,
         parameters=parameters,
+        output_path=output_path,
     )
 
     print("- Create task executor")
@@ -150,15 +151,15 @@ def main(
         manipulation_only=manipulation_only,
     )
 
-    # if not manipulation_only:
-    #     if input_path is None:
-    #         start_command = [("rotate_in_place", "")]
-    #     else:
-    #         start_command = [("read_from_pickle", input_path)]
-    #     executor(start_command)
+    if not manipulation_only:
+        if input_path is None:
+            start_command = [("rotate_in_place", "")]
+        else:
+            start_command = [("read_from_pickle", input_path)]
+        executor(start_command)
 
-    start_command = [("find", "red pepper")]
-    executor(start_command)
+    # start_command = [("find", "red pepper")]
+    # executor(start_command)
 
     # Create the prompt we will use to control the robot
     prompt = PickupPromptBuilder()
@@ -173,29 +174,34 @@ def main(
     ok = True
 
     while ok:
-        say_this = None
-        if llm_client is None:
-            # Call the LLM client and parse
-            explore = input(
-                "Enter desired mode [E (explore and mapping) / M (Open vocabulary pick and place)]: "
-            )
-            if explore.upper() == "E":
-                llm_response = [("explore", None)]
+        try:
+            say_this = None
+            if llm_client is None:
+                # Call the LLM client and parse
+                explore = input(
+                    "Enter desired mode [E (explore and mapping) / M (Open vocabulary pick and place)]: "
+                )
+                if explore.upper() == "E":
+                    llm_response = [("explore", None)]
+                else:
+                    if target_object is None or len(target_object) == 0:
+                        target_object = input("Enter the target object: ")
+                    if target_receptacle is None or len(target_receptacle) == 0:
+                        target_receptacle = input("Enter the target receptacle: ")
+                    llm_response = [("pickup", target_object), ("place", target_receptacle)]
             else:
-                if target_object is None or len(target_object) == 0:
-                    target_object = input("Enter the target object: ")
-                if target_receptacle is None or len(target_receptacle) == 0:
-                    target_receptacle = input("Enter the target receptacle: ")
-                llm_response = [("pickup", target_object), ("place", target_receptacle)]
-        else:
-            # Call the LLM client and parse
-            llm_response = chat_wrapper.query(verbose=debug_llm)
-            if debug_llm:
-                print("Parsed LLM Response:", llm_response)
+                # Call the LLM client and parse
+                llm_response = chat_wrapper.query(verbose=debug_llm)
+                if debug_llm:
+                    print("Parsed LLM Response:", llm_response)
 
-        ok = executor(llm_response)
-        target_object = None
-        target_receptacle = None
+            ok = executor(llm_response)
+            target_object = None
+            target_receptacle = None
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            ok = False
 
     print("Stopping robot...")
     robot.stop()

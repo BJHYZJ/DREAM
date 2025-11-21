@@ -296,8 +296,8 @@ def pickup(
     )
 
     if not success0:
-        print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
-        manip_wrapper.robot.arm_to(angle=constants.look_down, blocking=True, reliable=True)  # Important! It give a suit init pose to topdown pickup
+        print("The pose can't be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
+        manip_wrapper.robot.arm_to(angle=constants.look_down, blocking=True, reliable=True, speed=40)  # Important! It give a suit init pose to topdown pickup
         ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
         # try use heuristic pickup
         # transfer obj_points to arm base frame
@@ -384,7 +384,6 @@ def pickup(
     )
 
     # pause slam to avoid robot body be scan to scene
-    manip_wrapper.robot.pause_slam(reliable=True)
     if pre_success:
         print(f"Moving to pre-grasp position.")
         print("Pregrasp joint angles: ")
@@ -394,22 +393,20 @@ def pickup(
         print(" - joint4: ", pregrasp_joint_angles[3])
         print(" - joint5: ", pregrasp_joint_angles[4])
         print(" - joint5: ", pregrasp_joint_angles[5])
-        manip_wrapper.robot.arm_to(angle=pregrasp_joint_angles, blocking=True)   
+        manip_wrapper.robot.arm_to(angle=pregrasp_joint_angles, blocking=True, speed=40)   
 
-    manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True)
+    manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True, speed=30)
     picked = manip_wrapper.pickup(width=gripper_open)
     if not picked:
         print("(ಥ﹏ಥ) It failed because I didn't do it properly...")
-        manip_wrapper.robot.resume_slam(reliable=True)
         return False
     # place_black, the camera will look at robot body, pause slam to avoid add robot mesh to scene
     manip_wrapper.robot.look_front()
-    manip_wrapper.robot.arm_to(angle=constants.back_front)
-    manip_wrapper.robot.arm_to(angle=constants.back_place)
+    manip_wrapper.robot.arm_to(angle=constants.back_front, speed=20)
+    manip_wrapper.robot.arm_to(angle=constants.back_place, speed=50)
     manip_wrapper.robot.gripper_to(position=gripper_open)
-    manip_wrapper.robot.arm_to(angle=constants.back_front)
+    manip_wrapper.robot.arm_to(angle=constants.back_front, speed=50)
     manip_wrapper.robot.look_front()
-    manip_wrapper.robot.resume_slam(reliable=True)
     return True
 
 
@@ -458,10 +455,9 @@ def place(
     else:
         raise ValueError
     
-    manip_wrapper.robot.pause_slam(reliable=True)
     # there has one success ik for place, now the robot need to pickup back object and then place...
-    manip_wrapper.robot.arm_to(angle=constants.back_front, blocking=True, reliable=True)
-    manip_wrapper.robot.arm_to(angle=constants.back_look, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(angle=constants.back_front, blocking=True, reliable=True, speed=40)
+    manip_wrapper.robot.arm_to(angle=constants.back_look, blocking=True, reliable=True, speed=50)
     translation_back, obj_points_back = capture_and_process_back_image(
         obj=back_object,
         socket=socket,
@@ -472,9 +468,8 @@ def place(
         print(f"(ಥ﹏ಥ) Can't found {back_object} in back...")
         return False
 
-    print("Anygrasp pose can be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
     # move to suit place to see back object
-    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True, speed=30)
     ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
     object_yaw = select_gripper_yaw_from_object_points(obj_points_back)
 
@@ -517,24 +512,23 @@ def place(
         print("(ಥ﹏ಥ) It failed because IK can't pickup the back object...")
         return False
     
-    # manip_wrapper.robot.pause_slam(reliable=True)
     # go to pregrasp pose
     arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
     arm_angles_deg_new = arm_angles_deg.copy()
     arm_angles_deg_new[5] = joints_solution2[5]
-    manip_wrapper.robot.arm_to(angle=arm_angles_deg_new, blocking=True)
+    manip_wrapper.robot.arm_to(angle=arm_angles_deg_new, blocking=True, speed=40)
     # then go to solution
-    manip_wrapper.robot.arm_to(angle=joints_solution2, blocking=True)  # TODO 机械臂居然旋转了一圈再抓，看起来是IK的问题
+    manip_wrapper.robot.arm_to(angle=joints_solution2, blocking=True, speed=30)  # TODO 机械臂居然旋转了一圈再抓，看起来是IK的问题
     pick_success = manip_wrapper.pickup(width=gripper_width)
     if not pick_success:
         print("(ಥ﹏ಥ) It failed because I didn't do it properly...")
     # gripper object and move to safety place
     back_down_safety = constants.back_down.copy()
     back_down_safety[5] = joints_solution2[5]  # key the joint 5 position to avoid collision with backet
-    manip_wrapper.robot.arm_to(back_down_safety, blocking=True, reliable=True)
-    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True)
-    manip_wrapper.robot.arm_to(constants.back_front, blocking=True, reliable=True)
-    manip_wrapper.robot.arm_to(constants.look_down, blocking=True, reliable=True)
+    manip_wrapper.robot.arm_to(back_down_safety, blocking=True, reliable=True, speed=30)
+    manip_wrapper.robot.arm_to(constants.back_down, blocking=True, reliable=True, speed=40)
+    manip_wrapper.robot.arm_to(constants.back_front, blocking=True, reliable=True, speed=50)
+    manip_wrapper.robot.arm_to(constants.look_down, blocking=True, reliable=True, speed=40)
 
     # ================ process pregrasp while will imporve place success rate ================
     target_xyz = translation.copy()
@@ -566,12 +560,11 @@ def place(
         print(" - joint4: ", pregrasp_joint_angles[3])
         print(" - joint5: ", pregrasp_joint_angles[4])
         print(" - joint5: ", pregrasp_joint_angles[5])
-        manip_wrapper.robot.arm_to(pregrasp_joint_angles, blocking=True)   
+        manip_wrapper.robot.arm_to(pregrasp_joint_angles, blocking=True, speed=40)   
 
-    manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True)
+    manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True, speed=30)
     manip_wrapper.robot.open_gripper(reliable=True)
     # sleep for a while and go to init pose
     time.sleep(1)
-    manip_wrapper.robot.look_front()
-    manip_wrapper.robot.resume_slam(reliable=True)
+    manip_wrapper.robot.look_front(speed=40)
     return True

@@ -42,6 +42,7 @@ from dream.audio.text_to_speech import get_text_to_speech
 from dream.core.interfaces import Observations
 from dream.core.parameters import Parameters
 from dream.core.robot import AbstractGraspClient, AbstractRobotClient
+from dream.agent import DreamRobotZmqClient
 from dream.mapping.voxel import SparseVoxelMap
 from dream.mapping.voxel import SparseVoxelMapNavigationSpace
 from dream.motion.algo.a_star import AStar
@@ -58,7 +59,7 @@ class RobotAgent:
 
     def __init__(
         self,
-        robot: AbstractRobotClient,
+        robot: DreamRobotZmqClient,
         parameters: Union[Parameters, Dict[str, Any]],
         semantic_sensor: Optional[OvmmPerception] = None,
         grasp_client: Optional[AbstractGraspClient] = None,
@@ -143,12 +144,12 @@ class RobotAgent:
         self._manipulation_radius = parameters["motion_planner"]["goals"]["manipulation_radius"]
         self._voxel_size = parameters["voxel_size"]
 
-        self._pose_trans_thresh: float = 0.01  # metre
-        self._pose_rot_thresh: float = 1.0  # degree
+        self._pose_trans_thresh: float = 0.03  # metre
+        self._pose_rot_thresh: float = 3.0  # degree
         self._win_for_small_update: int = 30  # in 3hz, around 10 second, must has at least one frame in nearest 6 frame
         self._win_for_realtime_update: int = 6  # in 3hz, around 2 second
         self._max_obs_length = 500
-        self._max_pose_graph_obs_length = 100
+        self._max_pose_graph_obs_length = self._max_obs_length // 5
 
         self._pose_graph_timestamp = None
         self._obs_timestamp = None
@@ -314,7 +315,7 @@ class RobotAgent:
                 # update obs pose from pose graph
                 if obs.obs_id in pose_graph:
                     camera_pose_now = torch.tensor(
-                        pose_graph[sid], dtype=torch.float32)
+                        pose_graph[obs.obs_id], dtype=torch.float32)
                     obs.camera_pose = camera_pose_now
 
                 features = obs.feats
@@ -336,7 +337,7 @@ class RobotAgent:
             update_length = 0
             if affected_ids:
                 if len(self.voxel_map.observations) > self._win_for_realtime_update and \
-                    shared_ids and len(affected_ids) / len(shared_ids) > 1 / 3:
+                    shared_ids and len(affected_ids) / len(shared_ids) > 2 / 3:
                     # big loop, reset voxel map semantic memory and re-add all PG nodes with optimized poses
                     self.voxel_map.reset()
                     for obs_id in obs_ids:  # sorted ids
@@ -352,7 +353,7 @@ class RobotAgent:
                         print(f"[LOOP]: BIG LOOP happend! Spend time: {t1 - t0}, Update nodes: {update_length}")
 
                 elif len(obs_ids) > self._win_for_small_update and \
-                    len(set(obs_ids[-self._win_for_small_update:]) & set(affected_ids)) / self._win_for_small_update > 1 / 5 and \
+                    len(set(obs_ids[-self._win_for_small_update:]) & set(affected_ids)) / self._win_for_small_update > 1 / 3 and \
                         len(set(obs_ids[-self._win_for_realtime_update:]) & set(affected_ids)) != 0:
                     # medium loop, reset voxel map semantic memory and re-add all PG nodes with optimized poses
                     for obs_id in obs_ids[-self._win_for_small_update:]:
@@ -379,9 +380,9 @@ class RobotAgent:
                         t1 = timeit.default_timer()
                         print(f"[LOOP]: Small LOOP happend! Spend time: {t1 - t0}, Update nodes: {update_length}")
                 else:
-                    if verbose:
+                    if verbose and False:
                         print(f"[No Loop Happend]: observations lenght: {len(self.voxel_map.observations)}, shared_ids length: {len(shared_ids)}, affected_ids: {affected_ids}")
-        
+                    pass
             # Limit the number of observations
             if len(self.voxel_map.observations) > self._max_obs_length:
                 obs_ids_now = sorted(self.voxel_map.observations.keys())
@@ -414,7 +415,7 @@ class RobotAgent:
                 t2 = timeit.default_timer()
                 print(f"[Update map with pose graph realtime] spend time: {t2 - t0}, observations length: {len(obs_ids_now)}")
                 print("=" * 60)
-
+        # print(f"Observations Len: {len(self.voxel_map.observations)}")
         time.sleep(1)
 
     def reset_object_plans(self):
@@ -621,11 +622,11 @@ class RobotAgent:
             else:
                 time.sleep(1)  # waiting for 1 second
 
-    def rotate_in_place(self):
+    def rotate_in_place(self, speed: int=50):
         print("*" * 10, "Rotate in place", "*" * 10)
         xyt = self.robot.get_base_in_map_xyt()
-        # self.robot.arm_to(head_pan=0, head_tilt=-0.6, blocking=True)
-        for i in range(0):  # TODO range(8)
+        self.robot.arm_to(angle=constants.look_down, speed=speed, blocking=True)
+        for i in range(8):  # TODO range(8)
             xyt[2] += 2 * np.pi / 8
             self.robot.base_to(xyt, blocking=True)
             if not self._realtime_updates:
@@ -867,12 +868,14 @@ class RobotAgent:
             return False
 
         if skip_confirmation or input("Do you want to do this place manipulation? Y or N ") != "N":
+            self.robot.pause_slam()
             success = place(
                 socket=self.manip_socket,
                 manip_wrapper=self.manip_wrapper,
                 back_object=back_object,
                 translation=translation,
             )
+            self.robot.resume_slam()
             if not success:
                 print("(ಥ﹏ಥ) Place task failed.")
                 return False
@@ -915,12 +918,14 @@ class RobotAgent:
             return False
         
         if skip_confirmation or input("Do you want to do this pickup manipulation? Y or N ") != "N":
+            self.robot.pause_slam()
             success = pickup(
                 self.manip_wrapper,
                 rotation,
                 translation,
                 object_points=obj_points,
             )
+            self.robot.resume_slam()
             if not success:
                 print("(ಥ﹏ಥ) Pickup task failed.")
                 return False

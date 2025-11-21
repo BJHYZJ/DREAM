@@ -17,7 +17,7 @@ debug
 *.pyd
 *.pyc
 *.pyo
-
+rerun_log
 src/anygrasp_manipulation/.TimeRecord
 
 src/anygrasp_manipulation/example_data
