@@ -26,7 +26,8 @@ setuptools.setup(
         # General utilities
         "pyyaml",
         "pyzmq",
-        "numpy<2",
+        "numpy",
+        "transforms3d==0.3.1",
         "numba",
         "opencv-python",
         "scipy",
@@ -49,7 +50,7 @@ setuptools.setup(
         "pyrealsense2",
         "urchin",
         # Visualization
-        "rerun-sdk>=0.18.0",
+        "rerun-sdk==0.26.1",
         # For siglip encoder
         "sentencepiece",
         # For git tools
