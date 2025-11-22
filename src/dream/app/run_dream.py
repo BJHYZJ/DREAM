@@ -151,6 +151,15 @@ def main(
         manipulation_only=manipulation_only,
     )
 
+    if True:
+        # command1 = [("pause_slam", "")]
+        # executor(command1)
+        # command2 = [("resume_slam", "")]
+        # executor(command2)
+        command3 = [("look_around", "")]
+        executor(command3)
+
+
     if not manipulation_only:
         if input_path is None:
             start_command = [("rotate_in_place", "")]

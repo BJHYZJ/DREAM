@@ -52,7 +52,7 @@ class DreamNavigationClient(AbstractControlModule):
         result = self._ros_client.goto_off_service.call(Trigger.Request())
 
         rate = self._ros_client.create_rate(1 / T_LOC_STABILIZE)
-        rate.sleep()  # wait for robot movement to stop
+        rate.sleep(0.1)  # wait for robot movement to stop
         return result.success
 
     # Interface methods

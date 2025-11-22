@@ -19,6 +19,7 @@ from dream.agent.robot_agent_dream import RobotAgent
 from dream.agent.task.emote import EmoteTask
 from dream.agent.task.pickup.hand_over_task import HandOverTask
 from dream.core import AbstractRobotClient, Parameters
+from dream.agent import DreamRobotZmqClient
 from dream.perception import create_semantic_sensor
 from dream.utils.image import numpy_image_to_bytes
 
@@ -45,7 +46,7 @@ def compute_tilt(camera_xyz, target_xyz):
 class DreamTaskExecutor:
     def __init__(
         self,
-        robot: AbstractRobotClient,
+        robot: AbstractRobotClient | DreamRobotZmqClient,
         parameters: Parameters,
         match_method: str = "feature",
         device_id: int = 0,
@@ -229,6 +230,15 @@ class DreamTaskExecutor:
                     if args[0] == '"' and args[-1] == '"':
                         args = args[1:-1]
                     self.discord_bot.send_message(channel=channel, message=args)
+            elif command == "pause_slam":
+                logger.info(f"[Pause SLAM]")
+                self.robot.pause_slam()
+            elif command == "resume_slam":
+                logger.info(f"[Resume SLAM]")
+                self.robot.resume_slam()
+            elif command == "look_around":
+                logger.info(f"look_around")
+                self.agent.look_around()
             elif command == "pickup":
                 logger.info(f"[Pickup task] Pickup: {args}")
                 target_object = args

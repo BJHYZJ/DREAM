@@ -360,10 +360,10 @@ class DreamClient(AbstractRobotClient):
         joint_positions[ARM_INDEX] = arm_position
         joint_positions[GRIPPER_INDEX] = gripper_position
         
-        # If we are in manipulation mode...
-        if self._base_control_mode == ControlMode.MANIPULATION:
-            # ...we need to get the joint positions from the manipulator
-            joint_positions[DreamIdx.BASE_X] = self.manip.get_base_x()
+        # # If we are in manipulation mode...
+        # if self._base_control_mode == ControlMode.MANIPULATION:
+        #     # ...we need to get the joint positions from the manipulator
+        #     joint_positions[DreamIdx.BASE_X] = self.manip.get_base_x()
 
         return joint_states, joint_velocities, joint_forces, joint_positions
 

@@ -161,19 +161,92 @@ export PYTHONNOUSERSITE=1
 conda create -n anygrasp python=3.10 -y
 conda activate anygrasp
 
+# install Segment-anything-2
+cd third_party/segment-anything-2
+pip install -e .
+
+
 pip install torch==2.3.1+cu121 torchvision==0.18.1+cu121 torchaudio==2.3.1 -f https://download.pytorch.org/whl/cu121/torch_stable.html
 
 
 # pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cu121 
 pip install ipython scipy==1.10.1 scikit-learn==1.4.0 pandas==2.0.3 hydra-core opencv-python openai-clip timm matplotlib==3.7.2 imageio timm open3d numpy-quaternion more-itertools pyliblzfse einops transformers pytorch-lightning wget gdown tqdm zmq torch_geometric numpy==1.23.0  # -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-pip install --upgrade setuptools==59.8.0 
 ```
 
 
-Then, Reference [Here](https://github.com/Julie-tang00/Common-envs-issues/blob/main/Cuda12-MinkowskiEngine) Install MinkowskiEngine
+# install MinkowskiEngine 
+
+We reference [Here](https://github.com/Julie-tang00/Common-envs-issues/blob/main/Cuda12-MinkowskiEngine).
+
+## Step 1. First, check your environment
 ```bash
-# pip install graspnetAPI
+python -c "import sys; import torch; print('Python version:', sys.version); print('Torch version:', torch.__version__); print('Torch CUDA version:', torch.version.cuda); print('CUDA available:', torch.cuda.is_available());" && gcc --version | head -n 1 | cut -d' ' -f3
+```
+## Step 2. Modify shared pointer definition in `/usr/include/c++/11/bits/shared_ptr_base.h`
+
+Replace:
+```bash
+auto __raw = __to_address(__r.get())
+```
+With:
+```bash
+auto __raw = std::__to_address(__r.get())
+```
+
+## Step  3. Install dependencies
+```bash
+pip install --upgrade setuptools==59.8.0      # setuptools version must be lower than 60.0
+sudo apt install build-essential python3-dev libopenblas-dev
+pip install ninja
+```
+
+## Step 4. Clone the MinkowskiEngine repository and install
+```bash
+git clone https://github.com/pccws/MinkowskiEngine
+cd MinkowskiEngine
+python setup.py install
+
+```
+
+## Step 5. If the compilation fails, modify the following header files:
+
+1) **.../MinkowskiEngine/src/convolution_kernel.cuh**  
+Add header:
+```bash
+#include <thrust/execution_policy.h>
+```
+
+2) **.../MinkowskiEngine/src/coordinate_map_gpu.cu**  
+Add headers:
+```bash
+#include <thrust/unique.h>
+#include <thrust/remove.h>
+```
+
+3) **.../MinkowskiEngine/src/spmm.cu**  
+Add headers:
+```bash
+#include <thrust/execution_policy.h>
+#include <thrust/reduce.h>
+#include <thrust/sort.h>
+```
+
+4) **.../MinkowskiEngine/src/3rdparty/concurrent_unordered_map.cuh**  
+Add header:
+```bash
+#include <thrust/execution_policy.h>
+```
+
+
+# Install Other Dependence
+```bash
+
+pip install --upgrade --no-deps --force-reinstall scikit-learn==1.4.0 
+pip install torch_cluster -f https://data.pyg.org/whl/torch-2.1.0+cu121.html 
+pip install numpy==1.23.0
+
+# install graspnetAPI
 export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True  # reference https://github.com/graspnet/graspnetAPI/issues/43
 pip install git+https://github.com/graspnet/graspnetAPI.git
 
@@ -190,15 +263,17 @@ cd src/anygrasp_manipulation/pointnet2
 python -m pip install --upgrade "pip>=23" "setuptools>=64"
 pip install --no-build-isolation -e .
 
+
 pip install rerun-sdk==0.26.1
 pip install numpy==1.23.5
 pip install transforms3d==0.3.1
+
 
 # make dir
 cd ../../../
 checkpoints
 mkdir -p checkpoints/anygrasp
-mkdir -p checkpoints/sam
+mkdir -p checkpoints/sam2
 ```
 
 
@@ -225,13 +300,7 @@ and copy anygrasp checkpoints to ./checkpoints/anygrasp
 ./anygrasp_license_registration/license_checker -c license/licenseCfg.json
 ```
 
-# install Segment-anything-2
-```bash
-git submodule add https://github.com/facebookresearch/sam2.git third_party/segment-anything-2
-cd third_party/segment-anything-2
-pip install -e .
-pip install numpy==1.23.5  # numpy的版本会被覆盖，重新安装一次
-```
+
 
 
 run anygrasp_manipulation

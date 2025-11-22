@@ -287,13 +287,13 @@ class DreamManipulationClient(AbstractControlModule):
         # We do not need to call the service to disable the mode
         return True
 
-    def get_base_x(self):
-        """Get the current base x position"""
-        if self._init_base_pose is None:
-            return 0.0
-        current_global_pose = self._ros_client.get_base_in_map_pose()
-        relative_xyt = pose_global_to_base_xyt(current_global_pose, self._init_base_pose)
-        return relative_xyt[0]
+    # def get_base_x(self):
+    #     """Get the current base x position"""
+    #     if self._init_base_pose is None:
+    #         return 0.0
+    #     current_global_pose = self._ros_client.get_base_in_map_pose()
+    #     relative_xyt = pose_global_to_base_xyt(current_global_pose, self._init_base_pose)
+    #     return relative_xyt[0]
 
     def _disable_hook(self) -> bool:
         """Called when interface is disabled."""

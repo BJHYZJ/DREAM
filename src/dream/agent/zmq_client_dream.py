@@ -452,7 +452,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None
-            joint_states = self._state.joint_states
             # arm_base_in_map_pose = self._state.arm_base_in_map_pose
             camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
             camera_in_map_pose = self._state.camera_in_map_pose
@@ -464,7 +463,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         tar_in_cam= (np.linalg.inv(camera_in_map_pose) @ tar_in_map_h)[:3]
 
         arm_angles_deg = self._robot_model.compute_look_at_target_tilt(
-            arm_angles_deg=joint_states[3:9],
+            arm_angles_deg=self.get_arm_joint_state(),
             target_in_camera=tar_in_cam,
             camera_in_arm_base_pose=camera_in_arm_base_pose,
             ee_in_arm_base_pose=ee_in_arm_base_pose,
@@ -490,7 +489,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 if timeit.default_timer() - t0 > timeout:
                     logger.error("Timeout waiting for state message")
                     return None
-            joint_states = self._state.joint_states
             # arm_base_in_map_pose = self._state.arm_base_in_map_pose
             camera_in_arm_base_pose = self._state.camera_in_arm_base_pose
             camera_in_map_pose = self._state.camera_in_map_pose
@@ -502,7 +500,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         tar_in_cam= (np.linalg.inv(camera_in_map_pose) @ tar_in_map_h)[:3]
 
         arm_angles_deg = self._robot_model.compute_look_at_target_pan(
-            arm_angles_deg=joint_states[3:9],
+            arm_angles_deg=self.get_arm_joint_state(),
             target_in_camera=tar_in_cam,
             camera_in_arm_base_pose=camera_in_arm_base_pose,
             ee_in_arm_base_pose=ee_in_arm_base_pose,
@@ -560,7 +558,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         # Send an action to the robot
         # Resend it to make sure it arrives, if we are not making a relative motion
         # If we are blocking, wait for the action to complete with a timeout
-        action = self.send_action(next_action, timeout=timeout, verbose=verbose, reliable=reliable)
+        action = self.send_action(next_action, reliable=reliable)
 
         # Make sure we had time to read
         if blocking:
@@ -597,14 +595,14 @@ class DreamRobotZmqClient(AbstractRobotClient):
         if not self.in_manipulation_mode():
             self.switch_to_manipulation_mode()
         next_action = {"servo_angle": angle, "speed": speed, "wait": blocking}
-        self.send_action(next_action, timeout=timeout, reliable=reliable)
+        self.send_action(next_action, reliable=reliable)
 
         if blocking:
             t0 = timeit.default_timer()
             steps = 0
             while not self._finish:
                 if steps % 40 == 39:
-                    self.send_action(next_action, timeout=timeout, reliable=True)
+                    self.send_action(next_action, reliable=True)
                 
                 # Get current joint state
                 joint_states, _, _ = self.get_joint_state()
@@ -656,6 +654,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
 
     def reset(self):
         """Reset everything in the robot's internal state"""
+        self._in_task = False
         self._control_mode = None
         self._obs = None  # Full observation includes high res images and camera pose, no EE camera
         self._pose_graph = None
@@ -725,7 +724,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         next_action = {"posture": "manipulation", "step": self._iter}
         self.send_action(next_action)
         time.sleep(0.1)
-        self._wait_for_head(constants.STRETCH_PREGRASP_Q, resend_action=next_action)
+        # self._wait_for_head(constants.STRETCH_PREGRASP_Q, resend_action=next_action)
         self._wait_for_mode("manipulation")
         # self._wait_for_arm(constants.STRETCH_PREGRASP_Q)
         assert self.in_manipulation_mode()
@@ -733,12 +732,14 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def pause_slam(self, timeout: float=2.0, reliable: bool=True) -> None:
         """Pause SLAM updates on the robot."""
         next_action = {"slam_pause": True, "slam_timeout": timeout}
-        self.send_action(next_action, timeout=timeout, reliable=reliable)
+        self.send_action(next_action, reliable=reliable)
+        self._in_task = True
 
     def resume_slam(self, timeout: float=2.0, reliable: bool=True) -> None:
         """Resume SLAM updates on the robot."""
         next_action = {"slam_resume": True, "slam_timeout": timeout}
-        self.send_action(next_action, timeout=timeout, reliable=reliable)
+        self.send_action(next_action, reliable=reliable)
+        self._in_task = False
 
 
     def _wait_for_mode(
@@ -901,6 +902,10 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 print(f"Timeout waiting for block with step id = {block_id}")
                 break
                 # raise RuntimeError(f"Timeout waiting for block with step id = {block_id}")
+
+    def in_task(self) -> bool:
+        "Currently executing a task and cannot update memory."
+        return self._in_task == True
 
     def in_manipulation_mode(self) -> bool:
         """is the robot ready to grasp"""
@@ -1082,8 +1087,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
     def send_action(
         self,
         next_action: Dict[str, Any],
-        timeout: float = 5.0,
-        verbose: bool = False,
         reliable: bool = True,
     ) -> Dict[str, Any]:
         """Send the next action to the robot. Increment the step counter and wait for the action to finish if it is blocking.
@@ -1097,21 +1100,7 @@ class DreamRobotZmqClient(AbstractRobotClient):
         Returns:
             dict: copy of the action that was sent to the robot.
         """
-        if verbose:
-            logger.info("-> sending", next_action)
-            cur_joints = self.get_joint_position()
-            print("Current robot states")
-            print(" - base: ", cur_joints[0])
-            print(" - base_theta: ", cur_joints[1])
-            print(" - joint1: ", cur_joints[2])
-            print(" - joint2: ", cur_joints[3])
-            print(" - joint3: ", cur_joints[4])
-            print(" - joint4: ", cur_joints[5])
-            print(" - joint5: ", cur_joints[6])
-            print(" - joint6: ", cur_joints[7])
-            print(" - gripper: ", cur_joints[8])
 
-        blocking = False
         block_id = None
         with self._act_lock:
 
@@ -1126,12 +1115,6 @@ class DreamRobotZmqClient(AbstractRobotClient):
                 # print(next_action)
                 self.send_message(next_action)
                 time.sleep(0.01)
-
-            # For tracking goal
-            if "xyt" in next_action:
-                goal_angle = next_action["xyt"][2]
-            else:
-                goal_angle = None
 
             # Empty it out for the next one
             current_action = next_action

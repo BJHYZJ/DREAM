@@ -194,6 +194,9 @@ class RobotAgent:
 
     def get_observations_loop(self, verbose: bool=False, visualize_map: bool=True) -> None:
         while self.robot.running:
+            if self.robot.in_task():
+                time.sleep(0.5)
+                continue
             t0 = timeit.default_timer()
             obs = self.robot.get_observation()
             obs_timestamp = obs.timestamp
@@ -263,7 +266,8 @@ class RobotAgent:
         # Thanks to the design of clear_points, a `self.voxel_map.reset()` is not required, which effectively reduces computational overhead.
         # We simply re-added the most recent 10 frames to the scene according to the latest pose.
         
-        if not self.voxel_map.observations:
+        if not self.voxel_map.observations or self.robot.in_task():
+            time.sleep(0.5)
             return 
         pose_graph_data = self.robot.get_pose_graph()
         pose_graph_timestamp = pose_graph_data["timestamp"]
@@ -477,26 +481,22 @@ class RobotAgent:
         # You can see a clear difference in hyperparameter selection in different querying strategies
         # Running gpt4o is time consuming, so we don't want to waste more time on object detection or Siglip or voxelization
         # On the other hand querying by feature similarity is fast and we want more fine grained details in semantic memory
-        voxel_resolution = None
         if self.manipulation_only:
             self.detection_model = None
             image_shape = (360, 270)
-            voxel_resolution = 0.1
         elif self.mllm:
             self.detection_model = OwlPerception(
                 version="owlv2-B-p16", device=self.device, confidence_threshold=0.01
             )
             image_shape = (360, 270)
-            voxel_resolution = 0.1
         else:
             self.detection_model = OwlPerception(
                 version="owlv2-L-p14-ensemble", device=self.device, confidence_threshold=0.15
             )
-            voxel_resolution = 0.05
             # image_shape = (480, 360)
             image_shape = (360, 720)
         self.voxel_map = SparseVoxelMap(
-            voxel_resolution=parameters["voxel_size"] if voxel_resolution is None else voxel_resolution,
+            voxel_resolution=parameters["voxel_size"],
             local_radius=parameters["local_radius"],
             ground_max_height=parameters["ground_max_height"],
             obs_min_height=parameters["obs_min_height"],
@@ -609,8 +609,6 @@ class RobotAgent:
 
     def look_around(self, speed: int=50):
         print("*" * 10, "Look around to check", "*" * 10)
-        # for pan in [0.6, -0.2, -1.0, -1.8]:
-        #     tilt = -0.6
         for angle in [
             constants.look_ahead, constants.look_front, constants.look_down, 
             constants.look_left_1, constants.look_left_2, 

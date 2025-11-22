@@ -63,7 +63,7 @@ back_down = [180, -20, -100, 0, 120, 0]
 
 
 
-T_LOC_STABILIZE = 1.0
+T_LOC_STABILIZE = 0.1
 BASE_JOINTS = ['base_x', 'base_y', 'base_theta']
 ARM_JOINTS = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6']
 GRIPPER_JOINTS = ['gripper']

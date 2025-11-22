@@ -480,7 +480,6 @@ class RangerxARMKinematics:
         
         best_v_err = self.cal_v_err(target_in_camera, camera_K)
         best_tilt = None
-        arm_angles_deg_new = arm_angles_deg.copy()
         for tilt in self.TILT_RANGE:
             arm_angles_deg_new = arm_angles_deg.copy()
             arm_angles_deg_new[4] = float(tilt)
@@ -517,7 +516,6 @@ class RangerxARMKinematics:
 
         best_u_err = self.cal_u_err(target_in_camera, camera_K)
         best_pan = None
-        arm_angles_deg_new = arm_angles_deg.copy()
         for pan in self.PAN_RANGE:
             arm_angles_deg_new = arm_angles_deg.copy()
             arm_angles_deg_new[0] = float(pan)
