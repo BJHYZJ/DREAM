@@ -151,13 +151,23 @@ def main(
         manipulation_only=manipulation_only,
     )
 
-    if True:
-        # command1 = [("pause_slam", "")]
-        # executor(command1)
-        # command2 = [("resume_slam", "")]
-        # executor(command2)
-        command3 = [("look_around", "")]
-        executor(command3)
+    # if True:
+        # command = [("pause_slam", "")]
+        # executor(command)
+        # command = [("resume_slam", "")]
+        # executor(command)
+        # command = [("look_around", "")]
+        # executor(command)
+        # command = [("base_to_relative", [0.8, 0, 0])]
+        # executor(command)
+        # command = [("base_to_relative", [-0.8, 0, 0])]
+        # executor(command)
+        # command = [("base_to_relative", [0, 0, 3.14 / 2])]
+        # executor(command)
+
+        # command = [("find", "red pepper")]
+        # executor(command)
+
 
 
     if not manipulation_only:

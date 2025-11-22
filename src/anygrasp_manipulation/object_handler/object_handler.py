@@ -309,7 +309,7 @@ class ObjectHandler:
         points: np.ndarray,
         seg_mask: np.ndarray,
         bbox: Bbox,
-        crop_flag: bool=False,
+        last_attempt: bool=False,
     ):
         colors = self.cam.colors
         c2ab = self.cam.c2ab  # camera in arm base pose
@@ -359,7 +359,19 @@ class ObjectHandler:
             collision_detection=True
         )
 
+        object_points_ab = (R_c2ab @ object_points.T).T + t_c2ab
+
         if gg is None or len(gg) == 0:
+            if last_attempt:
+                self.socket.send_data(
+                    [
+                        None,  # translation in arm base pose
+                        None,  # rotation in arm base pose
+                        [0, 0, 3],
+                        object_points_ab,  # object in arm base pose
+                        "Last try, just include object points",
+                    ]
+                )
             print("No Grasp detected after collision detection!")
             return False
 
@@ -403,7 +415,7 @@ class ObjectHandler:
                 penalty = 0.2 * (angle_th - np.pi / 2) ** 2
                 # print(angle_th, penalty, g.score, g.score - penalty)
 
-            if not crop_flag:
+            if not last_attempt:
                 score = g.score - penalty
             else:
                 score = g.score
@@ -420,7 +432,7 @@ class ObjectHandler:
                 visual_items = [gripper, cloud_vis, coordinate, dir_arrow, approach_arrow, proj_arrow]
                 o3d.visualization.draw_geometries(visual_items)
 
-            if not crop_flag:
+            if not last_attempt:
                 if seg_mask[iy, ix]:
                     img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="green")
                     # filter_gg_obj.add(g)
@@ -440,6 +452,16 @@ class ObjectHandler:
             print(
                 "No grasp poses detected for this object try to move the object a little and try again"
             )
+            if last_attempt:
+                self.socket.send_data(
+                    [
+                        None,  # translation in arm base pose
+                        None,  # rotation in arm base pose
+                        [0, 0, 3],
+                        object_points_ab,  # object in arm base pose
+                        "Last try, just include object points",
+                    ]
+                )
             return False
 
         projections_file_name = (
@@ -451,18 +473,6 @@ class ObjectHandler:
         # filter_gg_obj = filter_gg_obj.nms.sort_by_score()
 
         if self.cfgs.debug:
-            # scene_cloud = o3d.geometry.PointCloud()
-            # scene_cloud.points = o3d.utility.Vector3dVector(filtered_points)
-            # scene_cloud.colors = o3d.utility.Vector3dVector(filtered_colors)
-            # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-            # o3d.visualization.draw_geometries([scene_cloud, coordinate])
-
-            # object_cloud = o3d.geometry.PointCloud()
-            # object_cloud.points = o3d.utility.Vector3dVector(object_points)
-            # object_cloud.colors = o3d.utility.Vector3dVector(object_colors)
-            # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-            # o3d.visualization.draw_geometries([object_cloud, coordinate])
-
             trans_mat = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
             cloud.transform(trans_mat)
             grippers = gg.to_open3d_geometry_list()
@@ -471,11 +481,6 @@ class ObjectHandler:
                 gripper.transform(trans_mat)
             for gripper in filter_grippers:
                 gripper.transform(trans_mat)
-
-            # coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-            # grippers = gg.to_open3d_geometry_list()
-            # o3d.visualization.draw_geometries([*grippers, cloud, coordinate])
-            # o3d.visualization.draw_geometries([grippers[0], cloud, coordinate])
 
             visualize_cloud_geometries(
                 cloud,
@@ -492,9 +497,6 @@ class ObjectHandler:
                 # rerun_name="selected_pose",
             )
         
-        # transform object_points, grasp to arm base frame
-        # transform grasp rotation to right frame
-        object_points = (R_c2ab @ object_points.T).T + t_c2ab
         translation = (R_c2ab @ filter_gg[0].translation) + t_c2ab
         rotation = R_c2ab @ (filter_gg[0].rotation_matrix @ rotation_top_mat)
         if self.cfgs.open_communication:
@@ -504,7 +506,7 @@ class ObjectHandler:
                     translation,  # translation in arm base pose
                     rotation,  # rotation in arm base pose
                     [filter_gg[0].depth, filter_gg[0].width, 0],
-                    object_points,  # object in arm base pose
+                    object_points_ab,  # object in arm base pose
                     data_msg,
                 ]
             )
