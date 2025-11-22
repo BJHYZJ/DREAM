@@ -265,28 +265,28 @@ class DreamClient(AbstractRobotClient):
         return self._ros_client._lidar
 
 
-    def move_to_manip_posture(self):
-        """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
-        self.switch_to_manipulation_mode()
-        # pos = self.manip._extract_joint_pos(STRETCH_PREGRASP_Q)
-        # # pan, tilt = self._robot_model.look_at_ee
-        # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
-        # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
-        # print("- Robot switched to manipulation mode.")
-        assert 1 == 2
+    # def move_to_manip_posture(self):
+    #     """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
+    #     self.switch_to_manipulation_mode()
+    #     # pos = self.manip._extract_joint_pos(STRETCH_PREGRASP_Q)
+    #     # # pan, tilt = self._robot_model.look_at_ee
+    #     # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
+    #     # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
+    #     # print("- Robot switched to manipulation mode.")
+    #     assert 1 == 2
 
-    def move_to_nav_posture(self):
-        """Move the arm and head into nav mode. The head will be looking front."""
+    # def move_to_nav_posture(self):
+    #     """Move the arm and head into nav mode. The head will be looking front."""
 
-        # First retract the robot's joints
-        self.switch_to_manipulation_mode()
-        # pan, tilt = self._robot_model.look_close
-        # pos = self.manip._extract_joint_pos(STRETCH_NAVIGATION_Q)
-        # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
-        # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
-        self.manip.reset()
-        self.switch_to_navigation_mode()
-        print("- Robot switched to navigation mode.")
+    #     # First retract the robot's joints
+    #     self.switch_to_manipulation_mode()
+    #     # pan, tilt = self._robot_model.look_close
+    #     # pos = self.manip._extract_joint_pos(STRETCH_NAVIGATION_Q)
+    #     # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
+    #     # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
+    #     self.manip.reset()
+    #     self.switch_to_navigation_mode()
+    #     print("- Robot switched to navigation mode.")
 
 
     def get_arm_state(self):

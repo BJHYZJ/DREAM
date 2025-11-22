@@ -172,24 +172,24 @@ class ZmqServer(BaseZmqServer):
     def handle_action(self, action: Dict[str, Any]):
         """Handle an action from the client."""
 
-        if "posture" in action:
-            if action["posture"] == "manipulation":
-                self.client.stop()
-                self.client.switch_to_busy_mode()
-                self.client.move_to_manip_posture()
-                self.client.switch_to_manipulation_mode()
-            elif action["posture"] == "navigation":
-                self.client.stop()
-                self.client.switch_to_busy_mode()
-                self.client.move_to_nav_posture()
-                self.client.switch_to_navigation_mode()
-            else:
-                print(
-                    " - posture",
-                    action["posture"],
-                    "not recognized or supported.",
-                )
-        elif "control_mode" in action:
+        # if "posture" in action:
+        #     if action["posture"] == "manipulation":
+        #         self.client.stop()
+        #         self.client.switch_to_busy_mode()
+        #         # self.client.move_to_manip_posture()
+        #         self.client.switch_to_manipulation_mode()
+        #     elif action["posture"] == "navigation":
+        #         self.client.stop()
+        #         self.client.switch_to_busy_mode()
+        #         # self.client.move_to_nav_posture()
+        #         self.client.switch_to_navigation_mode()
+        #     else:
+        #         print(
+        #             " - posture",
+        #             action["posture"],
+        #             "not recognized or supported.",
+        #         )
+        if "control_mode" in action:
             if action["control_mode"] == "manipulation":
                 self.client.switch_to_manipulation_mode()
                 self.control_mode = "manipulation"

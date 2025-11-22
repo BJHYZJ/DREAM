@@ -23,6 +23,7 @@ from dream.motion.robot import RobotModel
 from dream.utils.geometry import angle_difference, sophus2xyt, xyt2sophus, xyt_base_to_global
 from dream.motion.constants import T_LOC_STABILIZE
 from dream_ros2_bridge.ros.utils import matrix_to_pose_msg
+from dream_ros2_bridge.remote.ros import DreamRosInterface
 
 from .abstract import AbstractControlModule, enforce_enabled
 
@@ -30,11 +31,21 @@ from .abstract import AbstractControlModule, enforce_enabled
 class DreamNavigationClient(AbstractControlModule):
     block_spin_rate = 10
 
-    def __init__(self, ros_client, robot_model: RobotModel):
+    def __init__(
+        self,
+        ros_client: DreamRosInterface,
+        robot_model: RobotModel,
+        stabilize_time: float = T_LOC_STABILIZE,
+        velocity_threshold: float = 0.02,
+    ):
         super().__init__()
 
         self._ros_client = ros_client
         self._robot_model = robot_model
+        # Allow caller to tune or skip stabilization wait when switching modes.
+        self._stabilize_time = stabilize_time
+        self._vel_thresh = velocity_threshold
+
         self._wait_for_pose()
 
     # Enable / disable
@@ -51,9 +62,21 @@ class DreamNavigationClient(AbstractControlModule):
         """Called when interface is disabled."""
         result = self._ros_client.goto_off_service.call(Trigger.Request())
 
-        rate = self._ros_client.create_rate(1 / T_LOC_STABILIZE)
-        rate.sleep(0.1)  # wait for robot movement to stop
-        return result.success
+        if not result.success:
+            return False
+
+        # Optional stabilization wait: break early once the base is mostly stationary.
+        if self._stabilize_time <= 0:
+            return True
+
+        deadline = time.time() + self._stabilize_time
+        while time.time() < deadline:
+            vel = self._ros_client.get_vel_base()
+            if vel is not None and np.linalg.norm(vel) < self._vel_thresh:
+                break
+            time.sleep(0.05)
+
+        return True
 
     # Interface methods
 
