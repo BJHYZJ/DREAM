@@ -31,6 +31,7 @@ import numpy as np
 import time
 import traceback
 
+from dream_ros2_bridge.remote.ros import DreamRosInterface
 
 # from std_srvs.srv import TriggerRequest
 
@@ -256,7 +257,7 @@ class XARM6:
 class DreamManipulationClient(AbstractControlModule):
     """Manages dream arm control and "manipulation mode" base motions (forward and backward)."""
 
-    def __init__(self, ros_client, robot_model: RobotModel):
+    def __init__(self, ros_client: DreamRosInterface, robot_model: RobotModel):
         super().__init__()
 
         self._ros_client = ros_client
@@ -272,11 +273,8 @@ class DreamManipulationClient(AbstractControlModule):
 
     def _enable_hook(self) -> bool:
         """Called when interface is enabled."""
-        # # Switch interface mode & print messages
-        # result = self._ros_client.pos_mode_service.call(Trigger.Request())
-        # self._ros_client.get_logger().info("Switching to manipulation mode")
         print("Switching to manipulation mode")
-        self._init_base_pose = self._ros_client.get_base_in_map_pose()
+        # self._init_base_pose = self._ros_client.get_base_in_map_pose()
 
         # return result.success
         return True
@@ -334,237 +332,3 @@ class DreamManipulationClient(AbstractControlModule):
     def reset(self):
         """Move robot to reset position"""
         self._arm.reset()
-
-
-    # @enforce_enabled
-    # def move_to_positions(self, positions: List[np.ndarray], wait: bool = True):
-    #     """Move robot to specified positions"""
-    #     self._arm.move_to_pose(positions, wait=wait)
-    #     return True
-
-
-    # @enforce_enabled
-    # def get_ee_pose(self, world_frame=False, matrix=False):
-    #     """Get current end-effector pose from xarm controller"""
-    #     # Get current pose from xarm controller [x, y, z, roll, pitch, yaw]
-    #     pose_data = self._arm.get_current_pose()
-    #     pos = np.array([pose_data[0], pose_data[1], pose_data[2]])  # mm
-    #     # Convert euler angles to quaternion
-    #     # xarm returns [x, y, z, roll, pitch, yaw] where roll, pitch, yaw are in degrees
-    #     r = R.from_euler('ZYX', [pose_data[5], pose_data[4], pose_data[3]], degrees=True)
-    #     quat = r.as_quat()  # [x, y, z, w]
-        
-    #     # Adjust for base position
-    #     pos[0] += self.get_base_x()
-
-    #     if world_frame:
-    #         pose_base2ee = posquat2sophus(pos, quat)
-    #         pose_world2base = self._ros_client.get_base_in_map_pose()
-    #         pose_world2ee = pose_world2base * pose_base2ee
-    #         pos, quat = sophus2posquat(pose_world2ee)
-
-    #     if matrix:
-    #         pose = posquat2sophus(pos, quat)
-    #         return pose.matrix()
-    #     else:
-    #         return pos, quat
-
-    # def get_ee_pose(self, world_frame=False, matrix=False):
-    #     q, _, _ = self._ros_client.get_joint_state()
-    #     pos_base, quat_base = self._robot_model.manip_fk(q)
-    #     pos_base[0] += self.get_base_x()
-
-    #     if world_frame:
-    #         pose_base2ee = posquat2sophus(pos_base, quat_base)
-    #         pose_world2base = self._ros_client.se3_base_filtered
-    #         pose_world2ee = pose_world2base * pose_base2ee
-
-    #         pos, quat = sophus2posquat(pose_world2ee)
-
-    #     else:
-    #         pos, quat = pos_base, quat_base
-    #     if matrix:
-    #         pose = posquat2sophus(pos, quat)
-    #         return pose.matrix()
-    #     else:
-    #         return pos, quat
-
-    # def get_joint_positions(self):
-    #     """Get current joint positions including base x position"""
-    #     # Get joint states from xarm controller
-    #     joint_state = self._arm.get_joint_state()
-    #     gripper_state = self._arm.get_gripper_state()
-    #     base_x = self.get_base_x()
-        
-    #     return [
-    #         base_x,
-    #         joint_state[0],  # joint1
-    #         joint_state[1],  # joint2  
-    #         joint_state[2],  # joint3
-    #         joint_state[3],  # joint4
-    #         joint_state[4],  # joint5
-    #         joint_state[5],  # joint6
-    #         gripper_state,   # gripper
-    #     ]
-
-    # def get_joint_positions(self):
-    #     q, _, _ = self._ros_client.get_joint_state()
-    #     base_x = self.get_base_x()
-    #     return [
-    #         base_x,
-    #         q[DreamIdx.JOINT1],
-    #         q[DreamIdx.JOINT2],
-    #         q[DreamIdx.JOINT3],
-    #         q[DreamIdx.JOINT4],
-    #         q[DreamIdx.JOINT5],
-    #         q[DreamIdx.JOINT6],
-    #         q[DreamIdx.GRIPPER],
-    #     ]
-    
-
-    # def get_gripper_position(self) -> float:
-    #     """get current gripper position as a float"""
-    #     q, _, _ = self._ros_client.get_joint_state()
-    #     return q[DreamIdx.GRIPPER]
-
-    # @enforce_enabled
-    # def goto(self, q, wait=True):
-    #     """Directly command the robot using generalized coordinates
-    #     For xarm, we'll convert to end-effector pose and move directly
-    #     """
-    #     # For xarm, we expect q to be [base_x, joint1, joint2, joint3, joint4, joint5, joint6, gripper]
-    #     # We'll use the joint positions to move the arm
-    #     if len(q) >= 6:
-    #         joint_positions = q[1:7]  # Skip base_x, get joint positions
-    #         return self._arm.move_to_pose(joint_positions, wait=wait)
-        
-    #     return True
-
-    # @enforce_enabled
-    # def home(self):
-    #     self.goto(STRETCH_HOME_Q, wait=True)
-
-    # @enforce_enabled
-    # def goto_joint_positions(
-    #     self,
-    #     joint_positions: List[float],
-    #     relative: bool = False,
-    #     blocking: bool = True,
-    #     debug: bool = False,
-    #     gripper: float = None,
-    # ):
-    #     """
-    #     Move robot to specified joint positions
-        
-    #     Args:
-    #         joint_positions: List of length 6 containing desired joint positions [base_x, joint1, joint2, joint3, joint4, joint5, joint6]
-    #         relative: Whether the joint positions are relative to current position
-    #         blocking: Whether command blocks until completion
-    #         debug: Whether to print debug information
-    #         move_base: Whether to move the base (not implemented for xarm)
-    #         velocities: Velocity parameter (not used for xarm)
-    #         head_tilt: Head tilt angle (not used for xarm)
-    #         head_pan: Head pan angle (not used for xarm)
-    #         gripper: Gripper position (handled separately)
-    #     """
-    #     assert len(joint_positions) >= 6, "Joint position vector must be of length 6 or more."
-    #     joint_positions = [float(x) for x in joint_positions]
-
-    #     # Get current joint states for relative movement
-    #     if relative:
-    #         joint_pos_init = self.get_joint_positions()
-    #         joint_pos_goal = np.array(joint_positions) + np.array(joint_pos_init)
-    #     else:
-    #         joint_pos_goal = np.array(joint_positions)
-
-    #     # Convert to pose format for xarm [x, y, z, roll, pitch, yaw]
-    #     # For xarm, we'll use the joint positions directly as pose coordinates
-    #     pose = [
-    #         joint_pos_goal[1],  # joint1 -> x
-    #         joint_pos_goal[2],  # joint2 -> y  
-    #         joint_pos_goal[3],  # joint3 -> z
-    #         joint_pos_goal[4],  # joint4 -> roll (degrees)
-    #         joint_pos_goal[5],  # joint5 -> pitch (degrees)
-    #         joint_pos_goal[6],  # joint6 -> yaw (degrees)
-    #     ]
-
-    #     # Move to pose
-    #     success = self._arm.move_to_pose(pose, wait=blocking)
-
-    #     # Handle gripper separately if specified
-    #     if gripper is not None:
-    #         if gripper > 0.5:  # Threshold for open/close
-    #             self._arm.open_gripper(wait=blocking)
-    #         else:
-    #             self._arm.close_gripper(wait=blocking)
-
-    #     # Debug print
-    #     if debug:
-    #         print("-- joint goto cmd --")
-    #         if relative:
-    #             print("Initial joint pos: [", *(f"{x:.3f}" for x in joint_pos_init), "]")
-    #         print("Desired joint pos: [", *(f"{x:.3f}" for x in joint_pos_goal), "]")
-    #         print("Pose command: [", *(f"{x:.3f}" for x in pose), "]")
-    #         print("--------------------")
-
-    #     return success
-
-
-    # @enforce_enabled
-    # def goto_ee_pose(
-    #     self,
-    #     pos: List[float],
-    #     quat: Optional[List[float]] = None,
-    #     blocking: bool = True,
-    #     debug: bool = False,
-
-    # ) -> bool:
-    #     """Command gripper to pose using xarm controller
-        
-    #     Args:
-    #         pos: Desired position
-    #         quat: Desired orientation in quaternion (xyzw)
-    #         blocking: Whether command blocks until completion
-    #         debug: Whether to print debug information
-    #         initial_cfg: Preferred (initial) joint state configuration
-    #     """
-    #     # For xarm, we can directly use the pose without complex IK
-    #     # Convert the desired pose to xarm format
-    #     pose = [
-    #         pos[0],  # x position
-    #         pos[1],  # y position
-    #         pos[2],  # z position
-    #     ]
-        
-    #     # Add orientation if provided
-    #     if quat is not None:
-    #         r = R.from_quat(quat)
-    #         euler_angles = r.as_euler('ZYX', degrees=True)  # Use ZYX order
-    #         pose.extend([euler_angles[2], euler_angles[1], euler_angles[0]])  # [roll, pitch, yaw]
-    #     else:
-    #         # Use current orientation if not specified
-    #         current_pose = self._arm.get_current_pose()
-    #         pose.extend(current_pose[3:6])
-        
-    #     # Move to pose
-    #     success = self._arm.move_to_pose(pose, wait=blocking)
-
-    #     # Debug print
-    #     if debug and blocking:
-    #         achieved_pos, achieved_quat = self.get_ee_pose()
-    #         print(f"Achieved EE pose: pos={achieved_pos}; quat={achieved_quat}")
-    #         print("=======================")
-
-    #     return success
-
-
-    # @enforce_enabled
-    # def rotate_ee(self, axis: int, angle: float, **kwargs) -> bool:
-    #     """Rotates the gripper by one of 3 principal axes (X, Y, Z)"""
-    #     assert axis in [0, 1, 2], "'axis' must be 0, 1, or 2! (x, y, z)"
-
-    #     r = np.zeros(3)
-    #     r[axis] = angle
-    #     quat_desired = R.from_rotvec(r).as_quat().tolist()
-
-    #     return self.goto_ee_pose([0, 0, 0], quat_desired, relative=True, **kwargs)

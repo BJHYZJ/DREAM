@@ -268,7 +268,8 @@ class RerunVisualizer:
         rr.log(
             "world/xyz",
             rr.Arrows3D(
-                vectors=[[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                # Keep a short frame so it doesn't dominate the view
+                vectors=[[0.25, 0, 0], [0, 0.25, 0], [0, 0, 0.25]],
                 colors=[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
             ),
             static=True,
@@ -414,6 +415,7 @@ class RerunVisualizer:
                     resolution=[obs.rgb.shape[1], obs.rgb.shape[0]],
                     image_from_camera=obs.camera_K,
                     image_plane_distance=0.15,
+                    axis_length=0.15,
                 ),
             )
 
@@ -425,8 +427,8 @@ class RerunVisualizer:
         
         rb_arrow = rr.Arrows3D(
             origins=[0, 0, 0],
-            vectors=[0.8, 0, 0],
-            radii=0.02,
+            vectors=[0.3, 0, 0],
+            radii=0.01,
             labels="robot",
             colors=[255, 0, 0, 255],
         )
@@ -710,7 +712,7 @@ class RerunVisualizer:
             rr.Transform3D(
                 translation=translation,
                 mat3x3=rotation,
-                axis_length=0.7,
+                axis_length=0.3,
             ),
         )
         # rr.set_time_seconds("realtime", ts + timeout)

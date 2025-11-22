@@ -710,24 +710,24 @@ class DreamRobotZmqClient(AbstractRobotClient):
             logger.info("Waiting for manipulation mode")
         self._wait_for_mode("manipulation", verbose=verbose)
 
-    def move_to_nav_posture(self) -> None:
-        """Move the robot to the navigation posture. This is where the head is looking forward and the arm is tucked in."""
-        next_action = {"posture": "navigation", "step": self._iter}
-        next_action = self.send_action(next_action)
-        # self._wait_for_head(constants.STRETCH_NAVIGATION_Q, resend_action=next_action)
-        self._wait_for_mode("navigation")
-        # self._wait_for_arm(constants.STRETCH_NAVIGATION_Q)
-        assert self.in_navigation_mode()
+    # def move_to_nav_posture(self) -> None:
+    #     """Move the robot to the navigation posture. This is where the head is looking forward and the arm is tucked in."""
+    #     next_action = {"posture": "navigation", "step": self._iter}
+    #     next_action = self.send_action(next_action)
+    #     # self._wait_for_head(constants.STRETCH_NAVIGATION_Q, resend_action=next_action)
+    #     self._wait_for_mode("navigation")
+    #     # self._wait_for_arm(constants.STRETCH_NAVIGATION_Q)
+    #     assert self.in_navigation_mode()
 
-    def move_to_manip_posture(self):
-        """This is the pregrasp posture where the head is looking down and right and the arm is tucked in."""
-        next_action = {"posture": "manipulation", "step": self._iter}
-        self.send_action(next_action)
-        time.sleep(0.1)
-        # self._wait_for_head(constants.STRETCH_PREGRASP_Q, resend_action=next_action)
-        self._wait_for_mode("manipulation")
-        # self._wait_for_arm(constants.STRETCH_PREGRASP_Q)
-        assert self.in_manipulation_mode()
+    # def move_to_manip_posture(self):
+    #     """This is the pregrasp posture where the head is looking down and right and the arm is tucked in."""
+    #     next_action = {"posture": "manipulation", "step": self._iter}
+    #     self.send_action(next_action)
+    #     time.sleep(0.1)
+    #     # self._wait_for_head(constants.STRETCH_PREGRASP_Q, resend_action=next_action)
+    #     self._wait_for_mode("manipulation")
+    #     # self._wait_for_arm(constants.STRETCH_PREGRASP_Q)
+    #     assert self.in_manipulation_mode()
 
     def pause_slam(self, timeout: float=2.0, reliable: bool=True) -> None:
         """Pause SLAM updates on the robot."""

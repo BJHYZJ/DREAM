@@ -92,22 +92,11 @@ class DreamClient(AbstractRobotClient):
     """Defines a ROS-based interface to the real Stretch robot. Collect observations and command the robot."""
 
     head_camera_frame = "camera_color_optical_frame"
-    # ee_camera_frame = "gripper_camera_color_optical_frame"
-    # ee_frame = "link_grasp_center"
-    ee_frame = "link_eef"
     world_frame = "map"
 
     def __init__(
         self,
-        init_node: bool = True,
         camera_overrides: Optional[Dict] = None,
-        urdf_path: str = "",
-        ik_type: str = "pinocchio",
-        visualize_ik: bool = False,
-        grasp_frame: Optional[str] = None,
-        ee_link_name: Optional[str] = None,
-        manip_mode_controlled_joints: Optional[List[str]] = None,
-
     ):
         """Create an interface into ROS execution here. This one needs to connect to:
             - joint_states to read current position
@@ -121,16 +110,6 @@ class DreamClient(AbstractRobotClient):
         if camera_overrides is None:
             camera_overrides = {}
         self._ros_client = DreamRosInterface(init_lidar=True, **camera_overrides)
-
-        # Robot model
-        # self._robot_model = HelloStretchKinematics(
-        #     urdf_path=urdf_path,
-        #     ik_type=ik_type,
-        #     visualize=visualize_ik,
-        #     grasp_frame=grasp_frame,
-        #     ee_link_name=ee_link_name,
-        #     manip_mode_controlled_joints=manip_mode_controlled_joints,
-        # )
 
         self._robot_model = RangerxARMKinematics()
 
@@ -265,28 +244,18 @@ class DreamClient(AbstractRobotClient):
         return self._ros_client._lidar
 
 
-    # def move_to_manip_posture(self):
-    #     """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
-    #     self.switch_to_manipulation_mode()
-    #     # pos = self.manip._extract_joint_pos(STRETCH_PREGRASP_Q)
-    #     # # pan, tilt = self._robot_model.look_at_ee
-    #     # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
-    #     # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
-    #     # print("- Robot switched to manipulation mode.")
-    #     assert 1 == 2
+    def move_to_manip_posture(self):
+        """Move the arm and head into manip mode posture: gripper down, head facing the gripper."""
+        self.switch_to_manipulation_mode()
+        self.manip.reset()
+        print("- Robot switched to Manipulation mode.")
 
-    # def move_to_nav_posture(self):
-    #     """Move the arm and head into nav mode. The head will be looking front."""
-
-    #     # First retract the robot's joints
-    #     self.switch_to_manipulation_mode()
-    #     # pan, tilt = self._robot_model.look_close
-    #     # pos = self.manip._extract_joint_pos(STRETCH_NAVIGATION_Q)
-    #     # print("- go to configuration:", pos, "pan =", pan, "tilt =", tilt)
-    #     # self.manip.goto_joint_positions(pos, head_pan=pan, head_tilt=tilt, blocking=True)
-    #     self.manip.reset()
-    #     self.switch_to_navigation_mode()
-    #     print("- Robot switched to navigation mode.")
+    def move_to_nav_posture(self):
+        """Move the arm and head into nav mode. The head will be looking front."""
+        self.switch_to_manipulation_mode()
+        self.manip.reset()
+        self.switch_to_navigation_mode()
+        print("- Robot switched to navigation mode.")
 
 
     def get_arm_state(self):
@@ -645,8 +614,6 @@ class DreamClient(AbstractRobotClient):
     def get_servo_observation(self) -> ServoObservations:
         images = self.cam.get_images(compute_xyz=False)
         camera_in_arm_base_pose = self.get_camera_in_arm_base_pose()
-        # ee_in_map_pose = self.get_ee_in_map_pose()
-        # camera_in_map_pose = self.get_camera_in_map_pose()
 
         if images is None or camera_in_arm_base_pose is None:
             return None
@@ -667,8 +634,8 @@ class DreamClient(AbstractRobotClient):
     def get_servo_angle(self):
         return self.manip.get_servo_angle()
 
-    def move_to_positions(self, positions: List[np.ndarray], wait: bool = True):
-        return self.manip.move_to_positions(positions, wait=wait)
+    # def move_to_positions(self, positions: List[np.ndarray], wait: bool = True):
+    #     return self.manip.move_to_positions(positions, wait=wait)
 
 
     def get_has_wrist(self) -> bool:

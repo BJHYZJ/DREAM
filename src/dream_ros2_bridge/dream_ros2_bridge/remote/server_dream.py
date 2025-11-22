@@ -172,23 +172,23 @@ class ZmqServer(BaseZmqServer):
     def handle_action(self, action: Dict[str, Any]):
         """Handle an action from the client."""
 
-        # if "posture" in action:
-        #     if action["posture"] == "manipulation":
-        #         self.client.stop()
-        #         self.client.switch_to_busy_mode()
-        #         # self.client.move_to_manip_posture()
-        #         self.client.switch_to_manipulation_mode()
-        #     elif action["posture"] == "navigation":
-        #         self.client.stop()
-        #         self.client.switch_to_busy_mode()
-        #         # self.client.move_to_nav_posture()
-        #         self.client.switch_to_navigation_mode()
-        #     else:
-        #         print(
-        #             " - posture",
-        #             action["posture"],
-        #             "not recognized or supported.",
-        #         )
+        if "posture" in action:
+            if action["posture"] == "manipulation":
+                self.client.stop()
+                self.client.switch_to_busy_mode()
+                self.client.move_to_manip_posture()
+                self.client.switch_to_manipulation_mode()
+            elif action["posture"] == "navigation":
+                self.client.stop()
+                self.client.switch_to_busy_mode()
+                self.client.move_to_nav_posture()
+                self.client.switch_to_navigation_mode()
+            else:
+                print(
+                    " - posture",
+                    action["posture"],
+                    "not recognized or supported.",
+                )
         if "control_mode" in action:
             if action["control_mode"] == "manipulation":
                 self.client.switch_to_manipulation_mode()
@@ -281,22 +281,22 @@ class ZmqServer(BaseZmqServer):
         #         target_point=target_point,
         #         blocking=_is_blocking,
         #     )
-        elif "move_to_positions" in action:
-            if self.verbose:
-                print(f"Moving to positions {action['move_to_positions']}")
-            if not self.client.in_navigation_mode():
-                self.client.switch_to_manipulation_mode()
-            _is_wait = action.get("wait", False)
-            self.client.move_to_positions(
-                action["move_to_positions"],
-                wait=_is_wait,
-            )
+        # elif "move_to_positions" in action:
+        #     if self.verbose:
+        #         print(f"Moving to positions {action['move_to_positions']}")
+        #     if not self.client.in_navigation_mode():
+        #         self.client.switch_to_manipulation_mode()
+        #     _is_wait = action.get("wait", False)
+        #     self.client.move_to_positions(
+        #         action["move_to_positions"],
+        #         wait=_is_wait,
+        #     )
         elif "servo_angle" in action:
             # This will send head without anything else
             if self.verbose or True:
                 print(f"Moving head to {action['servo_angle']}")
             if not self.client.in_manipulation_mode():
-                self.client.switch_to_navigation_mode()
+                self.client.switch_to_manipulation_mode()
             self.client.manip.set_servo_angle(
                 angle=action["servo_angle"],
                 speed=action["speed"],
