@@ -164,41 +164,40 @@ class SparseVoxelMapNavigationSpace:
                             footprint_contour[i, j] = 1
         
 
-        if debug:
-            plt.figure(figsize=(15, 10))
-            # Sub-image 1: Obstacle map + robot footprint
-            plt.subplot(221)
-            plt.imshow(crop_obs.cpu().numpy(), cmap='Reds', alpha=0.7)
-            plt.contour(footprint_contour, levels=[0.5], colors='green', linewidths=3, alpha=0.8)
-            plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-            plt.title(f"Obstacles + Robot Footprint\nRed=obstacles, Green=robot outline, Blue=center")
-            plt.legend()
-            
-            # Sub-image 2: Exploring the map + robot footprint
-            plt.subplot(222)
-            plt.imshow(crop_exp.cpu().numpy(), cmap='Greens', alpha=0.7)
-            plt.contour(footprint_contour, levels=[0.5], colors='blue', linewidths=3, alpha=0.8)
-            plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-            plt.title(f"Explored + Robot Footprint\nGreen=explored, Blue=robot outline, Red=center")
-            plt.legend()
-            
-            # Sub-map 3: Obstacle map (pure obstacles)
-            plt.subplot(223)
-            plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
-            plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-            plt.title(f"Obstacles Only\nRed=obstacles, Blue=robot center")
-            plt.legend()
-            
-            # Sub-map 4: Exploration Map (Pure Exploration)
-            plt.subplot(224)
-            plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
-            plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
-            plt.title(f"Explored Only\nGreen=explored, Red=robot center")
-            plt.legend()
-            
-            plt.suptitle(f"Robot Position Analysis (cropped {crop_size}x{crop_size})\nRobot at grid ({start_pt[0]}, {start_pt[1]})", fontsize=14)
-            plt.tight_layout()
-            plt.show()
+        plt.figure(figsize=(15, 10))
+        # Sub-image 1: Obstacle map + robot footprint
+        plt.subplot(221)
+        plt.imshow(crop_obs.cpu().numpy(), cmap='Reds', alpha=0.7)
+        plt.contour(footprint_contour, levels=[0.5], colors='green', linewidths=3, alpha=0.8)
+        plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Obstacles + Robot Footprint\nRed=obstacles, Green=robot outline, Blue=center")
+        plt.legend()
+        
+        # Sub-image 2: Exploring the map + robot footprint
+        plt.subplot(222)
+        plt.imshow(crop_exp.cpu().numpy(), cmap='Greens', alpha=0.7)
+        plt.contour(footprint_contour, levels=[0.5], colors='blue', linewidths=3, alpha=0.8)
+        plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Explored + Robot Footprint\nGreen=explored, Blue=robot outline, Red=center")
+        plt.legend()
+        
+        # Sub-map 3: Obstacle map (pure obstacles)
+        plt.subplot(223)
+        plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
+        plt.scatter(robot_y_rel, robot_x_rel, c='blue', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Obstacles Only\nRed=obstacles, Blue=robot center")
+        plt.legend()
+        
+        # Sub-map 4: Exploration Map (Pure Exploration)
+        plt.subplot(224)
+        plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
+        plt.scatter(robot_y_rel, robot_x_rel, c='red', s=150, marker='o', label='Robot Center', edgecolors='black', linewidth=2)
+        plt.title(f"Explored Only\nGreen=explored, Red=robot center")
+        plt.legend()
+        
+        plt.suptitle(f"Robot Position Analysis (cropped {crop_size}x{crop_size})\nRobot at grid ({start_pt[0]}, {start_pt[1]})", fontsize=14)
+        plt.tight_layout()
+        plt.show()
 
 
     def _get_theta_index(self, theta: float) -> int:
@@ -275,77 +274,38 @@ class SparseVoxelMapNavigationSpace:
 
         valid = bool((not collision) and is_safe)
         if debug:
-        # if True:
             if collision:
                 print("- state in collision")
             if not is_safe:
                 print("- not safe")
 
             print(f"{valid=}")
-            
-            crop_margin = dim * 15
-            cx0 = max(0, x0 - crop_margin)
-            cx1 = min(obstacles.shape[0], x1 + crop_margin)
-            cy0 = max(0, y0 - crop_margin)
-            cy1 = min(obstacles.shape[1], y1 + crop_margin)
-            
-            obs_crop_large = obstacles[cx0:cx1, cy0:cy1].cpu().numpy().astype(float)
-            exp_crop_large = explored[cx0:cx1, cy0:cy1].cpu().numpy().astype(float)
-            
-            robot_x0 = x0 - cx0
-            robot_x1 = robot_x0 + dim
-            robot_y0 = y0 - cy0
-            robot_y1 = robot_y0 + dim
-            
-            obs_vis = obs_crop_large.copy()
-            if robot_x0 >= 0 and robot_y0 >= 0 and robot_x1 <= obs_vis.shape[0] and robot_y1 <= obs_vis.shape[1]:
-                obs_vis[robot_x0, robot_y0:robot_y1] = 0.5
-                obs_vis[robot_x1-1, robot_y0:robot_y1] = 0.5
-                obs_vis[robot_x0:robot_x1, robot_y0] = 0.5
-                obs_vis[robot_x0:robot_x1, robot_y1-1] = 0.5
-            
-            plt.figure(figsize=(15, 10))
-            plt.subplot(231)
-            plt.imshow(obs_vis, cmap='hot')
-            plt.title(f"Obstacles (zoomed)\nRobot at center (gray box)")
-            plt.colorbar()
-            
-            plt.subplot(232)
-            plt.imshow(exp_crop_large, cmap='Blues')
-            plt.title(f"Explored (zoomed)\nSize: {obs_crop_large.shape}")
-            plt.colorbar()
-            
-            plt.subplot(233)
-            plt.imshow(crop_obs.cpu().numpy(), cmap='Reds')
-            plt.title(f"Obstacles (cropped {dim}x{dim})")
-            plt.colorbar()
-            
-            plt.subplot(234)
-            plt.imshow(crop_exp.cpu().numpy(), cmap='Greens')
-            plt.title(f"Explored (cropped {dim}x{dim})")
-            plt.colorbar()
-            
-            plt.subplot(235)
-            plt.imshow(mask.cpu().numpy(), cmap='gray')
-            plt.title("Robot Footprint Mask")
-            plt.colorbar()
-            
-            plt.subplot(236)
-            collision_vis = (crop_obs & mask).cpu().numpy().astype(float)
-            safe_vis = (crop_exp & mask).cpu().numpy().astype(float) * 0.5
-            overlay = np.maximum(collision_vis, safe_vis)
-            plt.imshow(overlay, cmap='RdYlGn_r')
-            plt.title(f"Collision Check\n(collision={collision}, safe={p_is_safe:.2f})")
-            plt.colorbar()
-            
-            plt.tight_layout()
+            obs = obstacles.cpu().numpy().copy()
+            exp = explored.cpu().numpy().copy()
+            obs[x0:x1, y0:y1] = 1
+            plt.subplot(321)
+            plt.imshow(obs)
+            plt.subplot(322)
+            plt.imshow(exp)
+            plt.subplot(323)
+            plt.imshow(crop_obs.cpu().numpy())
+            plt.title("obstacles")
+            plt.subplot(324)
+            plt.imshow(crop_exp.cpu().numpy())
+            plt.title("explored")
+            plt.subplot(325)
+            plt.imshow(mask.cpu().numpy())
             plt.show()
 
         return valid
 
 
     def sample_target_point(
-        self, start: torch.Tensor, point: torch.Tensor, planner: AStar, exploration: bool = False
+        self, 
+        start: torch.Tensor, 
+        point: torch.Tensor, 
+        planner: AStar,
+        debug: bool=False
     ) -> Optional[np.ndarray]:
         """Sample a position near the mask and return.
 
@@ -377,7 +337,7 @@ class SparseVoxelMapNavigationSpace:
         if len(xs) < 1:
             print("No target point find, maybe no point is reachable")
             return None
-        selected_targets = torch.stack([xs, ys], dim=-1)[  # 计算所有可达点到目标的距离，并从近到远排序
+        selected_targets = torch.stack([xs, ys], dim=-1)[  # Calculate the distance from all reachable points to the target, and sort them from closest to furthest.
             torch.linalg.norm(
                 (torch.stack([xs, ys], dim=-1) - torch.tensor([target_x, target_y])).float(), dim=-1
             )
@@ -389,7 +349,7 @@ class SparseVoxelMapNavigationSpace:
             selected_x, selected_y = planner.to_xy([selected_target[0], selected_target[1]])
             theta = self.compute_theta(selected_x, selected_y, point[0], point[1])
 
-            target_is_valid = self.is_valid(np.array([selected_x, selected_y, theta]))  # 碰撞检测
+            target_is_valid = self.is_valid(np.array([selected_x, selected_y, theta]))  # Collision detection
             if not target_is_valid:
                 continue
             # if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.35:
@@ -404,7 +364,8 @@ class SparseVoxelMapNavigationSpace:
 
             if not target_is_valid:
                 continue
-            self.debug_robot_position(np.array([selected_x, selected_y, theta]), planner)
+            if debug:
+                self.debug_robot_position(np.array([selected_x, selected_y, theta]), planner)
             return np.array([selected_x, selected_y, theta])
 
         return None
@@ -419,80 +380,6 @@ class SparseVoxelMapNavigationSpace:
         outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
 
         time_heuristics = self._time_heuristic(history_soft, outside_frontier, debug=debug)
-
-        # TODO: Find good alignment heuristic, we have found few candidates but none of them has satisfactory performance
-
-        ######################################
-        # Candidate 1: Borrow the idea from https://arxiv.org/abs/2310.10103
-        # for i, (cluster, _) in enumerate(image_descriptions):
-        #   cluser_string = ""
-        #   for ob in cluster:
-        #       cluser_string += ob + ", "
-        #   options += f"{i+1}. {cluser_string[:-2]}\n"
-
-        # if positive:
-        #     messages = f"I observe the following clusters of objects while exploring the room:\n\n {options}\nWhere should I search next if I try to {task}?"
-        #     choices = self.positive_score_client.sample(messages, n_samples=num_samples)
-        # else:
-        #     messages = f"I observe the following clusters of objects while exploring the room:\n\n {options}\nWhere should I avoid spending time searching if I try to {task}?"
-        #     choices = self.negative_score_client.sample(messages, n_samples=num_samples)
-
-        # answers = []
-        # reasonings = []
-        # for choice in choices:
-        #     complete_response = choice.lower()
-        #     reasoning = complete_response.split("reasoning: ")[1].split("\n")[0]
-        #     # Parse out the first complete integer from the substring after  the text "Answer: ". use regex
-        #     if len(complete_response.split("answer:")) > 1:
-        #          answer = complete_response.split("answer:")[1].split("\n")[0]
-        #          # Separate the answers by commas
-        #          answers.append([int(x) for x in answer.split(",")])
-        #      else:
-        #          answers.append([])
-        #      reasonings.append(reasoning)
-
-        # # Flatten answers
-        # flattened_answers = [item for sublist in answers for item in sublist]
-        # filtered_flattened_answers = [
-        #     x for x in flattened_answers if x >= 1 and x <= len(image_descriptions)
-        # ]
-        # # Aggregate into counts and normalize to probabilities
-        # answer_counts = {
-        #     x: filtered_flattened_answers.count(x) / len(answers)
-        #     for x in set(filtered_flattened_answers)
-        # }
-        ######################################
-        # Candidate 2: Naively use semantic feature alignment
-        # def get_2d_alignment_heuristics(self, text: str, debug: bool = False):
-        # if self.semantic_memory._points is None:
-        #     return None
-        # # Convert metric measurements to discrete
-        # # Gets the xyz correctly - for now everything is assumed to be within the correct distance of origin
-        # xyz, _, _, _ = self.semantic_memory.get_pointcloud()
-        # xyz = xyz.detach().cpu()
-        # if xyz is None:
-        #     xyz = torch.zeros((0, 3))
-
-        # device = xyz.device
-        # xyz = ((xyz / self.grid_resolution) + self.grid_origin).long()
-        # xyz[xyz[:, -1] < 0, -1] = 0
-
-        # # Crop to robot height
-        # min_height = int(self.obs_min_height / self.grid_resolution)
-        # max_height = int(self.obs_max_height / self.grid_resolution)
-        # grid_size = self.grid_size + [max_height]
-
-        # # Mask out obstacles only above a certain height
-        # obs_mask = xyz[:, -1] < max_height
-        # xyz = xyz[obs_mask, :]
-        # alignments = self.find_alignment_over_model(text)[0].detach().cpu()
-        # alignments = alignments[obs_mask][:, None]
-
-        # alignment_heuristics = scatter3d(xyz, alignments, grid_size, "max")
-        # alignment_heuristics = torch.max(alignment_heuristics, dim=-1).values
-        # alignment_heuristics = torch.from_numpy(
-        #     maximum_filter(alignment_heuristics.numpy(), size=5)
-        # )
 
         alignments_heuristics = None
         total_heuristics = time_heuristics
@@ -564,24 +451,14 @@ class SparseVoxelMapNavigationSpace:
         xy = self.voxel_map.grid_coords_to_xy(pt)  # type: ignore
         return float(xy[0]), float(xy[1])
 
-    def sample_navigation(self, start, planner: AStar, point, mode="navigation"):
-        # plt.clf()
-        if point is None:
-            # start_pt = self.to_pt(start)
-            return None
-        goal = self.sample_target_point(start, point, planner, exploration=mode != "navigation")
-        print("point:", point, "goal:", goal)
-        # obstacles, explored = self.voxel_map.get_2d_map()
-        # plt.imshow(obstacles)
-        # start_pt = self.to_pt(start)
-        # plt.scatter(start_pt[1], start_pt[0], s=15, c="b")
-        # point_pt = self.to_pt(point)
-        # plt.scatter(point_pt[1], point_pt[0], s=15, c="r")
-        # if goal is not None:
-        #     goal_pt = self.to_pt(goal)
-            # plt.scatter(goal_pt[1], goal_pt[0], s=10, c="g")
-        # plt.show()
-        return goal
+    # def sample_navigation(self, start, planner: AStar, point, mode="navigation"):
+    #     # plt.clf()
+    #     if point is None:
+    #         # start_pt = self.to_pt(start)
+    #         return None
+    #     goal = self.sample_target_point(start, point, planner)
+    #     print("point:", point, "goal:", goal)
+    #     return goal
 
     def sample_frontier(self, planner, start_pose=[0, 0, 0], text=None):
         (

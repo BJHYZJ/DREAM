@@ -145,6 +145,8 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
 
         # translation, rotation and obj_points have has been transform to the arm base
         translation, rotation, depth, width, obj_points, retry_flag = image_publisher.publish_image(obj, mode)
+        
+        # retry_flag == 3 when last pickup try for heuristic pickup
 
         if retry_flag == 1:
             print("=" * 20, "Center Robot", "=" * 20)
@@ -166,12 +168,12 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
                 manip_wrapper.move_to_position(base_theta=theta, blocking=True)
             manip_wrapper.robot.look_at_target(tar_in_map=target_in_map)
 
-        elif retry_flag != 0 and side_retries == 3:
+        elif retry_flag != 0 and retry_flag != 3 and side_retries == 3:
             print("Tried in all angles but couldn't succeed")
             if mode == "place":
                 return None, None, None
             else:
-                return None, None, None, None, None, None, 
+                return None, None, None, None, None, None, None
 
         elif side_retries == 2 and tilt_retries == 3:
             manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
@@ -199,7 +201,7 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
 
     if mode == "pick":
         print("Pick: Returning translation, rotation, depth, width")
-        return rotation, translation, depth, width, obj_points, theta_cumulative
+        return rotation, translation, depth, width, obj_points, retry_flag, theta_cumulative
     elif mode == "place":
         print("Place: Returning translation, rotation")
         return rotation, translation, theta_cumulative
@@ -279,7 +281,10 @@ def pickup(
     translation: np.ndarray,  # grasp translation in arm base
     object_points: np.ndarray,  # obj_points in arm base
     gripper_open: int=830,
-    distance_from_object: float=0.25
+    distance_from_object: float=0.25,
+    just_heuristic: bool=False,
+    just_anygrasp: bool=False,
+    two_stage: bool=True,
 ):
     ee_goal_in_arm_base_pose = np.eye(4)
     ee_goal_in_arm_base_pose[:3, :3] = rotation
@@ -288,14 +293,19 @@ def pickup(
     assert len(object_points.shape) == 2 and object_points.shape[1] == 3
 
     arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
-    success0, joints_solution0, debug_info0 = manip_wrapper.robot._robot_model.manip_ik(
-        ee_goal_in_arm_base_pose, 
-        q_init=arm_angles_deg, 
-        is_radians=False, 
-        verbose=False
-    )
+    success0 = success1 = False
+    joints_solution0 = joints_solution1 = None
 
-    if not success0:
+    # First try the direct IK (anygrasp-style). Skip if user asked for heuristic only.
+    if not just_heuristic:
+        success0, joints_solution0, debug_info0 = manip_wrapper.robot._robot_model.manip_ik(
+            ee_goal_in_arm_base_pose, 
+            q_init=arm_angles_deg, 
+            is_radians=False, 
+            verbose=False
+        )
+
+    if not success0 and not just_anygrasp:
         print("The pose can't be resolve by IK, try to use heuristic pickup strategy, Good Luck!")
         manip_wrapper.robot.arm_to(angle=constants.look_down, blocking=True, reliable=True, speed=40)  # Important! It give a suit init pose to topdown pickup
         ee_in_arm_base_pose = manip_wrapper.robot.get_ee_in_arm_base()
@@ -365,35 +375,36 @@ def pickup(
         raise ValueError
 
     # ================ process pregrasp while will imporve manipulation success rate ================
-    object_xyz = np.median(object_points, axis=0) 
-    ee_xyz = manip_wrapper.robot.get_ee_in_arm_base()[:3, 3]
-    pregrasp_xyz = pregrasp_position(
-        object_xyz=object_xyz, 
-        ee_xyz=ee_xyz, 
-        distance_from_object=distance_from_object
-    )
-    pregrasp_pose = np.eye(4)
-    pregrasp_pose[:3, 3] = pregrasp_xyz
-    pregrasp_pose[:3, :3] = ee_goal_in_arm_base_pose[:3, :3]
+    if two_stage:
+        object_xyz = np.median(object_points, axis=0) 
+        ee_xyz = manip_wrapper.robot.get_ee_in_arm_base()[:3, 3]
+        pregrasp_xyz = pregrasp_position(
+            object_xyz=object_xyz, 
+            ee_xyz=ee_xyz, 
+            distance_from_object=distance_from_object
+        )
+        pregrasp_pose = np.eye(4)
+        pregrasp_pose[:3, 3] = pregrasp_xyz
+        pregrasp_pose[:3, :3] = ee_goal_in_arm_base_pose[:3, :3]
 
-    pre_success, pregrasp_joint_angles, _ = manip_wrapper.robot._robot_model.manip_ik(
-        pregrasp_pose, 
-        q_init=arm_angles_deg, 
-        is_radians=False, 
-        verbose=False
-    )
+        pre_success, pregrasp_joint_angles, _ = manip_wrapper.robot._robot_model.manip_ik(
+            pregrasp_pose, 
+            q_init=arm_angles_deg, 
+            is_radians=False, 
+            verbose=False
+        )
 
-    # pause slam to avoid robot body be scan to scene
-    if pre_success:
-        print(f"Moving to pre-grasp position.")
-        print("Pregrasp joint angles: ")
-        print(" - joint1: ", pregrasp_joint_angles[0])
-        print(" - joint2: ", pregrasp_joint_angles[1])
-        print(" - joint3: ", pregrasp_joint_angles[2])
-        print(" - joint4: ", pregrasp_joint_angles[3])
-        print(" - joint5: ", pregrasp_joint_angles[4])
-        print(" - joint5: ", pregrasp_joint_angles[5])
-        manip_wrapper.robot.arm_to(angle=pregrasp_joint_angles, blocking=True, speed=40)   
+        # pause slam to avoid robot body be scan to scene
+        if pre_success:
+            print(f"Moving to pre-grasp position.")
+            print("Pregrasp joint angles: ")
+            print(" - joint1: ", pregrasp_joint_angles[0])
+            print(" - joint2: ", pregrasp_joint_angles[1])
+            print(" - joint3: ", pregrasp_joint_angles[2])
+            print(" - joint4: ", pregrasp_joint_angles[3])
+            print(" - joint5: ", pregrasp_joint_angles[4])
+            print(" - joint5: ", pregrasp_joint_angles[5])
+            manip_wrapper.robot.arm_to(angle=pregrasp_joint_angles, blocking=True, speed=40)   
 
     manip_wrapper.robot.arm_to(angle=joints_solution, blocking=True, speed=30)
     picked = manip_wrapper.pickup(width=gripper_open)

@@ -505,7 +505,7 @@ class RobotAgent:
             grid_resolution=parameters["grid_resolution"],
             min_depth=parameters["min_depth"],
             max_depth=parameters["max_depth"],
-            pad_obstacles=parameters["pad_obstacles"],
+            pad_obstacles=parameters["pad_obstacles"],  # in meter
             add_local_radius_points=parameters.get("add_local_radius_points", default=True),
             remove_visited_from_obstacles=parameters.get(
                 "remove_visited_from_obstacles", default=False
@@ -610,9 +610,13 @@ class RobotAgent:
     def look_around(self, speed: int=50):
         print("*" * 10, "Look around to check", "*" * 10)
         for angle in [
-            constants.look_ahead, constants.look_front, constants.look_down, 
-            constants.look_left_1, constants.look_left_2, 
-            constants.look_right_1, constants.look_right_2
+            constants.look_ahead,
+            constants.look_down,
+            constants.look_left_1,
+            constants.look_left_2,
+            constants.look_right_1, 
+            constants.look_right_2,
+            constants.look_front,
         ]:
             self.robot.arm_to(angle=angle, speed=speed, blocking=True)
             if not self._realtime_updates:
@@ -635,9 +639,9 @@ class RobotAgent:
         text: str,
         arm_speed=40,
     ):
-        self.robot.look_front(speed=arm_speed)
+        # self.robot.look_front(speed=arm_speed)
         self.look_around(speed=arm_speed)
-        self.robot.look_front(speed=arm_speed)
+        # self.robot.look_front(speed=arm_speed)
         self.robot.switch_to_navigation_mode()
 
         start = self.robot.get_base_in_map_xyt()
@@ -658,8 +662,6 @@ class RobotAgent:
 
                 return True, res[-1]
             else:
-                # print(res)
-                # res[-1][2] += np.pi / 2
                 self.robot.execute_trajectory(
                     res,
                     pos_err_threshold=self.pos_err_threshold,
@@ -682,7 +684,7 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose):
+    def process_text(self, text, start_pose, step_num=16):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
@@ -734,17 +736,20 @@ class RobotAgent:
                 self.rerun_visualizer.log_custom_2d_image("/observation_similar_to_text", rgb)
 
             if localized_point is None:
-                return []
+                return []  # try to found object by frontier
 
-            # TODO: Do we really need this line?
-            if len(localized_point) == 2:
-                localized_point = np.array([localized_point[0], localized_point[1], 0])
+            # # TODO: Do we really need this line?
+            # if len(localized_point) == 2:
+            #     localized_point = np.array([localized_point[0], localized_point[1], 0])
 
-            point = self.space.sample_navigation(
+            point = self.space.sample_target_point(
                 start=start_pose, 
                 point=localized_point, 
-                planner=self.planner
+                planner=self.planner,
+                debug=False,  # for visualization
             )
+
+            # print("localized_point:", localized_point, "goal:", point)
 
             print("Navigation endpoint selected")
 
@@ -761,25 +766,23 @@ class RobotAgent:
         elif res is not None:
             waypoints = None
             print("[FAILURE]", res.reason)
-        # If we are navigating to some object of interest, send (x, y, z) of
-        # the object so that we can make sure the robot looks at the object after navigation
+
         traj = []
         if waypoints is not None:
-
             self.rerun_visualizer.log_custom_pointcloud(
                 "world/object",
-                [localized_point[0], localized_point[1], 1.5],
+                [localized_point[0], localized_point[1], 0.5],
                 torch.Tensor([0, 1, 0]),
                 0.1,
             )
 
-            finished = len(waypoints) <= 8 and mode == "navigation"
+            finished = len(waypoints) <= step_num and mode == "navigation"
             if finished:
                 self.space.traj = None
             else:
-                self.space.traj = waypoints[8:] + [[np.nan, np.nan, np.nan], localized_point]
+                self.space.traj = waypoints[step_num:] + [[np.nan, np.nan, np.nan], localized_point]
             if not finished:
-                waypoints = waypoints[:8]
+                waypoints = waypoints[:step_num]
             traj = self.planner.clean_path_for_xy(waypoints)
             if finished:
                 traj.append([np.nan, np.nan, np.nan])
@@ -788,17 +791,11 @@ class RobotAgent:
                 traj.append(localized_point)
             print("Planned trajectory:", traj)
 
-        # Talk about what you are doing, as the robot.
-        if self.robot is not None:
-            if text is not None and text != "":
-                self.robot.say("I am looking for a " + text + ".")
-            else:
-                self.robot.say("I am exploring the environment.")
-
         if text is not None and text != "":
             debug_text = "### The goal is to navigate to " + text + ".\n" + debug_text
         else:
             debug_text = "### I have not received any text query from human user.\n ### So, I plan to explore the environment with Frontier-based exploration.\n"
+        
         debug_text = "# Robot's monologue: \n" + debug_text
         self.rerun_visualizer.log_text("robot_monologue", debug_text)
 
@@ -807,19 +804,19 @@ class RobotAgent:
             vectors = []
             for idx in range(len(traj)):
                 if idx != len(traj) - 1:
-                    origins.append([traj[idx][0], traj[idx][1], 1.5])
+                    origins.append([traj[idx][0], traj[idx][1], 0.5])
                     vectors.append(
                         [traj[idx + 1][0] - traj[idx][0], traj[idx + 1][1] - traj[idx][1], 0]
                     )
             self.rerun_visualizer.log_arrow3D(
                 "world/direction", origins, vectors, torch.Tensor([0, 1, 0]), 0.1
             )
-            self.rerun_visualizer.log_custom_pointcloud(
-                "world/robot_start_pose",
-                [start_pose[0], start_pose[1], 1.5],
-                torch.Tensor([0, 0, 1]),
-                0.1,
-            )
+            # self.rerun_visualizer.log_custom_pointcloud(
+            #     "world/robot_start_pose",
+            #     [start_pose[0], start_pose[1], 0.5],
+            #     torch.Tensor([0, 0, 1]),
+            #     0.1,
+            # )
 
         return traj
 
@@ -841,6 +838,23 @@ class RobotAgent:
             if finished is None:
                 print("Navigation failed! The path might be blocked!")
                 return None
+            
+            if finished:  # double check object is exist
+                self.robot.look_at_target(
+                    tar_in_map=end_point,
+                    blocking=True
+                )
+                time.sleep(1)  # for observation to map
+                if not self._realtime_updates:
+                    self.update()
+                obs_id = self.voxel_map.observations[
+                    max(self.voxel_map.observations.keys())
+                ].obs_id
+                text_exist = self.voxel_map.detect_text(text=text, obs_id=obs_id)
+                if not text_exist:
+                    step = 0
+                    finished = False
+
         print("Navigation finished!")
         return end_point
 
@@ -889,7 +903,10 @@ class RobotAgent:
         self,
         target_object,
         target_point: None,
-        skip_confirmation: bool = False,
+        skip_confirmation: bool=False,
+        just_anygrasp: bool=False,
+        just_heuristic: bool=False,
+        two_stage: bool=True,
     ):
         """
         An API for running manipulation. By calling this API, human will ask the robot to pick up objects
@@ -903,7 +920,7 @@ class RobotAgent:
 
         self.robot.switch_to_manipulation_mode()
 
-        rotation, translation, depth, width, obj_points, theta_cumulative = capture_and_process_image(
+        rotation, translation, depth, width, obj_points, retry_flag, theta_cumulative = capture_and_process_image(
             mode="pick",
             obj=target_object,
             tar_in_map=target_point,
@@ -911,10 +928,13 @@ class RobotAgent:
             manip_wrapper=self.manip_wrapper,
         )
 
-        if rotation is None:
+        if rotation is None and retry_flag != 3:
             print("(ಥ﹏ಥ) Try all pose but anygrasp is failed.")
             return False
         
+        if not just_heuristic:
+            just_heuristic = retry_flag == 3
+
         if skip_confirmation or input("Do you want to do this pickup manipulation? Y or N ") != "N":
             self.robot.pause_slam()
             success = pickup(
@@ -922,6 +942,9 @@ class RobotAgent:
                 rotation,
                 translation,
                 object_points=obj_points,
+                just_heuristic=just_heuristic,
+                just_anygrasp=just_anygrasp,
+                two_stage=two_stage,
             )
             self.robot.resume_slam()
             if not success:

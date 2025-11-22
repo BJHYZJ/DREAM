@@ -8,6 +8,7 @@
 # license information maybe found below, if so.
 
 from .dynamem_visual_grounding_prompt import DYNAMEM_VISUAL_GROUNDING_PROMPT
+from .dream_visual_verify_prompt import DREAM_VISUAL_VERIFY_PROMPT
 from .object_manip_nav_prompt import ObjectManipNavPromptBuilder
 from .ok_robot_prompt import OkRobotPromptBuilder
 from .pickup_prompt import PickupPromptBuilder

@@ -34,7 +34,7 @@ from dataclasses import dataclass
 
 from dream.core.interfaces import Observations
 from dream.llms import OpenaiClient
-from dream.llms.prompts import DYNAMEM_VISUAL_GROUNDING_PROMPT
+from dream.llms.prompts import DYNAMEM_VISUAL_GROUNDING_PROMPT, DREAM_VISUAL_VERIFY_PROMPT
 from dream.utils.image import Camera, camera_xyz_to_global_xyz
 from dream.utils.morphology import binary_dilation, binary_erosion, get_edges
 from dream.utils.point_cloud_torch import unproject_masked_depth_to_xyz_coordinates
@@ -64,10 +64,10 @@ logger = logging.getLogger(__name__)
 class SparseVoxelMap:
     def __init__(
         self,
-        voxel_resolution: float = 0.01,
+        voxel_resolution: float = 0.01,  # semantic memory resolution, for object localization
         feature_dim: int = 3,
         grid_size: Tuple[int, int] = None,
-        grid_resolution: float = 0.05,
+        grid_resolution: float = 0.05,  # occupancy grid map resolution, for path planning
         ground_max_height: float = -0.3,
         obs_min_height: float = -0.1,
         obs_max_height: float = 1.5,
@@ -79,7 +79,7 @@ class SparseVoxelMap:
         local_radius: float = 0.8,
         min_depth: float = 0.25,
         max_depth: float = 2.5,
-        pad_obstacles: int = 0,
+        pad_obstacles: int = 0.2,  # meter to obstacle
         voxel_kwargs: Dict[str, Any] = {},
         encoder=None,
         map_2d_device: str = "cpu",
@@ -99,7 +99,8 @@ class SparseVoxelMap:
         compression_features: bool=False,  # save memroy, but slowly
         log="test",
         mllm=False,
-        verify_point_similarity: float=0.14
+        with_mllm_verify=True,
+        verify_point_similarity: float=0.21
     ):
 
         # TODO: We an use fastai.store_attr() to get rid of this boilerplate code
@@ -141,7 +142,7 @@ class SparseVoxelMap:
         self.voxel_resolution = voxel_resolution
         self.min_depth = min_depth
         self.max_depth = max_depth
-        self.pad_obstacles = int(pad_obstacles)
+        self.pad_obstacles = int(pad_obstacles / self.grid_resolution)
 
         self.voxel_kwargs = voxel_kwargs
         self.encoder = encoder
@@ -217,10 +218,16 @@ class SparseVoxelMap:
         self._seq = 0
         self._2d_last_updated = -1
         self.mllm = mllm
+        self.with_mllm_verify = with_mllm_verify
         if self.mllm:
             # Used to do visual grounding task
             self.gpt_client = OpenaiClient(
                 DYNAMEM_VISUAL_GROUNDING_PROMPT, model="gpt-4o-2024-05-13"
+            )
+        if not self.mllm and self.with_mllm_verify:
+            # Used to verify
+            self.gpt_verify_client = OpenaiClient(
+                DREAM_VISUAL_VERIFY_PROMPT, model="gpt-5.1-2025-11-13"
             )
         self.verify_point_similarity = verify_point_similarity  # verify_point similarity threshold
         # Init variables
@@ -800,7 +807,7 @@ class SparseVoxelMap:
 
         return sorted_obs_counts, sorted_points, top_alignments
 
-    def llm_locator(self, image_ids: Union[torch.Tensor, np.ndarray, list], text: str):
+    def mllm_locator(self, image_ids: Union[torch.Tensor, np.ndarray, list], text: str):
         """
         Prompting the mLLM to select the images containing objects of interest.
 
@@ -812,7 +819,7 @@ class SparseVoxelMap:
         """
         user_messages = []
         for obs_id in image_ids:
-            obs_id = int(obs_id) - 1
+            obs_id = int(obs_id)
             rgb = np.copy(self.observations[obs_id].rgb.numpy())
             depth = self.observations[obs_id].depth
             rgb[depth > 2.5] = [0, 0, 0]
@@ -822,6 +829,35 @@ class SparseVoxelMap:
 
         response = self.gpt_client(user_messages)
         return self.parse_localization_response(response)
+
+    def mllm_verify(self, obs_id: int, text: str):
+        rgb = np.copy(self.observations[obs_id].rgb.numpy())
+        depth = self.observations[obs_id].depth
+        rgb[depth > self.max_depth] = [0, 0, 0]
+        image = Image.fromarray(rgb.astype(np.uint8), mode="RGB")
+        user_messages = []
+        user_messages.append(image)
+        user_messages.append("The object you need to verify is " + text)
+        response = self.gpt_verify_client(user_messages)
+        return self.parse_verfy_response(response)
+
+    def parse_verfy_response(self, response: str) -> Optional[bool]:
+        """
+        Parse the output of the verify prompt to a boolean.
+        """
+        try:
+            match = re.search(r"(?im)^\s*Answer\s*:\s*(True|False)\s*$", response)
+            if not match:
+                match = re.search(r"\b(True|False)\b", response, re.IGNORECASE)
+
+            if match:
+                return match.group(1).lower() == "true"
+
+            logger.warning("Verify response missing True/False: %s", response)
+            return None
+        except Exception as exc:
+            logger.error("Failed to parse verify response '%s': %s", response, exc)
+            return None
 
     def parse_localization_response(self, response: str):
         """
@@ -874,7 +910,7 @@ class SparseVoxelMap:
             text,
             max_img_num=3,
         )
-        target_id = self.llm_locator(image_ids, text)
+        target_id = self.mllm_locator(image_ids, text)
 
         if target_id is None:
             debug_text += "#### - Cannot verify whether this instance is the target. **😞** \n"
@@ -906,8 +942,9 @@ class SparseVoxelMap:
         else:
             return target_point, debug_text, image_id, point
 
+
     def localize_with_feature_similarity(
-        self, text, similarity_threshold: float = 0.05, debug=True, return_debug=False
+        self, text, similarity_threshold: float=0.05, debug=True, return_debug=False
     ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         alignments = self.find_alignment_over_model(text).cpu()
@@ -922,12 +959,13 @@ class SparseVoxelMap:
         depth = self.observations[obs_id].depth
         K = self.observations[obs_id].camera_K
 
-        rgb = cv2.cvtColor(rgb.numpy(), cv2.COLOR_RGB2BGR)
-        cv2.imwrite(self.log + "/rgb_" + text + "_" + str(obs_id) + ".png", rgb)
+        rgb_np = rgb.numpy()
+        rgb_bgr = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(self.log + "/rgb_" + text + "_" + str(obs_id) + ".png", rgb_bgr)
 
         res = self.detection_model.compute_obj_coord(
             text=text, 
-            rgb=rgb, 
+            rgb=rgb_np, 
             depth=depth, 
             camera_K=K, 
             camera_pose=pose, 
@@ -941,16 +979,28 @@ class SparseVoxelMap:
                 "#### - Object is detected in observations . **😃** Directly navigate to it.\n"
             )
         else:
-            alignments = self.find_alignment_over_model(text).cpu()
-            cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
-            if cosine_similarity_check:
-                target_point = point
+            # Fallback: use mLLM to verify the current frame if available
+            if self.with_mllm_verify:
+                mllm_verify = self.mllm_verify(obs_id, text)
+                print(f"LLM Response: {mllm_verify}")
+                if mllm_verify:
+                    target_point = point
+                    debug_text += (
+                        "#### - mLLM verified target in this frame. **😃** Using nearest point.\n"
+                    )
 
-                debug_text += (
-                    "#### - The point has high cosine similarity. **😃** Directly navigate to it.\n"
-                )
-            else:
-                debug_text += "#### - Cannot verify whether this instance is the target. **😞** \n"
+            if target_point is None:
+                alignments = self.find_alignment_over_model(text).cpu()
+                cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
+                if cosine_similarity_check:
+                    target_point = point
+
+                    debug_text += (
+                        "#### - The point has high cosine similarity. **😃** Directly navigate to it.\n"
+                    )
+                else:
+                    debug_text += "#### - Cannot verify whether this instance is the target. **😞** \n"
+   
         print("--------------------------------")
         print(debug_text)
         if not debug:
@@ -959,6 +1009,46 @@ class SparseVoxelMap:
             return target_point, debug_text
         else:
             return target_point, debug_text, obs_id, point
+
+
+    def detect_text(self, text, obs_id, similarity_threshold=0.05):
+
+        rgb = self.observations[obs_id].rgb
+        pose = self.observations[obs_id].camera_pose
+        depth = self.observations[obs_id].depth
+        K = self.observations[obs_id].camera_K
+
+        rgb_np = rgb.numpy()
+        # rgb_bgr = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2BGR)
+        # cv2.imwrite(self.log + "/rgb_" + text + "_" + str(obs_id) + ".png", rgb_bgr)
+        text_exist = False
+        res = self.detection_model.compute_obj_coord(
+            text=text, 
+            rgb=rgb_np, 
+            depth=depth, 
+            camera_K=K, 
+            camera_pose=pose, 
+            confidence_threshold=similarity_threshold,
+            depth_threshold=self.max_depth
+        )
+
+        if res is not None:
+            text_exist = True
+        else:
+            # Fallback: use mLLM to verify the current frame if available
+            if self.with_mllm_verify:
+                mllm_verify = self.mllm_verify(obs_id, text)
+                print(f"LLM Response: {mllm_verify}")
+                if mllm_verify:
+                    text_exist = True
+
+            if text_exist is False:
+                alignments = self.find_alignment_over_model(text).cpu()
+                cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
+                if cosine_similarity_check:
+                    text_exist = True
+
+        return text_exist
 
     # def _select_best_frame_lightweight(self, text, threshold=0.05, 
     #                                     point_weight=0.6, recency_weight=0.4):

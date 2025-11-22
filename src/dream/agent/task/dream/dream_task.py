@@ -239,6 +239,14 @@ class DreamTaskExecutor:
             elif command == "look_around":
                 logger.info(f"look_around")
                 self.agent.look_around()
+            elif command == "base_to_relative":
+                logger.info(f"BASE TO {args}")
+                self.robot.base_to(
+                    xyt=np.array(args),
+                    relative=True,
+                    reliable=True
+                )
+        
             elif command == "pickup":
                 logger.info(f"[Pickup task] Pickup: {args}")
                 target_object = args

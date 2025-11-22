@@ -706,13 +706,13 @@ class RerunVisualizer:
         """
         ts = time.time()
         rr.set_time("realtime", timestamp=ts)
-        log_to_rerun("world/xyt_goal", rr.Points3D([0, 0, 0], colors=[0, 255, 0, 50], radii=0.1))
+        log_to_rerun("world/xyt_goal", rr.Points3D([0, 0, 0], colors=[0, 255, 0, 50], radii=0.05))
         log_to_rerun(
             "world/xyt_goal",
             rr.Transform3D(
                 translation=translation,
                 mat3x3=rotation,
-                axis_length=0.3,
+                axis_length=0.15,
             ),
         )
         # rr.set_time_seconds("realtime", ts + timeout)
