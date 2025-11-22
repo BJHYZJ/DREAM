@@ -73,6 +73,8 @@ class DDVelocityControlNoplan(DiffDriveVelocityController):
             self.v_max = v_max
         if w_max is not None:
             self.w_max = w_max
+            # Optional higher spin rate for in-place turns
+            self.w_max_turn = getattr(self.cfg, "w_max_turn", self.w_max)
         if acc_lin is not None:
             self.acc_lin = acc_lin
         if acc_ang is not None:
@@ -152,7 +154,9 @@ class DDVelocityControlNoplan(DiffDriveVelocityController):
         # Rotate to correct yaw if XY position is at goal
         elif abs(ang_err) > self.ang_error_tol:
             # Compute angular velocity -- turn to goal orientation
-            w_cmd = self._velocity_feedback_control(ang_err, self.acc_ang, self.w_max)
+            w_cmd = self._velocity_feedback_control(
+                ang_err, self.acc_ang, getattr(self, "w_max_turn", self.w_max)
+            )
             done = False
 
         if in_reverse:
