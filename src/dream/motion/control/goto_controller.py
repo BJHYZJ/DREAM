@@ -21,7 +21,10 @@ from omegaconf import DictConfig
 from dream.motion.utils.geometry import normalize_ang_error
 from dream.utils.config import get_control_config
 
-from .feedback.velocity_controllers import DDVelocityControlNoplan
+from .feedback.velocity_controllers import (
+    DDVelocityControlNoplan,
+    AckermannVelocityControl,
+)
 
 log = logging.getLogger(__name__)
 
@@ -98,9 +101,17 @@ class GotoVelocityController:
         self._timeout = self.cfg.timeout
 
         # Control module
-        self.control = DDVelocityControlNoplan(cfg)
+        controller_name = getattr(cfg, "controller", "diff_drive")
+        if controller_name.lower() == "ackermann":
+            self.control = AckermannVelocityControl(cfg)
+        else:
+            self.control = DDVelocityControlNoplan(cfg)
         self.update_velocity_profile(
-            self.cfg.v_max, self.cfg.w_max, self.cfg.acc_lin, self.cfg.acc_ang
+            self.cfg.v_max,
+            self.cfg.w_max,
+            self.cfg.acc_lin,
+            self.cfg.acc_ang,
+            getattr(self.cfg, "w_max_turn", None),
         )
 
         # Initialize
@@ -119,9 +130,14 @@ class GotoVelocityController:
         w_max: Optional[float] = None,
         acc_lin: Optional[float] = None,
         acc_ang: Optional[float] = None,
+        w_max_turn: Optional[float] = None,
     ):
         """Call controller and update velocity profile"""
-        self.control.update_velocity_profile(v_max, w_max, acc_lin, acc_ang)
+        # Some controllers ignore w_max_turn.
+        try:
+            self.control.update_velocity_profile(v_max, w_max, acc_lin, acc_ang, w_max_turn)
+        except TypeError:
+            self.control.update_velocity_profile(v_max, w_max, acc_lin, acc_ang)
 
     def update_pose_feedback(self, xyt_current: np.ndarray):
         self.xyt_loc = xyt_current
