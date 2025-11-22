@@ -1445,7 +1445,7 @@ ros2 service call /goto_controller/enable std_srvs/srv/Trigger
 
 ros2 topic pub --once /goto_controller/goal geometry_msgs/msg/Pose "
 position:
-  x: 0.0
+  x: -0.5
   y: 0.0
   z: 0.0
 orientation:
