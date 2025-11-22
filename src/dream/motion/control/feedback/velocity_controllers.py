@@ -73,8 +73,6 @@ class DDVelocityControlNoplan(DiffDriveVelocityController):
             self.v_max = v_max
         if w_max is not None:
             self.w_max = w_max
-            # Optional higher spin rate for in-place turns
-            self.w_max_turn = getattr(self.cfg, "w_max_turn", self.w_max)
         if acc_lin is not None:
             self.acc_lin = acc_lin
         if acc_ang is not None:
@@ -154,97 +152,10 @@ class DDVelocityControlNoplan(DiffDriveVelocityController):
         # Rotate to correct yaw if XY position is at goal
         elif abs(ang_err) > self.ang_error_tol:
             # Compute angular velocity -- turn to goal orientation
-            w_cmd = self._velocity_feedback_control(
-                ang_err, self.acc_ang, getattr(self, "w_max_turn", self.w_max)
-            )
+            w_cmd = self._velocity_feedback_control(ang_err, self.acc_ang, self.w_max)
             done = False
 
         if in_reverse:
             v_cmd = -v_cmd
-
-        return v_cmd, w_cmd, done
-
-
-class AckermannVelocityControl(DiffDriveVelocityController):
-    """
-    Ackermann-friendly controller: limits curvature by wheelbase/steer angle, still emits (v,w).
-    """
-
-    def __init__(self, cfg: DictConfig):
-        self.cfg = cfg
-        self.reset_error_tolerances()
-        self.reset_velocity_profile()
-        self.wheelbase = getattr(cfg, "wheelbase_m", 0.9)
-        self.steer_max = getattr(cfg, "steer_max_rad", 0.7)
-
-    def reset_velocity_profile(self):
-        self.update_velocity_profile(
-            getattr(self.cfg, "v_max", None),
-            getattr(self.cfg, "w_max", None),
-            getattr(self.cfg, "acc_lin", None),
-            getattr(self.cfg, "acc_ang", None),
-            getattr(self.cfg, "w_max_turn", None),
-        )
-
-    def update_velocity_profile(
-        self,
-        v_max: Optional[float] = None,
-        w_max: Optional[float] = None,
-        acc_lin: Optional[float] = None,
-        acc_ang: Optional[float] = None,
-        w_max_turn: Optional[float] = None,
-    ):
-        if v_max is not None:
-            self.v_max = v_max
-        if w_max is not None:
-            self.w_max = w_max
-        if acc_lin is not None:
-            self.acc_lin = acc_lin
-        if acc_ang is not None:
-            self.acc_ang = acc_ang
-        # Higher turn rate for in-place spins if provided
-        self.w_max_turn = w_max_turn if w_max_turn is not None else getattr(self.cfg, "w_max_turn", self.w_max)
-
-    def reset_error_tolerances(self):
-        self.lin_error_tol = self.cfg.lin_error_tol
-        self.ang_error_tol = self.cfg.ang_error_tol
-
-    @staticmethod
-    def _velocity_feedback_control(x_err, a, v_max):
-        if a is None or a <= 0:
-            return 0.0
-        t = np.sqrt(2.0 * abs(x_err) / a)
-        v = min(a * t, v_max)
-        return v * np.sign(x_err)
-
-    def __call__(self, xyt_err: np.ndarray, allow_reverse: bool = False) -> Tuple[float, float, bool]:
-        v_cmd = w_cmd = 0.0
-        done = True
-
-        lin_err = np.linalg.norm(xyt_err[:2])
-        ang_err = normalize_ang_error(xyt_err[2])
-        heading_err = np.arctan2(xyt_err[1], xyt_err[0])
-
-        reverse = False
-        if allow_reverse and abs(heading_err) > np.pi / 2.0:
-            reverse = True
-            heading_err = normalize_ang_error(heading_err + np.pi)
-
-        if lin_err > self.lin_error_tol:
-            v_cmd = self._velocity_feedback_control(lin_err, self.acc_lin, self.v_max)
-
-            # Pure pursuit style curvature (clamped by steering)
-            curvature = 0.0 if lin_err < 1e-6 else 2.0 * np.sin(heading_err) / lin_err
-            delta = np.clip(np.arctan(self.wheelbase * curvature), -self.steer_max, self.steer_max)
-            w_cmd = np.clip(v_cmd * np.tan(delta) / self.wheelbase, -self.w_max, self.w_max)
-            done = False
-
-        elif abs(ang_err) > self.ang_error_tol:
-            w_cmd = self._velocity_feedback_control(ang_err, self.acc_ang, self.w_max_turn)
-            done = False
-
-        if reverse:
-            v_cmd = -v_cmd
-            w_cmd = -w_cmd
 
         return v_cmd, w_cmd, done
