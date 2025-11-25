@@ -100,7 +100,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
 
     # RTAB-Map's internal parameters are strings:
     'RGBD/ProximityMaxGraphDepth': '0',
-    'RGBD/ProximityPathMaxNeighbors': '2',
+    'RGBD/ProximityPathMaxNeighbors': '0',
     'RGBD/AngularUpdate': '0.1',
     'RGBD/LinearUpdate': '0.1',
     'RGBD/CreateOccupancyGrid': 'false',
