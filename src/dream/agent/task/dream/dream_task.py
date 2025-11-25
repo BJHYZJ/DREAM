@@ -268,7 +268,7 @@ class DreamTaskExecutor:
                 # Pick up
                 if self.skip_confirmations:
                     if point is not None:
-                        self._pickup(target_object, point=point)
+                        self._pickup(target_object, point=point, skip_confirmations=self.skip_confirmations)
                     else:
                         logger.error("Could not find the object.")
                         self.robot.say("I could not find the " + str(args) + ".")
@@ -303,7 +303,7 @@ class DreamTaskExecutor:
 
                 if self.skip_confirmations:
                     if point is not None:
-                        self._place(target_object, point=point)
+                        self._place(target_object, point=point, skip_confirmations=self.skip_confirmations)
                     else:
                         logger.error("Could not find the object.")
                         self.robot.say("I could not find the " + str(args) + ".")

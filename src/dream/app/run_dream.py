@@ -151,7 +151,7 @@ def main(
         manipulation_only=manipulation_only,
     )
 
-    # if True:
+    if False:
         # command = [("pause_slam", "")]
         # executor(command)
         # command = [("resume_slam", "")]
@@ -167,6 +167,13 @@ def main(
 
         # command = [("find", "red pepper")]
         # executor(command)
+        import time
+        while True:
+            command = [("look_around", "")]
+            executor(command)
+            time.sleep(10)
+
+
 
 
 

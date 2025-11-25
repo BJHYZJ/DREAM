@@ -146,8 +146,8 @@ class RobotAgent:
 
         self._pose_trans_thresh: float = 0.03  # metre
         self._pose_rot_thresh: float = 3.0  # degree
-        self._win_for_small_update: int = 30  # in 3hz, around 10 second, must has at least one frame in nearest 6 frame
-        self._win_for_realtime_update: int = 6  # in 3hz, around 2 second
+        self._win_for_small_update: int = 50  # in 3hz, around 10 second, must has at least one frame in nearest 6 frame
+        self._win_for_realtime_update: int = 10  # in 3hz, around 2 second
         self._max_obs_length = 500
         self._max_pose_graph_obs_length = self._max_obs_length // 5
 
