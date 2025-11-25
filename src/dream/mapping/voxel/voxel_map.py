@@ -380,6 +380,8 @@ class SparseVoxelMapNavigationSpace:
         outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
 
         time_heuristics = self._time_heuristic(history_soft, outside_frontier, debug=debug)
+        if text is not None:
+            semantic_heuristics = self.voxel_map.get_2d_alignment_heuristics(text=text, debug=debug)
 
         alignments_heuristics = None
         total_heuristics = time_heuristics
@@ -395,13 +397,15 @@ class SparseVoxelMapNavigationSpace:
             plt.subplot(221)
             plt.imshow(obstacles.int() * 5 + outside_frontier.int() * 10)
             plt.subplot(222)
-            plt.imshow(explored.int() * 5)
-            plt.subplot(223)
+            # plt.imshow(explored.int() * 5)
+            # plt.subplot(223)
             plt.imshow(total_heuristics)
             plt.scatter(index[1], index[0], s=15, c="g")
-            plt.subplot(224)
+            plt.subplot(223)
             plt.imshow(history_soft)
             plt.scatter(index[1], index[0], s=15, c="g")
+            plt.subplot(224)
+            plt.imshow(semantic_heuristics)
             plt.show()
         return index, time_heuristics, alignments_heuristics, total_heuristics
 
@@ -420,7 +424,7 @@ class SparseVoxelMapNavigationSpace:
             plt.title("time")
             plt.imshow(history_soft)
             plt.scatter(index[1], index[0], s=15, c="r")
-            plt.show()
+            plt.savefig("debug_time_heuristic.png")
         return time_heuristics
 
     def to_pt(self, xy: Tuple[float, float]) -> Tuple[int, int]:

@@ -7,7 +7,7 @@
 # Some code may be adapted from other open-source works with their respective licenses. Original
 # license information maybe found below, if so.
 
-DYNAMEM_VISUAL_GROUNDING_PROMPT = f"""
+DREAM_VISUAL_GROUNDING_PROMPT = f"""
         For object query I give, you need to find images that the object is shown. You should first caption each image and then make conclusion.
 
         Example #1:

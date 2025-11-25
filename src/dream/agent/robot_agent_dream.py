@@ -93,12 +93,6 @@ class RobotAgent:
         # For placing
         self.owl_sam_detector = None
 
-        # if self.parameters.get("encoder", None) is not None:
-        #     self.encoder: BaseImageTextEncoder = get_encoder(
-        #         self.parameters["encoder"], self.parameters.get("encoder_args", {})
-        #     )
-        # else:
-        #     self.encoder: BaseImageTextEncoder = None
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         if not os.path.exists("dream_log"):
@@ -684,7 +678,7 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose, step_num=16):
+    def process_text(self, text, start_pose, step_num=12):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
@@ -709,7 +703,11 @@ class RobotAgent:
             if text is not None and text != "" and self.space.traj is not None:
                 print("saved traj", self.space.traj)
                 traj_target_point = self.space.traj[-1]
-                if self.voxel_map.verify_point(text, traj_target_point):
+                if hasattr(self.encoder, "feature_matching_threshold") and self.voxel_map.verify_point(
+                    text,
+                    traj_target_point,
+                    similarity_threshold=self.encoder.feature_matching_threshold
+                ):
                     localized_point = traj_target_point
                     debug_text += "## Last visual grounding results looks fine so directly use it.\n"
 
@@ -739,8 +737,8 @@ class RobotAgent:
                 return []  # try to found object by frontier
 
             # # TODO: Do we really need this line?
-            # if len(localized_point) == 2:
-            #     localized_point = np.array([localized_point[0], localized_point[1], 0])
+            if len(localized_point) == 2:
+                localized_point = np.array([localized_point[0], localized_point[1], 0])
 
             point = self.space.sample_target_point(
                 start=start_pose, 

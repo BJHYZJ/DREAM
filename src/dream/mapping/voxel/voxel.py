@@ -34,7 +34,7 @@ from dataclasses import dataclass
 
 from dream.core.interfaces import Observations
 from dream.llms import OpenaiClient
-from dream.llms.prompts import DYNAMEM_VISUAL_GROUNDING_PROMPT, DREAM_VISUAL_VERIFY_PROMPT
+from dream.llms.prompts import DREAM_VISUAL_GROUNDING_PROMPT, DREAM_VISUAL_VERIFY_PROMPT
 from dream.utils.image import Camera, camera_xyz_to_global_xyz
 from dream.utils.morphology import binary_dilation, binary_erosion, get_edges
 from dream.utils.point_cloud_torch import unproject_masked_depth_to_xyz_coordinates
@@ -99,8 +99,8 @@ class SparseVoxelMap:
         compression_features: bool=False,  # save memroy, but slowly
         log="test",
         mllm=False,
-        with_mllm_verify=True,
-        verify_point_similarity: float=0.21
+        with_mllm_verify=False,
+        verify_point_similarity: float=0.25
     ):
 
         # TODO: We an use fastai.store_attr() to get rid of this boilerplate code
@@ -219,12 +219,13 @@ class SparseVoxelMap:
         self._2d_last_updated = -1
         self.mllm = mllm
         self.with_mllm_verify = with_mllm_verify
+
         if self.mllm:
             # Used to do visual grounding task
             self.gpt_client = OpenaiClient(
-                DYNAMEM_VISUAL_GROUNDING_PROMPT, model="gpt-4o-2024-05-13"
+                DREAM_VISUAL_GROUNDING_PROMPT, model="gpt-5.1-2025-11-13"
             )
-        if not self.mllm and self.with_mllm_verify:
+        if self.with_mllm_verify:
             # Used to verify
             self.gpt_verify_client = OpenaiClient(
                 DREAM_VISUAL_VERIFY_PROMPT, model="gpt-5.1-2025-11-13"
@@ -841,20 +842,35 @@ class SparseVoxelMap:
         response = self.gpt_verify_client(user_messages)
         return self.parse_verfy_response(response)
 
-    def parse_verfy_response(self, response: str) -> Optional[bool]:
+    def parse_verfy_response(self, response: str) -> Optional[Tuple[Optional[bool], Optional[str]]]:
         """
-        Parse the output of the verify prompt to a boolean.
+        Parse the verify prompt output to `(answer, caption)`.
         """
         try:
-            match = re.search(r"(?im)^\s*Answer\s*:\s*(True|False)\s*$", response)
-            if not match:
-                match = re.search(r"\b(True|False)\b", response, re.IGNORECASE)
+            caption = None
+            answer = None
 
-            if match:
-                return match.group(1).lower() == "true"
+            caption_match = re.search(
+                r"(?ims)^\s*Caption\s*:\s*(?:\n\s*)?(.*?)(?=\n\s*Answer\s*:|\Z)",
+                response,
+            )
+            if caption_match:
+                raw_caption = caption_match.group(1)
+                caption = re.sub(r"\s+", " ", raw_caption).strip()
 
-            logger.warning("Verify response missing True/False: %s", response)
-            return None
+            answer_match = re.search(r"(?im)^\s*Answer\s*:\s*(True|False)\s*$", response)
+            if not answer_match:
+                answer_match = re.search(r"\b(True|False)\b", response, re.IGNORECASE)
+
+            if answer_match:
+                answer = answer_match.group(1).lower() == "true"
+            else:
+                logger.warning("Verify response missing True/False: %s", response)
+
+            if caption is None and answer is None:
+                return None
+
+            return answer, caption
         except Exception as exc:
             logger.error("Failed to parse verify response '%s': %s", response, exc)
             return None
@@ -944,7 +960,7 @@ class SparseVoxelMap:
 
 
     def localize_with_feature_similarity(
-        self, text, similarity_threshold: float=0.05, debug=True, return_debug=False
+        self, text, similarity_threshold: float=0.15, debug=True, return_debug=False
     ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         alignments = self.find_alignment_over_model(text).cpu()
@@ -978,16 +994,20 @@ class SparseVoxelMap:
             debug_text += (
                 "#### - Object is detected in observations . **😃** Directly navigate to it.\n"
             )
-        else:
+
             # Fallback: use mLLM to verify the current frame if available
             if self.with_mllm_verify:
-                mllm_verify = self.mllm_verify(obs_id, text)
-                print(f"LLM Response: {mllm_verify}")
-                if mllm_verify:
-                    target_point = point
-                    debug_text += (
-                        "#### - mLLM verified target in this frame. **😃** Using nearest point.\n"
+                verify_result = self.mllm_verify(obs_id, text)
+                if verify_result:
+                    is_present, caption = verify_result
+                    print(
+                        f"LLM Response: Answer={is_present}, Caption={caption}"
                     )
+                    if is_present:
+                        target_point = point
+                        debug_text += (
+                            "#### - mLLM verified target in this frame. **** Using nearest point.\n"
+                        )
 
             if target_point is None:
                 alignments = self.find_alignment_over_model(text).cpu()
@@ -1033,15 +1053,20 @@ class SparseVoxelMap:
         )
 
         if res is not None:
-            text_exist = True
-        else:
             # Fallback: use mLLM to verify the current frame if available
             if self.with_mllm_verify:
-                mllm_verify = self.mllm_verify(obs_id, text)
-                print(f"LLM Response: {mllm_verify}")
-                if mllm_verify:
-                    text_exist = True
+                verify_result = self.mllm_verify(obs_id, text)
+                if verify_result:
+                    is_present, caption = verify_result
+                    print(
+                        f"LLM Response: Answer={is_present}, Caption={caption}"
+                    )
+                    if is_present:
+                        text_exist = True
+            else:
+                text_exist = True
 
+        else:
             if text_exist is False:
                 alignments = self.find_alignment_over_model(text).cpu()
                 cosine_similarity_check = alignments.max().item() > self.verify_point_similarity

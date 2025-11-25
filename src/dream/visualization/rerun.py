@@ -401,8 +401,6 @@ class RerunVisualizer:
                     colors=np.uint8(rgb),
                 ),
             )
-        # else:
-        #     log_to_rerun("world/camera/depth", rr.DepthImage(obs.depth))
 
         if self.show_cameras_in_3d_view:
             rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
@@ -467,77 +465,6 @@ class RerunVisualizer:
                 axis_length=0.0,
             ),
         )
-
-    # def log_ee_frame(self, obs):
-    #     """log end effector pose
-    #     Args:
-    #         obs (Observations): Observation dataclass
-    #     """
-    #     # rr.set_time_seconds("realtime", time.time())
-    #     # EE Frame
-    #     if not "ee_in_map_pose" in obs:
-    #         return
-    #     if obs["ee_in_map_pose"] is None:
-    #         return
-    #     rot, trans = decompose_homogeneous_matrix(obs["ee_in_map_pose"])
-    #     ee_arrow = rr.Arrows3D(
-    #         origins=[0, 0, 0], vectors=[0.2, 0, 0], radii=0.02, labels="ee", colors=[0, 255, 0, 255]
-    #     )
-    #     # log_to_rerun("world/ee/arrow", ee_arrow)
-    #     rr.log("world/ee", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3))
-
-    # def log_ee_camera(self, servo):
-    #     """Log end effector camera pose and images
-    #     Args:
-    #         servo (Servo): Servo observation dataclass
-    #     """
-    #     rr.set_time("realtime", timestamp=time.time())
-
-    #     if servo.ee_rgb is None or servo.ee_depth is None or servo.ee_camera_pose is None:
-    #         return
-
-    #     # EE Camera
-    #     log_to_rerun("world/ee_camera/rgb", rr.Image(servo.ee_rgb))
-
-    #     if self.show_camera_point_clouds:
-    #         ee_xyz = servo.get_ee_xyz_in_world_frame().reshape(-1, 3)
-    #         ee_rgb = servo.ee_rgb.reshape(-1, 3)
-    #         # Remove points below z = 0
-    #         # and where distance from camera > 2 meters
-    #         idx_depth = servo.ee_depth.reshape(-1) < 2
-    #         idx_z = np.where(ee_xyz[:, 2] > 0)
-    #         idx = np.intersect1d(idx_depth, idx_z)
-    #         ee_xyz = ee_xyz[idx]
-    #         ee_rgb = ee_rgb[idx]
-    #         if self.max_displayed_points_per_camera > 0:
-    #             idx = np.arange(ee_xyz.shape[0])
-    #             np.random.shuffle(idx)
-    #             ee_xyz = ee_xyz[idx[: self.max_displayed_points_per_camera]]
-    #             ee_rgb = ee_rgb[idx[: self.max_displayed_points_per_camera]]
-    #         log_to_rerun(
-    #             "world/ee_camera/points",
-    #             rr.Points3D(
-    #                 positions=ee_xyz,
-    #                 radii=np.ones(ee_xyz.shape[:2]) * self.camera_point_radius,
-    #                 colors=np.uint8(ee_rgb),
-    #             ),
-    #         )
-    #     else:
-    #         log_to_rerun("world/ee_camera/depth", rr.depthimage(servo.ee_depth))
-
-    #     if self.show_cameras_in_3d_view:
-    #         rot, trans = decompose_homogeneous_matrix(servo.ee_camera_pose)
-    #         log_to_rerun(
-    #             "world/ee_camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
-    #         )
-    #         log_to_rerun(
-    #             "world/ee_camera",
-    #             rr.Pinhole(
-    #                 resolution=[servo.ee_rgb.shape[1], servo.ee_rgb.shape[0]],
-    #                 image_from_camera=servo.ee_camera_K,
-    #                 image_plane_distance=0.15,
-    #             ),
-    #         )
 
     def log_robot_state(self, obs):
         """Log robot joint states"""
