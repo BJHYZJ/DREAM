@@ -58,7 +58,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
   force_3dof = LaunchConfiguration('force3dof').perform(context)
   
   # Rule of thumb:
-  max_correspondence_distance = voxel_size_value * 20.0  # default * 10
+  # max_correspondence_distance = voxel_size_value * 20.0  # default * 10
 
   shared_parameters = {
     'use_sim_time': use_sim_time,
@@ -73,16 +73,17 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'sync_queue_size': 20,
     # RTAB-Map's internal parameters are strings:
     'Icp/PointToPlane': 'true',
-    'Icp/Iterations': '20',
+    'Icp/Iterations': '30',
     'Icp/VoxelSize': str(voxel_size_value),
     'Icp/Epsilon': '0.001',
-    'Icp/PointToPlaneK': '20',
+    'Icp/PointToPlaneK': '5',
     'Icp/PointToPlaneRadius': '0',
-    'Icp/MaxTranslation': '3',
-    'Icp/MaxCorrespondenceDistance': str(max_correspondence_distance),
+    'Icp/MaxTranslation': '0.2',
+    # 'Icp/MaxCorrespondenceDistance': str(max_correspondence_distance),
+    'Icp/MaxCorrespondenceDistance': "0.1",
     # 'Icp/MaxCorrespondenceDistance': '1',
     'Icp/Strategy': '1',
-    'Icp/OutlierRatio': '0.7',
+    'Icp/OutlierRatio': '0.85',
   }
 
 
@@ -115,7 +116,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
 
     'Reg/Force3DoF': force_3dof,
     'Reg/RepeatOnce': 'true',
-    'Reg/Strategy': '2',  # 0=Vis, 1=Icp, 2=VisIcp
+    'Reg/Strategy': '1',  # 0=Vis, 1=Icp, 2=VisIcp
     'Icp/CorrespondenceRatio': str(LaunchConfiguration('min_loop_closure_overlap').perform(context))
   }
   
@@ -239,7 +240,7 @@ def generate_launch_description():
       description='Depth image topic.'),
 
     DeclareLaunchArgument(
-      'voxel_size', default_value='0.05',
+      'voxel_size', default_value='0.1',
       description='Voxel size (m) of the downsampled lidar point cloud. For indoor, set it between 0.1 and 0.3. For outdoor, set it to 0.5 or over.'),
     
     DeclareLaunchArgument(
