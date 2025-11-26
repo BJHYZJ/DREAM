@@ -33,7 +33,7 @@ min_points_per_voxel: 15  # Drop things below this density per voxel
 
 
 # Padding
-pad_obstacles: 0.2
+pad_obstacles: 0.3
 # pad_obstacles: 4  # Add this many units (voxel_size) to the area around obstacles, 
 # min_pad_obstacles: 2  # Do not pad LESS than this amount, for safety.
 
@@ -159,7 +159,8 @@ motion_planner:
     step_dist: 0.2
   goals:
     # manipulation_radius: 0.45
-    manipulation_radius: 0.55
+    # manipulation_radius: 0.55
+    manipulation_radius: 0.85
 
 # Trajectory following - how closely we follow intermediate waypoints
 # These should be less strict than whatever parameters the low-level controller is using; this will

@@ -624,7 +624,7 @@ class RobotAgent:
         self.robot.arm_to(angle=constants.look_down, speed=speed, blocking=True)
         for i in range(8):  # TODO range(8)
             xyt[2] += 2 * np.pi / 8
-            self.robot.base_to(xyt, blocking=True)
+            self.robot.base_to(xyt, blocking=False)
             if not self._realtime_updates:
                 self.update()
 
@@ -678,7 +678,7 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose, step_num=12):
+    def process_text(self, text, start_pose, step_num=16):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
@@ -766,6 +766,21 @@ class RobotAgent:
             print("[FAILURE]", res.reason)
 
         traj = []
+        close_enough = False
+        if (
+            waypoints is not None
+            and mode == "navigation"
+            and localized_point is not None
+            and len(localized_point) >= 2
+        ):
+            start_xy = np.array(start_pose[:2], dtype=float)
+            if isinstance(localized_point, torch.Tensor):
+                localized_xy = localized_point.detach().cpu().numpy()
+            else:
+                localized_xy = np.asarray(localized_point)
+            localized_xy = localized_xy[:2]
+            close_enough = np.linalg.norm(start_xy - localized_xy) <= self._manipulation_radius
+
         if waypoints is not None:
             self.rerun_visualizer.log_custom_pointcloud(
                 "world/object",
@@ -775,6 +790,10 @@ class RobotAgent:
             )
 
             finished = len(waypoints) <= step_num and mode == "navigation"
+            if close_enough:
+                finished = True
+                debug_text += "## Robot already within manipulation radius; executing full trajectory.\n"
+
             if finished:
                 self.space.traj = None
             else:
@@ -809,12 +828,12 @@ class RobotAgent:
             self.rerun_visualizer.log_arrow3D(
                 "world/direction", origins, vectors, torch.Tensor([0, 1, 0]), 0.1
             )
-            # self.rerun_visualizer.log_custom_pointcloud(
-            #     "world/robot_start_pose",
-            #     [start_pose[0], start_pose[1], 0.5],
-            #     torch.Tensor([0, 0, 1]),
-            #     0.1,
-            # )
+            self.rerun_visualizer.log_custom_pointcloud(
+                "world/robot_start_pose",
+                [start_pose[0], start_pose[1], 0.5],
+                torch.Tensor([0, 0, 1]),
+                0.1,
+            )
 
         return traj
 
@@ -900,7 +919,7 @@ class RobotAgent:
     def manipulate(
         self,
         target_object,
-        target_point: None,
+        target_point: Optional[np.ndarray]=None,
         skip_confirmation: bool=False,
         just_anygrasp: bool=False,
         just_heuristic: bool=False,

@@ -100,7 +100,7 @@ class SparseVoxelMap:
         log="test",
         mllm=False,
         with_mllm_verify=False,
-        verify_point_similarity: float=0.25
+        verify_point_similarity: float=0.15
     ):
 
         # TODO: We an use fastai.store_attr() to get rid of this boilerplate code
@@ -274,12 +274,15 @@ class SparseVoxelMap:
         text: str,
         point: Union[torch.Tensor, np.ndarray],
         distance_threshold: float = 0.1,
+        similarity_threshold=None,
     ):
         """
         Running visual grounding is quite time consuming.
         Thus, sometimes if the point has very high cosine similarity with text query, we might opt not to run visual grounding again.
         This function evaluates the cosine similarity.
         """
+        if similarity_threshold is None:
+            similarity_threshold = self.verify_point_similarity
         if isinstance(point, np.ndarray):
             point = torch.from_numpy(point)
         points, _, _, _ = self.semantic_memory.get_pointcloud()
@@ -288,9 +291,9 @@ class SparseVoxelMap:
             print("Points are so far from other points!")
             return False
         alignments = self.find_alignment_over_model(text).detach().cpu()[0]
-        if torch.max(alignments[distances <= distance_threshold]) < self.verify_point_similarity:
+        if torch.max(alignments[distances <= distance_threshold]) < similarity_threshold:
             print("Points close the the point are not similar to the text!")
-        return torch.max(alignments[distances < distance_threshold]) >= self.verify_point_similarity
+        return torch.max(alignments[distances < distance_threshold]) >= similarity_threshold
 
     def get_2d_map(
         self, debug: bool = False, return_history_id: bool = False, kernel: int = 7
@@ -353,6 +356,18 @@ class SparseVoxelMap:
         history_ids = history_ids[:, :, min_height:max_height]
         history_soft = torch.max(history_ids, dim=-1).values
         history_soft = torch.from_numpy(maximum_filter(history_soft.float().numpy(), size=kernel))
+        if history_soft.numel() > 0:
+            positive_mask = history_soft > 0
+            if positive_mask.any():
+                min_val = history_soft[positive_mask].min()
+                max_val = history_soft[positive_mask].max()
+                value_span = (max_val - min_val).item()
+                if value_span > 0:
+                    history_soft = history_soft - min_val
+                    history_soft = torch.clamp(history_soft, min=0)
+                    history_soft = history_soft / value_span
+                    eps = torch.finfo(history_soft.dtype).eps * 10
+                    history_soft[positive_mask] = history_soft[positive_mask].clamp_min(float(eps))
 
         if self._remove_visited_from_obstacles:
             # Remove "visited" points containing observations of the robot
@@ -428,7 +443,7 @@ class SparseVoxelMap:
         else:
             return obstacles, explored, history_soft
 
-    def get_2d_alignment_heuristics(self, text: str, debug: bool = False):
+    def get_2d_alignment_heuristics(self, text: str):
         """
         Transform the similarity with text into a 2D value map that can be used to evaluate
         how much exploring to one point can benefit open vocabulary navigation

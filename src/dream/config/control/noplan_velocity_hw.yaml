@@ -59,4 +59,4 @@ max_heading_ang: 1.0
 max_rev_dist: 0.5
 
 # Time taken before we stop trying
-timeout: 20.0
+timeout: 10.0

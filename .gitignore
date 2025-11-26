@@ -23,3 +23,4 @@ src/anygrasp_manipulation/MinkowskiEngine
 src/anygrasp_manipulation/example_data
 
 src/anygrasp_manipulation/pointnet2/pointnet2/_ext.cpython-310-x86_64-linux-gnu.so
+debug_sample_exploration.svg

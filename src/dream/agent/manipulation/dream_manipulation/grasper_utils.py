@@ -112,7 +112,7 @@ def capture_and_process_back_image(obj, socket, manip_wrapper: ManipulationWrapp
 
 
 
-def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: ManipulationWrapper):
+def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrapper, tar_in_map=None):
     """Find an an object in the camera frame and return the translation and rotation of the object.
 
     Returns:
@@ -137,7 +137,8 @@ def capture_and_process_image(mode, obj, tar_in_map, socket, manip_wrapper: Mani
     # head_pan = -1.57
 
     print("*" * 20, f"look at {obj}", "*" * 20)
-    manip_wrapper.robot.look_at_target(tar_in_map=tar_in_map)
+    if tar_in_map:
+        manip_wrapper.robot.look_at_target(tar_in_map=tar_in_map)
 
     while retry_flag:
 

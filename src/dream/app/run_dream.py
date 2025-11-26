@@ -169,7 +169,7 @@ def main(
         # executor(command)
         import time
         while True:
-            command = [("look_around", "")]
+            command = [("pickup_only", "corn")]
             executor(command)
             time.sleep(10)
 

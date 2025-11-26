@@ -246,7 +246,17 @@ class DreamTaskExecutor:
                     relative=True,
                     reliable=True
                 )
-        
+            elif command == "pickup_only":
+                logger.info(f"[Pickup task] Pickup: {args}")
+                target_object = args
+                # Pick up
+                self._pickup(target_object, skip_confirmations=self.skip_confirmations)
+            elif command == "place_only":
+                logger.info(f"[Pickup task] Place: {args}")
+                target_object = args
+                # Placing
+                self._place(target_object, skip_confirmations=self.skip_confirmations)
+ 
             elif command == "pickup":
                 logger.info(f"[Pickup task] Pickup: {args}")
                 target_object = args

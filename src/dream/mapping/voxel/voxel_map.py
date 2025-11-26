@@ -46,6 +46,7 @@ class SparseVoxelMapNavigationSpace:
         dilate_frontier_size: int = 12,
         dilate_obstacle_size: int = 2,
         extend_mode: str = "separate",
+        min_frontier_distance: float = 0.85,
     ):
 
         self.robot = robot
@@ -92,6 +93,7 @@ class SparseVoxelMapNavigationSpace:
             self.dilate_obstacles_kernel = None
 
         self.traj = None
+        self._min_frontier_distance = min_frontier_distance # metres
 
     def create_collision_masks(self, orientation_resolution: int):
         """Create a set of orientation masks
@@ -370,7 +372,7 @@ class SparseVoxelMapNavigationSpace:
 
         return None
 
-    def sample_exploration(self, xyt, planner, text=None, debug=False):
+    def sample_exploration(self, xyt, planner, text=None, semantic_rate:float=0.3, debug=False):
         """
         Sample an exploration target
         """
@@ -379,53 +381,187 @@ class SparseVoxelMapNavigationSpace:
         )
         outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
 
-        time_heuristics = self._time_heuristic(history_soft, outside_frontier, debug=debug)
-        if text is not None:
-            semantic_heuristics = self.voxel_map.get_2d_alignment_heuristics(text=text, debug=debug)
+        time_heuristics = self._time_heuristic(history_soft, outside_frontier)
+        semantic_heuristics = self._semantic_heuristic(text) if text else None
 
-        alignments_heuristics = None
-        total_heuristics = time_heuristics
+        if semantic_heuristics is not None:
+            total_heuristics = time_heuristics + semantic_rate * semantic_heuristics
+        else:
+            total_heuristics = time_heuristics
 
         rounded_heuristics = np.ceil(total_heuristics * 200) / 200
         max_heuristic = rounded_heuristics.max()
         indices = np.column_stack(np.where(rounded_heuristics == max_heuristic))
-        closest_index = np.argmin(np.linalg.norm(indices - np.asarray(planner.to_pt(xyt)), axis=-1))
-        index = indices[closest_index]
+        robot_pt = np.asarray(planner.to_pt(xyt))
+        min_dist_cells = self._min_frontier_distance / max(self.grid.resolution, self.tolerance)
+        if len(indices) > 0 and min_dist_cells > 0:
+            dists = np.linalg.norm(indices - robot_pt, axis=-1)
+            valid_mask = dists >= min_dist_cells
+            if np.any(valid_mask):
+                indices = indices[valid_mask]
+        farthest_index = np.argmax(np.linalg.norm(indices - robot_pt, axis=-1))
+        index = indices[farthest_index]
         if debug:
-            from matplotlib import pyplot as plt
+            obstacles_np = obstacles.detach().cpu().numpy()
+            explored_np = explored.detach().cpu().numpy()
+            frontier_np = outside_frontier.detach().cpu().numpy()
+            history_np = history_soft.detach().cpu().numpy()
+            heuristics_np = np.asarray(total_heuristics)
+            semantic_np = (
+                np.asarray(semantic_heuristics)
+                if semantic_heuristics is not None
+                else np.zeros_like(heuristics_np)
+            )
 
-            plt.subplot(221)
-            plt.imshow(obstacles.int() * 5 + outside_frontier.int() * 10)
-            plt.subplot(222)
-            # plt.imshow(explored.int() * 5)
-            # plt.subplot(223)
-            plt.imshow(total_heuristics)
-            plt.scatter(index[1], index[0], s=15, c="g")
-            plt.subplot(223)
-            plt.imshow(history_soft)
-            plt.scatter(index[1], index[0], s=15, c="g")
-            plt.subplot(224)
-            plt.imshow(semantic_heuristics)
-            plt.show()
-        return index, time_heuristics, alignments_heuristics, total_heuristics
+            if np.any(frontier_np):
+                active_mask = frontier_np
+            elif np.any(explored_np):
+                active_mask = explored_np
+            else:
+                active_mask = obstacles_np
+            row_slice, col_slice = self._compute_active_crop(active_mask, padding=25)
+
+            cropped_obstacles = obstacles_np[row_slice, col_slice]
+            cropped_explored = explored_np[row_slice, col_slice]
+            cropped_frontier = frontier_np[row_slice, col_slice]
+            cropped_history = history_np[row_slice, col_slice]
+            cropped_heuristics = heuristics_np[row_slice, col_slice]
+            cropped_semantic = semantic_np[row_slice, col_slice]
+            local_index = (
+                index[0] - row_slice.start,
+                index[1] - col_slice.start,
+            )
+
+            fig, axes = plt.subplots(2, 2, figsize=(12, 9))
+
+            ax = axes[0, 0]
+            ax.imshow(cropped_explored, cmap="Greens", alpha=0.45)
+            ax.imshow(cropped_obstacles, cmap="Reds", alpha=0.5)
+            if np.any(cropped_frontier):
+                ax.contour(
+                    cropped_frontier,
+                    levels=[0.5],
+                    colors="cyan",
+                    linewidths=1.2,
+                )
+            # ax.scatter(
+            #     local_index[1],
+            #     local_index[0],
+            #     s=50,
+            #     c="yellow",
+            #     edgecolors="black",
+            #     linewidths=0.6,
+            # )
+            ax.set_title("Explored / Obstacles / Frontier")
+            ax.set_xlabel("Grid Y")
+            ax.set_ylabel("Grid X")
+            ax.set_aspect("equal")
+
+            ax = axes[0, 1]
+            h_img = ax.imshow(cropped_heuristics, cmap="viridis")
+            # ax.scatter(
+            #     local_index[1],
+            #     local_index[0],
+            #     s=50,
+            #     c="yellow",
+            #     edgecolors="black",
+            #     linewidths=0.6,
+            # )
+            ax.set_title("Total Heuristic Score")
+            ax.set_xlabel("Grid Y")
+            ax.set_ylabel("Grid X")
+            ax.set_aspect("equal")
+            fig.colorbar(h_img, ax=ax, fraction=0.046, pad=0.04, label="Score")
+
+            ax = axes[1, 0]
+            hist_img = ax.imshow(cropped_history, cmap="magma")
+            ax.scatter(
+                local_index[1],
+                local_index[0],
+                s=50,
+                c="yellow",
+                edgecolors="black",
+                linewidths=0.6,
+            )
+            ax.set_title("History (recent observations)")
+            ax.set_xlabel("Grid Y")
+            ax.set_ylabel("Grid X")
+            ax.set_aspect("equal")
+            fig.colorbar(hist_img, ax=ax, fraction=0.046, pad=0.04, label="Obs id")
+
+            ax = axes[1, 1]
+            if semantic_heuristics is not None:
+                sem_img = ax.imshow(cropped_semantic, cmap="plasma")
+                ax.scatter(
+                    local_index[1],
+                    local_index[0],
+                    s=50,
+                    c="yellow",
+                    edgecolors="black",
+                    linewidths=0.6,
+                )
+                ax.set_title("Semantic Alignment")
+                fig.colorbar(sem_img, ax=ax, fraction=0.046, pad=0.04, label="Similarity")
+            else:
+                ax.axis("off")
+                ax.text(
+                    0.5,
+                    0.5,
+                    "Semantic alignment disabled",
+                    ha="center",
+                    va="center",
+                    fontsize=12,
+                )
+
+            for row in axes:
+                for axis in row:
+                    axis.set_xlim(-0.5, cropped_heuristics.shape[1] - 0.5)
+                    axis.set_ylim(cropped_heuristics.shape[0] - 0.5, -0.5)
+
+            plt.tight_layout()
+            plt.savefig("debug_sample_exploration.svg", format="svg", dpi=200)
+            plt.close(fig)
+        return index, time_heuristics, total_heuristics
 
     def _time_heuristic(
-        self, history_soft, outside_frontier, time_smooth=0.1, time_threshold=10, debug=False
+        self, history_soft, outside_frontier, time_smooth=0.7, time_threshold=0.1
     ):
         history_soft = np.ma.masked_array(history_soft, ~outside_frontier)
         time_heuristics = history_soft.max() - history_soft
-        time_heuristics[history_soft < 1] = float("inf")
+        time_heuristics[history_soft <= self.tolerance] = float("inf")
         time_heuristics = 1 / (1 + np.exp(-time_smooth * (time_heuristics - time_threshold)))
-        index = np.unravel_index(np.argmax(time_heuristics), history_soft.shape)
-        # return index
-        # debug = True
-        if debug:
-            # plt.clf()
-            plt.title("time")
-            plt.imshow(history_soft)
-            plt.scatter(index[1], index[0], s=15, c="r")
-            plt.savefig("debug_time_heuristic.png")
+        # index = np.unravel_index(np.argmax(time_heuristics), history_soft.shape)
         return time_heuristics
+
+    def _semantic_heuristic(self, text):
+        semantic_raw = self.voxel_map.get_2d_alignment_heuristics(text=text)
+        if isinstance(semantic_raw, torch.Tensor):
+            semantic_raw = semantic_raw.detach().cpu().numpy()
+        else:
+            semantic_raw = np.asarray(semantic_raw)
+        sem_range = semantic_raw.max() - semantic_raw.min()
+        if sem_range < self.tolerance:
+            semantic_heuristics = np.zeros_like(semantic_raw)
+        else:
+            semantic_heuristics = (semantic_raw - semantic_raw.min()) / sem_range
+        return semantic_heuristics
+
+
+    def _compute_active_crop(
+        self, mask: Union[np.ndarray, torch.Tensor], padding: int = 25
+    ) -> Tuple[slice, slice]:
+        if isinstance(mask, torch.Tensor):
+            mask = mask.detach().cpu().numpy()
+        coords = np.argwhere(mask)
+        if coords.size == 0:
+            height, width = mask.shape
+            return slice(0, height), slice(0, width)
+
+        min_r = max(int(coords[:, 0].min()) - padding, 0)
+        max_r = min(int(coords[:, 0].max()) + padding + 1, mask.shape[0])
+        min_c = max(int(coords[:, 1].min()) - padding, 0)
+        max_c = min(int(coords[:, 1].max()) + padding + 1, mask.shape[1])
+        return slice(min_r, max_r), slice(min_c, max_c)
 
     def to_pt(self, xy: Tuple[float, float]) -> Tuple[int, int]:
         """Converts a point from continuous, world xy coordinates to grid coordinates.
@@ -468,7 +604,6 @@ class SparseVoxelMapNavigationSpace:
         (
             index,
             time_heuristics,
-            alignments_heuristics,
             total_heuristics,
         ) = self.sample_exploration(
             start_pose,
