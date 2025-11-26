@@ -171,7 +171,7 @@ class XARM6:
     def reset(self):
         # This can proimise the initial position has the correct joint angle
         servo_pose = self.get_servo_angle()
-        if servo_pose[0] > 135 or servo_pose[0] < -135:
+        if servo_pose and (servo_pose[0] > 135 or servo_pose[0] < -135):
             back_front = self.back_front_angle.copy()
             if servo_pose[0] < 0:
                 back_front[0] = -back_front[0]
