@@ -206,13 +206,6 @@ class ZmqServer(BaseZmqServer):
             self.client.save_map(action["save_map"])
         elif "load_map" in action:
             self.client.load_map(action["load_map"])
-        elif "say" in action:
-            # Text to speech from the robot, not the client/agent device
-            print("Saying:", action["say"])
-            # self.text_to_speech.say_async(action["say"])
-        elif "say_sync" in action:
-            print("Saying:", action["say_sync"])
-            # self.text_to_speech.say(action["say_sync"])
         elif "xyt" in action:
             # Check control mode
             if not self.client.in_navigation_mode():

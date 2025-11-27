@@ -29,7 +29,7 @@ class OpenaiClient(AbstractLLMClient):
 
     model_choices = [
         "gpt-4o", "gpt-4o-mini", "chatgpt-4o-latest",
-        "gpt-5.1-2025-11-13", "gpt-5.1"                 
+        "gpt-5.1-2025-11-13", "gpt-5.1", "gpt-5", "gpt-5-mini",                
     ]
 
     def __init__(

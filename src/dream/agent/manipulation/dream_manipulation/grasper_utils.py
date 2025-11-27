@@ -16,7 +16,7 @@ from dream.agent.manipulation.dream_manipulation.place import Placing
 from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
     DreamManipulationWrapper as ManipulationWrapper,
 )
-from dream.agent.zmq_client_dream import DreamRobotZmqClient
+from dream.agent.zmq_client import RobotZmqClient
 import dream.motion.constants as constants
 
 def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):

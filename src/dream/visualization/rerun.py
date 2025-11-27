@@ -20,7 +20,6 @@ import rerun.blueprint as rrb
 import torch
 
 from dream.core.interfaces import Observations, ServoObservations, StateObservations
-from dream.mapping.scene_graph import SceneGraph
 from dream.mapping.voxel.voxel_map import SparseVoxelMapNavigationSpace
 from dream.motion import DreamIdx
 from dream.motion.robot import Footprint
@@ -557,71 +556,6 @@ class RerunVisualizer:
             print("Time to get obstacles points: ", t4 - t3, "% = ", (t4 - t3) / (t6 - t0))
             print("Time to get explored points: ", t5 - t4, "% = ", (t5 - t4) / (t6 - t0))
             print("Time to log points: ", t6 - t5, "% = ", (t6 - t5) / (t6 - t0))
-
-    def update_scene_graph(
-        self,
-        scene_graph: SceneGraph,
-        semantic_sensor: Optional[OvmmPerception] = None,
-        verbose: bool = False,
-    ):
-        """Log objects bounding boxes and relationships
-        Args:
-            scene_graph (SceneGraph): Scene graph object
-            semantic_sensor (OvmmPerception): Semantic sensor object
-        """
-        if semantic_sensor:
-            rr.set_time("realtime", timestamp=time.time())
-            centers = []
-            labels = []
-            bounds = []
-            colors = []
-
-            t0 = timeit.default_timer()
-            for idx, instance in enumerate(scene_graph.instances):
-                if semantic_sensor.is_semantic():
-                    # Names only exist if we are using a semantic sensor
-                    name = semantic_sensor.get_class_name_for_id(instance.category_id)
-                else:
-                    name = None
-
-                # Replace spaces with underscores
-                name = name.replace(" ", "_") if name is not None else None
-
-                # Create colors
-                if name not in self.bbox_colors_memory:
-                    self.bbox_colors_memory[name] = np.random.randint(0, 255, 3)
-
-                best_view = instance.get_best_view()
-                bbox_bounds = best_view.bounds  # 3D Bounds
-                point_cloud_rgb = instance.point_cloud
-                pcd_rgb = instance.point_cloud_rgb
-                log_to_rerun(
-                    f"world/{instance.id}_{name}" if name is not None else f"world/{instance.id}",
-                    rr.Points3D(positions=point_cloud_rgb, colors=np.uint8(pcd_rgb)),
-                    static=True,
-                )
-                half_sizes = [(b[0] - b[1]) / 2 for b in bbox_bounds]
-                bounds.append(half_sizes)
-                pose = scene_graph.get_ins_center_pos(idx)
-                confidence = best_view.score
-                centers.append(rr.components.PoseTranslation3D(pose))
-                if name is not None:
-                    labels.append(f"{name} {confidence:.2f}")
-                colors.append(self.bbox_colors_memory[name])
-            log_to_rerun(
-                "world/objects",
-                rr.Boxes3D(
-                    half_sizes=bounds,
-                    centers=centers,
-                    labels=labels,
-                    radii=0.01,
-                    colors=colors,
-                ),
-                static=True,
-            )
-            t1 = timeit.default_timer()
-            if verbose:
-                print("Time to log scene graph objects: ", t1 - t0)
 
     def update_nav_goal(self, goal, timeout=10):
         se3_goal = xyt2sophus(goal).matrix()

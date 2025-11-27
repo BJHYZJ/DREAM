@@ -272,6 +272,10 @@ class RangerxARMKinematics:
             
             # Update configuration
             q = pinocchio.integrate(self.model, q, dq)
+
+            # Wrap wrist roll (joint 6) to [-pi, pi] to avoid unnecessary 360 deg turns
+            if self.model.nq >= 6:
+                q[5] = ((q[5] + np.pi) % (2 * np.pi)) - np.pi
             
             # Enforce joint limits
             for i in range(min(6, self.model.nq)):

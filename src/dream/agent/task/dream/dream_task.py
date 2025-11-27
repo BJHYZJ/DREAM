@@ -13,13 +13,9 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 from PIL import Image
-
-from dream.agent.operations import GraspObjectOperation
-from dream.agent.robot_agent_dream import RobotAgent
-from dream.agent.task.emote import EmoteTask
-from dream.agent.task.pickup.hand_over_task import HandOverTask
+from dream.agent.robot_agent import RobotAgent
 from dream.core import AbstractRobotClient, Parameters
-from dream.agent import DreamRobotZmqClient
+from dream.agent import RobotZmqClient
 from dream.perception import create_semantic_sensor
 from dream.utils.image import numpy_image_to_bytes
 
@@ -46,7 +42,7 @@ def compute_tilt(camera_xyz, target_xyz):
 class DreamTaskExecutor:
     def __init__(
         self,
-        robot: AbstractRobotClient | DreamRobotZmqClient,
+        robot: AbstractRobotClient | RobotZmqClient,
         parameters: Parameters,
         match_method: str = "feature",
         device_id: int = 0,
@@ -54,22 +50,16 @@ class DreamTaskExecutor:
         server_ip: Optional[str] = "127.0.0.1",
         skip_confirmations: bool = True,
         explore_iter: int = 5,
-        mllm: bool = False,
-        manipulation_only: bool = False,
-        discord_bot=None,
         back_object:str=None
     ) -> None:
         """Initialize the executor."""
         self.robot = robot
         self.parameters = parameters
-        self.discord_bot = discord_bot
 
         # Other parameters
         self.match_method = match_method
         self.skip_confirmations = skip_confirmations
         self.explore_iter = explore_iter
-
-        self.manipulation_only = manipulation_only
 
         # Do type checks
         if not isinstance(self.robot, AbstractRobotClient):
@@ -87,13 +77,8 @@ class DreamTaskExecutor:
             self.semantic_sensor,
             log=output_path,
             server_ip=server_ip,
-            mllm=mllm,
-            manipulation_only=manipulation_only,
         )
         self.agent.start()
-
-        # Task stuff
-        self.emote_task = EmoteTask(self.agent)
 
     def _find(self, target_object: str) -> np.ndarray:
         """Find an object. This is a helper function for the main loop.
@@ -149,52 +134,6 @@ class DreamTaskExecutor:
         self.robot.look_front()
 
 
-    def _take_picture(self, channel=None) -> None:
-        """Take a picture with the head camera. Optionally send it to Discord."""
-
-        obs = self.robot.get_observation()
-        if channel is None:
-            # Just save it to the disk
-            now = datetime.datetime.now()
-            filename = f"stretch_image_{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
-            Image.fromarray(obs.rgb).save(filename)
-        else:
-            self.discord_bot.send_message(
-                channel=channel, message="Head camera:", content=numpy_image_to_bytes(obs.rgb)
-            )
-
-    def _take_ee_picture(self, channel=None) -> None:
-        """Take a picture of the end effector."""
-
-        obs = self.robot.get_servo_observation()
-        if channel is None:
-            # Just save it to the disk
-            now = datetime.datetime.now()
-            filename = f"stretch_image_{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
-            Image.fromarray(obs.ee_rgb).save(filename)
-        else:
-            self.discord_bot.send_message(
-                channel=channel,
-                message="End effector camera:",
-                content=numpy_image_to_bytes(obs.ee_rgb),
-            )
-
-    def _hand_over(self) -> None:
-        """Create a task to find a person, navigate to them, and extend the arm toward them"""
-        logger.alert(f"[Pickup task] Hand Over")
-
-        # After the robot has started...
-        try:
-            hand_over_task = HandOverTask(self.agent)
-            task = hand_over_task.get_task()
-        except Exception as e:
-            print(f"Error creating task: {e}")
-            self.robot.stop()
-            raise e
-
-        # Execute the task
-        task.run()
-
     def __call__(self, response: List[Tuple[str, str]], channel=None) -> bool:
         """Execute the list of commands given by the LLM bot.
 
@@ -208,7 +147,6 @@ class DreamTaskExecutor:
 
         if response is None or len(response) == 0:
             logger.error("No commands to execute!")
-            self.agent.robot_say("I'm sorry, I didn't understand that.")
             return True
 
         # Dynamem aims to life long robot, we should not reset the robot's memory.
@@ -221,16 +159,7 @@ class DreamTaskExecutor:
         while i < len(response):
             command, args = response[i]
             logger.info(f"Command: {i} {command} {args}")
-            if command == "say":
-                # Use TTS to say the text
-                logger.info(f"Saying: {args}")
-                self.agent.robot_say(args)
-                if channel is not None:
-                    # Optionally strip quotes from args
-                    if args[0] == '"' and args[-1] == '"':
-                        args = args[1:-1]
-                    self.discord_bot.send_message(channel=channel, message=args)
-            elif command == "pause_slam":
+            if command == "pause_slam":
                 logger.info(f"[Pause SLAM]")
                 self.robot.pause_slam()
             elif command == "resume_slam":
@@ -281,7 +210,6 @@ class DreamTaskExecutor:
                         self._pickup(target_object, point=point, skip_confirmations=self.skip_confirmations)
                     else:
                         logger.error("Could not find the object.")
-                        self.robot.say("I could not find the " + str(args) + ".")
                         i += 1
                         continue
                 else:
@@ -316,7 +244,6 @@ class DreamTaskExecutor:
                         self._place(target_object, point=point, skip_confirmations=self.skip_confirmations)
                     else:
                         logger.error("Could not find the object.")
-                        self.robot.say("I could not find the " + str(args) + ".")
                         i += 1
                         continue
                 else:
@@ -328,11 +255,6 @@ class DreamTaskExecutor:
                         continue
             elif command == "hand_over":
                 self._hand_over()
-            elif command == "wave":
-                logger.info("[Pickup task] Waving.")
-                self.agent.move_to_manip_posture()
-                self.emote_task.get_task("wave").run()
-                self.agent.move_to_manip_posture()
             elif command == "rotate_in_place":
                 logger.info("Rotate in place to scan environments.")
                 self.agent.rotate_in_place()
@@ -354,23 +276,10 @@ class DreamTaskExecutor:
             elif command == "find":
                 logger.info("[Pickup task] Finding {}.".format(args))
                 point = self._find(args)
-            elif command == "nod_head":
-                logger.info("[Pickup task] Nodding head.")
-                self.emote_task.get_task("nod_head").run()
-            elif command == "shake_head":
-                logger.info("[Pickup task] Shaking head.")
-                self.emote_task.get_task("shake_head").run()
-            elif command == "avert_gaze":
-                logger.info("[Pickup task] Averting gaze.")
-                self.emote_task.get_task("avert_gaze").run()
             elif command == "quit":
                 logger.info("[Pickup task] Quitting.")
                 self.robot.stop()
                 return False
-            elif command == "take_picture":
-                self._take_picture(channel)
-            elif command == "take_ee_picture":
-                self._take_ee_picture(channel)
             elif command == "end":
                 logger.info("[Pickup task] Ending.")
                 break

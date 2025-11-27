@@ -98,8 +98,8 @@ class SparseVoxelMap:
         image_shape=(360, 720),
         compression_features: bool=False,  # save memroy, but slowly
         log="test",
-        mllm=False,
-        with_mllm_verify=False,
+        mllm: bool=False,
+        with_mllm_verify: bool=True,
         verify_point_similarity: float=0.15
     ):
 
@@ -223,12 +223,12 @@ class SparseVoxelMap:
         if self.mllm:
             # Used to do visual grounding task
             self.gpt_client = OpenaiClient(
-                DREAM_VISUAL_GROUNDING_PROMPT, model="gpt-5.1-2025-11-13"
+                DREAM_VISUAL_GROUNDING_PROMPT, model="gpt-5-mini"
             )
         if self.with_mllm_verify:
             # Used to verify
             self.gpt_verify_client = OpenaiClient(
-                DREAM_VISUAL_VERIFY_PROMPT, model="gpt-5.1-2025-11-13"
+                DREAM_VISUAL_VERIFY_PROMPT, model="gpt-5-mini"
             )
         self.verify_point_similarity = verify_point_similarity  # verify_point similarity threshold
         # Init variables

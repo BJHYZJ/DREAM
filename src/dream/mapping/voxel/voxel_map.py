@@ -46,7 +46,7 @@ class SparseVoxelMapNavigationSpace:
         dilate_frontier_size: int = 12,
         dilate_obstacle_size: int = 2,
         extend_mode: str = "separate",
-        min_frontier_distance: float = 0.85,
+        min_frontier_distance: Optional[float] = None,
     ):
 
         self.robot = robot
@@ -93,7 +93,9 @@ class SparseVoxelMapNavigationSpace:
             self.dilate_obstacles_kernel = None
 
         self.traj = None
-        self._min_frontier_distance = min_frontier_distance # metres
+        self._min_frontier_distance = (
+            min_frontier_distance if min_frontier_distance is not None else 0.85
+        )  # metres
 
     def create_collision_masks(self, orientation_resolution: int):
         """Create a set of orientation masks
@@ -354,9 +356,7 @@ class SparseVoxelMapNavigationSpace:
             target_is_valid = self.is_valid(np.array([selected_x, selected_y, theta]))  # Collision detection
             if not target_is_valid:
                 continue
-            # if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.35:
-            #     continue
-            if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= 0.85:
+            if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= self._min_frontier_distance:
                 i = (point[0] - selected_target[0]) // abs(point[0] - selected_target[0])
                 j = (point[1] - selected_target[1]) // abs(point[1] - selected_target[1])
                 index_i = int(selected_target[0].int() + i)
@@ -524,7 +524,7 @@ class SparseVoxelMapNavigationSpace:
         return index, time_heuristics, total_heuristics
 
     def _time_heuristic(
-        self, history_soft, outside_frontier, time_smooth=0.7, time_threshold=0.1
+        self, history_soft, outside_frontier, time_smooth=10, time_threshold=0.01
     ):
         history_soft = np.ma.masked_array(history_soft, ~outside_frontier)
         time_heuristics = history_soft.max() - history_soft
@@ -533,18 +533,13 @@ class SparseVoxelMapNavigationSpace:
         # index = np.unravel_index(np.argmax(time_heuristics), history_soft.shape)
         return time_heuristics
 
-    def _semantic_heuristic(self, text):
-        semantic_raw = self.voxel_map.get_2d_alignment_heuristics(text=text)
-        if isinstance(semantic_raw, torch.Tensor):
-            semantic_raw = semantic_raw.detach().cpu().numpy()
+    def _semantic_heuristic(self, text, semantic_smooth=10, semantic_threshold=0.01):
+        semantic_heuristics = self.voxel_map.get_2d_alignment_heuristics(text=text)
+        if isinstance(semantic_heuristics, torch.Tensor):
+            semantic_heuristics = semantic_heuristics.detach().cpu().numpy()
         else:
-            semantic_raw = np.asarray(semantic_raw)
-        sem_range = semantic_raw.max() - semantic_raw.min()
-        if sem_range < self.tolerance:
-            semantic_heuristics = np.zeros_like(semantic_raw)
-        else:
-            semantic_heuristics = (semantic_raw - semantic_raw.min()) / sem_range
-        return semantic_heuristics
+            semantic_heuristics = np.asarray(semantic_heuristics)
+        return 1 / (1 + np.exp(-semantic_smooth * (semantic_heuristics - semantic_threshold)))
 
 
     def _compute_active_crop(

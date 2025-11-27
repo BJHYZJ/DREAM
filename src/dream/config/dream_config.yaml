@@ -37,7 +37,7 @@ pad_obstacles: 0.3
 # pad_obstacles: 4  # Add this many units (voxel_size) to the area around obstacles, 
 # min_pad_obstacles: 2  # Do not pad LESS than this amount, for safety.
 
-local_radius: 0.8  # Area around the robot to mark as explored (kind of a hack)
+local_radius: 0.85  # Area around the robot to mark as explored (kind of a hack)
 add_local_every_step: False
 remove_visited_from_obstacles: False
 min_depth: 0.25
@@ -195,5 +195,8 @@ instance_memory:
 # Choose one of: (object_to_find, location_to_place), command, or chat
 # Don't use all of them!
 # High level stuff: commands to execute 
+
 exploration_steps: 50
+mllm: False
+with_mllm_verify: False
 name: "dream"

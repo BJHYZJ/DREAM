@@ -12,9 +12,9 @@ from typing import Optional
 import click
 import traceback
 from dream.agent.task.dream import DreamTaskExecutor
-from dream.agent.zmq_client_dream import DreamRobotZmqClient
+from dream.agent.zmq_client import RobotZmqClient
 from dream.core.parameters import get_parameters
-from dream.llms import LLMChatWrapper, PickupPromptBuilder, get_llm_choices, get_llm_client
+from dream.llms import get_llm_choices, get_llm_client
 from dream.motion import constants
 
 @click.command()
@@ -25,17 +25,11 @@ from dream.motion import constants
 @click.option("--explore-iter", default=3)
 @click.option("--method", default="dream", type=str)
 @click.option("--mode", default="", type=click.Choice(["navigation", "manipulation", "save", ""]))
-@click.option(
-    "--use_llm",
-    "--use-llm",
-    is_flag=True,
-    help="Set to use the language model",
-)
+
 @click.option(
     "--llm",
-    # default="gemma2b",
-    default="qwen25-3B-Instruct",
-    help="Client to use for language model. Recommended: gemma2b, openai",
+    default="openai",
+    help="Client to use for language model.",
     type=click.Choice(get_llm_choices()),
 )
 @click.option("--debug_llm", "--debug-llm", is_flag=True, help="Set to debug the language model")
@@ -89,17 +83,7 @@ from dream.motion import constants
     default="class",
     help="match method for visual servoing",
 )
-@click.option(
-    "--mllm-for-visual-grounding",
-    "--mllm",
-    "-M",
-    is_flag=True,
-    help="Use GPT4o for visual grounding",
-)
 @click.option("--device_id", default=0, type=int, help="Device ID for semantic sensor")
-@click.option(
-    "--manipulation-only", "--manipulation", is_flag=True, help="For debugging manipulation"
-)
 def main(
     server_ip,
     manual_wait,
@@ -114,11 +98,9 @@ def main(
     device_id: int = 0,
     target_object: str = None,
     target_receptacle: str = None,
-    use_llm: bool = False,
     use_voice: bool = False,
     debug_llm: bool = False,
     llm: str = "qwen25-3B-Instruct",
-    manipulation_only: bool = False,
     **kwargs,
 ):
     """
@@ -132,7 +114,7 @@ def main(
     parameters = get_parameters("dream_config.yaml")
 
     print("- Create robot client")
-    robot = DreamRobotZmqClient(
+    robot = RobotZmqClient(
         robot_ip=robot_ip,
         parameters=parameters,
         output_path=output_path,
@@ -147,8 +129,6 @@ def main(
         output_path=output_path,
         server_ip=server_ip,
         skip_confirmations=skip_confirmations,
-        mllm=kwargs["mllm_for_visual_grounding"],
-        manipulation_only=manipulation_only,
     )
 
     if False:
@@ -175,51 +155,31 @@ def main(
 
 
 
+    if input_path is None:
+        start_command = [("rotate_in_place", "")]
+    else:
+        start_command = [("read_from_pickle", input_path)]
+    executor(start_command)
 
 
-    if not manipulation_only:
-        if input_path is None:
-            start_command = [("rotate_in_place", "")]
-        else:
-            start_command = [("read_from_pickle", input_path)]
-        executor(start_command)
-
-    # start_command = [("find", "red pepper")]
-    # executor(start_command)
-
-    # Create the prompt we will use to control the robot
-    prompt = PickupPromptBuilder()
-
-    # Get the LLM client
-    llm_client = None
-    if use_llm:
-        llm_client = get_llm_client(llm, prompt=prompt)
-        chat_wrapper = LLMChatWrapper(llm_client, prompt=prompt, voice=use_voice)
 
     # Parse things and listen to the user
     ok = True
-
     while ok:
         try:
-            say_this = None
-            if llm_client is None:
-                # Call the LLM client and parse
-                explore = input(
-                    "Enter desired mode [E (explore and mapping) / M (Open vocabulary pick and place)]: "
-                )
-                if explore.upper() == "E":
-                    llm_response = [("explore", None)]
-                else:
-                    if target_object is None or len(target_object) == 0:
-                        target_object = input("Enter the target object: ")
-                    if target_receptacle is None or len(target_receptacle) == 0:
-                        target_receptacle = input("Enter the target receptacle: ")
-                    llm_response = [("pickup", target_object), ("place", target_receptacle)]
+            # Call the LLM client and parse
+            explore = input(
+                "Enter desired mode [E (explore and mapping) / M (Open vocabulary pick and place)]: "
+            )
+            if explore.upper() == "E":
+                llm_response = [("explore", None)]
             else:
-                # Call the LLM client and parse
-                llm_response = chat_wrapper.query(verbose=debug_llm)
-                if debug_llm:
-                    print("Parsed LLM Response:", llm_response)
+                if target_object is None or len(target_object) == 0:
+                    target_object = input("Enter the target object: ")
+                if target_receptacle is None or len(target_receptacle) == 0:
+                    target_receptacle = input("Enter the target receptacle: ")
+                llm_response = [("pickup", target_object), ("place", target_receptacle)]
+
 
             ok = executor(llm_response)
             target_object = None
