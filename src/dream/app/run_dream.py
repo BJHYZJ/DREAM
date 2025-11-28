@@ -131,7 +131,7 @@ def main(
         skip_confirmations=skip_confirmations,
     )
 
-    if True:
+    if False:
         # command = [("pause_slam", "")]
         # executor(command)
         # command = [("resume_slam", "")]

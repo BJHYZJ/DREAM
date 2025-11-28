@@ -247,43 +247,6 @@ class ZmqServer(BaseZmqServer):
                 print(f"Resuming SLAM (timeout={timeout}) -> {success}")
             if not success:
                 logger.warning("Failed to resume SLAM via RTAB-Map service.")
-
-        # elif "joint" in action:
-        #     # This allows for executing motor commands on the robot relatively quickly
-        #     if self.verbose:
-        #         print(f"Moving arm to config={action['joint']}")
-        #     if "gripper" in action:
-        #         gripper_cmd = action["gripper"]
-        #     else:
-        #         gripper_cmd = None
-        #     if "target_point" in action:
-        #         target_point = action["target_point"]
-        #     else:
-        #         target_point = None
-
-        #     # I found currently the blocking in arm to does not
-        #     # serve any actual purpose so maybe we should use this line instead
-
-        #     # _is_blocking = action.get("blocking", False) or action.get("manip_blocking", False)
-        #     _is_blocking = action.get("blocking", False)
-
-        #     # Now send all command fields here
-        #     self.client.arm_to(
-        #         action["joint"],
-        #         gripper=gripper_cmd,
-        #         target_point=target_point,
-        #         blocking=_is_blocking,
-        #     )
-        # elif "move_to_positions" in action:
-        #     if self.verbose:
-        #         print(f"Moving to positions {action['move_to_positions']}")
-        #     if not self.client.in_navigation_mode():
-        #         self.client.switch_to_manipulation_mode()
-        #     _is_wait = action.get("wait", False)
-        #     self.client.move_to_positions(
-        #         action["move_to_positions"],
-        #         wait=_is_wait,
-        #     )
         elif "servo_angle" in action:
             # This will send head without anything else
             if self.verbose or True:
@@ -302,7 +265,8 @@ class ZmqServer(BaseZmqServer):
         else:
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)
-
+        
+        logger.info(f"Action #{action['step']} done")
 
 
 @click.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})

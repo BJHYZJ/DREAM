@@ -879,13 +879,7 @@ class RobotZmqClient(AbstractRobotClient):
             last_ang = ang
             last_obs_t = obs_t
             close_to_goal = at_goal
-            if verbose:
-                print(
-                    f"Waiting for step={block_id} {self._last_step} prev={self._last_step} at {pos} moved {moved_dist:0.04f} angle {angle_dist:0.04f} not_moving {not_moving_count} at_goal {self._state.at_goal}"
-                )
-                print(min_steps_not_moving, self._last_step, at_goal)
-                if goal_angle is not None:
-                    print(f"Goal angle {goal_angle} angle dist to goal {angle_dist_to_goal}")
+
             if self._last_step >= block_id and at_goal and not_moving_count > min_steps_not_moving:
                 if verbose:
                     print("---> At goal")
@@ -1309,7 +1303,7 @@ class RobotZmqClient(AbstractRobotClient):
             state (dict): state message from the robot
         """
         with self._state_lock:
-            print("Updating state, step is:", state["step"])
+            # print("Updating state, step is:", state["step"])
             if "step" in state:
                 self._last_step = max(self._last_step, state["step"])
                 if state["step"] < self._last_step:
