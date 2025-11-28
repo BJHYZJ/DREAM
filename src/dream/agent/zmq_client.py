@@ -513,11 +513,11 @@ class RobotZmqClient(AbstractRobotClient):
     def base_to(
         self,
         xyt: Union[ContinuousNavigationAction, np.ndarray],
-        relative: bool = False,
-        timeout: float = 10.0,
-        verbose: bool = False,
-        blocking: bool = True,
-        reliable: bool = True,
+        relative: bool=False,
+        timeout: float=10.0,
+        verbose: bool=False,
+        blocking: bool=True,
+        reliable: bool=True,
     ):
         """Move to xyt in global coordinates or relative coordinates.
 
@@ -579,7 +579,7 @@ class RobotZmqClient(AbstractRobotClient):
         angle: np.ndarray,
         speed: int=20,
         blocking: bool=True,
-        reliable: bool=False,
+        reliable: bool=True,
         timeout: float=10.0,
         # sleep_time: int=1,
     ):
@@ -624,7 +624,7 @@ class RobotZmqClient(AbstractRobotClient):
                 
                 t1 = timeit.default_timer()
                 if t1 - t0 > timeout:
-                    logger.error("Timeout waiting for camera to aim at target")
+                    logger.error("Timeout waiting for arm at target")
                     return False
             
             return False
@@ -639,7 +639,7 @@ class RobotZmqClient(AbstractRobotClient):
         next_action = {"gripper": position, "wait": blocking}
         self.send_action(next_action, reliable=reliable)
         if blocking:
-            time.sleep(0.1)
+            time.sleep(2)
 
     def set_velocity(self, v: float, w: float):
         """Move to xyt in global coordinates or relative coordinates.
@@ -932,25 +932,25 @@ class RobotZmqClient(AbstractRobotClient):
         pos_err_threshold: float=0.2,
         rot_err_threshold: float=0.1,
         spin_rate: int=10,
-        verbose: bool=False,
         per_waypoint_timeout: float=5.0,
         final_timeout: float=5.0,
-        relative: bool=True,
         blocking: bool=True,
+        verbose: bool=False,
     ):
         """Execute a multi-step trajectory; this is always blocking since it waits to reach each one in turn."""
 
         if isinstance(trajectory, PlanResult):
             trajectory = [pt.state for pt in trajectory.trajectory]
 
-        if relative:
-            raise NotImplementedError("Relative trajectories not yet supported")
-
         for i, pt in enumerate(trajectory):
             assert (
                 len(pt) == 3 or len(pt) == 2
             ), "base trajectory needs to be 2-3 dimensions: x, y, and (optionally) theta"
-            self.base_to(pt, relative, blocking=blocking, reliable=False)
+            self.base_to(
+                xyt=pt, 
+                blocking=blocking, 
+                reliable=True
+            )
             print("Moving to", pt)
             last_waypoint = i == len(trajectory) - 1
             self.base_to(

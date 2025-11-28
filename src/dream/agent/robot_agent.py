@@ -673,7 +673,7 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose, step_num=12):
+    def process_text(self, text, start_pose, step_num=24):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
@@ -852,6 +852,7 @@ class RobotAgent:
                 return None
             
             if finished:  # double check object is exist
+                print("verifying target existence after navigation...")
                 self.robot.look_at_target(
                     tar_in_map=end_point,
                     blocking=True
@@ -863,8 +864,14 @@ class RobotAgent:
                     max(self.voxel_map.observations.keys())
                 ].obs_id
                 text_exist = self.voxel_map.detect_text(text=text, obs_id=obs_id)
-                if not text_exist:
-                    step = 0
+                if text_exist:
+                    robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2])
+                    target_xy = np.array(end_point[:2])
+                    if np.linalg.norm(robot_xy - target_xy) > self._manipulation_radius:
+                        print("Target detected but outside manipulation radius, continue navigation...")
+                        finished = False
+                else:
+                    print("Target not found after navigation, continue navigation...")
                     finished = False
 
         print("Navigation finished!")

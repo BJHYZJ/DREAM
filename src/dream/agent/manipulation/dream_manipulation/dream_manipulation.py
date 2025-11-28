@@ -199,32 +199,38 @@ class DreamManipulationWrapper:
     #     )
 
 
-    def pickup(self, width: int=830):
+    def pickup(self, width: int=830, multi_stage: bool=False) -> bool:
         """
         Code for grasping the object
         Gripper closes gradually until it encounters resistance
         """
         next_gripper_pos = width
-        while True:
+        if multi_stage:
+            while True:
+                self.robot.gripper_to(
+                    max(next_gripper_pos, self.GRIPPER_MIN), blocking=False
+                )
+                curr_gripper_pose = self.robot.get_gripper_position()
+                print('Robot means to move gripper to', next_gripper_pos)
+                print('Robot actually moves gripper to', curr_gripper_pose, 'curr_gripper_pose - next_gripper_pos =', curr_gripper_pose - next_gripper_pos)
+                if next_gripper_pos <= 0:
+                    return False
+                
+                if curr_gripper_pose - next_gripper_pos > 10:
+                    print(f"Gripper stopped closing at position: {curr_gripper_pose}")
+                    return True  # Stop closing if fully closed or resistance is detected  
+
+                if next_gripper_pos > 0:
+                    next_gripper_pos -= 100
+                else:
+                    next_gripper_pos = 0 # Make sure the gripper doesn't go below 0
+
+                time.sleep(0.1)
+        else:
             self.robot.gripper_to(
-                max(next_gripper_pos, self.GRIPPER_MIN), blocking=False
+                self.GRIPPER_MIN, blocking=True
             )
-            curr_gripper_pose = self.robot.get_gripper_position()
-            print('Robot means to move gripper to', next_gripper_pos)
-            print('Robot actually moves gripper to', curr_gripper_pose, 'curr_gripper_pose - next_gripper_pos =', curr_gripper_pose - next_gripper_pos)
-            if next_gripper_pos <= 0:
-                return False
-            
-            if curr_gripper_pose - next_gripper_pos > 10:
-                print(f"Gripper stopped closing at position: {curr_gripper_pose}")
-                return True  # Stop closing if fully closed or resistance is detected  
-
-            if next_gripper_pos > 0:
-                next_gripper_pos -= 100
-            else:
-                next_gripper_pos = 0 # Make sure the gripper doesn't go below 0
-
-            time.sleep(0.1)
+            return True
 
 
     def updateJoints(self):
