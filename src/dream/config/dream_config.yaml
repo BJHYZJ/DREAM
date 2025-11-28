@@ -198,5 +198,5 @@ instance_memory:
 
 exploration_steps: 50
 mllm: False
-with_mllm_verify: False
+with_mllm_verify: True
 name: "dream"
