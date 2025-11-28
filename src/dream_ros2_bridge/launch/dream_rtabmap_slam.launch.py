@@ -116,7 +116,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
 
     'Reg/Force3DoF': force_3dof,
     'Reg/RepeatOnce': 'true',
-    'Reg/Strategy': '1',  # 0=Vis, 1=Icp, 2=VisIcp
+    'Reg/Strategy': '2',  # 0=Vis, 1=Icp, 2=VisIcp
     'Icp/CorrespondenceRatio': str(LaunchConfiguration('min_loop_closure_overlap').perform(context))
   }
   
