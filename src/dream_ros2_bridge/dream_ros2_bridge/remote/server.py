@@ -235,6 +235,7 @@ class ZmqServer(BaseZmqServer):
         elif action.get("slam_pause"):
             timeout = action.get("slam_timeout", 2.0)
             success = self.client.pause_slam(timeout=timeout)
+            print(f"Pausing SLAM (timeout={timeout}) -> {success}")
             if self.verbose:
                 print(f"Pausing SLAM (timeout={timeout}) -> {success}")
             if not success:

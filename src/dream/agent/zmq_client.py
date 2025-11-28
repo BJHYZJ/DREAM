@@ -811,10 +811,10 @@ class RobotZmqClient(AbstractRobotClient):
             resend_action(dict): The action to resend if the robot is not moving. If none, do not resend.
         """
         print("=" * 20, f"Waiting for {block_id} at goal", "=" * 20)
-        last_pos = None
-        last_ang = None
-        last_obs_t = None
-        not_moving_count = 0
+        # last_pos = None
+        # last_ang = None
+        # last_obs_t = None
+        # not_moving_count = 0
         if moving_threshold is None:
             moving_threshold = self._moving_threshold
         if angle_threshold is None:
@@ -822,7 +822,7 @@ class RobotZmqClient(AbstractRobotClient):
         if min_steps_not_moving is None:
             min_steps_not_moving = self._min_steps_not_moving
         t0 = timeit.default_timer()
-        close_to_goal = False
+        # close_to_goal = False
 
         while not self._finish:
 
@@ -839,62 +839,24 @@ class RobotZmqClient(AbstractRobotClient):
                     print("waiting for state")
                     continue
 
-            xyt = self.get_base_in_map_xyt()
-            pos = xyt[:2]
-            ang = xyt[2]
-            obs_t = timeit.default_timer()
-
             if not self.at_goal():
-                t0 = timeit.default_timer()
+                if timeit.default_timer() - t0 > timeout:
+                    print(f"Timeout waiting for block with step id = {block_id}")
+                    break
                 continue
 
-            moved_dist = np.linalg.norm(pos - last_pos) if last_pos is not None else float("inf")
-            angle_dist = angle_difference(ang, last_ang) if last_ang is not None else float("inf")
-            if goal_angle is not None:
-                angle_dist_to_goal = angle_difference(ang, goal_angle)
-                at_goal = angle_dist_to_goal < goal_angle_threshold
-            else:
-                at_goal = True
-
-            moved_speed = (
-                moved_dist / (obs_t - last_obs_t) if last_obs_t is not None else float("inf")
-            )
-            angle_speed = (
-                angle_dist / (obs_t - last_obs_t) if last_obs_t is not None else float("inf")
-            )
-
-            not_moving = (
-                last_pos is not None
-                and moved_speed < moving_threshold
-                and angle_speed < angle_threshold
-            )
-            if not_moving:
-                not_moving_count += 1
-            else:
-                not_moving_count = 0
-
-            # Check if we are at the goal
-            # If we are at the goal, we can stop if we are not moving
-            last_pos = pos
-            last_ang = ang
-            last_obs_t = obs_t
-            close_to_goal = at_goal
-
-            if self._last_step >= block_id and at_goal and not_moving_count > min_steps_not_moving:
+            if self._last_step >= block_id:
                 if verbose:
                     print("---> At goal")
                 break
 
-            # Resend the action if we are not moving for some reason and it's been provided
-            if resend_action is not None and not close_to_goal:
-                # Resend the action
+            if resend_action is not None:
                 self.send_action(resend_action)
 
-            t1 = timeit.default_timer()
-            if t1 - t0 > timeout:
+            if timeit.default_timer() - t0 > timeout:
                 print(f"Timeout waiting for block with step id = {block_id}")
                 break
-                # raise RuntimeError(f"Timeout waiting for block with step id = {block_id}")
+            #     # raise RuntimeError(f"Timeout waiting for block with step id = {block_id}")
 
     def in_task(self) -> bool:
         "Currently executing a task and cannot update memory."
@@ -1305,6 +1267,8 @@ class RobotZmqClient(AbstractRobotClient):
         with self._state_lock:
             # print("Updating state, step is:", state["step"])
             if "step" in state:
+                # if state["step"] > self._last_step:
+                #     print("Updating last step from", self._last_step, "to", state["step"])
                 self._last_step = max(self._last_step, state["step"])
                 if state["step"] < self._last_step:
                     if self._warning_on_out_of_date_state < state["step"]:

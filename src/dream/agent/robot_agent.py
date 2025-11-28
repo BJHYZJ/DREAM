@@ -609,7 +609,7 @@ class RobotAgent:
             if not self._realtime_updates:
                 self.update()
             else:
-                time.sleep(1)  # waiting for 1 second
+                time.sleep(0.1)  # waiting for 1 second
 
     def rotate_in_place(self, speed: int=50):
         print("*" * 10, "Rotate in place", "*" * 10)
