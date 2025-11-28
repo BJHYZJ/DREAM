@@ -153,6 +153,7 @@ class RobotZmqClient(AbstractRobotClient):
             publish_observations or self.parameters["agent"]["use_realtime_updates"]
         )
         self._warning_on_out_of_date_state = -1
+        self._latest_state_step: Optional[int] = None
 
         self._moving_threshold = parameters["motion"]["moving_threshold"]
         self._angle_threshold = parameters["motion"]["angle_threshold"]
@@ -578,8 +579,8 @@ class RobotZmqClient(AbstractRobotClient):
         angle: np.ndarray,
         speed: int=20,
         blocking: bool=True,
+        reliable: bool=False,
         timeout: float=10.0,
-        reliable: bool=True,
         # sleep_time: int=1,
     ):
         """Move the arm to a particular configuration. servo angle control
@@ -632,7 +633,7 @@ class RobotZmqClient(AbstractRobotClient):
         self, 
         position: float,
         blocking: bool=False, 
-        reliable: bool=True,
+        reliable: bool=False,
     ):
         """Set the position of the gripper."""
         next_action = {"gripper": position, "wait": blocking}
@@ -828,7 +829,7 @@ class RobotZmqClient(AbstractRobotClient):
             # Minor delay at the end - give it time to get new messages
             time.sleep(0.01)
 
-            if not self.is_state_up_to_date(min_step=block_id):
+            if not self.is_state_up_to_date():
                 if verbose:
                     print("Waiting for latest state message")
                 continue
@@ -921,22 +922,17 @@ class RobotZmqClient(AbstractRobotClient):
         """return a model of the robot for planning"""
         return self._robot_model
 
-    def _latest_command_step(self) -> int:
-        """Return the most recent command step we expect the robot to have executed."""
-        return max(self._iter - 1, -1)
-
-    def is_state_up_to_date(self, min_step: Optional[int] = None) -> bool:
+    def is_state_up_to_date(self) -> bool:
         """Check if the low-level state stream has caught up to a requested step."""
         with self._state_lock:
-            state_step = None if self._state is None else self._state.step
-
-        if state_step is None:
-            return False
-
-        if min_step is None:
-            min_step = self._latest_command_step()
-
-        return state_step >= min_step
+            if self._state is None:
+                return False
+            is_newest = (
+                self._latest_state_step is None
+                or self._state.state_step > self._latest_state_step
+            )
+            self._latest_state_step = self._state.state_step
+            return is_newest
 
     def send_message(self, message: dict):
         """Send a message to the robot"""
@@ -977,14 +973,14 @@ class RobotZmqClient(AbstractRobotClient):
     def execute_trajectory(
         self,
         trajectory: List[np.ndarray],
-        pos_err_threshold: float = 0.2,
-        rot_err_threshold: float = 0.1,
-        spin_rate: int = 10,
-        verbose: bool = False,
-        per_waypoint_timeout: float = 10.0,
-        final_timeout: float = 10.0,
-        relative: bool = False,
-        blocking: bool = False,
+        pos_err_threshold: float=0.2,
+        rot_err_threshold: float=0.1,
+        spin_rate: int=10,
+        verbose: bool=False,
+        per_waypoint_timeout: float=5.0,
+        final_timeout: float=5.0,
+        relative: bool=True,
+        blocking: bool=True,
     ):
         """Execute a multi-step trajectory; this is always blocking since it waits to reach each one in turn."""
 
@@ -998,7 +994,7 @@ class RobotZmqClient(AbstractRobotClient):
             assert (
                 len(pt) == 3 or len(pt) == 2
             ), "base trajectory needs to be 2-3 dimensions: x, y, and (optionally) theta"
-            self.base_to(pt, relative, blocking=False, reliable=False)
+            self.base_to(pt, relative, blocking=blocking, reliable=False)
             print("Moving to", pt)
             last_waypoint = i == len(trajectory) - 1
             self.base_to(
@@ -1120,7 +1116,7 @@ class RobotZmqClient(AbstractRobotClient):
         # Returns the current action in case we want to do something with it like resend
         return current_action
 
-    def blocking_spin(self, verbose: bool = False, visualize: bool = False):
+    def blocking_spin(self, verbose: bool=False, visualize: bool=False):
         """Listen for incoming observations and update internal state"""
         sum_time = 0.0
         steps = 0
@@ -1163,7 +1159,7 @@ class RobotZmqClient(AbstractRobotClient):
                 print(f"time taken = {dt} avg = {sum_time/steps} keys={[k for k in output.keys()]}")
             t0 = timeit.default_timer()
 
-    def blocking_spin_state(self, verbose: bool = False):
+    def blocking_spin_state(self, verbose: bool=False):
         """Listen for incoming observations and update internal state"""
 
         sum_time = 0.0
@@ -1185,7 +1181,7 @@ class RobotZmqClient(AbstractRobotClient):
                 )
             t0 = timeit.default_timer()
 
-    def blocking_spin_servo(self, verbose: bool = False):
+    def blocking_spin_servo(self, verbose: bool=False):
         """Listen for servo messages coming from the robot, i.e. low res images for ML state. This is intended to be run in a separate thread.
 
         Args:
@@ -1313,6 +1309,7 @@ class RobotZmqClient(AbstractRobotClient):
             state (dict): state message from the robot
         """
         with self._state_lock:
+            print("Updating state, step is:", state["step"])
             if "step" in state:
                 self._last_step = max(self._last_step, state["step"])
                 if state["step"] < self._last_step:

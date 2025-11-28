@@ -10,8 +10,10 @@
 
 # (c) 2024 Hello Robot, under MIT license
 
+import time
 from typing import Any, Dict
-
+import threading
+import os
 import click
 import numpy as np
 import rclpy
@@ -21,18 +23,18 @@ import dream.utils.compression as compression
 import dream.utils.logger as logger
 from dream.core.server import BaseZmqServer
 from dream.utils.image import adjust_gamma, scale_camera_matrix
-from dream_ros2_bridge.remote import StretchClient
-from dream_ros2_bridge.ros.map_saver import MapSerializerDeserializer
+from dream_ros2_bridge.remote import DreamClient
+# from dream_ros2_bridge.ros.map_saver import MapSerializerDeserializer
 
 
 class ZmqServer(BaseZmqServer):
     @override
-    def __init__(self, use_d405: bool = True, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # ROS2 client interface
-        self.client = StretchClient(d405=use_d405)
-        self.use_d405 = use_d405
+        self.client = DreamClient()
+        # self.use_d405 = use_d405
 
         # Check if the robot is homed
         if not self.client.is_homed:
@@ -43,7 +45,21 @@ class ZmqServer(BaseZmqServer):
             raise RuntimeError("Robot is runstopped. Please unstop the robot first.")
 
         # Map saver - write and load map information from SLAM
-        self.map_saver = MapSerializerDeserializer()
+        # self.map_saver = MapSerializerDeserializer()
+
+    def shutdown(self):
+        """Shutdown the server and clean up resources"""
+        print("Shutting down server...")
+        
+        # Shutdown the client (ROS interface)
+        if hasattr(self, 'client') and hasattr(self.client, 'shutdown'):
+            self.client.shutdown()
+        
+        # Call parent shutdown if it exists
+        if hasattr(super(), 'shutdown'):
+            super().shutdown()
+        
+        print("Server shutdown complete")
 
     @override
     def is_running(self) -> bool:
@@ -68,35 +84,21 @@ class ZmqServer(BaseZmqServer):
     def get_full_observation_message(self) -> Dict[str, Any]:
         # get information
         # Still about 0.01 seconds to get observations
-        obs = self.client.get_observation(compute_xyz=False)
-        rgb, depth = obs.rgb, obs.depth
-        width, height = rgb.shape[:2]
-
-        # Convert depth into int format
-        depth = (depth * 1000).astype(np.uint16)
-
-        # Make both into jpegs
-        rgb = compression.to_jpg(rgb)
-        depth = compression.to_jp2(depth)
-
-        # Get the other fields from an observation
-        # rgb = compression.to_webp(rgb)
+        obs = self.client.get_full_observation()
+        if obs is None:
+            return None
         data = {
-            "rgb": rgb,
-            "depth": depth,
-            "camera_K": obs.camera_K.cpu().numpy(),
-            "camera_pose": obs.camera_pose,
-            "ee_pose": self.client.ee_pose,
-            "joint": obs.joint,
-            "joint_velocities": obs.joint_velocities,
-            "gps": obs.gps,
+            "timestamp": obs.timestamp,
+            "pose_graph": obs.pose_graph,
+            "just_pose_graph": obs.just_pose_graph,
             "compass": obs.compass,
-            "rgb_width": width,
-            "rgb_height": height,
-            "lidar_points": obs.lidar_points,
-            "lidar_timestamp": obs.lidar_timestamp,
-            "pose_graph": self.client.get_pose_graph(),
-            "last_motion_failed": self.client.last_motion_failed(),
+            "gps": obs.gps,
+            "obs_id": obs.obs_id,
+            "rgb": obs.rgb_compressed,
+            "depth": obs.depth_compressed,
+            "camera_K": obs.camera_K,
+            "camera_in_map_pose": obs.camera_in_map_pose,
+            "base_in_map_pose": obs.base_in_map_pose,
             "recv_address": self.recv_address,
             "step": self._last_step,
             "at_goal": self.client.at_goal(),
@@ -105,21 +107,66 @@ class ZmqServer(BaseZmqServer):
 
     @override
     def get_state_message(self) -> Dict[str, Any]:
-        """Get the state message for the robot."""
-        q, dq, eff = self.client.get_joint_state()
+        obs = self.client.get_state_observation()
+        if obs is None:
+            return None
+        # """Get the state message for the robot."""
+        # q, dq, eff = self.client.get_joint_state()
         message = {
-            "base_pose": self.client.get_base_pose(),
-            "ee_pose": self.client.ee_pose,
-            "joint_positions": q,
-            "joint_velocities": dq,
-            "joint_efforts": eff,
+            "gps": obs.gps,
+            "compass": obs.compass,
+            "base_in_map_pose": obs.base_in_map_pose,
+            "arm_base_in_map_pose": obs.arm_base_in_map_pose,
+            "camera_in_arm_base_pose": obs.camera_in_arm_base_pose,
+            "camera_in_base_pose": obs.camera_in_base_pose,
+            "camera_in_map_pose": obs.camera_in_map_pose,
+            "ee_in_arm_base_pose": obs.ee_in_arm_base_pose,
+            "ee_in_base_pose": obs.ee_in_base_pose,
+            "ee_in_map_pose": obs.ee_in_map_pose,
+            "joint_states": obs.joint_states,
+            "joint_velocities": obs.joint_velocities,
+            "joint_forces": obs.joint_forces,
+            "joint_positions": obs.joint_positions,
+            "at_goal": obs.at_goal,
+            "is_homed": obs.is_homed,
+            "is_runstopped": obs.is_runstopped,
             "control_mode": self.get_control_mode(),
-            "at_goal": self.client.at_goal(),
-            "is_homed": self.client.is_homed,
-            "is_runstopped": self.client.is_runstopped,
             "step": self._last_step,
         }
         return message
+
+
+    def get_servo_message(self) -> Dict[str, Any]:
+        obs = self.client.get_servo_observation()
+        
+        if obs is None:
+            return None
+        color_image, depth_image = self._rescale_color_and_depth(
+            obs.rgb, obs.depth, self.image_scaling
+        )
+        depth_image = (depth_image * 1000).astype(np.uint16)
+        compressed_color_image = compression.to_jpg(color_image)
+        compressed_depth_image = compression.to_jp2(depth_image)
+        
+        message = {
+            "rgb": compressed_color_image,
+            "depth": compressed_depth_image,
+            "camera_in_arm_base_pose": obs.camera_in_arm_base_pose,
+            "camera_K": scale_camera_matrix(
+                self.client.rgb_cam.get_K(), self.image_scaling
+            ),
+            "depth_K": scale_camera_matrix(
+                self.client.dpt_cam.get_K(), self.image_scaling
+            ),
+            "image_scaling": self.image_scaling,
+            "depth_scaling": self.depth_scaling,
+            "color_shape": color_image.shape,
+            "depth_shape": depth_image.shape,
+            "step": self._last_step,
+        }
+        # message.update(d405_output)
+        return message
+    
 
     @override
     def handle_action(self, action: Dict[str, Any]):
@@ -142,7 +189,7 @@ class ZmqServer(BaseZmqServer):
                     action["posture"],
                     "not recognized or supported.",
                 )
-        elif "control_mode" in action:
+        if "control_mode" in action:
             if action["control_mode"] == "manipulation":
                 self.client.switch_to_manipulation_mode()
                 self.control_mode = "manipulation"
@@ -169,7 +216,7 @@ class ZmqServer(BaseZmqServer):
                     self.client.in_navigation_mode(),
                 )
                 print(f"{action['xyt']} {action['nav_relative']} {action['nav_blocking']}")
-            self.client.move_base_to(
+            self.client.base_to(
                 action["xyt"],
                 relative=action["nav_relative"],
             )
@@ -184,121 +231,78 @@ class ZmqServer(BaseZmqServer):
             if "w" in base_velocity_action:
                 w = action["base_velocity"]["w"]
             self.client.nav.set_velocity(v, w)
-        elif "joint" in action:
-            # This allows for executing motor commands on the robot relatively quickly
+
+        elif action.get("slam_pause"):
+            timeout = action.get("slam_timeout", 2.0)
+            success = self.client.pause_slam(timeout=timeout)
             if self.verbose:
-                print(f"Moving arm to config={action['joint']}")
-            if "gripper" in action:
-                gripper_cmd = action["gripper"]
-            else:
-                gripper_cmd = None
-            if "head_to" in action:
-                head_pan_cmd, head_tilt_cmd = action["head_to"]
-            else:
-                head_pan_cmd, head_tilt_cmd = None, None
+                print(f"Pausing SLAM (timeout={timeout}) -> {success}")
+            if not success:
+                logger.warning("Failed to pause SLAM via RTAB-Map service.")
 
-            # I found currently the blocking in arm to does not
-            # serve any actual purpose so maybe we should use this line instead
+        elif action.get("slam_resume"):
+            timeout = action.get("slam_timeout", 2.0)
+            success = self.client.resume_slam(timeout=timeout)
+            if self.verbose:
+                print(f"Resuming SLAM (timeout={timeout}) -> {success}")
+            if not success:
+                logger.warning("Failed to resume SLAM via RTAB-Map service.")
 
-            # _is_blocking = action.get("blocking", False) or action.get("manip_blocking", False)
-            _is_blocking = action.get("blocking", False)
+        # elif "joint" in action:
+        #     # This allows for executing motor commands on the robot relatively quickly
+        #     if self.verbose:
+        #         print(f"Moving arm to config={action['joint']}")
+        #     if "gripper" in action:
+        #         gripper_cmd = action["gripper"]
+        #     else:
+        #         gripper_cmd = None
+        #     if "target_point" in action:
+        #         target_point = action["target_point"]
+        #     else:
+        #         target_point = None
 
-            # Now send all command fields here
-            self.client.arm_to(
-                action["joint"],
-                gripper=gripper_cmd,
-                head_pan=head_pan_cmd,
-                head_tilt=head_tilt_cmd,
-                blocking=_is_blocking,
-            )
-        elif "head_to" in action:
+        #     # I found currently the blocking in arm to does not
+        #     # serve any actual purpose so maybe we should use this line instead
+
+        #     # _is_blocking = action.get("blocking", False) or action.get("manip_blocking", False)
+        #     _is_blocking = action.get("blocking", False)
+
+        #     # Now send all command fields here
+        #     self.client.arm_to(
+        #         action["joint"],
+        #         gripper=gripper_cmd,
+        #         target_point=target_point,
+        #         blocking=_is_blocking,
+        #     )
+        # elif "move_to_positions" in action:
+        #     if self.verbose:
+        #         print(f"Moving to positions {action['move_to_positions']}")
+        #     if not self.client.in_navigation_mode():
+        #         self.client.switch_to_manipulation_mode()
+        #     _is_wait = action.get("wait", False)
+        #     self.client.move_to_positions(
+        #         action["move_to_positions"],
+        #         wait=_is_wait,
+        #     )
+        elif "servo_angle" in action:
             # This will send head without anything else
             if self.verbose or True:
-                print(f"Moving head to {action['head_to']}")
-            self.client.head_to(
-                action["head_to"][0],
-                action["head_to"][1],
-                blocking=True,
+                print(f"Moving head to {action['servo_angle']}")
+            if not self.client.in_manipulation_mode():
+                self.client.switch_to_manipulation_mode()
+            self.client.manip.set_servo_angle(
+                angle=action["servo_angle"],
+                speed=action["speed"],
+                wait=action['wait'],
             )
-        elif "gripper" in action and "joint" not in action:
+        elif "gripper" in action:
             if self.verbose or True:
                 print(f"Moving gripper to {action['gripper']}")
-            self.client.manip.move_gripper(action["gripper"])
+            self.client.manip.set_gripper(action["gripper"], wait=action['wait'])
         else:
             logger.warning(" - action not recognized or supported.")
             logger.warning(action)
 
-    def _get_ee_cam_message(self) -> Dict[str, Any]:
-        # Read images from the end effector and head cameras
-        ee_depth_image = self.client.ee_dpt_cam.get()
-        ee_color_image = self.client.ee_rgb_cam.get()
-        ee_color_image, ee_depth_image = self._rescale_color_and_depth(
-            ee_color_image, ee_depth_image, self.ee_image_scaling
-        )
-
-        # Adapt color so we can use higher shutter speed
-        ee_color_image = adjust_gamma(ee_color_image, 2.5)
-
-        # Conversion
-        ee_depth_image = (ee_depth_image * 1000).astype(np.uint16)
-
-        # Compress the images
-        compressed_ee_depth_image = compression.to_jp2(ee_depth_image)
-        compressed_ee_color_image = compression.to_jpg(ee_color_image)
-
-        ee_camera_pose = self.client.ee_camera_pose
-
-        d405_output = {
-            "ee_cam/color_camera_K": scale_camera_matrix(
-                self.client.ee_rgb_cam.get_K(), self.ee_image_scaling
-            ),
-            "ee_cam/depth_camera_K": scale_camera_matrix(
-                self.client.ee_dpt_cam.get_K(), self.ee_image_scaling
-            ),
-            "ee_cam/color_image": compressed_ee_color_image,
-            "ee_cam/depth_image": compressed_ee_depth_image,
-            "ee_cam/color_image/shape": ee_color_image.shape,
-            "ee_cam/depth_image/shape": ee_depth_image.shape,
-            "ee_cam/image_scaling": self.ee_image_scaling,
-            "ee_cam/depth_scaling": self.ee_depth_scaling,
-            "ee_cam/pose": ee_camera_pose,
-        }
-        return d405_output
-
-    def get_servo_message(self) -> Dict[str, Any]:
-        if self.use_d405:
-            d405_output = self._get_ee_cam_message()
-        else:
-            d405_output = {}
-
-        obs = self.client.get_observation(compute_xyz=False)
-        head_color_image, head_depth_image = self._rescale_color_and_depth(
-            obs.rgb, obs.depth, self.image_scaling
-        )
-        head_depth_image = (head_depth_image * 1000).astype(np.uint16)
-        compressed_head_depth_image = compression.to_jp2(head_depth_image)
-        compressed_head_color_image = compression.to_jpg(head_color_image)
-
-        message = {
-            "ee/pose": self.client.ee_pose,
-            "head_cam/color_camera_K": scale_camera_matrix(
-                self.client.rgb_cam.get_K(), self.image_scaling
-            ),
-            "head_cam/depth_camera_K": scale_camera_matrix(
-                self.client.dpt_cam.get_K(), self.image_scaling
-            ),
-            "head_cam/color_image": compressed_head_color_image,
-            "head_cam/depth_image": compressed_head_depth_image,
-            "head_cam/color_image/shape": head_color_image.shape,
-            "head_cam/depth_image/shape": head_depth_image.shape,
-            "head_cam/image_scaling": self.image_scaling,
-            "head_cam/depth_scaling": self.depth_scaling,
-            "head_cam/pose": self.client.head_camera_pose,
-            "robot/config": obs.joint,
-            "step": self._last_step,
-        }
-        message.update(d405_output)
-        return message
 
 
 @click.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
@@ -310,6 +314,7 @@ def main(
     recv_port: int = 4402,
     local: bool = False,
 ):
+    # try:
     rclpy.init()
     server = ZmqServer(
         send_port=send_port,
@@ -317,6 +322,19 @@ def main(
         use_remote_computer=(not local),
     )
     server.start()
+    try:
+        while rclpy.ok() and server.running:
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        print("\nReceived interrupt signal, shutting down...")
+    finally:
+        server.shutdown()
+            
+    # except Exception as e:
+    #     print(f"Error in main: {e}")
+    # finally:
+    #     if rclpy.ok():
+    #         rclpy.shutdown()
 
 
 if __name__ == "__main__":

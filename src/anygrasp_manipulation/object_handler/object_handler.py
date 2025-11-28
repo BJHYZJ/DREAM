@@ -344,6 +344,11 @@ class ObjectHandler:
         object_points = points[object_mask]
         object_colors = colors[object_mask]
 
+        # pcd = o3d.geometry.PointCloud()
+        # pcd.points = o3d.utility.Vector3dVector(object_points.astype(np.float64))
+        # pcd.colors = o3d.utility.Vector3dVector(object_colors.astype(np.float64))
+        # o3d.visualization.draw_geometries([pcd], window_name="Object Points")
+
         lims = [
             object_points[:, 0].min(), object_points[:, 0].max(), 
             object_points[:, 1].min(), object_points[:, 1].max(), 
@@ -559,7 +564,7 @@ class ObjectHandler:
         object_pcd.points = o3d.utility.Vector3dVector(object_points)
         object_pcd.colors = o3d.utility.Vector3dVector(object_colors)
         geometries = []
-        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=0.02, height=0.02)
+        cylinder = o3d.geometry.TriangleMesh.create_cylinder(radius=0.01, height=0.01)
         cylinder.translate(pick_point)
         cylinder.paint_uniform_color([0, 1, 0])
         geometries.append(cylinder)

@@ -131,7 +131,7 @@ def main(
         skip_confirmations=skip_confirmations,
     )
 
-    if False:
+    if True:
         # command = [("pause_slam", "")]
         # executor(command)
         # command = [("resume_slam", "")]
@@ -147,11 +147,17 @@ def main(
 
         # command = [("find", "red pepper")]
         # executor(command)
+        # import time
+        # while True:
+        #     command = [("pickup_only", "corn")]
+        #     executor(command)
+        #     time.sleep(10)
+
+        # command = [("place_only", "green bowl")]
+        # executor(command)
         import time
         while True:
-            command = [("pickup_only", "corn")]
-            executor(command)
-            time.sleep(10)
+            time.sleep(0.1)
 
 
 

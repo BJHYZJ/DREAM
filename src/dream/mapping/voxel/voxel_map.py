@@ -372,7 +372,7 @@ class SparseVoxelMapNavigationSpace:
 
         return None
 
-    def sample_exploration(self, xyt, planner, text=None, semantic_rate:float=0.3, debug=False):
+    def sample_exploration(self, xyt, planner, text=None, semantic_rate:float=0.1, debug=False):
         """
         Sample an exploration target
         """

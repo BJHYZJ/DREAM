@@ -119,7 +119,7 @@ class DreamTaskExecutor:
     def _place(
         self,
         target_receptacle: str, 
-        point: Optional[np.ndarray], 
+        point: Optional[np.ndarray]=None, 
         skip_confirmations: bool = False
     ) -> None:
         """Place an object."""

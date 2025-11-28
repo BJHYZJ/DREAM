@@ -295,6 +295,7 @@ class StateObservations(BaseObservations):
     at_goal: bool
     is_homed: bool
     is_runstopped: bool
+    state_step: Optional[int] = None
     control_mode: Optional[str] = None
     step: Optional[int] = None
     is_simulation: Optional[bool] = False

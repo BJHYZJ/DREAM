@@ -72,6 +72,7 @@ class BaseZmqServer(CommsNode, ABC):
         # Subscriber for actions
         self.recv_socket, self.recv_address = self._make_sub_socket(recv_port, use_remote_computer)
         self._last_step = -1
+        self._state_step = 0
 
         # Extensions to the ROS server
         # Text to speech engine - let's let the robot talk
@@ -275,6 +276,9 @@ class BaseZmqServer(CommsNode, ABC):
             # Skip if no message - could not access or other core information yet
             if message is None:
                 continue
+
+            self._state_step += 1
+            message["state_step"] = self._state_step
 
             # logger.info(f"{message['base_pose_in_map']}")
 

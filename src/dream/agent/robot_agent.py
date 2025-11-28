@@ -228,7 +228,10 @@ class RobotAgent:
 
     def update_map_with_pose_graph(
         self, 
-        verbose: bool=True
+        verbose: bool=True,
+        with_big_loop=False,
+        with_medium_loop=True,
+        with_small_loop=True,
     ) -> None:
         """ 
         Update our voxel pointcloud and semantic memory using a pose graph
@@ -328,7 +331,7 @@ class RobotAgent:
 
             update_length = 0
             if affected_ids:
-                if len(self.voxel_map.observations) > self._win_for_realtime_update and \
+                if with_big_loop and len(self.voxel_map.observations) > self._win_for_realtime_update and \
                     shared_ids and len(affected_ids) / len(shared_ids) > 2 / 3:
                     # big loop, reset voxel map semantic memory and re-add all PG nodes with optimized poses
                     self.voxel_map.reset()
@@ -344,7 +347,7 @@ class RobotAgent:
                         t1 = timeit.default_timer()
                         print(f"[LOOP]: BIG LOOP happend! Spend time: {t1 - t0}, Update nodes: {update_length}")
 
-                elif len(obs_ids) > self._win_for_small_update and \
+                elif with_medium_loop and len(obs_ids) > self._win_for_small_update and \
                     len(set(obs_ids[-self._win_for_small_update:]) & set(affected_ids)) / self._win_for_small_update > 1 / 3 and \
                         len(set(obs_ids[-self._win_for_realtime_update:]) & set(affected_ids)) != 0:
                     # medium loop, reset voxel map semantic memory and re-add all PG nodes with optimized poses
@@ -360,7 +363,7 @@ class RobotAgent:
                         t1 = timeit.default_timer()
                         print(f"[LOOP]: Medium LOOP happend! Spend time: {t1 - t0}, Update nodes: {update_length}")
 
-                elif len(set(obs_ids[-self._win_for_realtime_update:]) & set(affected_ids)) != 0:
+                elif with_small_loop and len(set(obs_ids[-self._win_for_realtime_update:]) & set(affected_ids)) != 0:
                     for obs_id in obs_ids[-self._win_for_realtime_update:]:
                         obs = self.voxel_map.observations[obs_id]
                         assert obs.obs_id == obs_id
@@ -614,7 +617,7 @@ class RobotAgent:
         self.robot.arm_to(angle=constants.look_down, speed=speed, blocking=True)
         for i in range(8):  # TODO range(8)
             xyt[2] += 2 * np.pi / 8
-            self.robot.base_to(xyt, blocking=False)
+            self.robot.base_to(xyt, blocking=True)
             if not self._realtime_updates:
                 self.update()
 
@@ -642,6 +645,7 @@ class RobotAgent:
                         pos_err_threshold=self.pos_err_threshold,
                         rot_err_threshold=self.rot_err_threshold,
                         blocking=True,
+                        final_timeout=5.0,
                     )
 
                 return True, res[-1]
@@ -651,6 +655,7 @@ class RobotAgent:
                     pos_err_threshold=self.pos_err_threshold,
                     rot_err_threshold=self.rot_err_threshold,
                     blocking=True,
+                    final_timeout=5.0,
                 )
                 return False, None
         else:
@@ -668,7 +673,7 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose, step_num=16):
+    def process_text(self, text, start_pose, step_num=12):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
@@ -833,7 +838,7 @@ class RobotAgent:
         return self.voxel_map
     
 
-    def navigate(self, text, max_step=10):
+    def navigate(self, text, max_step=20):
         # rr.init("Dream_robot", recording_id=uuid4(), spawn=True)
         finished = False
         step = 0
