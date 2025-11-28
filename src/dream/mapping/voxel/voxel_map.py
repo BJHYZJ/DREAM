@@ -382,12 +382,12 @@ class SparseVoxelMapNavigationSpace:
         outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
 
         time_heuristics = self._time_heuristic(history_soft, outside_frontier)
-        # semantic_heuristics = self._semantic_heuristic(text) if text else None
+        semantic_heuristics = self._semantic_heuristic(text) if text else None
 
-        # if semantic_heuristics is not None:
-        #     total_heuristics = time_heuristics + semantic_rate * semantic_heuristics
-        # else:
-        total_heuristics = time_heuristics
+        if semantic_heuristics is not None:
+            total_heuristics = time_heuristics + semantic_rate * semantic_heuristics
+        else:
+            total_heuristics = time_heuristics
 
         rounded_heuristics = np.ceil(total_heuristics * 200) / 200
         max_heuristic = rounded_heuristics.max()
@@ -399,7 +399,7 @@ class SparseVoxelMapNavigationSpace:
             valid_mask = dists >= min_dist_cells
             if np.any(valid_mask):
                 indices = indices[valid_mask]
-        farthest_index = np.argmin(np.linalg.norm(indices - robot_pt, axis=-1))
+        farthest_index = np.argmax(np.linalg.norm(indices - robot_pt, axis=-1))
         index = indices[farthest_index]
         if debug:
             obstacles_np = obstacles.detach().cpu().numpy()
