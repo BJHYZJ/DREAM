@@ -632,8 +632,8 @@ class RobotZmqClient(AbstractRobotClient):
     def gripper_to(
         self, 
         position: float,
-        blocking: bool=False, 
-        reliable: bool=False,
+        blocking: bool=True, 
+        reliable: bool=True,
     ):
         """Set the position of the gripper."""
         next_action = {"gripper": position, "wait": blocking}

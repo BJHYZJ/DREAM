@@ -131,7 +131,7 @@ def main(
         skip_confirmations=skip_confirmations,
     )
 
-    if False:
+    # while True:
         # command = [("pause_slam", "")]
         # executor(command)
         # command = [("resume_slam", "")]
@@ -147,25 +147,48 @@ def main(
 
         # command = [("find", "red pepper")]
         # executor(command)
+
+
+        # (1)
+        # start_command = [("rotate_in_place", "")]
+        # executor(start_command)
         # import time
-        # while True:
-        #     command = [("pickup_only", "corn")]
+        # flag1 = True
+        # while flag1:
+        #     command = [("look_around", "")]
         #     executor(command)
         #     time.sleep(10)
 
-        # command = [("place_only", "green bowl")]
+        # (2)
+        # import time
+        # time.sleep(10)
+        # command = [("pickup_only", "carrot")]
         # executor(command)
-        import time
-        while True:
-            time.sleep(0.1)
+
+        # # (3)
+        # flag2 = True    
+        # import time
+        # while flag2:
+        #     command = [("look_around", "")]
+        #     executor(command)
+        #     # # executor(command)
+        #     time.sleep(10)
+
+        # # (4)
+        # command = [("place_only", "garbage can")]
+        # executor(command)
+        # import time
+        # while True:
+        #     time.sleep(0.1)
+
+    # return
 
 
-
-    if input_path is None:
-        start_command = [("rotate_in_place", "")]
-    else:
-        start_command = [("read_from_pickle", input_path)]
-    executor(start_command)
+    # if input_path is None:
+    #     start_command = [("rotate_in_place", "")]
+    # else:
+    #     start_command = [("read_from_pickle", input_path)]
+    # executor(start_command)
 
 
 

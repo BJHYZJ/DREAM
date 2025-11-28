@@ -178,12 +178,21 @@ class DreamTaskExecutor:
             elif command == "pickup_only":
                 logger.info(f"[Pickup task] Pickup: {args}")
                 target_object = args
+                # TODO move the camera to look at the target object
                 # Pick up
+                import dream.motion.constants as constants
+                self.robot.arm_to(angle=constants.look_down, blocking=True)
                 self._pickup(target_object, skip_confirmations=self.skip_confirmations)
             elif command == "place_only":
                 logger.info(f"[Pickup task] Place: {args}")
                 target_object = args
+                # self.back_object = "???"  # TODO
+                # TODO move the camera to look at the target object
                 # Placing
+                import time
+                time.sleep(10)
+                import dream.motion.constants as constants
+                self.robot.arm_to(angle=constants.look_down, blocking=True)
                 self._place(target_object, skip_confirmations=self.skip_confirmations)
  
             elif command == "pickup":

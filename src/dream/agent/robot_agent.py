@@ -638,6 +638,7 @@ class RobotAgent:
 
         if len(res) > 0:
             print("Plan successful!")
+            goal_point = res[-1]
             if len(res) >= 2 and np.isnan(res[-2]).all():
                 if len(res) > 2:
                     self.robot.execute_trajectory(
@@ -648,7 +649,10 @@ class RobotAgent:
                         final_timeout=5.0,
                     )
 
-                return True, res[-1]
+                verified = self._verify_target_after_navigation(text, goal_point)
+                if not verified:
+                    return False, None
+                return True, goal_point
             else:
                 self.robot.execute_trajectory(
                     res,
@@ -661,6 +665,38 @@ class RobotAgent:
         else:
             print("Failed. Try again!")
             return None, None
+
+    def _verify_target_after_navigation(self, text: Optional[str], end_point: Optional[np.ndarray]) -> bool:
+        """Ensure the target still exists and is within manipulation range."""
+        if text is None or text == "" or end_point is None:
+            return True
+
+        print("verifying target existence after navigation...")
+        self.robot.look_at_target(tar_in_map=end_point, blocking=True)
+        time.sleep(3)
+        if not self._realtime_updates:
+            self.update()
+
+        if not self.voxel_map.observations:
+            print("No observations available to verify target.")
+            return False
+
+        latest_obs_id = max(self.voxel_map.observations.keys())
+        text_exist = self.voxel_map.detect_text(text=text, obs_id=latest_obs_id)
+        if not text_exist:
+            print("Target not found after navigation, continue navigation...")
+            return False
+
+        robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2])
+        target_xy = np.array(end_point[:2])
+        dist = np.linalg.norm(robot_xy - target_xy)
+        if dist > self._manipulation_radius:
+            print(
+                f"Target detected but outside manipulation radius ({dist:.2f} m), continue navigation..."
+            )
+            return False
+
+        return True
 
     def run_exploration(self):
         """Go through exploration. We use the voxel_grid map created by our collector to sample free space, and then use our motion planner (RRT for now) to get there. At the end, we plan back to (0,0,0).
@@ -850,29 +886,6 @@ class RobotAgent:
             if finished is None:
                 print("Navigation failed! The path might be blocked!")
                 return None
-            
-            if finished:  # double check object is exist
-                print("verifying target existence after navigation...")
-                self.robot.look_at_target(
-                    tar_in_map=end_point,
-                    blocking=True
-                )
-                time.sleep(1)  # for observation to map
-                if not self._realtime_updates:
-                    self.update()
-                obs_id = self.voxel_map.observations[
-                    max(self.voxel_map.observations.keys())
-                ].obs_id
-                text_exist = self.voxel_map.detect_text(text=text, obs_id=obs_id)
-                if text_exist:
-                    robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2])
-                    target_xy = np.array(end_point[:2])
-                    if np.linalg.norm(robot_xy - target_xy) > self._manipulation_radius:
-                        print("Target detected but outside manipulation radius, continue navigation...")
-                        finished = False
-                else:
-                    print("Target not found after navigation, continue navigation...")
-                    finished = False
 
         print("Navigation finished!")
         return end_point

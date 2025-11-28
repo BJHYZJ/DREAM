@@ -975,7 +975,7 @@ class SparseVoxelMap:
 
 
     def localize_with_feature_similarity(
-        self, text, similarity_threshold: float=0.15, debug=True, return_debug=False
+        self, text, similarity_threshold: float=0.05, debug=True, return_debug=False
     ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         alignments = self.find_alignment_over_model(text).cpu()

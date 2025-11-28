@@ -414,7 +414,7 @@ def pickup(
         return False
     # place_black, the camera will look at robot body, pause slam to avoid add robot mesh to scene
     manip_wrapper.robot.look_front()
-    manip_wrapper.robot.arm_to(angle=constants.back_front, speed=20)
+    manip_wrapper.robot.arm_to(angle=constants.back_front, speed=40)
     manip_wrapper.robot.arm_to(angle=constants.back_place, speed=50)
     manip_wrapper.robot.gripper_to(position=gripper_open)
     manip_wrapper.robot.arm_to(angle=constants.back_front, speed=50)

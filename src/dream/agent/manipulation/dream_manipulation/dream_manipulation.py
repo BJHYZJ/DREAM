@@ -208,7 +208,7 @@ class DreamManipulationWrapper:
         if multi_stage:
             while True:
                 self.robot.gripper_to(
-                    max(next_gripper_pos, self.GRIPPER_MIN), blocking=False
+                    max(next_gripper_pos, self.GRIPPER_MIN), blocking=True
                 )
                 curr_gripper_pose = self.robot.get_gripper_position()
                 print('Robot means to move gripper to', next_gripper_pos)
