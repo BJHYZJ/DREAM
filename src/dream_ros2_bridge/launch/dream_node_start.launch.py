@@ -1,5 +1,5 @@
 import os
-
+import yaml
 from ament_index_python.packages import get_package_share_directory
 from launch.conditions import IfCondition, UnlessCondition
 from launch import LaunchDescription
@@ -7,6 +7,39 @@ from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+
+
+REQUIRED_EXTRINSIC_KEYS = (
+    "link6_to_camera",
+    "body_to_livox",
+    "livox_to_base",
+    "base_to_footprint",
+)
+
+def _to_tf_args(tf_cfg):
+    vals = tf_cfg["translation"] + tf_cfg["rotation_ypr"] + [tf_cfg["parent"], tf_cfg["child"]]
+    return [str(v) for v in vals]
+
+
+def _load_extrinsics_required(extrinsics_file):
+    if not os.path.isfile(extrinsics_file):
+        raise FileNotFoundError(f"Required extrinsics file not found: {extrinsics_file}")
+
+    with open(extrinsics_file, "r", encoding="utf-8") as f:
+        loaded = yaml.safe_load(f) or {}
+    extrinsics = loaded.get("extrinsics", loaded)
+
+    for key in REQUIRED_EXTRINSIC_KEYS:
+        if key not in extrinsics:
+            raise KeyError(f"Missing extrinsics key: {key}")
+        item = extrinsics[key]
+        for field in ("translation", "rotation_ypr", "parent", "child"):
+            if field not in item:
+                raise KeyError(f"Missing field '{field}' in extrinsics['{key}']")
+
+    print(f"Loaded extrinsics from: {extrinsics_file}")
+    return extrinsics
+
 
 def launch_setup(context, *args, **kwargs):
     """Launch setup function to handle dynamic parameters"""
@@ -22,6 +55,13 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration('use_sim_time')
     sim_time = use_sim_time.perform(context)
     print(f"use_sim_time parameter value: {sim_time}")
+
+    config_path = LaunchConfiguration('config_path')
+    extrinsics_file = PathJoinSubstitution([
+        config_path,
+        LaunchConfiguration('extrinsics_file'),
+    ]).perform(context)
+    extrinsics = _load_extrinsics_required(extrinsics_file)
 
     ranger_launch = LaunchDescription([
         IncludeLaunchDescription(
@@ -45,8 +85,8 @@ def launch_setup(context, *args, **kwargs):
                 )
             ]),
             launch_arguments={
-                'robot_ip': '192.168.1.233',
-                'joint_states_rate': '50',  # 设置机械臂关节状态发布频率为50Hz
+                'robot_ip': LaunchConfiguration('xarm_ip'),
+                'joint_states_rate': LaunchConfiguration('joint_states_rate'),
                 'hw_ns': 'xarm',
                 'add_gripper': 'true'
             }.items(),
@@ -71,9 +111,10 @@ def launch_setup(context, *args, **kwargs):
     fast_lio_node = Node(
         package='fast_lio',
         executable='fastlio_mapping',
-        parameters=[PathJoinSubstitution([os.path.join(
-          dream_ros2_bridge_path, 'config'
-        ), 'fast_lio2_mid360.yaml']), {'use_sim_time': use_sim_time}],
+        parameters=[
+            PathJoinSubstitution([config_path, LaunchConfiguration('fast_lio_config_file')]),
+            {'use_sim_time': use_sim_time}
+        ],
         output='screen',
         namespace='fast_lio2',
         remappings=[
@@ -128,9 +169,7 @@ def launch_setup(context, *args, **kwargs):
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_link6_to_camera",
-        # arguments=['-0.09566', '0.0325', '0.02532', '-1.5707963', '-1.5707963', '3.1415926', 'link_eef', 'camera_link'],
-        #                x,        y,        z,     yaw,     pitch,         roll,     parent,     child
-        arguments=['0.09541', '-0.0175', '0.02489', '0', '-1.04719755', '3.1415926', 'link6', 'camera_link'],
+        arguments=_to_tf_args(extrinsics["link6_to_camera"]),
         output="screen"
     )
 
@@ -140,7 +179,7 @@ def launch_setup(context, *args, **kwargs):
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_lidar_to_livox",
-        arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'body', 'livox_frame'],
+        arguments=_to_tf_args(extrinsics["body_to_livox"]),
         output="screen",
         parameters=[{'use_sim_time': use_sim_time}]
     )
@@ -151,7 +190,7 @@ def launch_setup(context, *args, **kwargs):
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_livox_to_base",
-        arguments=['0.0', '-0.29011', '-0.075', '1.5707963', '0', '0', 'livox_frame', 'base_link'],
+        arguments=_to_tf_args(extrinsics["livox_to_base"]),
         output="screen",
         parameters=[{'use_sim_time': use_sim_time}]
     )
@@ -161,27 +200,11 @@ def launch_setup(context, *args, **kwargs):
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_base_to_footprint",
-        arguments=['0.0', '0', '-0.325', '0', '0', '0', 'base_link', 'base_footprint'],
+        arguments=_to_tf_args(extrinsics["base_to_footprint"]),
         output="screen",
         parameters=[{'use_sim_time': use_sim_time}]
     )
 
-
-    # # 里程计变换节点
-    # odom_transform_node = Node(
-    #     package='dream_ros2_bridge',
-    #     executable='odom_tf_publisher',
-    #     name='odom_tf_publisher',
-    #     output='screen',
-    #     parameters=[
-    #         {'use_sim_time': use_sim_time},  # 从launch参数传递
-    #         # {'input_odom_topic': '/fast_lio2/Odometry'},
-    #         # {'output_odom_topic': '/fast_lio2/Odometry_base_link'},
-    #         # {'source_frame': 'lidar_frame'},
-    #         # {'target_frame': 'base_link'},
-    #         # {'timeout_seconds': 0.1}
-    #     ],
-    # )
 
     tf_pose_publisher_node = Node(
         package='dream_ros2_bridge',
@@ -196,7 +219,6 @@ def launch_setup(context, *args, **kwargs):
     goto_controller_node = Node(
         package='dream_ros2_bridge',
         executable='goto_controller',
-        # name='goto_controller',  # 程序中已经硬性编码了名称，这里不再设置
         output='screen',
         parameters=[
             {'use_sim_time': use_sim_time}
@@ -231,6 +253,9 @@ def launch_setup(context, *args, **kwargs):
     ]
 
 def generate_launch_description():
+    package_path = get_package_share_directory('dream_ros2_bridge')
+    default_config_path = os.path.join(package_path, 'config')
+
     return LaunchDescription([
         DeclareLaunchArgument(
             'use_simple_urdf',
@@ -245,6 +270,26 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'use_rviz', default_value='false',
             description='Use rviz2'
+        ),
+        DeclareLaunchArgument(
+            'xarm_ip', default_value='192.168.1.233',
+            description='xArm controller IP address.'
+        ),
+        DeclareLaunchArgument(
+            'joint_states_rate', default_value='50',
+            description='xArm joint states publish rate (Hz).'
+        ),
+        DeclareLaunchArgument(
+            'config_path', default_value=default_config_path,
+            description='Directory path for config files.'
+        ),
+        DeclareLaunchArgument(
+            'extrinsics_file', default_value='extrinsics_cad.yaml',
+            description='Extrinsics YAML filename under config_path.'
+        ),
+        DeclareLaunchArgument(
+            'fast_lio_config_file', default_value='fast_lio2_mid360.yaml',
+            description='FAST-LIO config filename under config_path.'
         ),
         OpaqueFunction(function=launch_setup),
     ])
