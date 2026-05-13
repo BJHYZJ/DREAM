@@ -22,7 +22,7 @@ Always source ROS2 + workspace first in each terminal:
 source /opt/ros/humble/setup.bash
 source ~/DREAM_ws/DREAM_ws/install/setup.bash
 ```
-
+Terminal 1 (Start Sensors and Fast-LIO2):
 ```bash
 ros2 launch dream_ros2_bridge dream_node_start.launch.py use_rviz:=false
 ```
@@ -44,7 +44,7 @@ source ~/DREAM_ws/DREAM_ws/install/setup.bash
 ros2 launch dream_ros2_bridge dream_rtabmap_slam.launch.py
 ```
 
-Terminal 3 (DREAM ROS bridge server):
+Terminal 3 (DREAM ROS2 bridge server):
 
 ```bash
 source /opt/ros/humble/setup.bash
@@ -69,8 +69,12 @@ python demo.py --open_communication --port 5557
 cd ~/path/to/DREAM
 python src/dream/app/run_dream.py --robot_ip 10.33.140.5 --server_ip 127.0.0.1  --skip_confirmations
 ```
-If you run anygrasp in other machine, you should change `server_ip`
+
+Change `--robot_ip` to your hardware machine.
+If you run anygrasp in other machine, you should change `--server_ip`
 
 
-## Others
-TBD
+## Reference
+- Dynamem: [https://dynamem.github.io/](https://dynamem.github.io/)
+- DovSG: [https://bjhyzj.github.io/dovsg-web/](https://bjhyzj.github.io/dovsg-web/)
+- Ok-Robot: [https://ok-robot.github.io/](https://ok-robot.github.io/)
