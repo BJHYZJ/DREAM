@@ -9,8 +9,6 @@ from dream.core.parameters import get_parameters
 @click.command()
 # by default you are running these codes on your workstation, not on your robot.
 @click.option("--server_ip", "--server-ip", default="127.0.0.1", type=str)
-@click.option("--random-goals", default=False, is_flag=True)
-
 @click.option(
     "--robot_ip", type=str, default="", help="Robot IP address (leave empty for saved default)"
 )
@@ -73,7 +71,7 @@ def main(
         skip_confirmations=skip_confirmations,
     )
 
-    # while True:
+    while True:
         # command = [("pause_slam", "")]
         # executor(command)
         # command = [("resume_slam", "")]
@@ -104,8 +102,11 @@ def main(
         # (2)
         # import time
         # time.sleep(10)
-        # command = [("pickup_only", "carrot")]
+        # command = [("pickup_only", "remote control")]
         # executor(command)
+
+        command = [("pickup_only", "wrench")]
+        executor(command)
 
         # # (3)
         # flag2 = True    

@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from transformers import AutoProcessor, Owlv2ForObjectDetection
 
+from dream.utils.hf_model_loader import build_hf_load_plan
 from dream.utils.image import Camera, camera_xyz_to_global_xyz
 
 
@@ -34,10 +35,22 @@ class OwlPerception:
         else:
             raise ValueError("Owlv2 version not implemented yet!")
 
-        self.processor = AutoProcessor.from_pretrained(configuration)
-        self.model = Owlv2ForObjectDetection.from_pretrained(configuration).to(self.device)
+        load_plan = build_hf_load_plan(configuration, "OWL")
 
-        print(f"Loaded owl model from {configuration}")
+        self.processor = AutoProcessor.from_pretrained(
+            load_plan.load_target,
+            local_files_only=load_plan.local_only,
+            use_fast=False,
+        )
+        self.model = Owlv2ForObjectDetection.from_pretrained(
+            load_plan.load_target,
+            local_files_only=load_plan.local_only,
+        ).to(self.device)
+
+        if load_plan.local_snapshot is not None:
+            print(f"Loaded owl model from local cache: {load_plan.local_snapshot}")
+        else:
+            print(f"Loaded owl model from {configuration}")
 
     def predict(
         self,

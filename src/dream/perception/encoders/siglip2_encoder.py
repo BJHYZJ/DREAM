@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from PIL import Image
 from transformers import AutoModel, AutoProcessor, AutoTokenizer
 
+from dream.utils.hf_model_loader import build_hf_load_plan
 from dream.utils.logger import Logger
 
 from .base_encoder import BaseImageTextEncoder
@@ -54,9 +55,27 @@ class Siglip2Encoder(BaseImageTextEncoder):
         else:
             raise ValueError(f"Invalid version {version}: must be one of 'base', 'so400m'")
 
-        self.processor = AutoProcessor.from_pretrained(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name).to(self.device)
+        load_plan = build_hf_load_plan(model_name, "SIGLIP2")
+
+        self.processor = AutoProcessor.from_pretrained(
+            load_plan.load_target,
+            local_files_only=load_plan.local_only,
+            use_fast=False,
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            load_plan.load_target,
+            local_files_only=load_plan.local_only,
+            use_fast=False,
+        )
+        self.model = AutoModel.from_pretrained(
+            load_plan.load_target,
+            local_files_only=load_plan.local_only,
+        ).to(self.device)
+
+        if load_plan.local_snapshot is not None:
+            print(f"Loaded siglip2 model from local cache: {load_plan.local_snapshot}")
+        else:
+            print(f"Loaded siglip2 model from {model_name}")
 
     def encode_image(
         self,
