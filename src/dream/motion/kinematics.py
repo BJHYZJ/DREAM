@@ -52,7 +52,14 @@ class RangerxARMKinematics:
     #     [0.000,  0.000,  0.000,  1.000],
     # ], dtype=np.float32)
 
-    TILT_RANGE = [deg for deg in range(75, 135, 1)]
+    TILT_RANGE = [
+        deg
+        for deg in range(
+            constants.SAFE_CAMERA_TILT_MIN_DEG,
+            constants.SAFE_CAMERA_TILT_MAX_DEG + 1,
+            1,
+        )
+    ]
     PAN_RANGE = [deg for deg in range(-45, 45, 1)]
 
     def __init__(self, urdf_path: Optional[str] = None, verbose: bool = False):

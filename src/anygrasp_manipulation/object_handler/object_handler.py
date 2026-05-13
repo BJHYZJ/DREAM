@@ -145,8 +145,6 @@ class ObjectHandler:
             seg_mask, bbox = self.lang_sam.detect_obj(
                 self.cam.image,
                 self.query,
-                visualize_box=True,
-                visualize_mask=True,
                 box_filename=box_filename,
                 mask_filename=mask_filename,
             )

@@ -205,8 +205,14 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
                 tilt_retries = 1
             else:
                 print(f"retrying with head tilt : {head_tilt_angles[tilt_retries]}")
+                current_joint5 = manip_wrapper.robot.get_arm_joint_state()[4]
+                target_joint5 = np.clip(
+                    current_joint5 + head_tilt_angles[tilt_retries],
+                    constants.SAFE_CAMERA_TILT_MIN_DEG,
+                    constants.SAFE_CAMERA_TILT_MAX_DEG,
+                )
                 manip_wrapper.move_to_position(
-                    joint5=head_tilt_angles[tilt_retries]
+                    joint5=target_joint5 - current_joint5
                 )
                 tilt_retries += 1
 
