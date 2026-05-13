@@ -24,7 +24,7 @@ class BaseCommsNode:
 
 
 class CommsNode(BaseCommsNode):
-    """Stretch comms"""
+    """Dream comms"""
 
     def _make_pub_socket(self, send_port: int, use_remote_computer: bool = True) -> Socket:
         socket = self._new_pub_socket()

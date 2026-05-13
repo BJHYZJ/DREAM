@@ -80,7 +80,7 @@ def camera_info_to_dict(ci):
 
 
 class DreamClient(AbstractRobotClient):
-    """Defines a ROS-based interface to the real Stretch robot. Collect observations and command the robot."""
+    """Defines a ROS-based interface to the real dream robot. Collect observations and command the robot."""
 
     head_camera_frame = "camera_color_optical_frame"
     world_frame = "map"
@@ -93,9 +93,6 @@ class DreamClient(AbstractRobotClient):
             - joint_states to read current position
             - tf for SLAM
             - FollowJointTrajectory for arm motions
-
-        Based on this code:
-        https://github.com/hello-robot/stretch_ros/blob/master/hello_helpers/src/hello_helpers/hello_misc.py
         """
 
         if camera_overrides is None:

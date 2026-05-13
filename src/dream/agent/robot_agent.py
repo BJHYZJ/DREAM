@@ -446,7 +446,7 @@ class RobotAgent:
 
         # Initialize the encoder in different ways depending on the configuration
         # Use SIGLip-so400m for accurate inference
-        # We personally feel that Siglipv1 is better than Siglipv2, but we still include the Siglipv2 in src/stretch/perception/encoders/ for future reference
+        # We personally feel that Siglipv1 is better than Siglipv2, but we still include the Siglipv2 in src/dream/perception/encoders/ for future reference
         self.encoder = MaskSiglipEncoder(
             version="so400m", feature_matching_threshold=0.14, device=self.device
         )
@@ -925,15 +925,6 @@ class RobotAgent:
         just_heuristic: bool=False,
         two_stage: bool=True,
     ):
-        """
-        An API for running manipulation. By calling this API, human will ask the robot to pick up objects
-        specified by target_object queries A
-        - hello_robot: a wrapper for home-robot StretchClient controller
-        - socoket: we use this to communicate with workstation to get estimated gripper pose
-        - target_object: queries specifying target object
-        - transform node: node name for coordinate systems of target gripper pose (usually the coordinate system on the robot gripper)
-        - base node: node name for coordinate systems of estimated gipper poses given by anygrasp
-        """
 
         self.robot.switch_to_manipulation_mode()
 

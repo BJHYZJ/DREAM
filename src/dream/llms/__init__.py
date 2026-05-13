@@ -14,26 +14,6 @@ llms = {
 }
 
 
-
-def get_prompt_builder(prompt_type: str) -> AbstractPromptBuilder:
-    """Return a prompt builder of the specified type.
-
-    Args:
-        prompt_type: The type of prompt builder to create.
-
-    Returns:
-        A prompt builder.
-    """
-    if prompt_type not in prompts:
-        raise ValueError(f"Invalid prompt type: {prompt_type}")
-    return prompts[prompt_type]()
-
-
-def get_prompt_choices():
-    """Return a list of available prompt builders."""
-    return prompts.keys()
-
-
 def get_llm_choices():
     """Return a list of available LLM clients."""
     return llms.keys()

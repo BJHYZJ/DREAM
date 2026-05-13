@@ -51,42 +51,6 @@ class DreamCamClient(AbstractControlModule):
         return self._ros_client.rgb_cam.K
 
 
-    # def set_pan_tilt(
-    #     self,
-    #     pan: Optional[float] = None,
-    #     tilt: Optional[float] = None,
-    #     blocking: bool = True,
-    # ):
-    #     joint_goals = {}
-    #     if pan is not None:
-    #         joint_goals[self._ros_client.HEAD_PAN] = pan
-    #     if tilt is not None:
-    #         joint_goals[self._ros_client.HEAD_TILT] = tilt
-
-    #     # self._ros_client.send_trajectory_goals(joint_goals)
-    #     self._ros_client.send_joint_goals(joint_goals)
-
-
-    # def look_close(self, blocking: bool = True):
-    #     """Point camera sideways towards the gripper"""
-    #     pan, tilt = self._robot_model.look_close
-    #     self.set_pan_tilt(pan, tilt, blocking=blocking)
-
-    # def look_at_ee(self, blocking: bool = True):
-    #     """Point camera sideways towards the gripper"""
-    #     pan, tilt = self._robot_model.look_at_ee
-    #     self.set_pan_tilt(pan, tilt, blocking=blocking)
-
-    # def look_front(self, blocking: bool = True):
-    #     """Point camera forwards at a 45-degree downwards angle"""
-    #     pan, tilt = self._robot_model.look_front
-    #     self.set_pan_tilt(pan, tilt, blocking=blocking)
-
-    # def look_ahead(self, blocking: bool = True):
-    #     """Point camera forwards horizontally"""
-    #     pan, tilt = self._robot_model.look_ahead
-    #     self.set_pan_tilt(pan, tilt, blocking=blocking)
-
     def get_images(self, compute_xyz=False):
         """helper logic to get images from the robot's camera feed"""
         rgb = self._ros_client.rgb_cam.get()

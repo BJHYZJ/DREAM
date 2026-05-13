@@ -41,7 +41,6 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 from dream.motion.constants import BASE_JOINTS, ARM_JOINTS, GRIPPER_JOINTS, ROBOT_JOINTS
 from dream_ros2_bridge.ros.camera import RosCamera
-# from dream_ros2_bridge.ros.lidar import RosLidar
 from dream_ros2_bridge.ros.lidar3d import Ros3DLidar
 from dream_ros2_bridge.ros.streaming_activator import StreamingActivator
 from dream_ros2_bridge.ros.utils import matrix_from_pose_msg
@@ -235,14 +234,6 @@ class DreamRosInterface(Node):
 
         self._last_rtabmap_timestamp = None
 
-        # self._streaming_activator = StreamingActivator(self)
-        # streaming_ok = self._streaming_activator.activate_streaming()
-        # if not streaming_ok:
-        #     self.get_logger().error("Failed to activate streaming")
-        #     raise RuntimeError(
-        #         "Could not start joint state streaming service; make sure you have the correct and up-to-date version of stretch_ros2."
-        #     )
-
         self.rgb_cam: RosCamera = None
         self.dpt_cam: RosCamera = None
         self.lidar: Ros3DLidar = None
@@ -255,13 +246,6 @@ class DreamRosInterface(Node):
             self._wait_for_lidar()
 
         print("..done.")
-        # if self.get_has_wrist():
-        #     # Get indexer
-        #     self._has_wrist = True
-        #     self.Idx = get_Idx("eoa_wrist_dw3_tool_sg3")
-        # else:
-        #     self._has_wrist = False
-        #     self.Idx = get_Idx("tool_stretch_gripper")
 
     def _spin_forever(self):
         try:
@@ -290,60 +274,6 @@ class DreamRosInterface(Node):
 
     def __del__(self):
         self.shutdown()
-        
-
-    def send_trajectory_goals(
-        self, joint_goals: Dict[str, float], velocities: Optional[Dict[str, float]] = None
-    ):
-        """Send trajectory goals to the robot. Goals are a dictionary of joint names and strings. Can optionally provide velicities as well."""
-
-        # Preprocess arm joints (arm joints are actually 4 joints in one)
-        if self.ARM_JOINT in joint_goals:
-            arm_joint_goal = joint_goals.pop(self.ARM_JOINT)
-
-            for arm_joint_name in self.ARM_JOINTS_ACTUAL:
-                joint_goals[arm_joint_name] = arm_joint_goal / len(self.ARM_JOINTS_ACTUAL)
-
-        # Preprocess base translation joint (stretch_driver errors out if translation value is 0)
-        if self.BASE_TRANSLATION_JOINT in joint_goals:
-            if joint_goals[self.BASE_TRANSLATION_JOINT] == 0:
-                joint_goals.pop(self.BASE_TRANSLATION_JOINT)
-
-        # Parse input
-        joint_names = []
-        joint_values = []
-        for name, val in joint_goals.items():
-            joint_names.append(name)
-            joint_values.append(val)
-
-        # Construct goal positions
-        point_msg = JointTrajectoryPoint()
-        point_msg.positions = joint_values
-        if velocities is not None:
-            point_msg.velocities = velocities
-
-        # Construct goal msg
-        goal_msg = FollowJointTrajectory.Goal()
-        goal_msg.goal_time_tolerance = Duration(seconds=self.goal_time_tolerance).to_msg()
-        goal_msg.trajectory.joint_names = joint_names
-        goal_msg.trajectory.points = [point_msg]
-        goal_msg.trajectory.header.stamp = self.get_clock().now().to_msg()
-
-        # self.action_done_event = Event()
-        # Send goal
-        self.goal_handle = None
-        self.goal_handle_future = self.trajectory_client.send_goal_async(goal_msg)
-        self.goal_handle_future.add_done_callback(self.trajectory_done_callback)
-        # self.get_logger().info(f"")
-
-    def trajectory_done_callback(self, future):
-        self.goal_handle = future.result()
-
-    def wait_for_trajectory_action(self):
-        rate = self.create_rate(100)
-        while self.goal_handle is None:
-            rate.sleep()
-        self.goal_handle.get_result()
 
     def recent_depth_image(self, seconds, print_delay_timers: bool = False):
         """Return true if we have up to date depth."""
@@ -367,16 +297,6 @@ class DreamRosInterface(Node):
         else:
             return False
 
-    def config_to_ros_trajectory_goal(
-        self, q: np.ndarray, dq: np.ndarray = None, ddq: np.ndarray = None
-    ) -> FollowJointTrajectory.Goal:
-        """Create a joint trajectory goal to move the arm."""
-        trajectory_goal = FollowJointTrajectory.Goal()
-        trajectory_goal.goal_time_tolerance = Duration(seconds=self.goal_time_tolerance).to_msg()
-        trajectory_goal.trajectory.joint_names = self.ros_joint_names
-        trajectory_goal.trajectory.points = [self._config_to_ros_msg(q, dq, ddq)]
-        trajectory_goal.trajectory.header.stamp = self.get_clock().now().to_msg()
-        return trajectory_goal
 
     # Helper functions
 
@@ -476,43 +396,7 @@ class DreamRosInterface(Node):
         self._tf_ee_in_arm_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/ee_in_arm_base_pose", self._tf_ee_in_arm_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_ee_in_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/ee_in_base_pose", self._tf_ee_in_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_ee_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/ee_in_map_pose", self._tf_ee_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
-        # Create trajectory client with which we can control the robot
-        # self.trajectory_client = ActionClient(
-        #     self, FollowJointTrajectory, "/stretch_controller/follow_joint_trajectory"
-        # )  # Doubt action type
 
-
-        # This callback group is used to ensure that the joint goal publisher is reentrant
-        # TODO: notes on what this is for?
-        # self._reentrant_cb = ReentrantCallbackGroup()
-
-        # self._arm_joint_state_subscriber = self.create_subscription(
-        #     JointState,
-        #     "/xarm/joint_states",
-        #     self._js_callback,
-        #     100,
-        #     callback_group=self._reentrant_cb,
-        # )
-
-        # Create joint goal publisher for streaming joint goals
-        # self._joint_goal_publisher = self.create_publisher(
-        #     Float64MultiArray, "joint_pose_cmd", 10, callback_group=self._reentrant_cb
-        # )
-
-        # print("Waiting for trajectory server...")
-        # server_reached = self.trajectory_client.wait_for_server(timeout_sec=30.0)
-        # if not server_reached:
-        #     print("ERROR: Failed to connect to arm action server.")
-        #     # rclpy.shutdown("Unable to connect to arm action server. Timeout exceeded.")
-        #     rclpy.shutdown()
-        #     sys.exit()
-        # print("... connected to arm action server.")
-
-        # self.ros_joint_names = []
-        # for i in range(3, self.dof):
-        #     self.ros_joint_names += CONFIG_TO_ROS[i]
-
-        # self.ros_joint_names = ROS_ARM_JOINTS
         self.joint_names = ROBOT_JOINTS
 
     def _call_empty_service(self, client, timeout: float=2.0) -> bool:
@@ -884,18 +768,6 @@ class DreamRosInterface(Node):
         diff = diff[None].repeat(num_steps + 1, axis=0)
         x1 = x1[None].repeat(num_steps + 1, axis=0)
         return x1 + (rng * diff)
-
-    def goto(self, q, move_base=False, wait=False, max_wait_t=10.0, verbose=False):
-        """some of these params are unsupported"""
-        goal = self.config_to_ros_trajectory_goal(q)
-        if wait:
-            self.trajectory_client.send_goal(goal)
-        else:
-            self.trajectory_client.send_goal_async(goal)
-        # self.trajectory_client.send_goal(goal)
-        # if wait:
-        #     self.trajectory_client.wait_for_result()
-        return True
 
     def _grasp_ready_callback(self, empty_msg):
         self.grasp_ready = True

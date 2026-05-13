@@ -17,7 +17,7 @@ def launch_setup(context, *args, **kwargs):
 
     start_server = Node(
         package="dream_ros2_bridge",
-        executable="server_dream",
+        executable="server",
         namespace="ros2_zmq_server",
         output="screen",
         on_exit=launch.actions.Shutdown(),

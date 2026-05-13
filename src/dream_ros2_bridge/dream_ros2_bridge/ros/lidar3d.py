@@ -221,11 +221,11 @@ class Ros3DLidar(object):
 
 if __name__ == "__main__":
     import time
-    from dream_ros2_bridge.remote import StretchClient
+    from dream_ros2_bridge.remote import DreamClient
 
     rclpy.init()
 
-    client = StretchClient()
+    client = DreamClient()
 
     print("Creating a Livox lidar object..")
     time.sleep(5)

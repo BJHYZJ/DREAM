@@ -14,7 +14,7 @@ from scipy.spatial import cKDTree
 from trimesh import Trimesh
 from trimesh.bounds import contains as trimesh_contains
 
-rr.init("Stretch_robot", spawn=False)
+rr.init("dream_robot", spawn=False)
 
 
 def points_in_mesh(

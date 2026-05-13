@@ -126,17 +126,3 @@ class OpenaiClient(AbstractLLMClient):
         if verbose:
             print(f"choices={choices}")
         return choices
-
-
-if __name__ == "__main__":
-    from dream.llms.prompts.ok_robot_prompt import OkRobotPromptBuilder
-
-    prompt = OkRobotPromptBuilder(use_specific_objects=True)
-    client = OpenaiClient(prompt, model="gpt-4o")
-    plan = client("this room is a mess, could you put away the dirty towel?", verbose=True)
-    print("\n\n")
-    print("OpenAI client returned this plan:", plan)
-
-    choices = client.sample(
-        "this room is a mess, could you put away the dirty towel?", n_samples=2, verbose=True
-    )

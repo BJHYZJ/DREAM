@@ -5,7 +5,7 @@ File.version: "1.0"
 
 Camera.type: "PinHole"
 
-# Depth camera stretchpy
+# Depth camera
 Camera1.fx: 607.1060791
 Camera1.fy: 607.26599121
 Camera1.cx: 317.01971436

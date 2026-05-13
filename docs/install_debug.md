@@ -330,17 +330,6 @@ python -c "import site, sys; print('ENABLE_USER_SITE=', site.ENABLE_USER_SITE); 
 
 
 ```bash
-# Terminal 1: Start the Stretch Driver Node
-ros2 launch stretch_core stretch_driver.launch.py
-# Terminal 2: Start the realsense D435i stream.
-ros2 launch stretch_core d435i_high_resolution.launch.py
-# Terminal 3: Start lidar.
-ros2 launch stretch_core rplidar.launch.py
-```
-
-
-
-```bash
 ros2 daemon stop
 ros2 daemon start
 # kill node by node name

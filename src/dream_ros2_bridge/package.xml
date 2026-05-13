@@ -3,7 +3,7 @@
 	<name>dream_ros2_bridge</name>
 	<version>0.0.0</version>
 	<description>TODO: Package description</description>
-	<maintainer email="cpaxton@hello-robot.com">hello-robot</maintainer>
+	<maintainer email="yanzhijie@buaa.edu.cn">ZhijieYan</maintainer>
 	<license>Apache-2.0</license>
 	<test_depend>ament_copyright</test_depend>
 	<test_depend>ament_flake8</test_depend>

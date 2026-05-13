@@ -12,7 +12,6 @@ import zmq
 from termcolor import colored
 
 import dream.motion.constants as constants
-import dream.motion.conversions as conversions
 import dream.utils.compression as compression
 from dream.core.interfaces import ContinuousNavigationAction, Observations, StateObservations, ServoObservations
 from dream.core.parameters import Parameters, get_parameters
@@ -702,9 +701,7 @@ class RobotZmqClient(AbstractRobotClient):
         """Move the robot to the navigation posture. This is where the head is looking forward and the arm is tucked in."""
         next_action = {"posture": "navigation", "step": self._iter}
         next_action = self.send_action(next_action)
-        # self._wait_for_head(constants.STRETCH_NAVIGATION_Q, resend_action=next_action)
         self._wait_for_mode("navigation")
-        # self._wait_for_arm(constants.STRETCH_NAVIGATION_Q)
         assert self.in_navigation_mode()
 
     def move_to_manip_posture(self):
@@ -712,9 +709,7 @@ class RobotZmqClient(AbstractRobotClient):
         next_action = {"posture": "manipulation", "step": self._iter}
         self.send_action(next_action)
         time.sleep(0.1)
-        # self._wait_for_head(constants.STRETCH_PREGRASP_Q, resend_action=next_action)
         self._wait_for_mode("manipulation")
-        # self._wait_for_arm(constants.STRETCH_PREGRASP_Q)
         assert self.in_manipulation_mode()
 
     def pause_slam(self, timeout: float=2.0, reliable: bool=True) -> None:
@@ -1383,12 +1378,12 @@ class RobotZmqClient(AbstractRobotClient):
         if not self.is_homed:
             self.stop()
             raise RuntimeError(
-                "Robot is not homed; please home the robot before running. You can do so by shutting down the server and running ./stretch_robot_home.py on the robot."
+                "Robot is not homed; please home the robot before running."
             )
         if self.is_runstopped:
             self.stop()
             raise RuntimeError(
-                "Robot is runstopped; please release the runstop before running. You can do so by pressing and briefly holding the runstop button on the robot."
+                "Robot is runstopped; please release the runstop before running."
             )
 
         self._started = True

@@ -13,12 +13,7 @@ from pathlib import Path
 from scipy.spatial.transform import Rotation
 from dream.core.interfaces import ContinuousFullBodyAction
 from dream.motion.base import IKSolverBase
-# from dream.motion.constants import (
-#     MANIP_STRETCH_URDF,
-#     PLANNER_STRETCH_URDF,
-#     STRETCH_GRASP_FRAME,
-#     STRETCH_HOME_Q,
-# )
+
 from dream.motion.pinocchio_ik_solver import PinocchioIKSolver, PositionIKOptimizer
 from dream.motion.robot import Footprint
 from scipy.spatial.transform import Rotation as R
@@ -34,91 +29,6 @@ def quat2rpy(quat):
     # Convert to rpy
     rpy = np.array(quat2euler(quat, axes="sxyz")) / np.pi * 180
     return rpy
-
-
-# used for mapping joint states in STRETCH_*_Q to match the sim/real joint action space
-# def map_joint_q_state_to_action_space(q):
-#     return np.array(
-#         [
-#             q[4],  # arm_0
-#             q[3],  # lift
-#             q[8],  # yaw
-#             q[7],  # pitch
-#             q[6],  # roll
-#             q[9],  # head pan
-#             q[10],  # head tilt
-#         ]
-#     )
-
-
-# class DreamIdx:
-#     BASE_X = 0
-#     BASE_Y = 1
-#     BASE_THETA = 2
-#     JOINT1 = 3
-#     JOINT2 = 4
-#     JOINT3 = 5
-#     JOINT4 = 6
-#     JOINT5 = 7
-#     JOINT6 = 8
-#     GRIPPER = 9
-
-#     name_to_idx = {
-#         "base_x": BASE_X,
-#         "base_y": BASE_Y,
-#         "base_theta": BASE_THETA,
-#         "joint1": JOINT1,
-#         "joint2": JOINT2,
-#         "joint3": JOINT3,
-#         "joint4": JOINT4,
-#         "joint5": JOINT5,
-#         "joint6": JOINT6,
-#         "gripper": GRIPPER,
-#     }
-
-#     @classmethod
-#     def get_idx(cls, name: str) -> int:
-#         if name in cls.name_to_idx:
-#             return cls.name_to_idx[name]
-#         else:
-#             raise ValueError(f"Unknown joint name: {name}")
-
-# # Stores joint indices for the Stretch configuration space
-# class HelloStretchIdx:
-#     BASE_X = 0
-#     BASE_Y = 1
-#     BASE_THETA = 2
-#     LIFT = 3
-#     ARM = 4
-#     GRIPPER = 5
-#     WRIST_ROLL = 6
-#     WRIST_PITCH = 7
-#     WRIST_YAW = 8
-#     HEAD_PAN = 9
-#     HEAD_TILT = 10
-
-#     name_to_idx = {
-#         "base_x": BASE_X,
-#         "base_y": BASE_Y,
-#         "base_theta": BASE_THETA,
-#         "lift": LIFT,
-#         "arm": ARM,
-#         "gripper_finger_right": GRIPPER,
-#         "gripper": GRIPPER,
-#         "wrist_roll": WRIST_ROLL,
-#         "wrist_pitch": WRIST_PITCH,
-#         "wrist_yaw": WRIST_YAW,
-#         "head_pan": HEAD_PAN,
-#         "head_tilt": HEAD_TILT,
-#     }
-
-#     @classmethod
-#     def get_idx(cls, name: str) -> int:
-#         if name in cls.name_to_idx:
-#             return cls.name_to_idx[name]
-#         else:
-#             raise ValueError(f"Unknown joint name: {name}")
-
 
 class RangerxARMKinematics:
     """Define motion planning structure for the robot. Exposes kinematics."""
@@ -923,27 +833,3 @@ if __name__ == "__main__":
     else:
         print(f"✗ IK failed after {debug_info['iterations']} iterations")
         print(f"  Final error norm: {debug_info['final_error_norm']:.6f}")
-    
-    # # Test 3: Look at target (简化版 - 只调整joint5)
-    # print("\n[Test 3] Look at Target - Joint5 Only (简化版)")
-    # print("-" * 60)
-    # current_joints = [0.4, -9.2, -112.6, -0.5, 96.8, 0.3]  # degrees
-    # target_point = np.array([0.5, 0.0, 0.2])  # meters in arm base frame
-    
-    # print(f"当前关节角度 (度): {current_joints}")
-    # print(f"目标点 (米): {target_point.tolist()}")
-    
-    # new_joint5 = kinematics.compute_joint5_look_at(
-    #     np.array(current_joints),
-    #     target_point
-    # )
-    
-    # print(f"✓ 新的joint5角度: {new_joint5:.1f}° (原来是 {current_joints[4]:.1f}°)")
-    # print(f"  变化: {new_joint5 - current_joints[4]:+.1f}°")
-    
-    # # 完整的新关节角度
-    # new_joints = current_joints.copy()
-    # new_joints[4] = new_joint5
-    # print(f"  完整关节角度: {[round(j, 1) for j in new_joints]}")
-    
-    # print("\n" + "=" * 60)

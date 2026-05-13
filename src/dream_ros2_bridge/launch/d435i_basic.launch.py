@@ -28,9 +28,12 @@ configurable_parameters = [{'name': 'camera_namespace',             'default': '
                            {'name': 'enable_confidence',            'default': 'false', 'description': 'enable depth stream'},
                            {'name': 'gyro_fps',                     'default': '200', 'description': "''"},
                            {'name': 'accel_fps',                    'default': '100', 'description': "''"},
+
+                           # Default off: current DREAM SLAM chain uses /livox/imu.
                            {'name': 'enable_gyro',                  'default': 'false', 'description': "''"},
                            {'name': 'enable_accel',                 'default': 'false', 'description': "''"},
                            {"name": 'unite_imu_method',             'default': '0',    'description': "[0-None, 1-copy, 2-linear_interpolation]"},
+                           
                            {'name': 'pointcloud.enable',            'default': 'true', 'description': ''},
                            {'name': 'pointcloud.stream_filter',     'default': '2', 'description': 'texture stream for pointcloud'},
                            {'name': 'pointcloud.stream_index_filter','default': '0', 'description': 'texture stream index for pointcloud'},
@@ -55,12 +58,13 @@ def generate_launch_description():
           )
 
      d435i_accel_correction = Node(
-          package='stretch_core',
+          package='dream_ros2_bridge',
           executable='d435i_accel_correction',
           output='screen',
           )
 
      return LaunchDescription(declare_configurable_parameters(configurable_parameters) + [
-          realsense_launch,
-          # d435i_accel_correction,
+               realsense_launch,
+               # Enable this only when consuming D435i IMU data and needing timestamp correction.
+               # d435i_accel_correction,
           ])
