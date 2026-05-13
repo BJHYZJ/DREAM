@@ -27,6 +27,14 @@ Always source ROS2 + workspace first in each terminal:
 source /opt/ros/humble/setup.bash
 source ~/DREAM_ws/DREAM_ws/install/setup.bash
 ```
+
+Start Ranger mini v3
+```bash
+sudo apt install -y can-utils
+sudo modprobe gs_usb
+sudo ip link set can0 up type can bitrate 500000
+```
+
 Terminal 1 (Start Sensors and Fast-LIO2):
 ```bash
 ros2 launch dream_ros2_bridge dream_node_start.launch.py use_rviz:=false
