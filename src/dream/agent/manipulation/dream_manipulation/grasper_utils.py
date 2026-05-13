@@ -10,27 +10,41 @@ from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
 from dream.agent.zmq_client import RobotZmqClient
 import dream.motion.constants as constants
 
+# ====== Manipulation tuning constants ======
+# Place image retries
+PLACE_IMAGE_RETRY_OFFSETS = [
+    [0, 0],
+    [0, -0.1],
+    [0, 0.1],
+    [-0.1, 0],
+    [-0.1, -0.1],
+    [-0.1, 0.1],
+    [0.1, 0],
+    [0.1, -0.1],
+    [0.1, 0.1],
+]
+
+# Back-object pickup camera pan retries
+BACK_PICK_HEAD_PAN_ANGLES = [0, -3, -3, -3, -3, -3, 18, 3, 3, 3, 3]
+
+# Front-object pickup/place retries
+HEAD_TILT_RETRY_ANGLES = [0, -5, 10]
+BASE_ROTATION_MIN_ABS_RAD = 0.15  # ~8.6 degrees
+BASE_ROTATION_STEP_DEG = 15
+BASE_ROTATION_SWEEP_DEG = -30
+
+
 def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):
     if save_dir is not None:
         save_dir = save_dir + "/" + obj
     placing = Placing(hello_robot.robot, detection_model, save_dir=save_dir)
-    retries = [
-        [0, 0],
-        [0, -0.1],
-        [0, 0.1],
-        [-0.1, 0],
-        [-0.1, -0.1],
-        [-0.1, 0.1],
-        [0.1, 0],
-        [0.1, -0.1],
-        [0.1, 0.1],
-    ]
+    retries = PLACE_IMAGE_RETRY_OFFSETS
     success = False
     head_tilt = hello_robot.tilt
     head_pan = hello_robot.pan
     base_trans = 0
 
-    for i in range(9):
+    for i in range(len(retries)):
         print("Capturing image: ")
         print(f"retry entries : {retries[i]}")
         delta_base, delta_tilt = retries[i]
@@ -54,7 +68,7 @@ def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):
     head_tilt = hello_robot.tilt
     head_pan = hello_robot.pan
 
-    for i in range(9):
+    for i in range(len(retries)):
         print("Capturing image: ")
         print(f"retry entries : {retries[i]}")
         delta_base, delta_tilt = retries[i]
@@ -85,7 +99,7 @@ def capture_and_process_back_image(obj, socket, manip_wrapper: ManipulationWrapp
     print("*" * 20, "detection object which will be place.", "*" * 20)
 
     head_pan_retries = 1
-    head_pan_angles = [0, -3, -3, -3, -3, -3, 18, 3, 3, 3, 3]
+    head_pan_angles = BACK_PICK_HEAD_PAN_ANGLES
     max_retries = len(head_pan_angles)
 
     while retry_flag:
@@ -104,7 +118,7 @@ def capture_and_process_back_image(obj, socket, manip_wrapper: ManipulationWrapp
 
 
 def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrapper, tar_in_map=None):
-    """Find an an object in the camera frame and return the translation and rotation of the object.
+    """Find an object in the camera frame and return the translation and rotation of the object.
 
     Returns:
         rotation: Rotation of the object
@@ -113,22 +127,25 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         width: Width of the object (only for pick mode)
     """
 
-    print("Currently in " + mode + " mode and the robot is about to manipulate " + obj + ".")
+    if mode not in ["pick", "place"]:
+        raise ValueError(f"Unsupported mode: {mode}")
+
+    print(f"Currently in {mode} mode and the robot is about to manipulate {obj}.")
 
     image_publisher = ImagePublisher(manip_wrapper.robot, socket)
 
     # Centering the object
-    head_tilt_angles = [0, -5, 10]
+    head_tilt_angles = HEAD_TILT_RETRY_ANGLES
     tilt_retries = 1
     side_retries = 0
-    retry_flag = True
-    theta_cumulative = 0
-    rotation_min_theta_abs = 0.15  # ~8 degree
+    retry_flag = 1
+    theta_cumulative = 0.0
+    rotation_min_theta_abs = BASE_ROTATION_MIN_ABS_RAD
     # head_tilt = 105
     # head_pan = -1.57
 
     print("*" * 20, f"look at {obj}", "*" * 20)
-    if tar_in_map:
+    if tar_in_map is not None:
         manip_wrapper.robot.look_at_target(tar_in_map=tar_in_map)
 
     while retry_flag:
@@ -158,30 +175,33 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
             if abs(theta) > rotation_min_theta_abs:
                 print(f"Robot base theta is not suit for manipulation, rotate around {np.rad2deg(theta)}.")
                 manip_wrapper.move_to_position(base_theta=theta, blocking=True)
+                theta_cumulative += np.rad2deg(theta)
             manip_wrapper.robot.look_at_target(tar_in_map=target_in_map)
 
-        elif retry_flag != 0 and retry_flag != 3 and side_retries == 3:
+        elif retry_flag == 2 and side_retries == 3:
             print("Tried in all angles but couldn't succeed")
             if mode == "place":
-                return None, None, None
+                return None, None, theta_cumulative
             else:
-                return None, None, None, None, None, None, None
-
-        elif side_retries == 2 and tilt_retries == 3:
-            manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
-            side_retries = 3
-            theta_cumulative += 15
+                return None, None, None, None, None, retry_flag, theta_cumulative
 
         elif retry_flag == 2:
-            if tilt_retries == 3:
+            if (
+                side_retries == 2
+                and tilt_retries == len(head_tilt_angles)
+            ):
+                manip_wrapper.move_to_position(base_theta=np.deg2rad(BASE_ROTATION_STEP_DEG))
+                side_retries = 3
+                theta_cumulative += BASE_ROTATION_STEP_DEG
+            elif tilt_retries == len(head_tilt_angles):
                 if side_retries == 0:
-                    manip_wrapper.move_to_position(base_theta=np.deg2rad(15))
+                    manip_wrapper.move_to_position(base_theta=np.deg2rad(BASE_ROTATION_STEP_DEG))
                     side_retries = 1
-                    theta_cumulative += 15
+                    theta_cumulative += BASE_ROTATION_STEP_DEG
                 else:
-                    manip_wrapper.move_to_position(base_theta=np.deg2rad(-30))
+                    manip_wrapper.move_to_position(base_theta=np.deg2rad(BASE_ROTATION_SWEEP_DEG))
                     side_retries = 2
-                    theta_cumulative -= 30
+                    theta_cumulative += BASE_ROTATION_SWEEP_DEG
                 tilt_retries = 1
             else:
                 print(f"retrying with head tilt : {head_tilt_angles[tilt_retries]}")

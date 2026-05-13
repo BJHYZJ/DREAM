@@ -886,37 +886,47 @@ class RobotAgent:
         skip_confirmation: bool = False,
     ):
         self.robot.switch_to_manipulation_mode()
-
-        rotation, translation, theta_cumulative = capture_and_process_image(
-            mode="place",
-            obj=target_receptacle,
-            tar_in_map=target_point,
-            socket=self.manip_socket,
-            manip_wrapper=self.manip_wrapper,
-        )
-
-        if rotation is None:
-            print("(ಥ﹏ಥ) Try all pose but not suit pose for place.")
-            return False
-
-        if skip_confirmation or input("Do you want to do this place manipulation? Y or N ") != "N":
-            self.robot.pause_slam()
-            success = place(
+        theta_cumulative = 0.0
+        slam_paused = False
+        try:
+            rotation, translation, theta_cumulative = capture_and_process_image(
+                mode="place",
+                obj=target_receptacle,
+                tar_in_map=target_point,
                 socket=self.manip_socket,
                 manip_wrapper=self.manip_wrapper,
-                back_object=back_object,
-                translation=translation,
             )
-            self.robot.resume_slam()
-            if not success:
-                print("(ಥ﹏ಥ) Place task failed.")
+
+            if rotation is None:
+                print("(ಥ﹏ಥ) Try all pose but not suit pose for place.")
                 return False
 
-        # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map
-        if theta_cumulative != 0:
-            self.manip_wrapper.move_to_position(base_theta=np.deg2rad(-theta_cumulative))
+            if skip_confirmation or input("Do you want to do this place manipulation? Y or N ") != "N":
+                self.robot.pause_slam()
+                slam_paused = True
+                success = place(
+                    socket=self.manip_socket,
+                    manip_wrapper=self.manip_wrapper,
+                    back_object=back_object,
+                    translation=translation,
+                )
+                self.robot.resume_slam()
+                slam_paused = False
+                if not success:
+                    print("(ಥ﹏ಥ) Place task failed.")
+                    return False
 
-        return True
+            return True
+        finally:
+            if slam_paused:
+                self.robot.resume_slam()
+
+            # Shift base back even if manipulation fails midway.
+            if theta_cumulative:
+                self.manip_wrapper.move_to_position(base_theta=np.deg2rad(-theta_cumulative))
+
+            # Ensure camera/head pose is reset for the next trial.
+            self.manip_wrapper.robot.look_front()
 
 
     def manipulate(
@@ -930,40 +940,50 @@ class RobotAgent:
     ):
 
         self.robot.switch_to_manipulation_mode()
-
-        rotation, translation, depth, width, obj_points, retry_flag, theta_cumulative = capture_and_process_image(
-            mode="pick",
-            obj=target_object,
-            tar_in_map=target_point,
-            socket=self.manip_socket,
-            manip_wrapper=self.manip_wrapper,
-        )
-
-        if rotation is None and retry_flag != 3:
-            print("(ಥ﹏ಥ) Try all pose but anygrasp is failed.")
-            return False
-        
-        if not just_heuristic:
-            just_heuristic = retry_flag == 3
-
-        if skip_confirmation or input("Do you want to do this pickup manipulation? Y or N ") != "N":
-            self.robot.pause_slam()
-            success = pickup(
-                self.manip_wrapper,
-                rotation,
-                translation,
-                object_points=obj_points,
-                just_heuristic=just_heuristic,
-                just_anygrasp=just_anygrasp,
-                two_stage=two_stage,
+        theta_cumulative = 0.0
+        slam_paused = False
+        try:
+            rotation, translation, depth, width, obj_points, retry_flag, theta_cumulative = capture_and_process_image(
+                mode="pick",
+                obj=target_object,
+                tar_in_map=target_point,
+                socket=self.manip_socket,
+                manip_wrapper=self.manip_wrapper,
             )
-            self.robot.resume_slam()
-            if not success:
-                print("(ಥ﹏ಥ) Pickup task failed.")
+
+            if rotation is None and retry_flag != 3:
+                print("(ಥ﹏ಥ) Try all pose but anygrasp is failed.")
                 return False
+            
+            if not just_heuristic:
+                just_heuristic = retry_flag == 3
 
-        # Shift the base back to the original point as we are certain that original point is navigable in navigation obstacle map
-        if theta_cumulative != 0:
-            self.manip_wrapper.move_to_position(base_theta=np.deg2rad(-theta_cumulative))
+            if skip_confirmation or input("Do you want to do this pickup manipulation? Y or N ") != "N":
+                self.robot.pause_slam()
+                slam_paused = True
+                success = pickup(
+                    self.manip_wrapper,
+                    rotation,
+                    translation,
+                    object_points=obj_points,
+                    just_heuristic=just_heuristic,
+                    just_anygrasp=just_anygrasp,
+                    two_stage=two_stage,
+                )
+                self.robot.resume_slam()
+                slam_paused = False
+                if not success:
+                    print("(ಥ﹏ಥ) Pickup task failed.")
+                    return False
 
-        return True
+            return True
+        finally:
+            if slam_paused:
+                self.robot.resume_slam()
+
+            # Shift base back even if manipulation fails midway.
+            if theta_cumulative:
+                self.manip_wrapper.move_to_position(base_theta=np.deg2rad(-theta_cumulative))
+
+            # Ensure camera/head pose is reset for the next trial.
+            self.manip_wrapper.robot.look_front()

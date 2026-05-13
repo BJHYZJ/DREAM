@@ -102,11 +102,11 @@ def main(
         # (2)
         # import time
         # time.sleep(10)
-        # command = [("pickup_only", "remote control")]
-        # executor(command)
-
-        command = [("pickup_only", "wrench")]
+        command = [("pickup_only", "remote control")]
         executor(command)
+
+        # command = [("pickup_only", "wrench")]
+        # executor(command)
 
         # # (3)
         # flag2 = True    
