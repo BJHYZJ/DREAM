@@ -18,7 +18,7 @@ def launch_setup(context, *args, **kwargs):
     start_server = Node(
         package="dream_ros2_bridge",
         executable="server",
-        namespace="ros2_zmq_server",
+        namespace=LaunchConfiguration('server_namespace'),
         output="screen",
         on_exit=launch.actions.Shutdown(),
         parameters=[
@@ -36,6 +36,11 @@ def generate_launch_description():
             'use_sim_time',
             default_value='false',
             description='Use simulated clock for consistent time synchronization across all nodes.'
+        ),
+        DeclareLaunchArgument(
+            'server_namespace',
+            default_value='',
+            description='Namespace for the server node. Keep empty to match direct python debug behavior.'
         ),
         OpaqueFunction(function=launch_setup),
     ])
