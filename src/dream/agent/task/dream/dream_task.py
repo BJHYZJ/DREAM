@@ -1,18 +1,8 @@
-# Copyright (c) Hello Robot, Inc.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the LICENSE file in the root directory
-# of this source tree.
-#
-# Some code may be adapted from other open-source works with their respective licenses. Original
-# license information maybe found below, if so.
-
-import datetime
-from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
 from PIL import Image
+from typing import List, Optional, Tuple
 from dream.agent.robot_agent import RobotAgent
 from dream.core import AbstractRobotClient, Parameters
 from dream.agent import RobotZmqClient
