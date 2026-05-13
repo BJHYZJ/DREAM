@@ -3,7 +3,7 @@ import time
 import timeit
 from datetime import datetime
 from threading import Lock
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 from uuid import uuid4
 from threading import Lock, Thread
 import cv2
@@ -22,14 +22,13 @@ from dream.agent.manipulation.dream_manipulation.grasper_utils import (
     pickup,
     place,
 )
-from dream.core.interfaces import Observations
 from dream.core.parameters import Parameters
-from dream.core.robot import AbstractGraspClient, AbstractRobotClient
+from dream.core.robot import AbstractGraspClient
 from dream.agent.zmq_client import RobotZmqClient
 from dream.mapping.voxel import SparseVoxelMap
 from dream.mapping.voxel import SparseVoxelMapNavigationSpace
 from dream.motion.algo.a_star import AStar
-from dream.motion import ConfigurationSpace, Planner, PlanResult
+from dream.motion import PlanResult
 from dream.perception.detection.owl import OwlPerception
 from dream.perception.encoders.siglip_encoder import MaskSiglipEncoder
 from dream.perception.wrapper import OvmmPerception
@@ -82,8 +81,10 @@ class RobotAgent:
             self.log = "dream_log/" + log
 
         self._manipulation_radius = parameters["motion_planner"]["goals"]["manipulation_radius"]
-        self._mllm = parameters["mllm"]
+        self._with_mllm_grounding = parameters["with_mllm_grounding"]
         self._with_mllm_verify = parameters["with_mllm_verify"]
+        self._mllm_provider = parameters.get("mllm_provider", default="openai")
+        self._mllm_model = parameters.get("mllm_model", default=None)
 
         self.create_obstacle_map(parameters)
 
@@ -454,7 +455,7 @@ class RobotAgent:
         # You can see a clear difference in hyperparameter selection in different querying strategies
         # Running gpt4o is time consuming, so we don't want to waste more time on object detection or Siglip or voxelization
         # On the other hand querying by feature similarity is fast and we want more fine grained details in semantic memory
-        if self._mllm:
+        if self._with_mllm_grounding:
             self.detection_model = OwlPerception(
                 version="owlv2-B-p16", device=self.device, confidence_threshold=0.01
             )
@@ -490,8 +491,10 @@ class RobotAgent:
             encoder=self.encoder,
             image_shape=image_shape,
             log=self.log,
-            mllm=self._mllm,
+            with_mllm_grounding=self._with_mllm_grounding,
             with_mllm_verify=self._with_mllm_verify,
+            mllm_provider=self._mllm_provider,
+            mllm_model=self._mllm_model,
         )
         self.space = SparseVoxelMapNavigationSpace(
             self.robot,

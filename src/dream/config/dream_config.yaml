@@ -197,6 +197,8 @@ instance_memory:
 # High level stuff: commands to execute 
 
 exploration_steps: 50
-mllm: False
+with_mllm_grounding: False
 with_mllm_verify: True
+mllm_provider: "qwen"
+mllm_model: "qwen-vl-max-latest"
 name: "dream"

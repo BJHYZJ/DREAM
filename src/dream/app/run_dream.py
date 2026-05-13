@@ -5,40 +5,12 @@ import traceback
 from dream.agent.task.dream import DreamTaskExecutor
 from dream.agent.zmq_client import RobotZmqClient
 from dream.core.parameters import get_parameters
-from dream.llms import get_llm_choices, get_llm_client
-from dream.motion import constants
 
 @click.command()
 # by default you are running these codes on your workstation, not on your robot.
 @click.option("--server_ip", "--server-ip", default="127.0.0.1", type=str)
-@click.option("--manual-wait", default=False, is_flag=True)
 @click.option("--random-goals", default=False, is_flag=True)
-@click.option("--explore-iter", default=3)
-@click.option("--method", default="dream", type=str)
-@click.option("--mode", default="", type=click.Choice(["navigation", "manipulation", "save", ""]))
 
-@click.option(
-    "--llm",
-    default="openai",
-    help="Client to use for language model.",
-    type=click.Choice(get_llm_choices()),
-)
-@click.option("--debug_llm", "--debug-llm", is_flag=True, help="Set to debug the language model")
-@click.option(
-    "--use_voice",
-    "--use-voice",
-    is_flag=True,
-    help="Set to use voice input",
-)
-@click.option(
-    "--visual_servo",
-    "--vs",
-    "-V",
-    "--visual-servo",
-    default=False,
-    is_flag=True,
-    help="Use visual servoing grasp",
-)
 @click.option(
     "--robot_ip", type=str, default="", help="Robot IP address (leave empty for saved default)"
 )
@@ -67,40 +39,19 @@ from dream.motion import constants
     default=None,
     help="Input path with default value None",
 )
-@click.option(
-    "--match-method",
-    "--match_method",
-    type=click.Choice(["class", "feature"]),
-    default="class",
-    help="match method for visual servoing",
-)
+
 @click.option("--device_id", default=0, type=int, help="Device ID for semantic sensor")
 def main(
     server_ip,
-    manual_wait,
-    explore_iter: int = 3,
-    mode: str = "navigation",
     match_method: str = "class",
     input_path: Optional[str] = None,
     output_path: Optional[str] = None,
     robot_ip: str = "",
-    visual_servo: bool = False,
     skip_confirmations: bool = True,
     device_id: int = 0,
     target_object: str = None,
     target_receptacle: str = None,
-    use_voice: bool = False,
-    debug_llm: bool = False,
-    llm: str = "qwen25-3B-Instruct",
-    **kwargs,
 ):
-    """
-    Including only some selected arguments here.
-
-    Args:
-        random_goals(bool): randomly sample frontier goals instead of looking for closest
-    """
-
     print("- Load parameters")
     parameters = get_parameters("dream_config.yaml")
 

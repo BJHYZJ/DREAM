@@ -4,37 +4,29 @@ import os
 import pickle
 import re
 import skimage
-import warnings
-from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union, Literal
+from typing import Any, Dict, Optional, Tuple, Union
 from threading import Lock
 
-import copy
 import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-import open3d as o3d
 import zstandard as zstd
 from PIL import Image
 from scipy.ndimage import maximum_filter, median_filter
-from sklearn.decomposition import PCA
 from torch import Tensor
 from dataclasses import dataclass
 
-from dream.core.interfaces import Observations
-from dream.llms import OpenaiClient
+from dream.llms import OpenaiClient, QwenClient
 from dream.llms.prompts import DREAM_VISUAL_GROUNDING_PROMPT, DREAM_VISUAL_VERIFY_PROMPT
 from dream.utils.image import Camera, camera_xyz_to_global_xyz
 from dream.utils.morphology import binary_dilation, binary_erosion, get_edges
-from dream.utils.point_cloud_torch import unproject_masked_depth_to_xyz_coordinates
 from dream.mapping.voxel.voxel_util import VoxelizedPointcloud, scatter3d
-from dream.utils.data_tools.dict import update
 from dream.visualization.urdf_visualizer import URDFVisualizer
 from dream.utils.visualization import create_disk
 from dream.mapping.grid import GridParams
-from dream.motion import Footprint, DreamIdx, PlanResult, RobotModel
+from dream.motion import RobotModel
 from dream.perception.detection.owl import OwlPerception
 
 @dataclass
@@ -89,9 +81,11 @@ class SparseVoxelMap:
         image_shape=(360, 720),
         compression_features: bool=False,  # save memroy, but slowly
         log="test",
-        mllm: bool=False,
+        with_mllm_grounding: bool=False,
         with_mllm_verify: bool=True,
-        verify_point_similarity: float=0.15
+        verify_point_similarity: float=0.15,
+        mllm_provider: str = "openai",
+        mllm_model: Optional[str] = None,
     ):
 
         # TODO: We an use fastai.store_attr() to get rid of this boilerplate code
@@ -208,23 +202,34 @@ class SparseVoxelMap:
             os.mkdir(self.log)
         self._seq = 0
         self._2d_last_updated = -1
-        self.mllm = mllm
+        self.with_mllm_grounding = with_mllm_grounding
         self.with_mllm_verify = with_mllm_verify
+        self.mllm_provider = mllm_provider.lower()
+        self.mllm_model = mllm_model
 
-        if self.mllm:
+        if self.with_mllm_grounding:
             # Used to do visual grounding task
-            self.gpt_client = OpenaiClient(
-                DREAM_VISUAL_GROUNDING_PROMPT, model="gpt-5-mini"
-            )
+            self.mllm_grounding_client = self._build_mllm_client(DREAM_VISUAL_GROUNDING_PROMPT)
         if self.with_mllm_verify:
             # Used to verify
-            self.gpt_verify_client = OpenaiClient(
-                DREAM_VISUAL_VERIFY_PROMPT, model="gpt-5-mini"
-            )
+            self.mllm_verify_client = self._build_mllm_client(DREAM_VISUAL_VERIFY_PROMPT)
         self.verify_point_similarity = verify_point_similarity  # verify_point similarity threshold
         # Init variables
         # Create map here - just reset *some* variables
         self.reset()
+
+    def _build_mllm_client(self, prompt: str):
+        if self.mllm_provider == "openai":
+            return OpenaiClient(
+                prompt,
+                model=self.mllm_model or "gpt-5-mini",
+            )
+        if self.mllm_provider == "qwen":
+            return QwenClient(
+                prompt,
+                model=self.mllm_model or "qwen-vl-max-latest",
+            )
+        raise ValueError(f"Unsupported mLLM provider: {self.mllm_provider}")
 
 
     def reset(self):
@@ -738,7 +743,7 @@ class SparseVoxelMap:
 
 
     def localize_text(self, text, debug=True, return_debug=False):
-        if self.mllm:
+        if self.with_mllm_grounding:
             return self.localize_with_mllm(text, debug=debug, return_debug=return_debug)
         else:
             return self.localize_with_feature_similarity(
@@ -834,7 +839,7 @@ class SparseVoxelMap:
             user_messages.append(image)
         user_messages.append("The object you need to find is " + text)
 
-        response = self.gpt_client(user_messages)
+        response = self.mllm_grounding_client(user_messages)
         return self.parse_localization_response(response)
 
     def mllm_verify(self, obs_id: int, text: str):
@@ -845,7 +850,7 @@ class SparseVoxelMap:
         user_messages = []
         user_messages.append(image)
         user_messages.append("The object you need to verify is " + text)
-        response = self.gpt_verify_client(user_messages)
+        response = self.mllm_verify_client(user_messages)
         return self.parse_verfy_response(response)
 
     def parse_verfy_response(self, response: str) -> Optional[Tuple[Optional[bool], Optional[str]]]:
