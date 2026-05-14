@@ -20,7 +20,10 @@ debug
 rerun_log
 src/anygrasp_manipulation/.TimeRecord
 src/anygrasp_manipulation/MinkowskiEngine
-src/anygrasp_manipulation/example_data
 
 src/anygrasp_manipulation/pointnet2/pointnet2/_ext.cpython-310-x86_64-linux-gnu.so
 debug_sample_exploration.svg
+
+src/anygrasp_manipulation/example_data/*
+!src/anygrasp_manipulation/example_data/test_image.png
+!src/anygrasp_manipulation/example_data/test_depth.png

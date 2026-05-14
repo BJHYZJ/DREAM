@@ -1,4 +1,3 @@
-import copy
 from abc import ABC, abstractmethod
 from typing import Any, List, Type
 
@@ -17,13 +16,14 @@ class ImageProcessor(ABC):
         pass
 
     def draw_bounding_box(
-        self, image: Type[Image.Image], bbox: List[int], save_file: str = None
+        self, image: Type[Image.Image], bbox: List[int], save_file: str = None, show_image: bool = False
     ) -> None:
-        new_image = copy.deepcopy(image)
+        new_image = image.copy()
         draw_rectangle(new_image, bbox)
-
-        if save_file is not None:
+        if save_file:
             new_image.save(save_file)
+            print(f"Saved Bounding Box at {save_file}")
+        if show_image:
             new_image.show()
 
     def draw_bounding_boxes(
@@ -33,13 +33,14 @@ class ImageProcessor(ABC):
         scores: List[int],
         max_box_ind: int = -1,
         save_file: str = None,
+        show_image: bool = False
     ) -> None:
         if max_box_ind != -1:
             max_score = np.max(scores.detach().numpy())
             max_ind = np.argmax(scores.detach().numpy())
         max_box = bboxes.detach().numpy()[max_ind].astype(int)
 
-        new_image = copy.deepcopy(image)
+        new_image = image.copy()
         img_drw = ImageDraw.Draw(new_image)
         img_drw.rectangle([(max_box[0], max_box[1]), (max_box[2], max_box[3])], outline="green")
         img_drw.text((max_box[0], max_box[1]), str(round(max_score.item(), 3)), fill="green")
@@ -51,12 +52,14 @@ class ImageProcessor(ABC):
                 img_drw.text((box[0], box[1]), str(round(max_score.item(), 3)), fill="red")
             else:
                 img_drw.rectangle([(box[0], box[1]), (box[2], box[3])], outline="white")
-        new_image.save(save_file)
-        # new_image.show()
-        print(f"Saved Detection boxes at {save_file}")
+        if save_file:
+            new_image.save(save_file)
+            print(f"Saved Detection boxes at {save_file}")
+        if show_image:
+            new_image.show()
 
     def draw_mask_on_image(
-        self, image: Type[Image.Image], seg_mask: np.ndarray, save_file: str = None
+        self, image: Type[Image.Image], seg_mask: np.ndarray, save_file: str = None, show_image: bool = False
     ) -> None:
         image = np.array(image)
         image[seg_mask] = image[seg_mask] * 0.2
@@ -68,9 +71,10 @@ class ImageProcessor(ABC):
 
         # placing mask over image
         alpha = 0.6
-        highlighted_image = cv2.addWeighted(overlay_mask, alpha, image, 1, 0)
-        Image.fromarray(highlighted_image.astype(np.uint8)).show()
-        highlighted_image = cv2.cvtColor(highlighted_image, cv2.COLOR_RGB2BGR)
-
-        cv2.imwrite(save_file, highlighted_image)
-        print(f"Saved Segmentation Mask at {save_file}")
+        highlighted_image_ori = cv2.addWeighted(overlay_mask, alpha, image, 1, 0)
+        highlighted_image = cv2.cvtColor(highlighted_image_ori.copy(), cv2.COLOR_RGB2BGR)
+        if save_file:
+            cv2.imwrite(save_file, highlighted_image)
+            print(f"Saved Segmentation Mask at {save_file}")
+        if show_image:
+            Image.fromarray(highlighted_image_ori.astype(np.uint8)).show()

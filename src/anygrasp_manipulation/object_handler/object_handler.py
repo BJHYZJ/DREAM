@@ -9,9 +9,8 @@
 
 import copy
 import math
-import os
 import time
-
+from pathlib import Path
 import numpy as np
 import open3d as o3d
 from graspnetAPI import GraspGroup
@@ -77,15 +76,18 @@ class ObjectHandler:
 
             image = Image.fromarray(colors)
         else:
-            data_dir = "./example_data/"
-            colors = np.array(Image.open(os.path.join(data_dir, "test_rgb.png")))
-            image = Image.open(os.path.join(data_dir, "test_rgb.png"))
-            depths = np.load(os.path.join(data_dir, "test_depth.npy")).astype(np.float64)
-            fx, fy, cx, cy = 606.4227, 606.4227, 254.01973, 320.10287
+            data_dir = Path("example_data")
+            image_path = data_dir / "test_image.png"
+            depth_path = data_dir / "test_depth.png"
+            colors = np.array(Image.open(image_path))
+            image = Image.open(image_path)
+            depths = np.array(Image.open(depth_path)) * 0.001
+            fx, fy, cx, cy = 454.06378173828125, 453.5252380371094, 319.597900390625, 180.85589599609375
+
             c2ab = np.eye(4)
             if tries == 1:
-                self.action = str(input("Enter action [pick/place]: "))
-                self.query = str(input("Enter a Object name in the scene: "))
+                self.action = "pick"  # you can type "pick", "place"
+                self.query = "remote control"  # you can type "bowl" "pliers" "screwdriver" "remote control"
 
         # Camera Parameters
         colors = colors / 255.0
@@ -117,36 +119,32 @@ class ObjectHandler:
             self.receive_input(tries)
 
             # Directory for saving visualisations
-            self.save_dir = self.cfgs.environment + "/" + self.query + "/" + cur_time
-            debug_text = (
-                "### Robot's monolouge: \n ## The text query I received is " + self.query + ".\n"
-            )
-            if not os.path.exists(self.save_dir):
-                os.makedirs(self.save_dir)
-            if self.cfgs.open_communication:
-                camera_image_file_name = self.save_dir + "/clean_" + str(tries) + ".jpg"
-                self.cam.image.save(camera_image_file_name)
-                print(f"Saving the camera image at {camera_image_file_name}")
-                np.save(self.save_dir + "/depths_" + str(tries) + ".npy", self.cam.depths)
+            self.save_dir = Path(self.cfgs.environment) / self.query / cur_time
+            self.save_dir.mkdir(parents=True, exist_ok=True)
+            show_debug_images = self.cfgs.debug and not self.cfgs.headless
 
-            box_filename = (
-                f"{self.save_dir}/object_detection_{tries}.jpg"
-            )
-            mask_filename = (
-                f"{self.save_dir}/semantic_segmentation_{tries}.jpg"
-            )
+            image_file_name = self.save_dir / f"image_{tries}.png"
+            depth_file_name = self.save_dir / f"depth_{tries}.png"
+            depth = np.nan_to_num(self.cam.depths, nan=0.0, posinf=0.0, neginf=0.0)
+            depth = np.clip(depth * 1000.0, 0, 65535).astype(np.uint16)
+            self.cam.image.save(image_file_name)
+            Image.fromarray(depth).save(depth_file_name)
+            print(f"Saving the camera image at {image_file_name}")
+            print(f"Saving the depth image at {depth_file_name}")
+            if show_debug_images:
+                self.cam.image.show()
+                Image.fromarray(depth).show()
+
+            box_filename = self.save_dir / f"bbox_{tries}.png"
+            mask_filename = self.save_dir / f"mask_{tries}.png"
+
             # Object Segmentation Mask
-
-            colors = np.array(self.cam.image)
-            colors[self.cam.depths > self.cfgs.max_depth + 0.3] = 1e-4
-            colors = Image.fromarray(colors, "RGB")
-            colors.save(camera_image_file_name)
-
             seg_mask, bbox = self.lang_sam.detect_obj(
                 self.cam.image,
                 self.query,
                 box_filename=box_filename,
                 mask_filename=mask_filename,
+                visualize=show_debug_images,
             )
 
             if bbox is None:
@@ -178,11 +176,11 @@ class ObjectHandler:
             points = get_3d_points(self.cam)
 
             if self.action == "place":
-                retry = not self.place(points, seg_mask)
+                retry = not self.place(points, seg_mask, tries)
             elif self.action == "pick":
-                retry = not self.pickup(points, seg_mask, bbox, (tries == 11))
+                retry = not self.pickup(points, seg_mask, bbox, tries, (tries == 11))
             elif self.action == "pick_back":
-                retry = not self.pick_back(points, seg_mask)
+                retry = not self.pick_back(points, seg_mask, tries)
             else:
                 raise ValueError
 
@@ -221,11 +219,11 @@ class ObjectHandler:
             data_msg = f"Object center in arm base frame: {p_arm_base.tolist()} is received."
             self.socket.send_data([p_arm_base, [], [0, 0, 1], [], data_msg])
 
-
     def place(
         self, 
         points: np.ndarray, 
         seg_mask: np.ndarray,
+        tries: int,
     ) -> bool:
         colors = self.cam.colors
         c2ab = self.cam.c2ab  # camera in arm base pose
@@ -279,14 +277,13 @@ class ObjectHandler:
         cylinder.paint_uniform_color([0, 1, 0])
         geometries.append(cylinder)
 
-        if self.cfgs.debug:
-            visualize_cloud_geometries(
-                object_pcd,
-                geometries,
-                save_file=self.save_dir + "/placing.jpg",
-                visualize=not self.cfgs.headless,
-                # rerun_name="proposed_placing_location",
-            )
+        visualize_cloud_geometries(
+            object_pcd,
+            geometries,
+            save_file=self.save_dir / f"placing_{tries}.png",
+            visualize=self.cfgs.debug and not self.cfgs.headless,
+            show_coordinate_frame=False,
+        )
 
         if self.cfgs.open_communication:
             data_msg = "Now you received the place pose, good luck."
@@ -307,6 +304,7 @@ class ObjectHandler:
         points: np.ndarray,
         seg_mask: np.ndarray,
         bbox: Bbox,
+        tries: int,
         last_attempt: bool=False,
     ):
         colors = self.cam.colors
@@ -336,11 +334,39 @@ class ObjectHandler:
             filtered_colors = filtered_colors[indices]
 
 
+        # scene_points_file_name = self.save_dir / f"pointcloud_{tries}.png"
+        grasp_project_file_name = self.save_dir / f"grasp_project_{tries}.png"
+        grasp_all_file_name = self.save_dir / f"grasp_all_{tries}.png"
+        grasp_best_file_name = self.save_dir / f"grasp_best_{tries}.png"
+
         # Get 3D bounding box from seg_mask (target object region)
         # Combine depth mask with segmentation mask
         object_mask = mask & seg_mask
         object_points = points[object_mask]
-        object_colors = colors[object_mask]
+        # object_colors = colors[object_mask]
+
+        render_scale = 1.5
+        render_width, render_height = points.shape[1] * render_scale, points.shape[0] * render_scale
+        render_zoom = 0.35
+        render_point_size = 2.0 * render_scale
+
+        # scene_pcd = o3d.geometry.PointCloud()
+        # scene_pcd.points = o3d.utility.Vector3dVector(points.reshape(-1, 3).astype(np.float64))
+        # scene_pcd.colors = o3d.utility.Vector3dVector(colors.reshape(-1, 3).astype(np.float64))
+        # scene_pcd.transform(np.diag([1.0, -1.0, -1.0, 1.0]))
+
+        # visualize_cloud_geometries(
+        #     scene_pcd,
+        #     [],
+        #     visualize=self.cfgs.debug and not self.cfgs.headless,
+        #     save_file=scene_points_file_name,
+        #     width=render_width,
+        #     height=render_height,
+        #     zoom=render_zoom,
+        #     point_size=render_point_size,
+        #     background_color=[1.0, 1.0, 1.0],
+        #     show_coordinate_frame=False,
+        # )
 
         # pcd = o3d.geometry.PointCloud()
         # pcd.points = o3d.utility.Vector3dVector(object_points.astype(np.float64))
@@ -348,21 +374,21 @@ class ObjectHandler:
         # o3d.visualization.draw_geometries([pcd], window_name="Object Points")
 
         lims = [
-            object_points[:, 0].min(), object_points[:, 0].max(), 
-            object_points[:, 1].min(), object_points[:, 1].max(), 
+            object_points[:, 0].min(), object_points[:, 0].max(),
+            object_points[:, 1].min(), object_points[:, 1].max(),
             object_points[:, 2].min(), object_points[:, 2].max()
         ]
 
-        gg, cloud = self.grasping_model.get_grasp(
-            filtered_points, 
-            filtered_colors, 
-            lims=lims, 
-            apply_object_mask=True, 
-            dense_grasp=False, 
+        gg, cloud = self.grasping_model.get_grasp(  # cloud is valid when debug is True
+            filtered_points,
+            filtered_colors,
+            lims=lims,
+            apply_object_mask=True,
+            dense_grasp=False,
             collision_detection=True
         )
 
-        object_points_ab = (R_c2ab @ object_points.T).T + t_c2ab
+        object_points_ab = (R_c2ab @ object_points.T).T + t_c2ab  # a b: arm_base_link
 
         if gg is None or len(gg) == 0:
             if last_attempt:
@@ -380,11 +406,12 @@ class ObjectHandler:
 
         gg = gg.nms().sort_by_score()
         filter_gg = GraspGroup()
-        # filter_gg_obj = GraspGroup()
+        
         W, H = self.cam.image.size
         min_score, max_score = 1, -10
-        image = copy.deepcopy(self.cam.image)
-        img_drw = draw_rectangle(image, bbox)
+
+        grasp_project_image = self.cam.image.copy().convert("RGB")
+        grasp_project_draw = draw_rectangle(grasp_project_image, bbox)
 
         for g in gg:
             R_cam = g.rotation_matrix @ rotation_top_mat
@@ -404,9 +431,9 @@ class ObjectHandler:
             base_to_target_xy = np.array([p_base[0], p_base[1], 0.0], dtype=np.float32)
             dir_xy = base_to_target_xy / np.linalg.norm(base_to_target_xy)  # arm base -> target
 
-            # 把夹爪接近方向 approach_dir 投影到由 dir_xy 和竖直轴组成的平面
-            approach_in_dir_xy = np.dot(approach_dir, dir_xy) * dir_xy  # approach_dir 在 dir_xy 方向上的分量
-            approach_in_z = approach_dir[2] * np.array([0.0, 0.0, 1.0])  # approach_dir 在 z 方向上的分量
+            # Project the gripper approach direction onto the plane spanned by dir_xy and the vertical axis.
+            approach_in_dir_xy = np.dot(approach_dir, dir_xy) * dir_xy  # Component of approach_dir along dir_xy.
+            approach_in_z = approach_dir[2] * np.array([0.0, 0.0, 1.0])  # Component of approach_dir along the z axis.
             approach = approach_in_dir_xy + approach_in_z
             approach /= float(np.linalg.norm(approach))
 
@@ -423,21 +450,9 @@ class ObjectHandler:
             else:
                 score = g.score
 
-            # print(angle_th, score)
-            if self.cfgs.debug and False:
-                cloud_vis = copy.deepcopy(cloud).transform(c2b)
-                coordinate = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-                gripper = g.to_open3d_geometry().transform(c2b)
-                
-                dir_arrow = create_arrow(dir_xy.astype(np.float64), p_base, [0.0, 0.7, 0.0])
-                approach_arrow = create_arrow(approach_dir.astype(np.float64), p_base, [0.8, 0.0, 0.0])
-                proj_arrow = create_arrow(approach.astype(np.float64), p_base, [0.0, 0.0, 0.6])
-                visual_items = [gripper, cloud_vis, coordinate, dir_arrow, approach_arrow, proj_arrow]
-                o3d.visualization.draw_geometries(visual_items)
-
             if not last_attempt:
                 if seg_mask[iy, ix]:
-                    img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="green")
+                    grasp_project_draw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="green")
                     # filter_gg_obj.add(g)
                     if g.score >= 0.095:
                         g.score = score
@@ -445,7 +460,7 @@ class ObjectHandler:
                     max_score = max(max_score, g.score)
                     filter_gg.add(g)
                 else:
-                    img_drw.ellipse([(ix - 2, iy - 2), (ix + 2, iy + 2)], fill="red")
+                    grasp_project_draw.ellipse([(ix - 1, iy - 1), (ix + 1, iy + 1)], fill="red")
             else:
                 # filter_gg_obj.add(g)
                 g.score = score
@@ -466,39 +481,51 @@ class ObjectHandler:
                     ]
                 )
             return False
-
-        projections_file_name = (
-            self.save_dir + "/grasp_projections.jpg"
-        )
-        image.save(projections_file_name)
-        print(f"Saved projections of grasps at {projections_file_name}")
+        
         filter_gg = filter_gg.nms().sort_by_score()
-        # filter_gg_obj = filter_gg_obj.nms.sort_by_score()
+        grasp_project_image.save(grasp_project_file_name)
+        print(f"Saved grasp projections at {grasp_project_file_name}") 
+        if self.cfgs.debug and not self.cfgs.headless:
+            grasp_project_image.show()
 
-        if self.cfgs.debug:
-            trans_mat = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
-            cloud.transform(trans_mat)
-            grippers = gg.to_open3d_geometry_list()
-            filter_grippers = filter_gg.to_open3d_geometry_list()
-            for gripper in grippers:
-                gripper.transform(trans_mat)
-            for gripper in filter_grippers:
-                gripper.transform(trans_mat)
+        if cloud is None:
+            cloud = o3d.geometry.PointCloud()
+            cloud.points = o3d.utility.Vector3dVector(filtered_points.astype(np.float64))
+            cloud.colors = o3d.utility.Vector3dVector(filtered_colors.astype(np.float64))
 
-            visualize_cloud_geometries(
-                cloud,
-                grippers,
-                visualize=not self.cfgs.headless,
-                save_file=f"{self.save_dir}/poses.jpg",
-                # rerun_name="all_anygrasp_estimated_poses",
-            )
-            visualize_cloud_geometries(
-                cloud,
-                [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
-                visualize=not self.cfgs.headless,
-                save_file=f"{self.save_dir}/best_pose.jpg",
-                # rerun_name="selected_pose",
-            )
+        trans_mat = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
+        cloud_vis = copy.deepcopy(cloud).transform(trans_mat)
+        grippers = gg.to_open3d_geometry_list()
+        filter_grippers = filter_gg.to_open3d_geometry_list()
+        for gripper in grippers:
+            gripper.transform(trans_mat)
+        for gripper in filter_grippers:
+            gripper.transform(trans_mat)
+
+        visualize_cloud_geometries(
+            cloud_vis,
+            grippers,
+            visualize=self.cfgs.debug and not self.cfgs.headless,
+            save_file=grasp_all_file_name,
+            width=render_width,
+            height=render_height,
+            zoom=render_zoom,
+            point_size=render_point_size,
+            background_color=[1.0, 1.0, 1.0],
+            show_coordinate_frame=False,
+        )
+        visualize_cloud_geometries(
+            copy.deepcopy(cloud_vis),
+            [filter_grippers[0].paint_uniform_color([1.0, 0.0, 0.0])],
+            visualize=self.cfgs.debug and not self.cfgs.headless,
+            save_file=grasp_best_file_name,
+            width=render_width,
+            height=render_height,
+            zoom=render_zoom,
+            point_size=render_point_size,
+            background_color=[1.0, 1.0, 1.0],
+            show_coordinate_frame=False,
+        )
         
         translation = (R_c2ab @ filter_gg[0].translation) + t_c2ab
         rotation = R_c2ab @ (filter_gg[0].rotation_matrix @ rotation_top_mat)
@@ -520,6 +547,7 @@ class ObjectHandler:
         self,
         points: np.ndarray,
         seg_mask: np.ndarray,
+        tries: int,
     ):
         colors = self.cam.colors
         c2ab = self.cam.c2ab  # camera in arm base pose
@@ -567,14 +595,13 @@ class ObjectHandler:
         cylinder.paint_uniform_color([0, 1, 0])
         geometries.append(cylinder)
 
-        if self.cfgs.debug:
-            visualize_cloud_geometries(
-                object_pcd,
-                geometries,
-                save_file=self.save_dir + "/pick_back.jpg",
-                visualize=not self.cfgs.headless,
-                # rerun_name="proposed_placing_location",
-            )
+        visualize_cloud_geometries(
+            object_pcd,
+            geometries,
+            save_file=self.save_dir / f"pick_back_{tries}.png",
+            visualize=self.cfgs.debug and not self.cfgs.headless,
+            show_coordinate_frame=False,
+        )
 
         if self.cfgs.open_communication:
             data_msg = "Now you received the gripper (pick back) pose, good luck."

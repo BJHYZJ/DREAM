@@ -20,7 +20,7 @@ tts_engine: "gTTS"
 
 # Sparse Voxel Map parameters
 voxel_size: 0.05
-grid_resolution: 0.05
+grid_resolution: 0.10
 ground_max_height: -0.35  # sensor to ground height is more than 0.325 (base to base_footprint)
 obs_min_height: 0.2 # Ignore things less than this high when planning motions
 obs_max_height: 1.5  # Ignore things over this height (eg ceilings)
@@ -33,9 +33,10 @@ min_points_per_voxel: 15  # Drop things below this density per voxel
 
 
 # Padding
-pad_obstacles: 0.3
-# pad_obstacles: 4  # Add this many units (voxel_size) to the area around obstacles, 
-# min_pad_obstacles: 2  # Do not pad LESS than this amount, for safety.
+# Obstacle inflation radius in meters.
+# Internally converted to grid cells as int(pad_obstacles / grid_resolution).
+# Example: 0.3 with grid_resolution 0.10 inflates obstacles by 3 cells.
+pad_obstacles: 0.2
 
 local_radius: 0.85  # Area around the robot to mark as explored (kind of a hack)
 add_local_every_step: False

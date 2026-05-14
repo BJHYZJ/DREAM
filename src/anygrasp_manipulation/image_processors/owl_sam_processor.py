@@ -130,15 +130,17 @@ class OWLSAMProcessor(ImageProcessor):
 
         seg_mask = mask.detach().cpu().numpy()
         bbox = np.array(bounding_box.detach().cpu(), dtype=int)
-
+        show_image = False
         if visualize:
-            self.draw_bounding_box(image, bbox, box_filename)
-            self.draw_mask_on_image(image, seg_mask, mask_filename)
+            show_image = True
             # if mask_filename is not None:
             #     rr.log(
             #         "object_detection_results",
             #         rr.Image(cv2.imread(mask_filename)[:, :, [2, 1, 0]]),
             #         static=True,
             #     )
+
+        self.draw_bounding_box(image, bbox, box_filename, show_image=show_image)
+        self.draw_mask_on_image(image, seg_mask, mask_filename, show_image=show_image)
 
         return seg_mask, bbox

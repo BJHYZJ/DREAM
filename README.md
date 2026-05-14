@@ -77,6 +77,18 @@ cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation
 python demo.py --open_communication --port 5557
 ```
 
+Optional
+
+If you want to debug AnyGrasp locally without running the robot, disable socket communication and enable debug visualization:
+
+```bash
+conda activate anygrasp
+cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation
+python demo.py --debug
+```
+
+This runs `demo.py` with `open_communication` disabled, so it will load the local example data instead of waiting for the robot and lets you inspect the AnyGrasp outputs directly.
+
 #### Run Dream
 ```bash
 cd ~/path/to/DREAM

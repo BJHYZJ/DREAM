@@ -3,7 +3,6 @@ import numpy as np
 import pinocchio as pin
 
 from dream.agent.manipulation.dream_manipulation.image_publisher import ImagePublisher, DreamCamera
-from dream.agent.manipulation.dream_manipulation.place import Placing
 from dream.agent.manipulation.dream_manipulation.dream_manipulation import (
     DreamManipulationWrapper as ManipulationWrapper,
 )
@@ -32,55 +31,6 @@ HEAD_TILT_RETRY_ANGLES = [0, -5, 10]
 BASE_ROTATION_MIN_ABS_RAD = 0.15  # ~8.6 degrees
 BASE_ROTATION_STEP_DEG = 15
 BASE_ROTATION_SWEEP_DEG = -30
-
-
-def process_image_for_placing(obj, hello_robot, detection_model, save_dir=None):
-    if save_dir is not None:
-        save_dir = save_dir + "/" + obj
-    placing = Placing(hello_robot.robot, detection_model, save_dir=save_dir)
-    retries = PLACE_IMAGE_RETRY_OFFSETS
-    success = False
-    head_tilt = hello_robot.tilt
-    head_pan = hello_robot.pan
-    base_trans = 0
-
-    for i in range(len(retries)):
-        print("Capturing image: ")
-        print(f"retry entries : {retries[i]}")
-        delta_base, delta_tilt = retries[i]
-        hello_robot.move_to_position(
-            base_trans=base_trans + delta_base, head_tilt=head_tilt + delta_tilt, head_pan=head_pan
-        )
-        actions = placing.process(obj, 1, head_tilt=head_tilt + delta_tilt)
-        if actions is not None:
-            base_trans, head_tilt = actions
-            hello_robot.move_to_position(
-                base_trans=base_trans, head_tilt=head_tilt, head_pan=head_pan
-            )
-            success = True
-            break
-
-    if not success:
-        print("Did not detect object!")
-        return None, None
-
-    base_trans = 0
-    head_tilt = hello_robot.tilt
-    head_pan = hello_robot.pan
-
-    for i in range(len(retries)):
-        print("Capturing image: ")
-        print(f"retry entries : {retries[i]}")
-        delta_base, delta_tilt = retries[i]
-        hello_robot.move_to_position(
-            base_trans=base_trans + delta_base, head_tilt=head_tilt + delta_tilt, head_pan=head_pan
-        )
-        translation = placing.process(obj, 2, head_tilt=head_tilt + delta_tilt)
-        if translation is not None:
-            return [0], np.array([-translation[1], -translation[0], -translation[2]])
-
-    print("Did not detect object!")
-    return None, None
 
 
 def apply_se3_transform(se3_obj, point):

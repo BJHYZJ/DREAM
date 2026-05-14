@@ -29,6 +29,17 @@ def get_3d_points(cam: CameraParameters):
     points = np.stack((points_x, points_y, points_z), axis=2)
     return points
 
+# def get_3d_points(cam: CameraParameters):
+
+#     xmap, ymap = np.arange(cam.depths.shape[1]), np.arange(cam.depths.shape[0])
+#     xmap, ymap = np.meshgrid(xmap, ymap)
+#     points_z = cam.depths
+#     points_x = (xmap - cam.cx) / cam.fx * points_z
+#     points_y = (ymap - cam.cy) / cam.fy * points_z
+
+#     points = np.stack((points_x, points_y, points_z), axis=2)
+#     return points
+
 
 def show_mask(mask, ax=None, random_color=False):
     if random_color:
@@ -97,6 +108,12 @@ def visualize_cloud_geometries(
     rotation=None,
     visualize=True,
     save_file=None,
+    width=None,
+    height=None,
+    zoom=None,
+    point_size=None,
+    background_color=None,
+    show_coordinate_frame=True,
 ):
     """
     cloud       : Point cloud of points
@@ -105,7 +122,9 @@ def visualize_cloud_geometries(
     save_file   : Visualisation file name
     """
 
-    coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2, origin=[0, 0, 0])
+    coordinate_frame = None
+    if show_coordinate_frame:
+        coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2, origin=[0, 0, 0])
     if translation is not None:
         coordinate_frame1 = o3d.geometry.TriangleMesh.create_coordinate_frame(
             size=0.2, origin=[0, 0, 0]
@@ -115,26 +134,37 @@ def visualize_cloud_geometries(
         coordinate_frame1.rotate(rotation)
 
     visualizer = o3d.visualization.Visualizer()
-    visualizer.create_window(visible=visualize)
+    window_kwargs = {"visible": visualize}
+    if width is not None:
+        window_kwargs["width"] = int(width)
+    if height is not None:
+        window_kwargs["height"] = int(height)
+    visualizer.create_window(**window_kwargs)
+
+    render_option = visualizer.get_render_option()
+    if point_size is not None:
+        render_option.point_size = float(point_size)
+    if background_color is not None:
+        render_option.background_color = np.asarray(background_color)
+
     for geometry in geometries:
-        visualizer.add_geometry(geometry)
+        if geometry is not None:
+            visualizer.add_geometry(geometry)
     visualizer.add_geometry(cloud)
     if translation is not None:
         visualizer.add_geometry(coordinate_frame1)
+    if zoom is not None:
+        visualizer.get_view_control().set_zoom(float(zoom))
     visualizer.poll_events()
     visualizer.update_renderer()
 
     if save_file is not None:
-        ## Controlling the zoom
-        view_control = visualizer.get_view_control()
-        zoom_scale_factor = 1.4
-        view_control.scale(zoom_scale_factor)
-
-        visualizer.capture_screen_image(save_file, do_render=True)
+        visualizer.capture_screen_image(str(save_file), do_render=True)
         print(f"Saved screen shot visualization at {save_file}")
 
     if visualize:
-        visualizer.add_geometry(coordinate_frame)
+        if coordinate_frame is not None:
+            visualizer.add_geometry(coordinate_frame)
         visualizer.run()
     else:
         visualizer.destroy_window()

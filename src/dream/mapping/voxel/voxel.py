@@ -553,7 +553,7 @@ class SparseVoxelMap:
         camera_pose: np.ndarray, 
         base_pose: np.ndarray,
         obs_id: int,
-        save_all_obs: bool=True,
+        save_all_obs: bool=False,
         **info,
     ):
         """
