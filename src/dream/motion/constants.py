@@ -15,10 +15,6 @@ back_place = [180, -5, -110, 0, 115, 0]
 back_look = [180, -30, -130, 0, 155, 0]
 back_down = [180, -20, -100, 0, 120, 0]
 
-SAFE_CAMERA_TILT_MIN_DEG = 75
-SAFE_CAMERA_TILT_MAX_DEG = 135
-
-
 
 T_LOC_STABILIZE = 0.1
 BASE_JOINTS = ['base_x', 'base_y', 'base_theta']

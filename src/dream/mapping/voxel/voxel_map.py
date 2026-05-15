@@ -348,11 +348,15 @@ class SparseVoxelMapNavigationSpace:
             if not target_is_valid:
                 continue
             if np.linalg.norm([selected_x - point[0], selected_y - point[1]]) <= self._min_frontier_distance:
-                i = (point[0] - selected_target[0]) // abs(point[0] - selected_target[0])
-                j = (point[1] - selected_target[1]) // abs(point[1] - selected_target[1])
-                index_i = int(selected_target[0].int() + i)
-                index_j = int(selected_target[1].int() + j)
-                if obstacles[index_i][index_j]:
+                step_i = int(np.sign(int(target_x) - int(selected_target[0])))
+                step_j = int(np.sign(int(target_y) - int(selected_target[1])))
+                index_i = int(selected_target[0]) + step_i
+                index_j = int(selected_target[1]) + step_j
+                if (
+                    0 <= index_i < obstacles.shape[0]
+                    and 0 <= index_j < obstacles.shape[1]
+                    and obstacles[index_i][index_j]
+                ):
                     target_is_valid = False
 
             if not target_is_valid:

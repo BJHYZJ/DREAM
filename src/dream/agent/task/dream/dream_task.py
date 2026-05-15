@@ -188,10 +188,8 @@ class DreamTaskExecutor:
             elif command == "pickup":
                 logger.info(f"[Pickup task] Pickup: {args}")
                 target_object = args
-                next_command, next_args = response[i]
 
                 # Navigation
-
                 # Either we wait for users to confirm whether to run navigation, or we just directly control the robot to navigate.
                 if self.skip_confirmations or (
                     not self.skip_confirmations
@@ -222,10 +220,8 @@ class DreamTaskExecutor:
             elif command == "place":
                 logger.info(f"[Pickup task] Place: {args}")
                 target_object = args
-                next_command, next_args = response[i]
 
                 # Navigation
-
                 # Either we wait for users to confirm whether to run navigation, or we just directly control the robot to navigate.
                 if self.skip_confirmations or (
                     not self.skip_confirmations

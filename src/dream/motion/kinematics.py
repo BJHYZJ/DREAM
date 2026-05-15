@@ -52,23 +52,53 @@ class RangerxARMKinematics:
     #     [0.000,  0.000,  0.000,  1.000],
     # ], dtype=np.float32)
 
-    TILT_RANGE = [
-        deg
-        for deg in range(
-            constants.SAFE_CAMERA_TILT_MIN_DEG,
-            constants.SAFE_CAMERA_TILT_MAX_DEG + 1,
-            1,
-        )
-    ]
-    PAN_RANGE = [deg for deg in range(-45, 45, 1)]
+    # TILT_RANGE = [
+    #     deg
+    #     for deg in range(
+    #         constants.SAFE_CAMERA_TILT_MIN_DEG,
+    #         constants.SAFE_CAMERA_TILT_MAX_DEG + 1,
+    #         1,
+    #     )
+    # ]
+    # PAN_RANGE = [deg for deg in range(-45, 45, 1)]
 
-    def __init__(self, urdf_path: Optional[str] = None, verbose: bool = False):
+    def __init__(
+        self,
+        urdf_path: Optional[str] = None,
+        verbose: bool = False,
+        camera_tilt_min_deg: int = 75,
+        camera_tilt_max_deg: int = 135,
+        camera_pan_min_deg: int = -45,
+        camera_pan_max_deg: int = 45,
+        camera_angle_step_deg: int = 1,
+    ):
         """Initialize with Pinocchio for local IK computation.
         
         Args:
             urdf_path: Path to URDF file. If None, uses default xarm6_kinematics.urdf
             verbose: Whether to print detailed initialization info
         """
+        camera_angle_step_deg = max(1, int(camera_angle_step_deg))
+        self.camera_tilt_min_deg = int(camera_tilt_min_deg)
+        self.camera_tilt_max_deg = int(camera_tilt_max_deg)
+        self.camera_pan_min_deg = int(camera_pan_min_deg)
+        self.camera_pan_max_deg = int(camera_pan_max_deg)
+        self.camera_angle_step_deg = camera_angle_step_deg
+        self.TILT_RANGE = list(
+            range(
+                self.camera_tilt_min_deg,
+                self.camera_tilt_max_deg + 1,
+                self.camera_angle_step_deg,
+            )
+        )
+        self.PAN_RANGE = list(
+            range(
+                self.camera_pan_min_deg,
+                self.camera_pan_max_deg + 1,
+                self.camera_angle_step_deg,
+            )
+        )
+
         if urdf_path is None:
             urdf_path = str(
                 Path(__file__).resolve().parents[2]  # .../DREAM/src

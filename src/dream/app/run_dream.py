@@ -71,7 +71,7 @@ def main(
         skip_confirmations=skip_confirmations,
     )
 
-    while True:
+    # while True:
         # command = [("pause_slam", "")]
         # executor(command)
         # command = [("resume_slam", "")]
@@ -102,10 +102,10 @@ def main(
         # (2)
         # import time
         # time.sleep(10)
-        command = [("pickup_only", "remote control")]
-        executor(command)
-
         # command = [("pickup_only", "wrench")]
+        # executor(command)
+
+        # command = [("pickup_only", "remote control")]
         # executor(command)
 
         # # (3)
@@ -127,12 +127,17 @@ def main(
     # return
 
 
-    # if input_path is None:
-    #     start_command = [("rotate_in_place", "")]
-    # else:
-    #     start_command = [("read_from_pickle", input_path)]
-    # executor(start_command)
+    if input_path is None:
+        start_command = [("rotate_in_place", "")]
+    else:
+        start_command = [("read_from_pickle", input_path)]
+    executor(start_command)
 
+
+    find_command = [("find", "yellow kinfe")]
+    executor(find_command)
+
+    return 
 
 
     # Parse things and listen to the user

@@ -32,7 +32,7 @@ from dream.motion import PlanResult
 from dream.perception.detection.owl import OwlPerception
 from dream.perception.encoders.siglip_encoder import MaskSiglipEncoder
 from dream.perception.wrapper import OvmmPerception
-from dream.utils.logger import Logger
+from dream.utils.logger import Logger, color_text
 
 logger = Logger(__name__)
 
@@ -613,6 +613,7 @@ class RobotAgent:
         self,
         text: str,
         arm_speed=40,
+        step_num: int=8,
     ):
         # self.robot.look_front(speed=arm_speed)
         self.look_around(speed=arm_speed)
@@ -620,71 +621,102 @@ class RobotAgent:
         self.robot.switch_to_navigation_mode()
 
         start = self.robot.get_base_in_map_xyt()
-        res = self.process_text(text, start)
-        if len(res) == 0 and text != "" and text is not None:
-            res = self.process_text("", start)
+        res = self.process_text(text, start, step_num=step_num)
+        if (res is None or len(res) == 0) and text != "" and text is not None:
+            res = self.process_text("", start, step_num=step_num)
 
-        if len(res) > 0:
-            print("Plan successful!")
-            goal_point = res[-1]
-            if len(res) >= 2 and np.isnan(res[-2]).all():
-                if len(res) > 2:
-                    self.robot.execute_trajectory(
-                        res[:-2],
-                        pos_err_threshold=self.pos_err_threshold,
-                        rot_err_threshold=self.rot_err_threshold,
-                        blocking=True,
-                        final_timeout=5.0,
-                    )
+        return self._execute_navigation_result(text, res)
 
-                verified = self._verify_target_after_navigation(text, goal_point)
-                if not verified:
-                    return False, None
-                return True, goal_point
-            else:
+    def _execute_navigation_result(
+        self,
+        text: str,
+        res,
+    ):
+        if res is None or len(res) == 0:
+            logger.error("Failed. Try again!")
+            return None, None
+
+        logger.alert("Plan successful!")
+        goal_point = res[-1]
+        if len(res) >= 2 and np.isnan(res[-2]).all():
+            if len(res) > 2:
                 self.robot.execute_trajectory(
-                    res,
+                    res[:-2],
                     pos_err_threshold=self.pos_err_threshold,
                     rot_err_threshold=self.rot_err_threshold,
                     blocking=True,
                     final_timeout=5.0,
                 )
+
+            verified = self._verify_target_after_navigation(text, goal_point)
+            if not verified:
                 return False, None
-        else:
-            print("Failed. Try again!")
-            return None, None
+            return True, goal_point
+
+        self.robot.execute_trajectory(
+            res,
+            pos_err_threshold=self.pos_err_threshold,
+            rot_err_threshold=self.rot_err_threshold,
+            blocking=True,
+            final_timeout=5.0,
+        )
+        return False, None
 
     def _verify_target_after_navigation(self, text: Optional[str], end_point: Optional[np.ndarray]) -> bool:
         """Ensure the target still exists and is within manipulation range."""
         if text is None or text == "" or end_point is None:
             return True
 
-        print("verifying target existence after navigation...")
+        logger.info("Verifying target existence after navigation...")
         self.robot.look_at_target(tar_in_map=end_point, blocking=True)
         time.sleep(3)
         if not self._realtime_updates:
             self.update()
 
         if not self.voxel_map.observations:
-            print("No observations available to verify target.")
+            logger.error("No observations available to verify target.")
             return False
 
         latest_obs_id = max(self.voxel_map.observations.keys())
         text_exist = self.voxel_map.detect_text(text=text, obs_id=latest_obs_id)
         if not text_exist:
-            print("Target not found after navigation, continue navigation...")
+            logger.warning("Target not found after navigation, continue navigation...")
             return False
 
         robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2])
         target_xy = np.array(end_point[:2])
         dist = np.linalg.norm(robot_xy - target_xy)
         if dist > self._manipulation_radius:
-            print(
+            logger.warning(
                 f"Target detected but outside manipulation radius ({dist:.2f} m), continue navigation..."
             )
             return False
 
+        logger.alert(f"Target verified within manipulation radius ({dist:.2f} m).")
         return True
+
+    def _build_close_target_trajectory(self, start_pose, target_point):
+        """Stop regular navigation near the target, optionally rotating in place to face it."""
+        start_xy = np.asarray(start_pose[:2], dtype=float)
+        target_xy = np.asarray(target_point[:2], dtype=float)
+        vec_to_target = target_xy - start_xy
+        if np.linalg.norm(vec_to_target) < 1e-6:
+            return [[np.nan, np.nan, np.nan], target_point.tolist()]
+
+        target_bearing = np.arctan2(vec_to_target[1], vec_to_target[0])
+        base_yaw = float(start_pose[2])
+        bearing_error = (target_bearing - base_yaw + np.pi) % (2 * np.pi) - np.pi
+
+        target_xyt = [
+            float(start_pose[0]),
+            float(start_pose[1]),
+            float(base_yaw + bearing_error),
+        ]
+        logger.alert(
+            "Target is within manipulation radius; rotating base in place "
+            f"({np.rad2deg(bearing_error):.1f} deg) instead of planning a nearby viewpoint."
+        )
+        return [target_xyt, [np.nan, np.nan, np.nan], target_point.tolist()]
 
     def run_exploration(self):
         """Go through exploration. We use the voxel_grid map created by our collector to sample free space, and then use our motion planner (RRT for now) to get there. At the end, we plan back to (0,0,0).
@@ -697,12 +729,12 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose, step_num=24):
+    def process_text(self, text, start_pose, step_num=8, allow_early_stop: bool = True):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
 
-        print("Processing", text, "starts")
+        logger.info("Processing", text, "starts")
 
         self.rerun_visualizer.clear_identity("world/object")
         self.rerun_visualizer.clear_identity("world/robot_start_pose")
@@ -730,7 +762,7 @@ class RobotAgent:
                     localized_point = traj_target_point
                     debug_text += "## Last visual grounding results looks fine so directly use it.\n"
 
-            print("Target verification finished")
+            logger.info("Target verification finished")
             if text is not None and text != "" and localized_point is None:
                 (
                     localized_point,
@@ -738,7 +770,7 @@ class RobotAgent:
                     obs,
                     pointcloud,
                 ) = self.voxel_map.localize_text(text, debug=True, return_debug=True)
-                print("Target point selected!")
+                logger.alert("Target point selected!")
 
             # Do Frontier based exploration
             if text is None or text == "" or localized_point is None:
@@ -759,6 +791,39 @@ class RobotAgent:
             if len(localized_point) == 2:
                 localized_point = np.array([localized_point[0], localized_point[1], 0])
 
+            if allow_early_stop and mode == "navigation":
+                start_xy = np.array(start_pose[:2], dtype=float)
+                if isinstance(localized_point, torch.Tensor):
+                    localized_xy = localized_point.detach().cpu().numpy()
+                else:
+                    localized_xy = np.asarray(localized_point)
+                localized_xy = np.asarray(localized_xy, dtype=float).reshape(-1)
+                finished_point = localized_xy.tolist()
+
+                if np.linalg.norm(start_xy - localized_xy[:2]) <= self._manipulation_radius:
+                    logger.alert(
+                        "Robot already within manipulation radius; skipping target viewpoint planning."
+                    )
+                    debug_text += (
+                        "## Robot already within manipulation radius; skip target viewpoint planning and verify for grasping.\n"
+                    )
+                    traj = self._build_close_target_trajectory(start_pose, localized_xy)
+                    self.space.traj = None
+                    self.rerun_visualizer.log_custom_pointcloud(
+                        "world/object",
+                        [finished_point[0], finished_point[1], 0.5],
+                        torch.Tensor([0, 1, 0]),
+                        0.1,
+                    )
+
+                    if text is not None and text != "":
+                        debug_text = "### The goal is to navigate to " + text + ".\n" + debug_text
+                    else:
+                        debug_text = "### I have not received any text query from human user.\n ### So, I plan to explore the environment with Frontier-based exploration.\n"
+                    debug_text = "# Robot's monologue: \n" + debug_text
+                    self.rerun_visualizer.log_text("robot_monologue", debug_text)
+                    return traj
+
             point = self.space.sample_target_point(
                 start=start_pose, 
                 point=localized_point, 
@@ -768,13 +833,13 @@ class RobotAgent:
 
             # print("localized_point:", localized_point, "goal:", point)
 
-            print("Navigation endpoint selected")
+            logger.info("Navigation endpoint selected")
 
             waypoints = None
 
             if point is None:
                 res = None
-                print("Unable to find any target point, some exception might happen")
+                logger.warning("Unable to find any target point, some exception might happen")
             else:
                 res = self.planner.plan(start_pose, point)
 
@@ -782,24 +847,9 @@ class RobotAgent:
             waypoints = [pt.state for pt in res.trajectory]
         elif res is not None:
             waypoints = None
-            print("[FAILURE]", res.reason)
+            logger.error("[FAILURE]", res.reason)
 
         traj = []
-        close_enough = False
-        if (
-            waypoints is not None
-            and mode == "navigation"
-            and localized_point is not None
-            and len(localized_point) >= 2
-        ):
-            start_xy = np.array(start_pose[:2], dtype=float)
-            if isinstance(localized_point, torch.Tensor):
-                localized_xy = localized_point.detach().cpu().numpy()
-            else:
-                localized_xy = np.asarray(localized_point)
-            localized_xy = localized_xy[:2]
-            close_enough = np.linalg.norm(start_xy - localized_xy) <= self._manipulation_radius
-
         if waypoints is not None:
             self.rerun_visualizer.log_custom_pointcloud(
                 "world/object",
@@ -809,9 +859,6 @@ class RobotAgent:
             )
 
             finished = len(waypoints) <= step_num and mode == "navigation"
-            if close_enough:
-                finished = True
-                debug_text += "## Robot already within manipulation radius; executing full trajectory.\n"
 
             if finished:
                 self.space.traj = None
@@ -868,14 +915,18 @@ class RobotAgent:
         step = 0
         end_point = None
         while not finished and step < max_step:
-            print("*" * 20, "navigation step", step, "*" * 20)
+            logger.info(
+                color_text("*" * 20, "cyan"),
+                f"navigation step {step}",
+                color_text("*" * 20, "cyan"),
+            )
             step += 1
             finished, end_point = self.execute_action(text)
             if finished is None:
-                print("Navigation failed! The path might be blocked!")
+                logger.error("Navigation failed! The path might be blocked!")
                 return None
 
-        print("Navigation finished!")
+        logger.alert("Navigation finished!")
         return end_point
 
     def place(        

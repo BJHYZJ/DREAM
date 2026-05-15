@@ -175,6 +175,11 @@ class RobotZmqClient(AbstractRobotClient):
             # grasp_frame=grasp_frame,
             # ee_link_name=ee_link_name,
             # manip_mode_controlled_joints=manip_mode_controlled_joints,
+            camera_tilt_min_deg=parameters.get("motion/camera_look_at/tilt_min_deg", 75),
+            camera_tilt_max_deg=parameters.get("motion/camera_look_at/tilt_max_deg", 135),
+            camera_pan_min_deg=parameters.get("motion/camera_look_at/pan_min_deg", -45),
+            camera_pan_max_deg=parameters.get("motion/camera_look_at/pan_max_deg", 45),
+            camera_angle_step_deg=parameters.get("motion/camera_look_at/step_deg", 1),
         )
 
         # Create ZMQ sockets
