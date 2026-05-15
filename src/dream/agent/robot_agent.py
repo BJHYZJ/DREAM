@@ -118,12 +118,42 @@ class RobotAgent:
         
         self._voxel_size = parameters["voxel_size"]
 
-        self._pose_trans_thresh: float = 0.03  # metre
-        self._pose_rot_thresh: float = 3.0  # degree
-        self._win_for_small_update: int = 50  # in 3hz, around 10 second, must has at least one frame in nearest 6 frame
-        self._win_for_realtime_update: int = 10  # in 3hz, around 2 second
-        self._max_obs_length = 500
-        self._max_pose_graph_obs_length = self._max_obs_length // 5
+        pose_graph_update_params = "agent/pose_graph_updates"
+        self._pose_graph_updates_enabled: bool = parameters.get(
+            f"{pose_graph_update_params}/enabled", True
+        )
+        self._with_big_loop_update: bool = parameters.get(
+            f"{pose_graph_update_params}/with_big_loop", False
+        )
+        self._with_medium_loop_update: bool = parameters.get(
+            f"{pose_graph_update_params}/with_medium_loop", True
+        )
+        self._with_small_loop_update: bool = parameters.get(
+            f"{pose_graph_update_params}/with_small_loop", True
+        )
+        self._pose_trans_thresh: float = parameters.get(
+            f"{pose_graph_update_params}/pose_trans_thresh", 0.03
+        )  # metre
+        self._pose_rot_thresh: float = parameters.get(
+            f"{pose_graph_update_params}/pose_rot_thresh", 3.0
+        )  # degree
+        self._win_for_small_update: int = parameters.get(
+            f"{pose_graph_update_params}/win_for_small_update", 50
+        )  # in 3hz, around 10 second, must has at least one frame in nearest 6 frame
+        self._win_for_realtime_update: int = parameters.get(
+            f"{pose_graph_update_params}/win_for_realtime_update", 10
+        )  # in 3hz, around 2 second
+        self._max_obs_length = parameters.get(f"{pose_graph_update_params}/max_obs_length", 500)
+        self._max_pose_graph_obs_length = parameters.get(
+            f"{pose_graph_update_params}/max_pose_graph_obs_length",
+            self._max_obs_length // 5,
+        )
+        self._pose_graph_poll_interval: float = parameters.get(
+            f"{pose_graph_update_params}/poll_interval", 1.0
+        )
+        self._invalidate_cached_traj_on_pose_graph_update: bool = parameters.get(
+            f"{pose_graph_update_params}/invalidate_cached_traj", True
+        )
 
         self._pose_graph_timestamp = None
         self._obs_timestamp = None
@@ -210,14 +240,18 @@ class RobotAgent:
     def update_map_loop(self):
         """Threaded function that updates our voxel map in real-time."""
         while self.robot.running:
-            self.update_map_with_pose_graph()
+            self.update_map_with_pose_graph(
+                with_big_loop=self._with_big_loop_update,
+                with_medium_loop=self._with_medium_loop_update,
+                with_small_loop=self._with_small_loop_update,
+            )
 
     def update_map_with_pose_graph(
         self, 
         verbose: bool=True,
-        with_big_loop=False,
-        with_medium_loop=True,
-        with_small_loop=True,
+        with_big_loop: Optional[bool]=None,
+        with_medium_loop: Optional[bool]=None,
+        with_small_loop: Optional[bool]=None,
     ) -> None:
         """ 
         Update our voxel pointcloud and semantic memory using a pose graph
@@ -243,12 +277,17 @@ class RobotAgent:
         # Thanks to the design of clear_points, a `self.voxel_map.reset()` is not required, which effectively reduces computational overhead.
         # We simply re-added the most recent 10 frames to the scene according to the latest pose.
         
+        if not self._pose_graph_updates_enabled:
+            time.sleep(self._pose_graph_poll_interval)
+            return
+
         if not self.voxel_map.observations or self.robot.in_task():
-            time.sleep(0.5)
+            time.sleep(self._pose_graph_poll_interval)
             return 
         pose_graph_data = self.robot.get_pose_graph()
         pose_graph_timestamp = pose_graph_data["timestamp"]
         if self._pose_graph_timestamp and pose_graph_timestamp <= self._pose_graph_timestamp:
+            time.sleep(self._pose_graph_poll_interval)
             return
         self._pose_graph_timestamp = pose_graph_timestamp
         pose_graph = pose_graph_data["pose_graph"]
@@ -364,6 +403,9 @@ class RobotAgent:
                     if verbose and False:
                         print(f"[No Loop Happend]: observations lenght: {len(self.voxel_map.observations)}, shared_ids length: {len(shared_ids)}, affected_ids: {affected_ids}")
                     pass
+
+            self._handle_pose_graph_map_update(update_length, verbose=verbose)
+
             # Limit the number of observations
             if len(self.voxel_map.observations) > self._max_obs_length:
                 obs_ids_now = sorted(self.voxel_map.observations.keys())
@@ -397,7 +439,24 @@ class RobotAgent:
                 print(f"[Update map with pose graph realtime] spend time: {t2 - t0}, observations length: {len(obs_ids_now)}")
                 print("=" * 60)
         # print(f"Observations Len: {len(self.voxel_map.observations)}")
-        time.sleep(1)
+        time.sleep(self._pose_graph_poll_interval)
+
+    def _handle_pose_graph_map_update(self, update_length: int, verbose: bool = False) -> None:
+        """Invalidate cached navigation targets after semantic-map changes."""
+        if update_length <= 0:
+            return
+
+        if not self._invalidate_cached_traj_on_pose_graph_update:
+            return
+        
+        if self.space.traj is None:
+            return
+
+        self.space.traj = None
+        if verbose:
+            logger.info(
+                "Pose graph map update invalidated cached navigation trajectory."
+            )
 
     def reset_object_plans(self):
         """Clear stored object planning information."""

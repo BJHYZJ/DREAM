@@ -129,6 +129,24 @@ agent:
   use_realtime_updates: True
   realtime_rotation_steps: 4
 
+  # Pose graph based semantic map updates.
+  # These switches consume already-optimized SLAM pose graph nodes and re-add
+  # selected RGB-D frames to semantic memory using the optimized camera poses.
+  pose_graph_updates:
+    enabled: True
+    with_big_loop: False
+    with_medium_loop: True
+    with_small_loop: True
+    pose_trans_thresh: 0.1  # meters
+    pose_rot_thresh: 5.0  # degrees
+    win_for_small_update: 50
+    win_for_realtime_update: 10
+    max_obs_length: 500
+    # Defaults to max_obs_length // 5 in code if omitted.
+    max_pose_graph_obs_length: 100
+    poll_interval: 1.0
+    invalidate_cached_traj: True
+
   # Configuration of the in-place rotation
   in_place_rotation_steps: 4  # If you are not moving the head, rotate more often
   sweep_head_on_update: True
