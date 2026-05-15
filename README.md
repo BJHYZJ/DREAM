@@ -35,6 +35,7 @@ sudo modprobe gs_usb
 sudo ip link set can0 up type can bitrate 500000
 ```
 
+
 Terminal 1 (Start Sensors and Fast-LIO2):
 ```bash
 ros2 launch dream_ros2_bridge dream_node_start.launch.py use_rviz:=false
@@ -63,6 +64,31 @@ Terminal 3 (DREAM ROS2 bridge server):
 source /opt/ros/humble/setup.bash
 source ~/DREAM_ws/DREAM_ws/install/setup.bash
 ros2 launch dream_ros2_bridge dream_server.launch.py
+```
+
+You can also start the hardware-side ROS runtime with one script. It uses
+Terminator to open one terminal window with three split panes for the node start
+launch, RTAB-Map SLAM, and DREAM ROS2 bridge server:
+
+```bash
+sudo apt install -y terminator
+```
+
+```bash
+cd ~/DREAM_ws/DREAM_ws
+bash src/dream_ros2_bridge/run_hardware_system.sh
+```
+
+If a machine needs more time for sensors or RTAB-Map startup, increase the waits:
+
+```bash
+NODE_START_WAIT=25 RTABMAP_WAIT=15 bash src/dream_ros2_bridge/run_hardware_system.sh
+```
+
+If `can0` is already up, skip CAN setup:
+
+```bash
+SKIP_CAN_SETUP=1 bash src/dream_ros2_bridge/run_hardware_system.sh
 ```
 
 ### Service machine (AnyGrasp server)

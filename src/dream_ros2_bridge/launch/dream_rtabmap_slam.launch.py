@@ -65,7 +65,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'frame_id': frame_id,
     'qos': LaunchConfiguration('qos'),
     'wait_for_transform': 0.5,
-    # Synchronization parameters # 控制rgbd和雷达的同步参数
+    # Synchronization parameters for RGB-D and LiDAR.
     'approx_sync': True,  
     'approx_sync_max_interval': '0.1',
     # 'queue_size': 20,
@@ -91,7 +91,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'subscribe_depth': False,
     'subscribe_rgb': False,
     'subscribe_rgbd': True,
-    'subscribe_odom_info': False,  # 只有使用rtabmap中的odom才打开，这里使用了fast_lio2的odometry，所以不能设置为true
+    'subscribe_odom_info': False,  # Enable only when using RTAB-Map odometry. FAST-LIO2 odometry is used here.
     'subscribe_scan_cloud': True,
     'odom_sensor_sync': True, # This will adjust camera position based on difference between lidar and camera stamps.
     'map_frame_id': 'map',
@@ -105,14 +105,14 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'RGBD/AngularUpdate': '0.1',
     'RGBD/LinearUpdate': '0.1',
     'RGBD/CreateOccupancyGrid': 'false',
-    'RGBD/ForceOdom3DoF': force_3dof,       # 默认: true - Force odometry pose to be 3DoF if Reg/Force3DoF=true.
+    'RGBD/ForceOdom3DoF': force_3dof,       # Default: true - Force odometry pose to be 3DoF if Reg/Force3DoF=true.
 
-    'Grid/3D': 'false',   # 显示设置为false，不需要grid，同时设置'Grid/Sensor'为0是为了避免warn: [rtabmap_ranger_xarm.rtabmap]: Setting "Grid/Sensor" parameter to 0 (default 1) as "subscribe_scan" or "subscribe_scan_cloud" or "gen_scan" is true. The occupancy grid map will be constructed from laser scans. To get occupancy grid map from cloud projection, set "Grid/Sensor" to true. To suppress this warning, add <param name="Grid/Sensor" type="string" value="0"/>
+    'Grid/3D': 'false',   # Explicitly disable the 3D grid and set Grid/Sensor to 0 to avoid RTAB-Map occupancy grid warnings.
     'Grid/Sensor': "0",  # Create occupancy grid from selected sensor: 0=laser scan, 1=depth image(s) or 2=both laser scan and depth image(s).
 
     'Mem/NotLinkedNodesKept': 'false',
     'Mem/STMSize': '60',
-    'Mem/DepthCompressionFormat': '.png',  # 将深度图压缩格式从RVL改为PNG
+    'Mem/DepthCompressionFormat': '.png',  # Use PNG instead of RVL for depth image compression.
 
     'Reg/Force3DoF': force_3dof,
     'Reg/RepeatOnce': 'true',
@@ -142,7 +142,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
       Node(
           package='rtabmap_sync', executable='rgbd_sync', output='screen',
           namespace=namespace,
-          parameters=[{'approx_sync': False, 'use_sim_time': use_sim_time}],  # approx_sync，控制 RGB 图像和深度图像的同步
+          parameters=[{'approx_sync': False, 'use_sim_time': use_sim_time}],  # approx_sync controls RGB and depth image synchronization.
           remappings=remappings),
 
       Node(
@@ -211,7 +211,7 @@ def generate_launch_description():
       description='Localization mode.'),
 
     DeclareLaunchArgument(
-      'lidar_topic', default_value='/fast_lio2/cloud_registered_body',  # /fast_lio2/cloud_registered_body在lidar_frame坐标系下
+      'lidar_topic', default_value='/fast_lio2/cloud_registered_body',  # /fast_lio2/cloud_registered_body is in the lidar_frame coordinate frame.
       description='FAST-LIO2 registered point cloud topic.'),
 
     DeclareLaunchArgument(
@@ -257,5 +257,3 @@ def generate_launch_description():
 
     OpaqueFunction(function=launch_setup),
   ])
-
-    
