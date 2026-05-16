@@ -1024,7 +1024,7 @@ class SparseVoxelMap:
                         target_point = point
                         console.alert("mLLM verified target in this frame; using nearest point.")
                         debug_text += (
-                            "#### - mLLM verified target in this frame. **** Using nearest point.\n"
+                            "#### - mLLM verified target in this frame. **😃** Using nearest point.\n"
                         )
                     else:
                         console.warning("mLLM did not verify the target in this frame.")
