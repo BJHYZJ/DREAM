@@ -105,8 +105,8 @@ def main(
         # command = [("pickup_only", "wrench")]
         # executor(command)
 
-        # command = [("pickup_only", "remote control")]
-        # executor(command)
+    command = [("find", "yellow knife")]
+    executor(command)
 
         # # (3)
         # flag2 = True    
@@ -124,7 +124,7 @@ def main(
         # while True:
         #     time.sleep(0.1)
 
-    # return
+    return
 
 
     if input_path is None:

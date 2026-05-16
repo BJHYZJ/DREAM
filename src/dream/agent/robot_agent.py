@@ -2,9 +2,9 @@ import os
 import time
 import timeit
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 from uuid import uuid4
-from threading import Lock, RLock, Thread
+from threading import RLock, Thread
 import cv2
 import numpy as np
 import rerun as rr
@@ -108,8 +108,18 @@ class RobotAgent:
         self._max_navigation_attempts = int(parameters.get("agent/max_navigation_attempts", 20))
 
         self._cached_navigation_goal = None
+        self._cached_navigation_goal_obs_id = None
         self._cached_navigation_goal_lock = RLock()
         self._cached_navigation_goal_version = 0
+        
+        self._rejected_target_obs_ids: Dict[str, Set[int]] = {}
+        self._rejected_target_regions: Dict[str, List[Dict[str, Any]]] = {}
+        self._target_reject_region_radius = float(
+            parameters.get("agent/target_reject_region_radius", 0.30)
+        )
+        self._max_rejected_target_regions_per_text = int(
+            parameters.get("agent/max_rejected_target_regions_per_text", 20)
+        )
         # ==============================================
 
         # Parameters for feature matching and exploration
@@ -192,8 +202,10 @@ class RobotAgent:
 
     def _start_threads(self):
         """Create threads and locks for real-time updates."""
-        # Create Lock for voxel map
-        self._voxel_map_lock = Lock()
+        # Create a reentrant lock for voxel map access. Some verification helpers
+        # need small observation snapshots while higher-level map code may already
+        # hold the lock.
+        self._voxel_map_lock = RLock()
 
         # Map updates
         self._update_map_thread = Thread(target=self.update_map_loop)
@@ -754,9 +766,19 @@ class RobotAgent:
             return True, planned_goal_point
 
         logger.info("Verifying target existence after navigation...")
-        detected_goal_point = self._focus_and_detect_goal(text, planned_goal_point)
+        detected_goal_point, verification_is_current = self._focus_and_detect_goal(
+            text,
+            planned_goal_point,
+        )
         if detected_goal_point is None:
-            self._clear_cached_navigation_goal()
+            if verification_is_current:
+                self._reject_cached_navigation_goal(text)
+                self._clear_cached_navigation_goal()
+            else:
+                logger.warning(
+                    "Focused verification did not capture a new observation; "
+                    "keeping cached goal and skipping target rejection."
+                )
             return False, None
 
         robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2], dtype=float)
@@ -818,8 +840,8 @@ class RobotAgent:
         with self._cached_navigation_goal_lock:
             cached_goal = self._get_cached_navigation_goal()
             if cached_goal is None:
-                return None, self._cached_navigation_goal_version
-            return cached_goal, self._cached_navigation_goal_version
+                return None, self._cached_navigation_goal_version, self._cached_navigation_goal_obs_id
+            return cached_goal, self._cached_navigation_goal_version, self._cached_navigation_goal_obs_id
 
     def _cached_navigation_goal_version_matches(self, version: int) -> bool:
         with self._cached_navigation_goal_lock:
@@ -828,16 +850,23 @@ class RobotAgent:
                 and self._cached_navigation_goal_version == version
             )
 
-    def _set_cached_navigation_goal(self, goal_point) -> None:
+    def _set_cached_navigation_goal(self, goal_point, obs_id: Optional[int] = None) -> None:
         goal = self._target_to_numpy(goal_point)
         with self._cached_navigation_goal_lock:
             if goal is None:
                 self._cached_navigation_goal = None
+                self._cached_navigation_goal_obs_id = None
             else:
                 self._cached_navigation_goal = goal.copy()
+                self._cached_navigation_goal_obs_id = int(obs_id) if obs_id is not None else None
             self._cached_navigation_goal_version += 1
 
-    def _set_cached_navigation_goal_if_version(self, goal_point, version: int) -> bool:
+    def _set_cached_navigation_goal_if_version(
+        self,
+        goal_point,
+        version: int,
+        obs_id: Optional[int] = None,
+    ) -> bool:
         goal = self._target_to_numpy(goal_point)
         if goal is None:
             return False
@@ -845,13 +874,92 @@ class RobotAgent:
             if self._cached_navigation_goal is None or self._cached_navigation_goal_version != version:
                 return False
             self._cached_navigation_goal = goal.copy()
+            self._cached_navigation_goal_obs_id = int(obs_id) if obs_id is not None else None
             self._cached_navigation_goal_version += 1
             return True
 
     def _clear_cached_navigation_goal(self) -> None:
         with self._cached_navigation_goal_lock:
             self._cached_navigation_goal = None
+            self._cached_navigation_goal_obs_id = None
             self._cached_navigation_goal_version += 1
+
+    def _target_text_key(self, text: Optional[str]) -> str:
+        return "" if text is None else str(text).strip().lower()
+
+    def _observation_ids_snapshot(self) -> list:
+        with self._voxel_map_lock:
+            return sorted(self.voxel_map.observations.keys())
+
+    def _latest_observation_id(self) -> Optional[int]:
+        obs_ids = self._observation_ids_snapshot()
+        return obs_ids[-1] if obs_ids else None
+
+    def _get_rejected_target_obs_ids(self, text: Optional[str]) -> Set[int]:
+        key = self._target_text_key(text)
+        if not key:
+            return set()
+        return set(self._rejected_target_obs_ids.get(key, set()))
+
+    def _get_rejected_target_regions(self, text: Optional[str]) -> List[Dict[str, Any]]:
+        key = self._target_text_key(text)
+        if not key:
+            return []
+
+        regions = []
+        for region in self._rejected_target_regions.get(key, []):
+            copied = dict(region)
+            center = copied.get("center")
+            if center is not None:
+                copied["center"] = np.asarray(center, dtype=float).copy()
+            regions.append(copied)
+        return regions
+
+    def _reject_cached_navigation_goal(self, text: Optional[str]) -> None:
+        key = self._target_text_key(text)
+        if not key:
+            return
+
+        with self._cached_navigation_goal_lock:
+            obs_id = self._cached_navigation_goal_obs_id
+            goal = (
+                self._cached_navigation_goal.copy()
+                if self._cached_navigation_goal is not None
+                else None
+            )
+
+        if obs_id is None and goal is None:
+            return
+
+        if obs_id is not None:
+            self._rejected_target_obs_ids.setdefault(key, set()).add(int(obs_id))
+
+        if goal is not None:
+            max_obs_id = self._latest_observation_id()
+            regions = self._rejected_target_regions.setdefault(key, [])
+            regions.append(
+                {
+                    "center": goal,
+                    "radius": self._target_reject_region_radius,
+                    "max_obs_id": int(max_obs_id) if max_obs_id is not None else None,
+                    "source_obs_id": int(obs_id) if obs_id is not None else None,
+                }
+            )
+            if len(regions) > self._max_rejected_target_regions_per_text:
+                del regions[: len(regions) - self._max_rejected_target_regions_per_text]
+
+        obs_text = f"obs_id={int(obs_id)}" if obs_id is not None else "unknown obs_id"
+        goal_text = (
+            np.array2string(goal[:2], precision=3)
+            if goal is not None
+            else "unknown position"
+        )
+        logger.warning(
+            "Rejected stale target candidate "
+            f"({obs_text}, region_center={goal_text}, "
+            f"radius={self._target_reject_region_radius:.2f} m) for '{text}' "
+            "after focused verification failed."
+        )
 
     def _target_distance(self, start_pose, goal_point: np.ndarray) -> float:
         start_xy = np.asarray(start_pose[:2], dtype=float)
@@ -866,31 +974,38 @@ class RobotAgent:
             return None
         return cached_goal
 
-    def _focus_and_detect_goal(self, text: Optional[str], expected_goal_point) -> Optional[np.ndarray]:
+    def _focus_and_detect_goal(self, text: Optional[str], expected_goal_point) -> tuple:
         if text is None or text == "":
-            return None
+            return None, True
         expected_goal = self._target_to_numpy(expected_goal_point)
         if expected_goal is None:
-            return None
+            return None, True
 
-        prev_latest_obs_id = max(self.voxel_map.observations.keys()) if self.voxel_map.observations else None
+        prev_latest_obs_id = self._latest_observation_id()
         self._face_target_with_base(expected_goal)
         self.robot.look_at_target(tar_in_map=expected_goal, blocking=True)
-        time.sleep(0.5)
+        time.sleep(2)
         if not self._realtime_updates:
             self.update()
 
-        if not self.voxel_map.observations:
+        obs_ids = self._observation_ids_snapshot()
+        if not obs_ids:
             logger.error("No observations available to verify target.")
-            return None
+            return None, False
 
-        obs_ids = sorted(self.voxel_map.observations.keys())
         new_obs_ids = (
             [obs_id for obs_id in obs_ids if obs_id > prev_latest_obs_id]
             if prev_latest_obs_id is not None
             else obs_ids
         )
-        latest_obs_id = new_obs_ids[-1] if new_obs_ids else obs_ids[-1]
+        if prev_latest_obs_id is not None and not new_obs_ids:
+            logger.warning(
+                "No new focused observation was captured after looking at the target; "
+                "verification is inconclusive."
+            )
+            return None, False
+
+        latest_obs_id = new_obs_ids[-1]
         text_exist, detected_goal_point = self.voxel_map.detect_text(
             text=text,
             obs_id=latest_obs_id,
@@ -899,24 +1014,31 @@ class RobotAgent:
         )
         if not text_exist:
             logger.warning("Target not found in focused view.")
-            return None
+            return None, True
 
         detected_goal_point = self._target_to_numpy(detected_goal_point)
         if detected_goal_point is None:
             logger.warning(
                 "Target detected in focused view, but no valid current-frame target point was available."
             )
-            return None
-        return detected_goal_point
+            return None, True
+        return detected_goal_point, True
 
     def _refresh_cached_navigation_goal_if_close(self, text: Optional[str]):
         focused_goal = self._get_focused_cached_navigation_goal(self.robot.get_base_in_map_xyt())
         if focused_goal is None:
             return False, None
 
-        detected_goal_point = self._focus_and_detect_goal(text, focused_goal)
+        detected_goal_point, verification_is_current = self._focus_and_detect_goal(text, focused_goal)
         if detected_goal_point is None:
-            self._clear_cached_navigation_goal()
+            if verification_is_current:
+                self._reject_cached_navigation_goal(text)
+                self._clear_cached_navigation_goal()
+            else:
+                logger.warning(
+                    "Focused verification did not capture a new observation; "
+                    "keeping cached goal and skipping target rejection."
+                )
             return False, None
 
         robot_xy = np.asarray(self.robot.get_base_in_map_xyt()[:2], dtype=float)
@@ -940,7 +1062,7 @@ class RobotAgent:
         return False, None
 
     def _plan_to_cached_navigation_goal(self, start_pose, navigation_step_num: int):
-        cached_goal, cache_version = self._get_cached_navigation_goal_snapshot()
+        cached_goal, cache_version, cached_obs_id = self._get_cached_navigation_goal_snapshot()
         if cached_goal is None:
             return None
 
@@ -973,6 +1095,7 @@ class RobotAgent:
             navigation_step_num=navigation_step_num,
             cache_target=True,
             expected_cache_version=cache_version,
+            navigation_goal_obs_id=cached_obs_id,
         )
 
     def _build_navigation_result(
@@ -982,6 +1105,7 @@ class RobotAgent:
         navigation_step_num: int,
         cache_target: bool,
         expected_cache_version: Optional[int] = None,
+        navigation_goal_obs_id: Optional[int] = None,
     ):
         if waypoints is None:
             return []
@@ -995,8 +1119,12 @@ class RobotAgent:
             finished = len(waypoints) <= navigation_step_num
             if not finished:
                 if expected_cache_version is None:
-                    self._set_cached_navigation_goal(navigation_goal)
-                elif not self._set_cached_navigation_goal_if_version(navigation_goal, expected_cache_version):
+                    self._set_cached_navigation_goal(navigation_goal, obs_id=navigation_goal_obs_id)
+                elif not self._set_cached_navigation_goal_if_version(
+                    navigation_goal,
+                    expected_cache_version,
+                    obs_id=navigation_goal_obs_id,
+                ):
                     logger.warning("Cached navigation goal changed during trajectory build; discarding stale plan.")
                     return None
                 waypoints = waypoints[:navigation_step_num]
@@ -1006,6 +1134,8 @@ class RobotAgent:
             ):
                 logger.warning("Cached navigation goal changed before final verification; discarding stale plan.")
                 return None
+            elif expected_cache_version is None:
+                self._set_cached_navigation_goal(navigation_goal, obs_id=navigation_goal_obs_id)
         else:
             finished = False
             waypoints = waypoints[:navigation_step_num]
@@ -1123,13 +1253,28 @@ class RobotAgent:
         with self._voxel_map_lock:
 
             if text is not None and text != "" and localized_point is None:
+                excluded_obs_ids = self._get_rejected_target_obs_ids(text)
+                rejected_regions = self._get_rejected_target_regions(text)
+                if excluded_obs_ids or rejected_regions:
+                    logger.warning(
+                        "Skipping rejected target candidates for "
+                        f"'{text}': {len(excluded_obs_ids)} observations, "
+                        f"{len(rejected_regions)} regions."
+                    )
                 (
                     localized_point,
                     debug_text,
                     obs,
                     pointcloud,
-                ) = self.voxel_map.localize_text(text, debug=True, return_debug=True)
-                logger.alert("Target point selected!")
+                ) = self.voxel_map.localize_text(
+                    text,
+                    debug=True,
+                    return_debug=True,
+                    excluded_obs_ids=excluded_obs_ids,
+                    rejected_regions=rejected_regions,
+                )
+                if localized_point is not None:
+                    logger.alert("Target point selected!")
 
             # Do Frontier based exploration
             if text is None or text == "" or localized_point is None:
@@ -1139,10 +1284,11 @@ class RobotAgent:
                 mode = "exploration"
 
             if obs is not None and mode == "navigation":
+                obs = int(obs.item()) if isinstance(obs, torch.Tensor) else int(obs)
                 print(obs, len(self.voxel_map.observations))
-                obs = self.voxel_map.find_obs_id_for_text(text)
-                rgb = self.voxel_map.observations[obs].rgb
-                self.rerun_visualizer.log_custom_2d_image("/observation_similar_to_text", rgb)
+                if obs in self.voxel_map.observations:
+                    rgb = self.voxel_map.observations[obs].rgb
+                    self.rerun_visualizer.log_custom_2d_image("/observation_similar_to_text", rgb)
 
             if localized_point is None:
                 return []  # try to found object by frontier
@@ -1168,6 +1314,7 @@ class RobotAgent:
                         "## Robot already within manipulation radius; skip target viewpoint planning and verify for grasping.\n"
                     )
                     navigation_result = self._build_close_target_trajectory(start_pose, localized_goal)
+                    self._set_cached_navigation_goal(localized_goal, obs_id=obs)
                     self.rerun_visualizer.log_custom_pointcloud(
                         "world/object",
                         [finished_point[0], finished_point[1], 0.5],
@@ -1222,6 +1369,7 @@ class RobotAgent:
                 navigation_goal=localized_point,
                 navigation_step_num=navigation_step_num,
                 cache_target=mode == "navigation",
+                navigation_goal_obs_id=obs,
             )
             print("Planned trajectory:", navigation_result)
 

@@ -136,6 +136,11 @@ agent:
   navigation_step_num: 16
   # Maximum number of observation/planning/execution cycles for one navigate() call.
   max_navigation_attempts: 20
+  # When a focused verification fails, reject old semantic candidates for the
+  # same target text within this radius around the failed cached goal.
+  target_reject_region_radius: 0.30
+  # Bound the number of rejected regions retained for one target text.
+  max_rejected_target_regions_per_text: 20
 
   # Pose graph based semantic map updates.
   # These switches consume already-optimized SLAM pose graph nodes and re-add

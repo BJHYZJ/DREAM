@@ -5,7 +5,7 @@ import pickle
 import re
 import skimage
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from threading import Lock
 
 import cv2
@@ -747,12 +747,85 @@ class SparseVoxelMap:
             return feats
 
 
-    def localize_text(self, text, debug=True, return_debug=False):
+    def _apply_rejected_target_filters(
+        self,
+        alignments: torch.Tensor,
+        obs_counts: torch.Tensor,
+        excluded_obs_ids: Optional[Set[int]] = None,
+        points: Optional[torch.Tensor] = None,
+        rejected_regions: Optional[List[Dict[str, Any]]] = None,
+    ) -> torch.Tensor:
+        if not excluded_obs_ids and not rejected_regions:
+            return alignments
+
+        obs_counts = obs_counts.detach().cpu().reshape(-1)
+        rejected_mask = torch.zeros_like(obs_counts, dtype=torch.bool)
+
+        if excluded_obs_ids:
+            excluded = torch.tensor(
+                sorted(int(obs_id) for obs_id in excluded_obs_ids),
+                dtype=obs_counts.dtype,
+                device=obs_counts.device,
+            )
+            if excluded.nelement() > 0:
+                rejected_mask |= (obs_counts[:, None] == excluded[None, :]).any(dim=1)
+
+        if rejected_regions and points is not None:
+            points_xy = points.detach().cpu().reshape(-1, points.shape[-1])[:, :2]
+            for region in rejected_regions:
+                center = region.get("center")
+                radius = region.get("radius")
+                if center is None or radius is None:
+                    continue
+
+                center = torch.tensor(center, dtype=points_xy.dtype, device=points_xy.device).reshape(-1)
+                if len(center) < 2 or not torch.isfinite(center[:2]).all():
+                    continue
+
+                radius = float(radius)
+                if not np.isfinite(radius) or radius <= 0:
+                    continue
+
+                region_mask = torch.linalg.norm(points_xy - center[:2], dim=1) <= radius
+                max_obs_id = region.get("max_obs_id")
+                if max_obs_id is not None:
+                    region_mask &= obs_counts <= int(max_obs_id)
+                rejected_mask |= region_mask
+
+        rejected_mask = rejected_mask.to(alignments.device)
+        if not torch.any(rejected_mask):
+            return alignments
+
+        filtered_alignments = alignments.clone()
+        filtered_alignments[..., rejected_mask] = -float("inf")
+        return filtered_alignments
+
+    def _has_valid_alignment(self, alignments: torch.Tensor) -> bool:
+        return alignments is not None and torch.isfinite(alignments).any().item()
+
+    def localize_text(
+        self,
+        text,
+        debug=True,
+        return_debug=False,
+        excluded_obs_ids: Optional[Set[int]] = None,
+        rejected_regions: Optional[List[Dict[str, Any]]] = None,
+    ):
         if self.with_mllm_grounding:
-            return self.localize_with_mllm(text, debug=debug, return_debug=return_debug)
+            return self.localize_with_mllm(
+                text,
+                debug=debug,
+                return_debug=return_debug,
+                excluded_obs_ids=excluded_obs_ids,
+                rejected_regions=rejected_regions,
+            )
         else:
             return self.localize_with_feature_similarity(
-                text, debug=debug, return_debug=return_debug
+                text,
+                debug=debug,
+                return_debug=return_debug,
+                excluded_obs_ids=excluded_obs_ids,
+                rejected_regions=rejected_regions,
             )
 
     def find_all_images(
@@ -761,6 +834,8 @@ class SparseVoxelMap:
         min_similarity_threshold: Optional[float] = None,
         min_point_num: int = 100,
         max_img_num: Optional[int] = 3,
+        excluded_obs_ids: Optional[Set[int]] = None,
+        rejected_regions: Optional[List[Dict[str, Any]]] = None,
     ):
         """
         Select all images with high pixel similarity with text (by identifying whether points in this image are relevant objects)
@@ -774,13 +849,25 @@ class SparseVoxelMap:
         points = points.cpu()
         alignments = self.find_alignment_over_model(text).cpu().squeeze()
         obs_counts = self.semantic_memory._obs_counts.cpu()
-
-        turning_point = (
-            min(min_similarity_threshold, alignments[torch.argsort(alignments)[-min_point_num]])
-            if min_similarity_threshold is not None
-            else alignments[torch.argsort(alignments)[-min_point_num]]
+        alignments = self._apply_rejected_target_filters(
+            alignments,
+            obs_counts,
+            excluded_obs_ids=excluded_obs_ids,
+            points=points,
+            rejected_regions=rejected_regions,
         )
-        mask = alignments >= turning_point
+        if not self._has_valid_alignment(alignments):
+            return torch.empty(0, dtype=obs_counts.dtype), torch.empty((0, points.size(1))), torch.empty(0)
+
+        valid_alignment_mask = torch.isfinite(alignments)
+        valid_alignments = alignments[valid_alignment_mask]
+        kth_point = min(min_point_num, len(valid_alignments))
+        turning_point = (
+            min(min_similarity_threshold, valid_alignments[torch.argsort(valid_alignments)[-kth_point]])
+            if min_similarity_threshold is not None
+            else valid_alignments[torch.argsort(valid_alignments)[-kth_point]]
+        )
+        mask = valid_alignment_mask & (alignments >= turning_point)
         obs_counts = obs_counts[mask]
         alignments = alignments[mask]
         points = points[mask]
@@ -928,11 +1015,35 @@ class SparseVoxelMap:
             console.error(f"Error: {e}")
             return None
 
-    def localize_with_mllm(self, text: str, debug=True, return_debug=False):
+    def localize_with_mllm(
+        self,
+        text: str,
+        debug=True,
+        return_debug=False,
+        excluded_obs_ids: Optional[Set[int]] = None,
+        rejected_regions: Optional[List[Dict[str, Any]]] = None,
+    ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         alignments = self.find_alignment_over_model(text).cpu()
+        obs_counts = self.semantic_memory._obs_counts.cpu()
+        alignments = self._apply_rejected_target_filters(
+            alignments,
+            obs_counts,
+            excluded_obs_ids=excluded_obs_ids,
+            points=points,
+            rejected_regions=rejected_regions,
+        )
+        if not self._has_valid_alignment(alignments):
+            debug_text = "#### - All matching observations were rejected by recent verification failures.\n"
+            console.warning("All matching observations were rejected by recent verification failures.")
+            if not debug:
+                return None
+            elif not return_debug:
+                return None, debug_text
+            else:
+                return None, debug_text, None, None
+
         point = points[alignments.argmax(dim=-1)].detach().cpu().squeeze()
-        obs_counts = self.semantic_memory._obs_counts
         image_id = obs_counts[alignments.argmax(dim=-1)].detach().cpu()
         debug_text = ""
         target_point = None
@@ -941,7 +1052,18 @@ class SparseVoxelMap:
             # text, min_similarity_threshold=0.12, max_img_num=3
             text,
             max_img_num=3,
+            excluded_obs_ids=excluded_obs_ids,
+            rejected_regions=rejected_regions,
         )
+        if len(image_ids) == 0:
+            debug_text += "#### - No non-rejected image candidates remain for mLLM localization.\n"
+            console.warning("No non-rejected image candidates remain for mLLM localization.")
+            if not debug:
+                return None
+            elif not return_debug:
+                return None, debug_text
+            else:
+                return None, debug_text, None, None
         target_id = self.mllm_locator(image_ids, text)
 
         if target_id is None:
@@ -976,7 +1098,13 @@ class SparseVoxelMap:
 
 
     def localize_with_feature_similarity(
-        self, text, similarity_threshold: float=0.05, debug=True, return_debug=False
+        self,
+        text,
+        similarity_threshold: float=0.05,
+        debug=True,
+        return_debug=False,
+        excluded_obs_ids: Optional[Set[int]] = None,
+        rejected_regions: Optional[List[Dict[str, Any]]] = None,
     ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
         debug_text = ""
@@ -1002,8 +1130,25 @@ class SparseVoxelMap:
                 return None, debug_text, None, None
 
         alignments = alignments.cpu()
+        obs_counts = self.semantic_memory._obs_counts.cpu()
+        alignments = self._apply_rejected_target_filters(
+            alignments,
+            obs_counts,
+            excluded_obs_ids=excluded_obs_ids,
+            points=points,
+            rejected_regions=rejected_regions,
+        )
+        if not self._has_valid_alignment(alignments):
+            debug_text += "#### - All matching observations were rejected by recent verification failures.\n"
+            console.warning("All matching observations were rejected by recent verification failures.")
+            if not debug:
+                return None
+            elif not return_debug:
+                return None, debug_text
+            else:
+                return None, debug_text, None, None
+
         point = points[alignments.argmax(dim=-1)].squeeze()
-        obs_counts = self.semantic_memory._obs_counts
         obs_id = obs_counts[alignments.argmax(dim=-1)].item()
         target_point = None
 
