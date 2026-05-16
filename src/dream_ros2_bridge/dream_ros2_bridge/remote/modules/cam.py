@@ -71,6 +71,13 @@ class DreamCamClient(AbstractControlModule):
 
         return imgs
 
+    def get_timestamp(self) -> Optional[float]:
+        """Return the latest RGB image ROS timestamp in seconds."""
+        stamp = self._ros_client.rgb_cam.get_time()
+        if stamp is None:
+            return None
+        return stamp.sec + stamp.nanosec / 1e9
+
     def depth_to_xyz(self, dpt: np.ndarray) -> np.ndarray:
         """Convert depth to xyz coordinates"""
         xyz = self._ros_client.dpt_cam.depth_to_xyz(self._ros_client.dpt_cam.fix_depth(dpt))

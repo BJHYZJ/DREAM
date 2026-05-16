@@ -128,6 +128,15 @@ agent:
 
   use_realtime_updates: True
   realtime_rotation_steps: 4
+  # Within this distance to a saved trajectory target, avoid full look-around sweeps and
+  # instead point the camera/arm at the target for focused verification.
+  focused_tracking_radius: 2.0
+  saved_target_verify_distance: 0.25
+  focused_tracking_yaw_threshold: 0.25
+  # Number of planner waypoints to execute before returning to observation/planning.
+  navigation_step_num: 16
+  # Maximum number of observation/planning/execution cycles for one navigate() call.
+  max_navigation_attempts: 20
 
   # Pose graph based semantic map updates.
   # These switches consume already-optimized SLAM pose graph nodes and re-add

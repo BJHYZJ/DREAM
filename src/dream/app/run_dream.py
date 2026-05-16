@@ -134,7 +134,7 @@ def main(
     executor(start_command)
 
 
-    find_command = [("find", "yellow kinfe")]
+    find_command = [("find", "red basket")]
     executor(find_command)
 
     return 

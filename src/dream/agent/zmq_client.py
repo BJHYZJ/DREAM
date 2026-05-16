@@ -425,7 +425,7 @@ class RobotZmqClient(AbstractRobotClient):
         self.look_at_target_tilt(tar_in_map, blocking=blocking, timeout=timeout)
         self.look_at_target_pan(tar_in_map, blocking=blocking, timeout=timeout)
         # sleep for a while ensure image is newest
-        time.sleep(1)
+        time.sleep(0.5)
         print(f"look at target_point in map frame: {tar_in_map}")
 
 
@@ -632,7 +632,7 @@ class RobotZmqClient(AbstractRobotClient):
         next_action = {"gripper": position, "wait": blocking}
         self.send_action(next_action, reliable=reliable)
         if blocking:
-            time.sleep(2)
+            time.sleep(1)
 
     def set_velocity(self, v: float, w: float):
         """Move to xyt in global coordinates or relative coordinates.

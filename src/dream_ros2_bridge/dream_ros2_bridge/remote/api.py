@@ -602,8 +602,9 @@ class DreamClient(AbstractRobotClient):
     def get_servo_observation(self) -> ServoObservations:
         images = self.cam.get_images(compute_xyz=False)
         camera_in_arm_base_pose = self.get_camera_in_arm_base_pose()
+        timestamp = self.cam.get_timestamp()
 
-        if images is None or camera_in_arm_base_pose is None:
+        if images is None or camera_in_arm_base_pose is None or timestamp is None:
             return None
 
         rgb, depth = images[0], images[1]
@@ -611,6 +612,7 @@ class DreamClient(AbstractRobotClient):
         return ServoObservations(
             rgb=rgb,
             depth=depth,
+            timestamp=timestamp,
             camera_in_arm_base_pose=camera_in_arm_base_pose.matrix(),
         )
 

@@ -139,6 +139,7 @@ class ZmqServer(BaseZmqServer):
         compressed_depth_image = compression.to_jp2(depth_image)
         
         message = {
+            "timestamp": obs.timestamp,
             "rgb": compressed_color_image,
             "depth": compressed_depth_image,
             "camera_in_arm_base_pose": obs.camera_in_arm_base_pose,

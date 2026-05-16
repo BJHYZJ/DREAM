@@ -271,7 +271,7 @@ class SparseVoxelMap:
         self,
         text: str,
         point: Union[torch.Tensor, np.ndarray],
-        distance_threshold: float = 0.1,
+        distance_threshold: float = 0.25,
         similarity_threshold=None,
     ):
         """
@@ -945,7 +945,7 @@ class SparseVoxelMap:
         target_id = self.mllm_locator(image_ids, text)
 
         if target_id is None:
-            debug_text += "#### - Cannot verify whether this instance is the target. **😞** \n"
+            debug_text += "#### - mLLM locator: Cannot verify whether this instance is the target. **😞** \n"
             image_id = None
             point = None
         else:
@@ -1022,12 +1022,12 @@ class SparseVoxelMap:
                     )
                     if is_present:
                         target_point = point
-                        console.alert("mLLM verified target in this frame; using nearest point.")
+                        console.alert("mLLM verified target in this frame;  **😃** using nearest point.")
                         debug_text += (
                             "#### - mLLM verified target in this frame. **😃** Using nearest point.\n"
                         )
                     else:
-                        console.warning("mLLM did not verify the target in this frame.")
+                        console.warning("mLLM did not verify the target in this frame **😞**.")
                         target_point = None
 
             if target_point is None:
@@ -1035,14 +1035,14 @@ class SparseVoxelMap:
                 cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
                 if cosine_similarity_check:
                     target_point = point
-                    console.alert("Point has high cosine similarity; directly navigate to it.")
+                    console.alert("Point has high cosine similarity; **😃** directly navigate to it.")
 
                     debug_text += (
                         "#### - The point has high cosine similarity. **😃** Directly navigate to it.\n"
                     )
                 else:
-                    console.warning("Cannot verify whether this instance is the target.")
-                    debug_text += "#### - Cannot verify whether this instance is the target. **😞** \n"
+                    console.warning("Cosine Similarity: Cannot verify whether this instance is the target **😞**.")
+                    debug_text += "#### - Cosine Similarity: Cannot verify whether this instance is the target. **😞** \n"
    
         print("--------------------------------")
         print(debug_text)
@@ -1054,7 +1054,14 @@ class SparseVoxelMap:
             return target_point, debug_text, obs_id, point
 
 
-    def detect_text(self, text, obs_id, similarity_threshold=0.05):
+    def detect_text(
+        self,
+        text,
+        obs_id,
+        similarity_threshold=0.05,
+        return_point: bool = False,
+        allow_feature_fallback: bool = True,
+    ):
 
         rgb = self.observations[obs_id].rgb
         pose = self.observations[obs_id].camera_pose
@@ -1091,7 +1098,7 @@ class SparseVoxelMap:
                 text_exist = True
                 console.alert("Detection found target text in the current frame.")
 
-        else:
+        elif allow_feature_fallback:
             if text_exist is False:
                 alignments = self.find_alignment_over_model(text).cpu()
                 cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
@@ -1100,7 +1107,11 @@ class SparseVoxelMap:
                     console.alert("Feature similarity verified target existence.")
                 else:
                     console.warning("Target text not detected and feature similarity is below threshold.")
+        else:
+            console.warning("Target text not detected in the current frame.")
 
+        if return_point:
+            return text_exist, res if text_exist and res is not None else None
         return text_exist
 
 

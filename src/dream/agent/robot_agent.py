@@ -101,6 +101,15 @@ class RobotAgent:
         # Grasping parameters
         self.target_object = None
         self.target_receptacle = None
+        self._focused_tracking_radius = parameters.get("agent/focused_tracking_radius", 2.0)
+        self._saved_target_verify_distance = parameters.get(
+            "agent/saved_target_verify_distance", 0.25
+        )
+        self._focused_tracking_yaw_threshold = parameters.get(
+            "agent/focused_tracking_yaw_threshold", 0.25
+        )
+        self._navigation_step_num = int(parameters.get("agent/navigation_step_num", 16))
+        self._max_navigation_attempts = int(parameters.get("agent/max_navigation_attempts", 20))
         # ==============================================
 
         # Parameters for feature matching and exploration
@@ -234,7 +243,7 @@ class RobotAgent:
             t1 = timeit.default_timer()
             if verbose:
                 print(f"Done getting an observation, spend {t1 - t0}")
-            time.sleep(0.5)
+            time.sleep(0.05)
 
 
     def update_map_loop(self):
@@ -672,17 +681,32 @@ class RobotAgent:
         self,
         text: str,
         arm_speed=40,
-        step_num: int=8,
     ):
-        # self.robot.look_front(speed=arm_speed)
-        self.look_around(speed=arm_speed)
-        # self.robot.look_front(speed=arm_speed)
+        start = self.robot.get_base_in_map_xyt()
+        with self._voxel_map_lock:
+            focus_target = self._get_focused_tracking_target(text, start)
+        if focus_target is not None:
+            focused_tracking_text = (
+                "### Using focused tracking near saved target; looking at target instead of sweeping."
+            )
+            logger.alert(focused_tracking_text)
+            self.rerun_visualizer.log_text(
+                "robot_monologue",
+                "# Robot's monologue: \n" + focused_tracking_text,
+            )
+            self._face_target_with_base(focus_target)
+            self.robot.look_at_target(tar_in_map=focus_target, blocking=True)
+ 
+            if not self._realtime_updates:
+                self.update()
+        else:
+            self.look_around(speed=arm_speed)
         self.robot.switch_to_navigation_mode()
 
         start = self.robot.get_base_in_map_xyt()
-        res = self.process_text(text, start, step_num=step_num)
+        res = self.process_text(text, start, step_num=self._navigation_step_num)
         if (res is None or len(res) == 0) and text != "" and text is not None:
-            res = self.process_text("", start, step_num=step_num)
+            res = self.process_text("", start, step_num=self._navigation_step_num)
 
         return self._execute_navigation_result(text, res)
 
@@ -727,8 +751,10 @@ class RobotAgent:
             return True
 
         logger.info("Verifying target existence after navigation...")
+        prev_latest_obs_id = max(self.voxel_map.observations.keys()) if self.voxel_map.observations else None
+        self._face_target_with_base(end_point)
         self.robot.look_at_target(tar_in_map=end_point, blocking=True)
-        time.sleep(3)
+
         if not self._realtime_updates:
             self.update()
 
@@ -736,15 +762,45 @@ class RobotAgent:
             logger.error("No observations available to verify target.")
             return False
 
-        latest_obs_id = max(self.voxel_map.observations.keys())
-        text_exist = self.voxel_map.detect_text(text=text, obs_id=latest_obs_id)
+        obs_ids = sorted(self.voxel_map.observations.keys())
+        new_obs_ids = (
+            [obs_id for obs_id in obs_ids if obs_id > prev_latest_obs_id]
+            if prev_latest_obs_id is not None
+            else obs_ids
+        )
+        latest_obs_id = new_obs_ids[-1] if new_obs_ids else obs_ids[-1]
+        text_exist, detected_point = self.voxel_map.detect_text(
+            text=text,
+            obs_id=latest_obs_id,
+            return_point=True,
+            allow_feature_fallback=False,
+        )
         if not text_exist:
             logger.warning("Target not found after navigation, continue navigation...")
             return False
+        detected_point = self._target_to_numpy(detected_point)
+        if detected_point is None:
+            logger.warning(
+                "Target detected after navigation, but no valid current-frame target point was "
+                "available for manipulation-radius verification."
+            )
+            return False
 
-        robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2])
-        target_xy = np.array(end_point[:2])
-        dist = np.linalg.norm(robot_xy - target_xy)
+        robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2], dtype=float)
+        old_target = self._target_to_numpy(end_point)
+        old_dist = (
+            float(np.linalg.norm(robot_xy - old_target[:2]))
+            if old_target is not None
+            else float("nan")
+        )
+        dist = float(np.linalg.norm(robot_xy - detected_point[:2]))
+        logger.info(
+            "Target verification distance check: "
+            f"robot_xy={np.array2string(robot_xy, precision=3)}, "
+            f"old_end_point={np.array2string(old_target, precision=3) if old_target is not None else None}, "
+            f"detected_point={np.array2string(detected_point, precision=3)}, "
+            f"dist_to_old={old_dist:.2f} m, dist_to_detected={dist:.2f} m"
+        )
         if dist > self._manipulation_radius:
             logger.warning(
                 f"Target detected but outside manipulation radius ({dist:.2f} m), continue navigation..."
@@ -753,6 +809,73 @@ class RobotAgent:
 
         logger.alert(f"Target verified within manipulation radius ({dist:.2f} m).")
         return True
+
+    def _target_to_numpy(self, point) -> Optional[np.ndarray]:
+        if point is None:
+            return None
+        if isinstance(point, torch.Tensor):
+            point = point.detach().cpu().numpy()
+        point = np.asarray(point, dtype=float).reshape(-1)
+        if len(point) < 2 or not np.all(np.isfinite(point[:2])):
+            return None
+        if len(point) == 2:
+            point = np.array([point[0], point[1], 0.0], dtype=float)
+        return point
+
+    def _get_saved_navigation_target(self) -> Optional[np.ndarray]:
+        traj = self.space.traj
+        if traj is None or len(traj) < 2:
+            return None
+        marker = traj[-2]
+        if isinstance(marker, torch.Tensor):
+            marker = marker.detach().cpu().numpy()
+        marker = np.asarray(marker, dtype=float).reshape(-1)
+        if len(marker) < 2 or not np.isnan(marker[:2]).all():
+            return None
+        return self._target_to_numpy(traj[-1])
+
+    def _get_saved_target_point(self, text: Optional[str]) -> Optional[np.ndarray]:
+        if text is None or text == "":
+            return None
+        return self._get_saved_navigation_target()
+
+    def _target_distance(self, start_pose, target_point: np.ndarray) -> float:
+        start_xy = np.asarray(start_pose[:2], dtype=float)
+        target_xy = np.asarray(target_point[:2], dtype=float)
+        return float(np.linalg.norm(start_xy - target_xy))
+
+    def _get_focused_tracking_target(self, text: Optional[str], start_pose) -> Optional[np.ndarray]:
+        target = self._get_saved_target_point(text)
+        if target is None:
+            return None
+        if self._target_distance(start_pose, target) > self._focused_tracking_radius:
+            return None
+        return target
+
+    def _face_target_with_base(self, target_point) -> None:
+        target = self._target_to_numpy(target_point)
+        if target is None:
+            return
+
+        current_xyt = self.robot.get_base_in_map_xyt()
+        vec_to_target = np.asarray(target[:2], dtype=float) - np.asarray(current_xyt[:2], dtype=float)
+        if np.linalg.norm(vec_to_target) < 1e-6:
+            return
+
+        target_yaw = float(np.arctan2(vec_to_target[1], vec_to_target[0]))
+        yaw_error = (target_yaw - float(current_xyt[2]) + np.pi) % (2 * np.pi) - np.pi
+        if abs(yaw_error) <= self._focused_tracking_yaw_threshold:
+            return
+
+        logger.alert(
+            "Rotating base to face saved target before visual verification "
+            f"({np.rad2deg(yaw_error):.1f} deg)."
+        )
+        self.robot.base_to(
+            np.array([current_xyt[0], current_xyt[1], target_yaw]),
+            blocking=True,
+            timeout=8.0,
+        )
 
     def _build_close_target_trajectory(self, start_pose, target_point):
         """Stop regular navigation near the target, optionally rotating in place to face it."""
@@ -788,11 +911,16 @@ class RobotAgent:
             return False
         return True
 
-    def process_text(self, text, start_pose, step_num=8, allow_early_stop: bool = True):
+    def process_text(
+        self,
+        text,
+        start_pose,
+        step_num: int,
+        allow_early_stop: bool = True,
+    ):
         """
         Process the text query and return the trajectory for the robot to follow.
         """
-
         logger.info("Processing", text, "starts")
 
         self.rerun_visualizer.clear_identity("world/object")
@@ -810,12 +938,18 @@ class RobotAgent:
         # add voxel map lock ensure voxel map not update when path planning
         with self._voxel_map_lock:  
 
-            if text is not None and text != "" and self.space.traj is not None:
+            if (
+                text is not None
+                and text != ""
+                and localized_point is None
+                and self.space.traj is not None
+            ):
                 print("saved traj", self.space.traj)
                 traj_target_point = self.space.traj[-1]
                 if hasattr(self.encoder, "feature_matching_threshold") and self.voxel_map.verify_point(
                     text,
                     traj_target_point,
+                    distance_threshold=self._saved_target_verify_distance,
                     similarity_threshold=self.encoder.feature_matching_threshold
                 ):
                     localized_point = traj_target_point
@@ -968,22 +1102,29 @@ class RobotAgent:
         return self.voxel_map
     
 
-    def navigate(self, text, max_step=20):
+    def navigate(self, text):
         # rr.init("Dream_robot", recording_id=uuid4(), spawn=True)
         finished = False
-        step = 0
+        navigation_attempt = 0
         end_point = None
-        while not finished and step < max_step:
+        while not finished and navigation_attempt < self._max_navigation_attempts:
             logger.info(
                 color_text("*" * 20, "cyan"),
-                f"navigation step {step}",
+                f"navigation attempt {navigation_attempt + 1}/{self._max_navigation_attempts}",
                 color_text("*" * 20, "cyan"),
             )
-            step += 1
+            navigation_attempt += 1
             finished, end_point = self.execute_action(text)
             if finished is None:
                 logger.error("Navigation failed! The path might be blocked!")
                 return None
+
+        if not finished:
+            logger.warning(
+                "Navigation reached the maximum number of attempts "
+                f"({self._max_navigation_attempts}) before verifying the target."
+            )
+            return None
 
         logger.alert("Navigation finished!")
         return end_point
