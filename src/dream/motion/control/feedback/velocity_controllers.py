@@ -128,6 +128,13 @@ class DDVelocityControlNoplan(DiffDriveVelocityController):
 
         # Go to goal XY position if not there yet
         if lin_err_abs > self.lin_error_tol:
+            # If the base is not facing the waypoint, rotate in place first.
+            # This keeps planned straight segments from being executed as wide arcs.
+            if abs(heading_err) > self.cfg.max_heading_ang:
+                w_cmd = self._velocity_feedback_control(heading_err, self.acc_ang, self.w_max)
+                done = False
+                return v_cmd, w_cmd, done
+
             # Compute linear velocity -- move towards goal XY
             v_raw = self._velocity_feedback_control(lin_err_abs, self.acc_lin, self.v_max)
             v_limit = self._turn_rate_limit(
@@ -139,6 +146,8 @@ class DDVelocityControlNoplan(DiffDriveVelocityController):
 
             # Compute angular velocity -- turn towards goal XY
             w_cmd = self._velocity_feedback_control(heading_err, self.acc_ang, self.w_max)
+            max_translation_ang_vel = self.cfg.get("max_translation_ang_vel", self.w_max)
+            w_cmd = np.clip(w_cmd, -max_translation_ang_vel, max_translation_ang_vel)
             done = False
 
         # Rotate to correct yaw if XY position is at goal

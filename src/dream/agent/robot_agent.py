@@ -644,11 +644,11 @@ class RobotAgent:
     def look_around(self, speed: int=50):
         print("*" * 10, "Look around to check", "*" * 10)
         for angle in [
-            constants.look_ahead,
+            # constants.look_ahead,
             constants.look_down,
-            constants.look_left_1,
+            # constants.look_left_1,
             constants.look_left_2,
-            constants.look_right_1, 
+            # constants.look_right_1, 
             constants.look_right_2,
             constants.look_front,
         ]:

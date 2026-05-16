@@ -209,6 +209,7 @@ class ZmqServer(BaseZmqServer):
             self.client.base_to(
                 action["xyt"],
                 relative=action["nav_relative"],
+                blocking=action["nav_blocking"],
             )
         elif "base_velocity" in action:
             base_velocity_action = action["base_velocity"]

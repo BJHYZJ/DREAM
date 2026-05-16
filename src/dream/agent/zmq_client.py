@@ -935,11 +935,11 @@ class RobotZmqClient(AbstractRobotClient):
             assert (
                 len(pt) == 3 or len(pt) == 2
             ), "base trajectory needs to be 2-3 dimensions: x, y, and (optionally) theta"
-            self.base_to(
-                xyt=pt, 
-                blocking=blocking, 
-                reliable=True
-            )
+            # self.base_to(
+            #     xyt=pt, 
+            #     blocking=blocking, 
+            #     reliable=True
+            # )
             print("Moving to", pt)
             last_waypoint = i == len(trajectory) - 1
             self.base_to(

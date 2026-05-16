@@ -41,22 +41,23 @@ class AStar(Planner):
             self.validate = self.space.is_valid  # type:ignore
 
     def compute_theta(self, cur_x, cur_y, end_x, end_y):
-        theta = 0
-        if end_x == cur_x and end_y >= cur_y:
-            theta = np.pi / 2
-        elif end_x == cur_x and end_y < cur_y:
-            theta = -np.pi / 2
-        else:
-            theta = np.arctan((end_y - cur_y) / (end_x - cur_x))
-            if end_x < cur_x:
-                theta = theta + np.pi
-            # move theta into [-pi, pi] range, for this function specifically,
-            # (theta -= 2 * pi) or (theta += 2 * pi) is enough
-            if theta > np.pi:
-                theta = theta - 2 * np.pi
-            if theta < np.pi:
-                theta = theta + 2 * np.pi
-        return theta
+        # theta = 0
+        # if end_x == cur_x and end_y >= cur_y:
+        #     theta = np.pi / 2
+        # elif end_x == cur_x and end_y < cur_y:
+        #     theta = -np.pi / 2
+        # else:
+        #     theta = np.arctan((end_y - cur_y) / (end_x - cur_x))
+        #     if end_x < cur_x:
+        #         theta = theta + np.pi
+        #     # move theta into [-pi, pi] range, for this function specifically,
+        #     # (theta -= 2 * pi) or (theta += 2 * pi) is enough
+        #     if theta > np.pi:
+        #         theta = theta - 2 * np.pi
+        #     if theta < np.pi:
+        #         theta = theta + 2 * np.pi
+        # return theta
+        return float(np.arctan2(end_y - cur_y, end_x - cur_x))
 
     def reset(self):
         # print('loading the up to date navigable map')

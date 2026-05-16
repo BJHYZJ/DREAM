@@ -50,8 +50,12 @@ ang_error_ratio: 0.6
 min_lin_error_tol: 0.12
 min_ang_error_tol: 0.2
 
-# Maximum angle error at which the controller would still exert linear motion
-max_heading_ang: 1.0
+# Maximum heading error at which the controller will still exert linear motion.
+# Larger errors rotate in place first so straight planned segments stay straight.
+max_heading_ang: 0.15
+
+# Maximum angular velocity while translating. In-place rotations still use w_max.
+max_translation_ang_vel: 0.08
 
 # Maximum distance to goal at which the controller will opt for moving backwards over turning around
 # This should be slightly larger than the distance it overshoots targets!
