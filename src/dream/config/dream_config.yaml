@@ -131,7 +131,6 @@ agent:
   # Within this distance to a saved trajectory target, avoid full look-around sweeps and
   # instead point the camera/arm at the target for focused verification.
   focused_tracking_radius: 2.0
-  saved_target_verify_distance: 0.25
   focused_tracking_yaw_threshold: 0.25
   # Number of planner waypoints to execute before returning to observation/planning.
   navigation_step_num: 16
@@ -154,7 +153,7 @@ agent:
     # Defaults to max_obs_length // 5 in code if omitted.
     max_pose_graph_obs_length: 100
     poll_interval: 1.0
-    invalidate_cached_traj: True
+    invalidate_cached_goal: True
 
   # Configuration of the in-place rotation
   in_place_rotation_steps: 4  # If you are not moving the head, rotate more often
@@ -233,7 +232,7 @@ instance_memory:
 
 exploration_steps: 50
 with_mllm_grounding: False
-with_mllm_verify: True
+with_mllm_verify: False
 mllm_provider: "qwen"
 mllm_model: "qwen-vl-max-latest"
 name: "dream"

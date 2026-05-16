@@ -84,9 +84,7 @@ class SparseVoxelMapNavigationSpace:
             self.dilate_obstacles_kernel = None
 
         self.traj = None
-        self._min_frontier_distance = (
-            min_frontier_distance if min_frontier_distance is not None else 0.85
-        )  # metres
+        self._min_frontier_distance = min_frontier_distance  # metres
 
     def create_collision_masks(self, orientation_resolution: int):
         """Create a set of orientation masks
@@ -367,6 +365,7 @@ class SparseVoxelMapNavigationSpace:
 
         return None
 
+
     def sample_exploration(self, xyt, planner, text=None, semantic_rate:float=0.1, debug=False):
         """
         Sample an exploration target
@@ -375,6 +374,16 @@ class SparseVoxelMapNavigationSpace:
             return_history_id=True, kernel=5
         )
         outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
+        if outside_frontier is None:
+            print("No outside frontier available for exploration.")
+            return None
+        if isinstance(outside_frontier, torch.Tensor):
+            has_frontier = bool(torch.any(outside_frontier).item())
+        else:
+            has_frontier = bool(np.any(outside_frontier))
+        if not has_frontier:
+            print("No outside frontier available for exploration.")
+            return None
 
         time_heuristics = self._time_heuristic(history_soft, outside_frontier)
         semantic_heuristics = self._semantic_heuristic(text) if text else None
@@ -384,11 +393,21 @@ class SparseVoxelMapNavigationSpace:
         else:
             total_heuristics = time_heuristics
 
-        rounded_heuristics = np.ceil(total_heuristics * 200) / 200
+        rounded_heuristics = np.ceil(np.ma.filled(total_heuristics, -np.inf) * 200) / 200
         max_heuristic = rounded_heuristics.max()
+        if not np.isfinite(max_heuristic):
+            print("No valid exploration heuristic available.")
+            return None
         indices = np.column_stack(np.where(rounded_heuristics == max_heuristic))
+        if len(indices) == 0:
+            print("No valid exploration target available.")
+            return None
         robot_pt = np.asarray(planner.to_pt(xyt))
-        min_dist_cells = self._min_frontier_distance / max(self.grid.resolution, self.tolerance)
+        min_dist_cells = (
+            0
+            if self._min_frontier_distance is None
+            else self._min_frontier_distance / max(self.grid.resolution, self.tolerance)
+        )
         if len(indices) > 0 and min_dist_cells > 0:
             dists = np.linalg.norm(indices - robot_pt, axis=-1)
             valid_mask = dists >= min_dist_cells
@@ -397,11 +416,27 @@ class SparseVoxelMapNavigationSpace:
         farthest_index = np.argmax(np.linalg.norm(indices - robot_pt, axis=-1))
         index = indices[farthest_index]
         if debug:
-            obstacles_np = obstacles.detach().cpu().numpy()
-            explored_np = explored.detach().cpu().numpy()
-            frontier_np = outside_frontier.detach().cpu().numpy()
-            history_np = history_soft.detach().cpu().numpy()
-            heuristics_np = np.asarray(total_heuristics)
+            obstacles_np = (
+                obstacles.detach().cpu().numpy()
+                if isinstance(obstacles, torch.Tensor)
+                else np.asarray(obstacles)
+            )
+            explored_np = (
+                explored.detach().cpu().numpy()
+                if isinstance(explored, torch.Tensor)
+                else np.asarray(explored)
+            )
+            frontier_np = (
+                outside_frontier.detach().cpu().numpy()
+                if isinstance(outside_frontier, torch.Tensor)
+                else np.asarray(outside_frontier)
+            )
+            history_np = (
+                history_soft.detach().cpu().numpy()
+                if isinstance(history_soft, torch.Tensor)
+                else np.asarray(history_soft)
+            )
+            heuristics_np = np.ma.filled(total_heuristics, np.nan)
             semantic_np = (
                 np.asarray(semantic_heuristics)
                 if semantic_heuristics is not None
@@ -521,15 +556,94 @@ class SparseVoxelMapNavigationSpace:
     def _time_heuristic(
         self, history_soft, outside_frontier, time_smooth=10, time_threshold=0.01
     ):
+        if isinstance(history_soft, torch.Tensor):
+            history_soft = history_soft.detach().cpu().numpy()
+        else:
+            history_soft = np.asarray(history_soft)
+        if isinstance(outside_frontier, torch.Tensor):
+            outside_frontier = outside_frontier.detach().cpu().numpy()
+        else:
+            outside_frontier = np.asarray(outside_frontier)
+
         history_soft = np.ma.masked_array(history_soft, ~outside_frontier)
         time_heuristics = history_soft.max() - history_soft
         time_heuristics[history_soft <= self.tolerance] = float("inf")
         time_heuristics = 1 / (1 + np.exp(-time_smooth * (time_heuristics - time_threshold)))
         # index = np.unravel_index(np.argmax(time_heuristics), history_soft.shape)
         return time_heuristics
+    
+
+
+    # def sample_exploration(self, xyt, planner, text=None, debug=False):
+    #     """
+    #     Sample an exploration target
+    #     """
+    #     obstacles, explored, history_soft = self.voxel_map.get_2d_map(
+    #         return_history_id=True, kernel=5
+    #     )
+    #     outside_frontier = self.voxel_map.get_outside_frontier(xyt, planner)
+    #     if outside_frontier is None:
+    #         print("No outside frontier available for exploration.")
+    #         return None
+    #     if isinstance(outside_frontier, torch.Tensor):
+    #         has_frontier = bool(torch.any(outside_frontier).item())
+    #     else:
+    #         has_frontier = bool(np.any(outside_frontier))
+    #     if not has_frontier:
+    #         print("No outside frontier available for exploration.")
+    #         return None
+
+    #     time_heuristics = self._time_heuristic(history_soft, outside_frontier, debug=debug)
+
+    #     total_heuristics = time_heuristics
+
+    #     rounded_heuristics = np.ceil(total_heuristics * 200) / 200
+    #     max_heuristic = rounded_heuristics.max()
+    #     indices = np.column_stack(np.where(rounded_heuristics == max_heuristic))
+    #     closest_index = np.argmin(np.linalg.norm(indices - np.asarray(planner.to_pt(xyt)), axis=-1))
+    #     index = indices[closest_index]
+    #     if debug:
+    #         from matplotlib import pyplot as plt
+
+    #         plt.subplot(221)
+    #         plt.imshow(obstacles.int() * 5 + outside_frontier.int() * 10)
+    #         plt.subplot(222)
+    #         plt.imshow(explored.int() * 5)
+    #         plt.subplot(223)
+    #         plt.imshow(total_heuristics)
+    #         plt.scatter(index[1], index[0], s=15, c="g")
+    #         plt.subplot(224)
+    #         plt.imshow(history_soft)
+    #         plt.scatter(index[1], index[0], s=15, c="g")
+    #         plt.show()
+
+    #     # return index, time_heuristics, alignments_heuristics, total_heuristics
+    #     return index, time_heuristics, total_heuristics
+
+
+    # def _time_heuristic(
+    #     self, history_soft, outside_frontier, time_smooth=0.1, time_threshold=10, debug=False
+    # ):
+    #     history_soft = np.ma.masked_array(history_soft, ~outside_frontier)
+    #     time_heuristics = history_soft.max() - history_soft
+    #     time_heuristics[history_soft < 1] = float("inf")
+    #     time_heuristics = 1 / (1 + np.exp(-time_smooth * (time_heuristics - time_threshold)))
+    #     index = np.unravel_index(np.argmax(time_heuristics), history_soft.shape)
+    #     # return index
+    #     # debug = True
+    #     if debug:
+    #         # plt.clf()
+    #         plt.title("time")
+    #         plt.imshow(history_soft)
+    #         plt.scatter(index[1], index[0], s=15, c="r")
+    #         plt.show()
+    #     return time_heuristics
+    
 
     def _semantic_heuristic(self, text, semantic_smooth=10, semantic_threshold=0.01):
         semantic_heuristics = self.voxel_map.get_2d_alignment_heuristics(text=text)
+        if semantic_heuristics is None:
+            return None
         if isinstance(semantic_heuristics, torch.Tensor):
             semantic_heuristics = semantic_heuristics.detach().cpu().numpy()
         else:
@@ -591,16 +705,20 @@ class SparseVoxelMapNavigationSpace:
     #     return goal
 
     def sample_frontier(self, planner, start_pose=[0, 0, 0], text=None):
-        (
-            index,
-            time_heuristics,
-            total_heuristics,
-        ) = self.sample_exploration(
+        result = self.sample_exploration(
             start_pose,
             planner,
             text=text,
             debug=False,
         )
+        if result is None:
+            return None
+
+        (
+            index,
+            time_heuristics,
+            total_heuristics,
+        ) = result
 
         obstacles, explored = self.voxel_map.get_2d_map()
         return self.voxel_map.grid_coords_to_xyt(torch.tensor([index[0], index[1]]))

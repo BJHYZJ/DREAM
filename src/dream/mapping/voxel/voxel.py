@@ -267,31 +267,31 @@ class SparseVoxelMap:
         alignments = self.find_alignment_over_model(text).cpu()
         return obs_counts[alignments.argmax(dim=-1)].detach().cpu().item()
 
-    def verify_point(
-        self,
-        text: str,
-        point: Union[torch.Tensor, np.ndarray],
-        distance_threshold: float = 0.25,
-        similarity_threshold=None,
-    ):
-        """
-        Running visual grounding is quite time consuming.
-        Thus, sometimes if the point has very high cosine similarity with text query, we might opt not to run visual grounding again.
-        This function evaluates the cosine similarity.
-        """
-        if similarity_threshold is None:
-            similarity_threshold = self.verify_point_similarity
-        if isinstance(point, np.ndarray):
-            point = torch.from_numpy(point)
-        points, _, _, _ = self.semantic_memory.get_pointcloud()
-        distances = torch.linalg.norm(point - points.detach().cpu(), dim=-1)
-        if torch.min(distances) > distance_threshold:
-            console.warning("Points are so far from other points!")
-            return False
-        alignments = self.find_alignment_over_model(text).detach().cpu()[0]
-        if torch.max(alignments[distances <= distance_threshold]) < similarity_threshold:
-            console.warning("Points close the the point are not similar to the text!")
-        return torch.max(alignments[distances < distance_threshold]) >= similarity_threshold
+    # def verify_point(
+    #     self,
+    #     text: str,
+    #     point: Union[torch.Tensor, np.ndarray],
+    #     distance_threshold: float = 0.25,
+    #     similarity_threshold=None,
+    # ):
+    #     """
+    #     Running visual grounding is quite time consuming.
+    #     Thus, sometimes if the point has very high cosine similarity with text query, we might opt not to run visual grounding again.
+    #     This function evaluates the cosine similarity.
+    #     """
+    #     if similarity_threshold is None:
+    #         similarity_threshold = self.verify_point_similarity
+    #     if isinstance(point, np.ndarray):
+    #         point = torch.from_numpy(point)
+    #     points, _, _, _ = self.semantic_memory.get_pointcloud()
+    #     distances = torch.linalg.norm(point - points.detach().cpu(), dim=-1)
+    #     if torch.min(distances) > distance_threshold:
+    #         console.warning("Points are so far from other points!")
+    #         return False
+    #     alignments = self.find_alignment_over_model(text).detach().cpu()[0]
+    #     if torch.max(alignments[distances <= distance_threshold]) < similarity_threshold:
+    #         console.warning("Points close the the point are not similar to the text!")
+    #     return torch.max(alignments[distances < distance_threshold]) >= similarity_threshold
 
     def get_2d_map(
         self,
@@ -979,11 +979,32 @@ class SparseVoxelMap:
         self, text, similarity_threshold: float=0.05, debug=True, return_debug=False
     ):
         points, _, _, _ = self.semantic_memory.get_pointcloud()
-        alignments = self.find_alignment_over_model(text).cpu()
+        debug_text = ""
+        if points is None or points.nelement() == 0:
+            debug_text += "#### - No semantic points available for feature localization.\n"
+            console.warning("No semantic points available for feature localization.")
+            if not debug:
+                return None
+            elif not return_debug:
+                return None, debug_text
+            else:
+                return None, debug_text, None, None
+
+        alignments = self.find_alignment_over_model(text)
+        if alignments is None or alignments.nelement() == 0:
+            debug_text += "#### - No feature alignments available for feature localization.\n"
+            console.warning("No feature alignments available for feature localization.")
+            if not debug:
+                return None
+            elif not return_debug:
+                return None, debug_text
+            else:
+                return None, debug_text, None, None
+
+        alignments = alignments.cpu()
         point = points[alignments.argmax(dim=-1)].squeeze()
         obs_counts = self.semantic_memory._obs_counts
         obs_id = obs_counts[alignments.argmax(dim=-1)].item()
-        debug_text = ""
         target_point = None
 
         rgb = self.observations[obs_id].rgb
@@ -1007,10 +1028,10 @@ class SparseVoxelMap:
             
         if res is not None:
             target_point = res
-            console.alert("Object detected in observations; directly navigate to it.")
-            debug_text += (
-                "#### - Object is detected in observations . **😃** Directly navigate to it.\n"
-            )
+            # console.alert("Object detected in observations; directly navigate to it.")
+            # debug_text += (
+            #     "#### - Object is detected in observations . **😃** Directly navigate to it.\n"
+            # )
 
             # Fallback: use mLLM to verify the current frame if available
             if self.with_mllm_verify:
@@ -1029,20 +1050,23 @@ class SparseVoxelMap:
                     else:
                         console.warning("mLLM did not verify the target in this frame **😞**.")
                         target_point = None
+                        debug_text += (
+                            "#### - mLLM did not verify the target in this frame **😞**.\n"
+                        )
 
-            if target_point is None:
-                alignments = self.find_alignment_over_model(text).cpu()
-                cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
-                if cosine_similarity_check:
-                    target_point = point
-                    console.alert("Point has high cosine similarity; **😃** directly navigate to it.")
+            # if target_point is None:
+            #     alignments = self.find_alignment_over_model(text).cpu()
+            #     cosine_similarity_check = alignments.max().item() > self.verify_point_similarity
+            #     if cosine_similarity_check:
+            #         target_point = point
+            #         console.alert("Point has high cosine similarity; **😃** directly navigate to it.")
 
-                    debug_text += (
-                        "#### - The point has high cosine similarity. **😃** Directly navigate to it.\n"
-                    )
-                else:
-                    console.warning("Cosine Similarity: Cannot verify whether this instance is the target **😞**.")
-                    debug_text += "#### - Cosine Similarity: Cannot verify whether this instance is the target. **😞** \n"
+            #         debug_text += (
+            #             "#### - The point has high cosine similarity. **😃** Directly navigate to it.\n"
+            #         )
+            #     else:
+            #         console.warning("Cosine Similarity: Cannot verify whether this instance is the target **😞**.")
+            #         debug_text += "#### - Cosine Similarity: Cannot verify whether this instance is the target. **😞** \n"
    
         print("--------------------------------")
         print(debug_text)
@@ -1256,6 +1280,8 @@ class SparseVoxelMap:
         if len(xyt) == 3:
             xyt = xyt[:2]
         reachable_points = planner.get_reachable_points(planner.to_pt(xyt))
+        if len(reachable_points) == 0:
+            return torch.zeros_like(obstacles, dtype=torch.bool)
         reachable_xs, reachable_ys = zip(*reachable_points)
         reachable_xs = torch.tensor(reachable_xs)
         reachable_ys = torch.tensor(reachable_ys)
@@ -1264,7 +1290,7 @@ class SparseVoxelMap:
         reachable_map[reachable_xs, reachable_ys] = 1
         reachable_map = reachable_map.to(torch.bool)
         edges = get_edges(reachable_map)
-        return edges & ~reachable_map
+        return edges & ~reachable_map & ~obstacles
 
 
 class SparseVoxelMapProxy:

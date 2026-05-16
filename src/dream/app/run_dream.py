@@ -134,10 +134,10 @@ def main(
     executor(start_command)
 
 
-    find_command = [("find", "red basket")]
-    executor(find_command)
+    # find_command = [("find", "white remote control")]
+    # executor(find_command)
 
-    return 
+    # return 
 
 
     # Parse things and listen to the user
