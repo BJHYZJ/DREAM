@@ -545,8 +545,9 @@ class RobotZmqClient(AbstractRobotClient):
         # We never send a relative motion over wireless - this is because we can run into timing issues.
         # Instead, we always send the absolute position and let the robot handle the motions itself.
         next_action = {"xyt": _xyt, "nav_relative": False, "nav_blocking": blocking}
-        if self._rerun:
-            self._rerun.update_nav_goal(_xyt)
+        
+        # if self._rerun:
+        #     self._rerun.update_nav_goal(_xyt)
 
         # If we are not in navigation mode, switch to it
         # Send an action to the robot

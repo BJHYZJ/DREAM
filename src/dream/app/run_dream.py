@@ -105,9 +105,6 @@ def main(
         # command = [("pickup_only", "wrench")]
         # executor(command)
 
-    command = [("find", "yellow knife")]
-    executor(command)
-
         # # (3)
         # flag2 = True    
         # import time
@@ -124,7 +121,7 @@ def main(
         # while True:
         #     time.sleep(0.1)
 
-    return
+    # return
 
 
     if input_path is None:
@@ -133,11 +130,6 @@ def main(
         start_command = [("read_from_pickle", input_path)]
     executor(start_command)
 
-
-    # find_command = [("find", "white remote control")]
-    # executor(find_command)
-
-    # return 
 
 
     # Parse things and listen to the user

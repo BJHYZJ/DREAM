@@ -94,16 +94,18 @@ class DreamTaskExecutor:
         target_object: str,
         point: Optional[np.ndarray] = None,
         skip_confirmations: bool = False,
-    ) -> None:
+    ) -> bool:
         """Pick up an object."""
         self.robot.switch_to_manipulation_mode()
         print("Using self.agent to grasp object:", target_object)
         success = self.agent.manipulate(target_object=target_object, target_point=point, skip_confirmation=skip_confirmations)
         if not success:
+            self.back_object = None
             self.robot.open_gripper()
         else:
             self.back_object = target_object
         self.robot.look_front()
+        return success
 
 
     def _place(
@@ -111,17 +113,22 @@ class DreamTaskExecutor:
         target_receptacle: str, 
         point: Optional[np.ndarray]=None, 
         skip_confirmations: bool = False
-    ) -> None:
+    ) -> bool:
         """Place an object."""
         self.robot.switch_to_manipulation_mode()
-        assert self.back_object, "back must have object."
-        self.agent.place(
+        if not self.back_object:
+            logger.error("Cannot place because pickup did not leave an object in the back basket.")
+            return False
+        success = self.agent.place(
             back_object=self.back_object, 
             target_receptacle=target_receptacle, 
             target_point=point, 
             skip_confirmation=skip_confirmations
         )
+        if success:
+            self.back_object = None
         self.robot.look_front()
+        return success
 
 
     def __call__(self, response: List[Tuple[str, str]], channel=None) -> bool:
@@ -172,7 +179,9 @@ class DreamTaskExecutor:
                 # Pick up
                 import dream.motion.constants as constants
                 self.robot.arm_to(angle=constants.look_down, blocking=True)
-                self._pickup(target_object, skip_confirmations=self.skip_confirmations)
+                if not self._pickup(target_object, skip_confirmations=self.skip_confirmations):
+                    logger.error("Pickup failed; aborting task before any placement command.")
+                    return False
             elif command == "place_only":
                 logger.info(f"[Pickup task] Place: {args}")
                 target_object = args
@@ -183,7 +192,9 @@ class DreamTaskExecutor:
                 time.sleep(10)
                 import dream.motion.constants as constants
                 self.robot.arm_to(angle=constants.look_down, blocking=True)
-                self._place(target_object, skip_confirmations=self.skip_confirmations)
+                if not self._place(target_object, skip_confirmations=self.skip_confirmations):
+                    logger.error("Place failed; aborting task.")
+                    return False
  
             elif command == "pickup":
                 logger.info(f"[Pickup task] Pickup: {args}")
@@ -204,14 +215,17 @@ class DreamTaskExecutor:
                 # Pick up
                 if self.skip_confirmations:
                     if point is not None:
-                        self._pickup(target_object, point=point, skip_confirmations=self.skip_confirmations)
+                        if not self._pickup(target_object, point=point, skip_confirmations=self.skip_confirmations):
+                            logger.error("Pickup failed; aborting task before placement.")
+                            return False
                     else:
                         logger.error("Could not find the object.")
-                        i += 1
-                        continue
+                        return False
                 else:
                     if input("Do you want to run picking? [Y/n]: ").upper() != "N":
-                        self._pickup(target_object, point=point)
+                        if not self._pickup(target_object, point=point):
+                            logger.error("Pickup failed; aborting task before placement.")
+                            return False
                     else:
                         logger.info("Skip picking!")
                         i += 1
@@ -236,14 +250,17 @@ class DreamTaskExecutor:
 
                 if self.skip_confirmations:
                     if point is not None:
-                        self._place(target_object, point=point, skip_confirmations=self.skip_confirmations)
+                        if not self._place(target_object, point=point, skip_confirmations=self.skip_confirmations):
+                            logger.error("Place failed; aborting task.")
+                            return False
                     else:
                         logger.error("Could not find the object.")
-                        i += 1
-                        continue
+                        return False
                 else:
                     if input("Do you want to run placement? [Y/n]: ").upper() != "N":
-                        self._place(target_object, point=point)
+                        if not self._place(target_object, point=point):
+                            logger.error("Place failed; aborting task.")
+                            return False
                     else:
                         logger.info("Skip placing!")
                         i += 1

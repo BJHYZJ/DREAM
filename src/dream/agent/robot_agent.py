@@ -1315,12 +1315,12 @@ class RobotAgent:
                     )
                     navigation_result = self._build_close_target_trajectory(start_pose, localized_goal)
                     self._set_cached_navigation_goal(localized_goal, obs_id=obs)
-                    self.rerun_visualizer.log_custom_pointcloud(
-                        "world/object",
-                        [finished_point[0], finished_point[1], 0.5],
-                        torch.Tensor([0, 1, 0]),
-                        0.1,
-                    )
+                    # self.rerun_visualizer.log_custom_pointcloud(
+                    #     "world/object",
+                    #     [finished_point[0], finished_point[1], 0.5],
+                    #     torch.Tensor([0, 1, 0]),
+                    #     0.1,
+                    # )
 
                     if text is not None and text != "":
                         debug_text = "### The goal is to navigate to " + text + ".\n" + debug_text
@@ -1357,12 +1357,12 @@ class RobotAgent:
 
         navigation_result = []
         if waypoints is not None:
-            self.rerun_visualizer.log_custom_pointcloud(
-                "world/object",
-                [localized_point[0], localized_point[1], 0.5],
-                torch.Tensor([0, 1, 0]),
-                0.1,
-            )
+            # self.rerun_visualizer.log_custom_pointcloud(
+            #     "world/object",
+            #     [localized_point[0], localized_point[1], 0.5],
+            #     torch.Tensor([0, 1, 0]),
+            #     0.1,
+            # )
 
             navigation_result = self._build_navigation_result(
                 waypoints=waypoints,
@@ -1381,37 +1381,37 @@ class RobotAgent:
         debug_text = "# Robot's monologue: \n" + debug_text
         self.rerun_visualizer.log_text("robot_monologue", debug_text)
 
-        if navigation_result is not None:
-            origins = []
-            vectors = []
-            for idx in range(len(navigation_result) - 1):
-                start_pt = navigation_result[idx]
-                end_pt = navigation_result[idx + 1]
-                if isinstance(start_pt, torch.Tensor):
-                    start_pt = start_pt.detach().cpu().numpy()
-                if isinstance(end_pt, torch.Tensor):
-                    end_pt = end_pt.detach().cpu().numpy()
-                start_pt = np.asarray(start_pt, dtype=float).reshape(-1)
-                end_pt = np.asarray(end_pt, dtype=float).reshape(-1)
-                if (
-                    len(start_pt) < 2
-                    or len(end_pt) < 2
-                    or not np.all(np.isfinite(start_pt[:2]))
-                    or not np.all(np.isfinite(end_pt[:2]))
-                ):
-                    continue
-                origins.append([start_pt[0], start_pt[1], 0.5])
-                vectors.append([end_pt[0] - start_pt[0], end_pt[1] - start_pt[1], 0])
-            if origins:
-                self.rerun_visualizer.log_arrow3D(
-                    "world/direction", origins, vectors, torch.Tensor([0, 1, 0]), 0.1
-                )
-            self.rerun_visualizer.log_custom_pointcloud(
-                "world/robot_start_pose",
-                [start_pose[0], start_pose[1], 0.5],
-                torch.Tensor([0, 0, 1]),
-                0.1,
-            )
+        # if navigation_result is not None:
+        #     origins = []
+        #     vectors = []
+        #     for idx in range(len(navigation_result) - 1):
+        #         start_pt = navigation_result[idx]
+        #         end_pt = navigation_result[idx + 1]
+        #         if isinstance(start_pt, torch.Tensor):
+        #             start_pt = start_pt.detach().cpu().numpy()
+        #         if isinstance(end_pt, torch.Tensor):
+        #             end_pt = end_pt.detach().cpu().numpy()
+        #         start_pt = np.asarray(start_pt, dtype=float).reshape(-1)
+        #         end_pt = np.asarray(end_pt, dtype=float).reshape(-1)
+        #         if (
+        #             len(start_pt) < 2
+        #             or len(end_pt) < 2
+        #             or not np.all(np.isfinite(start_pt[:2]))
+        #             or not np.all(np.isfinite(end_pt[:2]))
+        #         ):
+        #             continue
+        #         origins.append([start_pt[0], start_pt[1], 0.5])
+        #         vectors.append([end_pt[0] - start_pt[0], end_pt[1] - start_pt[1], 0])
+            # if origins:
+            #     self.rerun_visualizer.log_arrow3D(
+            #         "world/direction", origins, vectors, torch.Tensor([0, 1, 0]), 0.1
+            #     )
+            # self.rerun_visualizer.log_custom_pointcloud(
+            #     "world/robot_start_pose",
+            #     [start_pose[0], start_pose[1], 0.5],
+            #     torch.Tensor([0, 0, 1]),
+            #     0.1,
+            # )
 
         return navigation_result
 

@@ -181,6 +181,8 @@ class RerunVisualizer:
 
     camera_point_radius = 0.01
     max_displayed_points_per_camera: int = 10000
+    robot_marker_alpha = 160
+    nav_goal_z_offset = 0.08
 
     def __init__(
         self,
@@ -255,15 +257,15 @@ class RerunVisualizer:
             static=True,
         )
         # World Origin
-        rr.log(
-            "world/xyz",
-            rr.Arrows3D(
-                # Keep a short frame so it doesn't dominate the view
-                vectors=[[0.25, 0, 0], [0, 0.25, 0], [0, 0, 0.25]],
-                colors=[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
-            ),
-            static=True,
-        )
+        # rr.log(
+        #     "world/xyz",
+        #     rr.Arrows3D(
+        #         # Keep a short frame so it doesn't dominate the view
+        #         vectors=[[0.25, 0, 0], [0, 0.25, 0], [0, 0, 0.25]],
+        #         colors=[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
+        #     ),
+        #     static=True,
+        # )
 
         self.bbox_colors_memory = {}
         self.step_delay_s = 0.3
@@ -417,8 +419,7 @@ class RerunVisualizer:
             origins=[0, 0, 0],
             vectors=[0.3, 0, 0],
             radii=0.01,
-            labels="robot",
-            colors=[255, 0, 0, 255],
+            colors=[255, 0, 0, self.robot_marker_alpha],
         )
 
         rr.log("world/robot/arrow", rb_arrow, static=True)

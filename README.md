@@ -99,7 +99,7 @@ If you deploy manipulation service on a separate server, run:
 
 ```bash
 conda activate anygrasp
-cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation
+cd src/anygrasp_manipulation
 python demo.py --open_communication --port 5557
 ```
 
@@ -118,6 +118,7 @@ This runs `demo.py` with `open_communication` disabled, so it will load the loca
 #### Run Dream
 ```bash
 cd ~/path/to/DREAM
+conda activate dream
 python src/dream/app/run_dream.py --robot_ip 10.33.140.5 --server_ip 127.0.0.1  --skip_confirmations
 ```
 
