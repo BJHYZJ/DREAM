@@ -56,9 +56,32 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
   localization = localization == 'true' or localization == 'True'
 
   force_3dof = LaunchConfiguration('force3dof').perform(context)
+  slam_profile = LaunchConfiguration('slam_profile').perform(context)
   
   # Rule of thumb:
   # max_correspondence_distance = voxel_size_value * 20.0  # default * 10
+
+  # Conservative defaults for mobile-manipulator setup with external odometry.
+  icp_max_translation = '0.6'
+  icp_max_correspondence_distance = '0.2'
+  rtabmap_detection_rate = '3.0'
+  rgbd_linear_update = '0.05'
+  rgbd_angular_update = '0.05'
+  min_loop_overlap = str(LaunchConfiguration('min_loop_closure_overlap').perform(context))
+
+  if slam_profile == 'fast':
+    icp_max_translation = '1.0'
+    icp_max_correspondence_distance = '0.3'
+    rtabmap_detection_rate = '5.0'
+    rgbd_linear_update = '0.1'
+    rgbd_angular_update = '0.1'
+  elif slam_profile == 'robust':
+    icp_max_translation = '0.4'
+    icp_max_correspondence_distance = '0.15'
+    rtabmap_detection_rate = '2.0'
+    rgbd_linear_update = '0.03'
+    rgbd_angular_update = '0.03'
+    min_loop_overlap = '0.2'
 
   shared_parameters = {
     'use_sim_time': use_sim_time,
@@ -78,9 +101,9 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'Icp/Epsilon': '0.001',
     'Icp/PointToPlaneK': '5',
     'Icp/PointToPlaneRadius': '0',
-    'Icp/MaxTranslation': '0.2',
+    'Icp/MaxTranslation': icp_max_translation,
     # 'Icp/MaxCorrespondenceDistance': str(max_correspondence_distance),
-    'Icp/MaxCorrespondenceDistance': "0.1",
+    'Icp/MaxCorrespondenceDistance': icp_max_correspondence_distance,
     # 'Icp/MaxCorrespondenceDistance': '1',
     'Icp/Strategy': '1',
     'Icp/OutlierRatio': '0.85',
@@ -93,17 +116,19 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'subscribe_rgbd': True,
     'subscribe_odom_info': False,  # Enable only when using RTAB-Map odometry. FAST-LIO2 odometry is used here.
     'subscribe_scan_cloud': True,
-    'odom_sensor_sync': True, # This will adjust camera position based on difference between lidar and camera stamps.
+    # With external odometry (FAST-LIO), timestamp offsets are often better handled
+    # by upstream drivers/sync. Enabling this may introduce pose jitter.
+    'odom_sensor_sync': False,
     'map_frame_id': 'map',
     'odom_frame_id': 'camera_init',  # FAST-LIO's odometry frame
     
-    'Rtabmap/DetectionRate': '5.0', 
+    'Rtabmap/DetectionRate': rtabmap_detection_rate,
 
     # RTAB-Map's internal parameters are strings:
     'RGBD/ProximityMaxGraphDepth': '0',
     'RGBD/ProximityPathMaxNeighbors': '0',
-    'RGBD/AngularUpdate': '0.1',
-    'RGBD/LinearUpdate': '0.1',
+    'RGBD/AngularUpdate': rgbd_angular_update,
+    'RGBD/LinearUpdate': rgbd_linear_update,
     'RGBD/CreateOccupancyGrid': 'false',
     'RGBD/ForceOdom3DoF': force_3dof,       # Default: true - Force odometry pose to be 3DoF if Reg/Force3DoF=true.
 
@@ -117,7 +142,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
     'Reg/Force3DoF': force_3dof,
     'Reg/RepeatOnce': 'true',
     'Reg/Strategy': '2',  # 0=Vis, 1=Icp, 2=VisIcp
-    'Icp/CorrespondenceRatio': str(LaunchConfiguration('min_loop_closure_overlap').perform(context))
+    'Icp/CorrespondenceRatio': min_loop_overlap
   }
   
   arguments = []
@@ -142,7 +167,7 @@ def launch_setup(context: LaunchContext, *args, **kwargs):
       Node(
           package='rtabmap_sync', executable='rgbd_sync', output='screen',
           namespace=namespace,
-          parameters=[{'approx_sync': False, 'use_sim_time': use_sim_time}],  # approx_sync controls RGB and depth image synchronization.
+          parameters=[{'approx_sync': True, 'approx_sync_max_interval': 0.03, 'use_sim_time': use_sim_time}],
           remappings=remappings),
 
       Node(
@@ -203,8 +228,9 @@ def generate_launch_description():
       description='Use rtabmap_viz'),
 
     DeclareLaunchArgument(
-      'frame_id', default_value='camera_color_optical_frame',  # default base_link, now, when arm is moving, rtabmap keyframe will added.
-      description='Base frame of the robot.'),
+      'frame_id', default_value='body',
+      description='Tracking frame used by RTAB-Map. Recommended: body (FAST-LIO body frame). '
+                  'TF chain is typically map->camera_init->body->livox_frame->base_link.'),
     
     DeclareLaunchArgument(
       'localization', default_value='false',
@@ -219,8 +245,9 @@ def generate_launch_description():
       description='Odometry topic from SLAM system (e.g., FAST-LIO2).'),
 
     DeclareLaunchArgument(
-      # 'imu_topic', default_value='/camera/imu',  # with realsense-d435i imu information
-      'imu_topic', default_value='/livox/imu',  # /camera/imu with realsense-d435i imu information
+      # Keep empty by default when using external odometry (FAST-LIO) to avoid
+      # introducing extra orientation constraints from another IMU stream.
+      'imu_topic', default_value='',
       description='IMU topic (ignored if empty).'),
     
     DeclareLaunchArgument(
@@ -248,11 +275,15 @@ def generate_launch_description():
       description='Minimum scan overlap pourcentage to accept a loop closure.'),
 
     DeclareLaunchArgument(
+      'slam_profile', default_value='balanced',
+      description='Preset for SLAM tuning: balanced (default), fast (higher update rate), robust (more conservative and stable).'),
+
+    DeclareLaunchArgument(
       'qos', default_value='1',
       description='Quality of Service: 0=system default, 1=reliable, 2=best effort.'),
 
     DeclareLaunchArgument(
-      'force3dof', default_value="false",
+      'force3dof', default_value="true",
       description='Force 3 degrees-of-freedom transform (3Dof: x,y and yaw). Parameters z, roll and pitch will be set to 0'),
 
     OpaqueFunction(function=launch_setup),

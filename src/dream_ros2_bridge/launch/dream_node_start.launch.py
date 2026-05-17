@@ -63,36 +63,31 @@ def launch_setup(context, *args, **kwargs):
     ]).perform(context)
     extrinsics = _load_extrinsics_required(extrinsics_file)
 
-    ranger_launch = LaunchDescription([
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                os.path.join(
-                    dream_ros2_bridge_path, 
-                    'launch', 
-                    "ranger_mini_v3_driver.launch.py"
-                )
-            ])
-        ),  
-    ])
+    ranger_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            os.path.join(
+                dream_ros2_bridge_path,
+                'launch',
+                "ranger_mini_v3_driver.launch.py"
+            )
+        ]),
+    )
 
-    xarm_launch = LaunchDescription([
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([
-                os.path.join(
-                    dream_ros2_bridge_path,
-                    'launch', 
-                    "xarm6_driver.launch.py"
-                )
-            ]),
-            launch_arguments={
-                'robot_ip': LaunchConfiguration('xarm_ip'),
-                'joint_states_rate': LaunchConfiguration('joint_states_rate'),
-                'hw_ns': 'xarm',
-                'add_gripper': 'true'
-            }.items(),
-        ),  
-    ])
-
+    xarm_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            os.path.join(
+                dream_ros2_bridge_path,
+                'launch',
+                "xarm6_driver.launch.py"
+            )
+        ]),
+        launch_arguments={
+            'robot_ip': LaunchConfiguration('xarm_ip'),
+            'joint_states_rate': LaunchConfiguration('joint_states_rate'),
+            'hw_ns': 'xarm',
+            'add_gripper': 'true'
+        }.items(),
+    )
 
     camera_launch = LaunchDescription([
         IncludeLaunchDescription(
@@ -146,6 +141,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[{
             'robot_description': robot_description_content,
             'publish_frequency': 50.0,
+            'use_sim_time': use_sim_time,
         }],
         
     )
@@ -170,7 +166,8 @@ def launch_setup(context, *args, **kwargs):
         executable="static_transform_publisher",
         name="static_tf_link6_to_camera",
         arguments=_to_tf_args(extrinsics["link6_to_camera"]),
-        output="screen"
+        output="screen",
+        parameters=[{'use_sim_time': use_sim_time}]
     )
 
 

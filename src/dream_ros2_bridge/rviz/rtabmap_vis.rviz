@@ -285,7 +285,7 @@ Visualization Manager:
       Axis: Z
       Channel Name: z
       Class: rtabmap_rviz_plugins/MapCloud
-      Cloud decimation: 4
+      Cloud decimation: 2
       Cloud from scan: false
       Cloud max depth (m): 4
       Cloud min depth (m): 0
@@ -294,7 +294,7 @@ Visualization Manager:
       Color Transformer: RGB8
       Download graph: false
       Download map: false
-      Download namespace: rtabmap
+      Download namespace: dream_rtabmap
       Enabled: true
       Filter ceiling (m): 0
       Filter floor (m): 0
@@ -304,7 +304,7 @@ Visualization Manager:
       Min Color: 0; 0; 0
       Min Intensity: -0.1618041694164276
       Name: MapCloud_RGBD
-      Node filtering angle (degrees): 30
+      Node filtering angle (degrees): 0
       Node filtering radius (m): 0
       Position Transformer: XYZ
       Size (Pixels): 3
@@ -329,7 +329,7 @@ Visualization Manager:
       Axis: X
       Channel Name: intensity
       Class: rtabmap_rviz_plugins/MapCloud
-      Cloud decimation: 16
+      Cloud decimation: 4
       Cloud from scan: true
       Cloud max depth (m): 16
       Cloud min depth (m): 0
@@ -338,17 +338,17 @@ Visualization Manager:
       Color Transformer: Intensity
       Download graph: false
       Download map: false
-      Download namespace: rtabmap
+      Download namespace: dream_rtabmap
       Enabled: true
       Filter ceiling (m): 0
       Filter floor (m): 0
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 255
+      Max Intensity: 174
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: MapCloud_SCAN
-      Node filtering angle (degrees): 30
+      Node filtering angle (degrees): 0
       Node filtering radius (m): 0
       Position Transformer: XYZ
       Size (Pixels): 3
@@ -447,25 +447,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/ThirdPersonFollower
-      Distance: 14.697385787963867
+      Distance: 9.451286315917969
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.0414690971374512
-        Y: -1.8991351127624512
-        Z: 3.814697265625e-06
+        X: 1.8272809982299805
+        Y: 2.048335313796997
+        Z: 1.162962507805787e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0247968435287476
+      Pitch: 1.1597967147827148
       Target Frame: base_link
       Value: ThirdPersonFollower (rviz_default_plugins)
-      Yaw: 4.502387046813965
+      Yaw: 1.6123700141906738
     Saved: ~
 Window Geometry:
   Camera:

@@ -41,7 +41,6 @@ setup(
         "console_scripts": [
             "camera_pose_publisher = dream_ros2_bridge.nodes.camera_pose_publisher:main",
             "goto_controller = dream_ros2_bridge.nodes.goto_controller:main",
-            "odom_tf_publisher = dream_ros2_bridge.nodes.odom_tf_publisher:main",
             "tf_pose_publisher = dream_ros2_bridge.nodes.tf_pose_publisher:main",
             'd435i_accel_correction = dream_ros2_bridge.nodes.d435i_accel_correction:main',
             "server = dream_ros2_bridge.remote.server:main",
