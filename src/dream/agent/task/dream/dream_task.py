@@ -82,7 +82,7 @@ class DreamTaskExecutor:
         self.robot.switch_to_navigation_mode()
         point = self.agent.navigate(target_object)
         # `filename` = None means write to default log path (the datetime you started to run the process)
-        self.agent.voxel_map.write_to_pickle(filename=None)
+        # self.agent.voxel_map.write_to_pickle(filename=None)
         if point is None:
             logger.error("Navigation Failure: Could not find the object {}".format(target_object))
             return None
@@ -184,12 +184,12 @@ class DreamTaskExecutor:
                     return False
             elif command == "place_only":
                 logger.info(f"[Pickup task] Place: {args}")
-                target_object = args
-                # self.back_object = "???"  # TODO
+                target_object = args[0]
+                self.back_object = args[1]
                 # TODO move the camera to look at the target object
                 # Placing
-                import time
-                time.sleep(10)
+                # import time
+                # time.sleep(10)
                 import dream.motion.constants as constants
                 self.robot.arm_to(angle=constants.look_down, blocking=True)
                 if not self._place(target_object, skip_confirmations=self.skip_confirmations):
@@ -271,7 +271,7 @@ class DreamTaskExecutor:
                 logger.info("Rotate in place to scan environments.")
                 self.agent.rotate_in_place()
                 # `filename` = None means write to default log path (the datetime you started to run the process)
-                self.agent.voxel_map.write_to_pickle(filename=None)
+                # self.agent.voxel_map.write_to_pickle(filename=None)
             elif command == "read_from_pickle":
                 logger.info(f"Load the semantic memory from past runs, pickle file name: {args}.")
                 self.agent.voxel_map.read_from_pickle(args)

@@ -254,6 +254,9 @@ class ObjectHandler:
         floor_mask = filtered_points[:, 2] < self.robot_min_height  # base footprint is -0.325
         filtered_points = filtered_points[~floor_mask]
         filtered_colors = filtered_colors[~floor_mask]
+        if filtered_points.size == 0:
+            print("No valid receptacle points after filtering.")
+            return False
 
         place_x, place_y = np.median(np.unique(filtered_points[:, :2], axis=0), axis=0)
         x_margin, y_margin = 0.1, 0.1
@@ -261,7 +264,10 @@ class ObjectHandler:
         y_mask = np.logical_and(filtered_points[:, 1] > (place_y - y_margin), filtered_points[:, 1] < (place_y + y_margin))
         z_mask = np.logical_and(filtered_points[:, 2] > self.robot_min_height, filtered_points[:, 2] < self.robot_max_height)
         place_mask = np.logical_and(x_mask, y_mask, z_mask)
-        place_z = np.quantile(filtered_points[place_mask][:, 2], 0.95) + 0.05
+        place_points = filtered_points[place_mask]
+        if place_points.size == 0:
+            place_points = filtered_points
+        place_z = np.quantile(place_points[:, 2], 0.95) + 0.05
         
         place_point = np.array(
             [place_x, place_y, place_z],
@@ -292,7 +298,7 @@ class ObjectHandler:
                     place_point,
                     [0],
                     [0, 0, 0],
-                    [],
+                    filtered_points,
                     data_msg,
                 ]
             )

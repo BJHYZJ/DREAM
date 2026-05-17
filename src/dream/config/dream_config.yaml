@@ -144,6 +144,9 @@ agent:
   target_relocation_radius: 0.50
   # Bound the number of rejected regions retained for one target text.
   max_rejected_target_regions_per_text: 20
+  # After rejecting a stale target candidate from a fresh focused frame, avoid
+  # immediately spending another full head sweep on the next planning attempt.
+  skip_lookaround_after_target_reject: True
 
   # Pose graph based semantic map updates.
   # These switches consume already-optimized SLAM pose graph nodes and re-add
@@ -202,7 +205,7 @@ motion_planner:
   goals:
     # manipulation_radius: 0.45
     # manipulation_radius: 0.55
-    manipulation_radius: 0.8
+    manipulation_radius: 0.85
 
 # Trajectory following - how closely we follow intermediate waypoints
 # These should be less strict than whatever parameters the low-level controller is using; this will

@@ -73,6 +73,7 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
     Returns:
         rotation: Rotation of the object
         translation: Translation of the object
+        obj_points: Object/receptacle point cloud in arm-base frame
         depth: Depth of the object (distance from the camera; only for pick mode)
         width: Width of the object (only for pick mode)
     """
@@ -131,7 +132,7 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         elif retry_flag == 2 and side_retries == 3:
             print("Tried in all angles but couldn't succeed")
             if mode == "place":
-                return None, None, theta_cumulative
+                return None, None, None, theta_cumulative
             else:
                 return None, None, None, None, None, retry_flag, theta_cumulative
 
@@ -173,7 +174,7 @@ def capture_and_process_image(mode, obj, socket, manip_wrapper: ManipulationWrap
         return rotation, translation, depth, width, obj_points, retry_flag, theta_cumulative
     elif mode == "place":
         print("Place: Returning translation, rotation")
-        return rotation, translation, theta_cumulative
+        return rotation, translation, obj_points, theta_cumulative
     else:
         raise ValueError
 
@@ -244,6 +245,113 @@ def pregrasp_position(
     return shifted_object_xyz
 
 
+def _valid_object_points(object_points):
+    if object_points is None:
+        return np.empty((0, 3), dtype=np.float32)
+
+    object_points = np.asarray(object_points, dtype=np.float32)
+    if object_points.ndim != 2 or object_points.shape[1] != 3:
+        return np.empty((0, 3), dtype=np.float32)
+
+    valid = np.all(np.isfinite(object_points), axis=1)
+    return object_points[valid]
+
+
+def _place_z_from_points(object_points, xy, fallback_z, margin=0.1):
+    fallback_z = float(fallback_z) if np.isfinite(fallback_z) else -np.inf
+    x_mask = np.logical_and(
+        object_points[:, 0] > xy[0] - margin,
+        object_points[:, 0] < xy[0] + margin,
+    )
+    y_mask = np.logical_and(
+        object_points[:, 1] > xy[1] - margin,
+        object_points[:, 1] < xy[1] + margin,
+    )
+    local_points = object_points[np.logical_and(x_mask, y_mask)]
+    if local_points.size == 0:
+        dists = np.linalg.norm(object_points[:, :2] - xy, axis=1)
+        local_points = object_points[np.argsort(dists)[: min(50, len(object_points))]]
+
+    if local_points.size == 0:
+        return float(fallback_z)
+
+    return float(max(fallback_z, np.quantile(local_points[:, 2], 0.95) + 0.05))
+
+
+def _dedupe_place_positions(positions, min_dist=0.02):
+    unique_positions = []
+    for position in positions:
+        position = np.asarray(position, dtype=np.float32).reshape(3)
+        if not np.all(np.isfinite(position)):
+            continue
+        if any(np.linalg.norm(position - existing) < min_dist for existing in unique_positions):
+            continue
+        unique_positions.append(position)
+    return unique_positions
+
+
+def _generate_place_position_candidates(translation, object_points):
+    """Return candidate place points in arm-base frame, ordered from safest to most aggressive."""
+    translation = np.asarray(translation, dtype=np.float32).reshape(3)
+    candidates = [translation]
+
+    object_points = _valid_object_points(object_points)
+    if object_points.size == 0:
+        return candidates
+
+    center_xy = np.median(object_points[:, :2], axis=0)
+    center_z = _place_z_from_points(object_points, center_xy, translation[2])
+    candidates.append(np.array([center_xy[0], center_xy[1], center_z], dtype=np.float32))
+
+    xy_dists = np.linalg.norm(object_points[:, :2], axis=1)
+    for quantile in (0.15, 0.25, 0.35):
+        dist_thresh = np.quantile(xy_dists, quantile)
+        near_points = object_points[xy_dists <= dist_thresh]
+        if near_points.size == 0:
+            continue
+
+        near_xy = np.median(near_points[:, :2], axis=0)
+        for blend in (0.50, 0.75, 1.0):
+            xy = (1.0 - blend) * center_xy + blend * near_xy
+            z = _place_z_from_points(object_points, xy, translation[2])
+            candidates.append(np.array([xy[0], xy[1], z], dtype=np.float32))
+
+    return _dedupe_place_positions(candidates)
+
+
+def _solve_place_ik(manip_wrapper: ManipulationWrapper, place_rotation, positions):
+    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
+    current_pose = manip_wrapper.robot.get_ee_in_arm_base()
+    rotation_candidates = [
+        ("top-down", place_rotation),
+        ("current-ee", current_pose[:3, :3]),
+    ]
+
+    for rotation_name, rotation in rotation_candidates:
+        for position_idx, position in enumerate(positions):
+            reach_xy = float(np.linalg.norm(position[:2]))
+            place_pose = np.eye(4)
+            place_pose[:3, :3] = rotation
+            place_pose[:3, 3] = position
+            success, joints_solution, debug_info = manip_wrapper.robot._robot_model.manip_ik(
+                place_pose,
+                q_init=arm_angles_deg,
+                is_radians=False,
+                verbose=False,
+            )
+            final_error = debug_info.get("final_error_norm", float("nan"))
+            print(
+                "Place IK candidate "
+                f"{position_idx} ({rotation_name}): "
+                f"xyz={np.round(position, 3)}, xy_dist={reach_xy:.2f}, "
+                f"success={success}, err={final_error:.4f}"
+            )
+            if success:
+                return place_pose, joints_solution
+
+    return None, None
+
+
 def pickup(
     manip_wrapper: ManipulationWrapper,
     rotation: np.ndarray,  # grasp rotation in arm base
@@ -255,18 +363,21 @@ def pickup(
     just_anygrasp: bool=False,
     two_stage: bool=True,
 ):
-    ee_goal_in_arm_base_pose = np.eye(4)
-    ee_goal_in_arm_base_pose[:3, :3] = rotation
-    ee_goal_in_arm_base_pose[:3, 3] = translation
-    
-    assert len(object_points.shape) == 2 and object_points.shape[1] == 3
+    object_points = _valid_object_points(object_points)
+    if object_points.size == 0:
+        print("ಥ﹏ಥ Pickup failed because object point cloud is empty.")
+        return False
 
     arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
     success0 = success1 = False
     joints_solution0 = joints_solution1 = None
+    ee_goal_in_arm_base_pose = None
 
     # First try the direct IK (anygrasp-style). Skip if user asked for heuristic only.
-    if not just_heuristic:
+    if not just_heuristic and rotation is not None and translation is not None:
+        ee_goal_in_arm_base_pose = np.eye(4)
+        ee_goal_in_arm_base_pose[:3, :3] = rotation
+        ee_goal_in_arm_base_pose[:3, 3] = translation
         success0, joints_solution0, debug_info0 = manip_wrapper.robot._robot_model.manip_ik(
             ee_goal_in_arm_base_pose, 
             q_init=arm_angles_deg, 
@@ -299,7 +410,10 @@ def pickup(
         y_mask = np.logical_and(object_points[:, 1] > (pick_y - y_margin), object_points[:, 1] < (pick_y + y_margin))
         z_mask = np.logical_and(object_points[:, 2] > -0.3, object_points[:, 2] < 1.0)
         pick_mask = np.logical_and(x_mask, y_mask, z_mask)
-        pick_zs = object_points[pick_mask][:, 2]
+        pick_points = object_points[pick_mask]
+        if pick_points.size == 0:
+            pick_points = object_points
+        pick_zs = pick_points[:, 2]
         pick_z = np.quantile(pick_zs, 0.95)
         object_height = pick_zs.max() - pick_zs.min()
         pick_z -=  min(0.05, object_height * 2 / 3)  # 0.40 is the back backet min height, lower than this will collision with computer
@@ -345,7 +459,7 @@ def pickup(
 
     # ================ process pregrasp while will imporve manipulation success rate ================
     if two_stage:
-        object_xyz = np.median(object_points, axis=0) 
+        object_xyz = np.median(object_points, axis=0)
         ee_xyz = manip_wrapper.robot.get_ee_in_arm_base()[:3, 3]
         pregrasp_xyz = pregrasp_position(
             object_xyz=object_xyz, 
@@ -394,7 +508,8 @@ def place(
     socket,
     manip_wrapper: ManipulationWrapper,
     back_object: str,  # object in back
-    translation: np.ndarray,  # grasp translation in arm base
+    translation: np.ndarray,  # place translation in arm base
+    object_points=None,  # receptacle points in arm base
     gripper_width: int=830,
     distance_from_object: float=0.3
 ):
@@ -403,37 +518,18 @@ def place(
     place_rotation = get_pose_from_front_up_end_effector(
         front=front_direction, up=up_direction
     )
-    place_pose = np.eye(4)
-    place_pose[:3, :3] = place_rotation
-    place_pose[:3, 3] = translation
-
-    arm_angles_deg = manip_wrapper.robot.get_arm_joint_state()
-    success0, joints_solution0, debug_info0 = manip_wrapper.robot._robot_model.manip_ik(
-        place_pose, 
-        q_init=arm_angles_deg, 
-        is_radians=False, 
-        verbose=False
+    place_positions = _generate_place_position_candidates(translation, object_points)
+    place_pose, joints_solution = _solve_place_ik(
+        manip_wrapper=manip_wrapper,
+        place_rotation=place_rotation,
+        positions=place_positions,
     )
 
-    if not success0:
-        place_pose = manip_wrapper.robot.get_ee_in_arm_base()
-        place_pose[:3, 3] = translation
-        success1, joints_solution1, debug_info1 = manip_wrapper.robot._robot_model.manip_ik(
-            place_pose, 
-            q_init=arm_angles_deg, 
-            is_radians=False, 
-            verbose=False
-        )
-    
-    if not success0 and not success1:
-        print("ಥ﹏ಥ Both the Place pose were invalid, target place position is too away.")
+    if joints_solution is None:
+        print("ಥ﹏ಥ All Place pose candidates were invalid, target place position is too away.")
         return False
-    elif success0:
-        joints_solution = joints_solution0
-    elif success1:
-        joints_solution = joints_solution1
-    else:
-        raise ValueError
+
+    target_xyz = place_pose[:3, 3].copy()
     
     # there has one success ik for place, now the robot need to pickup back object and then place...
     manip_wrapper.robot.arm_to(angle=constants.back_front, blocking=True, reliable=True, speed=40)
@@ -511,7 +607,6 @@ def place(
     manip_wrapper.robot.arm_to(constants.look_down, blocking=True, reliable=True, speed=40)
 
     # ================ process pregrasp while will imporve place success rate ================
-    target_xyz = translation.copy()
     ee_xyz = manip_wrapper.robot.get_ee_in_arm_base()[:3, 3]
     pregrasp_xyz = pregrasp_position(
         object_xyz=target_xyz, 

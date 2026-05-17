@@ -36,7 +36,6 @@ from dream.utils.logger import Logger, color_text
 
 logger = Logger(__name__)
 
-
 @dataclass(frozen=True)
 class CachedNavigationGoal:
     goal: np.ndarray
@@ -140,6 +139,10 @@ class RobotAgent:
         self._max_rejected_target_regions_per_text = int(
             parameters.get("agent/max_rejected_target_regions_per_text", 20)
         )
+        self._skip_lookaround_after_target_reject = bool(
+            parameters.get("agent/skip_lookaround_after_target_reject", True)
+        )
+        self._skip_next_lookaround_target_key: Optional[str] = None
         # ==============================================
 
         # Parameters for feature matching and exploration
@@ -717,9 +720,9 @@ class RobotAgent:
         for angle in [
             # constants.look_ahead,
             constants.look_down,
-            # constants.look_left_1,
+            constants.look_left_1,
             constants.look_left_2,
-            # constants.look_right_1, 
+            constants.look_right_1,
             constants.look_right_2,
             constants.look_front,
         ]:
@@ -748,6 +751,7 @@ class RobotAgent:
         cached_goal = self._get_cached_navigation_goal()
         focused_goal = self._get_focused_cached_navigation_goal(start)
         has_cached_goal = cached_goal is not None
+        skipped_lookaround_after_reject = False
         if focused_goal is not None:
             focused_tracking_text = (
                 "### Using focused tracking near cached navigation goal; looking at target instead of sweeping."
@@ -761,12 +765,42 @@ class RobotAgent:
             if finished:
                 return True, detected_goal_point
         elif not has_cached_goal:
-            self.look_around(speed=arm_speed)
+            if self._consume_skip_lookaround_after_reject(text):
+                skipped_lookaround_after_reject = True
+                logger.info(
+                    "Skipping one full look-around after rejecting a stale "
+                    f"candidate for '{text}'; replanning from current semantic memory."
+                )
+            else:
+                self.look_around(speed=arm_speed)
 
         self.robot.move_to_nav_posture()
 
         start = self.robot.get_base_in_map_xyt()
-        navigation_result = self.process_text(text, start, navigation_step_num=self._navigation_step_num)
+        navigation_result = self.process_text(
+            text,
+            start,
+            navigation_step_num=self._navigation_step_num,
+            allow_exploration=not skipped_lookaround_after_reject,
+        )
+        if (
+            skipped_lookaround_after_reject
+            and (navigation_result is None or len(navigation_result) == 0)
+            and text != ""
+            and text is not None
+        ):
+            logger.info(
+                "No non-rejected target candidate remains in current memory; "
+                "running look-around before falling back to exploration."
+            )
+            self.look_around(speed=arm_speed)
+            self.robot.move_to_nav_posture()
+            start = self.robot.get_base_in_map_xyt()
+            navigation_result = self.process_text(
+                text,
+                start,
+                navigation_step_num=self._navigation_step_num,
+            )
         if (navigation_result is None or len(navigation_result) == 0) and text != "" and text is not None:
             navigation_result = self.process_text("", start, navigation_step_num=self._navigation_step_num)
 
@@ -827,7 +861,7 @@ class RobotAgent:
                     text,
                     goal=planned_goal,
                     obs_id=planned_obs_id,
-                    max_obs_id=focus.pre_focus_latest_obs_id,
+                    max_obs_id=self._focused_reject_max_obs_id(focus),
                 )
                 self._clear_cached_navigation_goal()
             else:
@@ -999,6 +1033,62 @@ class RobotAgent:
             regions.append(copied)
         return regions
 
+    def _focused_reject_max_obs_id(self, focus: FocusResult) -> Optional[int]:
+        """Reject through the focused frame that actually failed verification."""
+        return (
+            focus.detected_obs_id
+            if focus.detected_obs_id is not None
+            else focus.pre_focus_latest_obs_id
+        )
+
+    def _obs_id_to_int(self, obs_id) -> Optional[int]:
+        if obs_id is None:
+            return None
+        if isinstance(obs_id, torch.Tensor):
+            obs_id = obs_id.detach().cpu().item()
+        try:
+            return int(obs_id)
+        except (TypeError, ValueError):
+            return None
+
+    def _consume_skip_lookaround_after_reject(self, text: Optional[str]) -> bool:
+        if not self._skip_lookaround_after_target_reject:
+            return False
+        key = self._target_text_key(text)
+        if not key or self._skip_next_lookaround_target_key != key:
+            return False
+        self._skip_next_lookaround_target_key = None
+        return True
+
+    def _target_point_is_rejected(
+        self,
+        text: Optional[str],
+        point,
+        obs_id: Optional[int] = None,
+    ) -> bool:
+        key = self._target_text_key(text)
+        if not key:
+            return False
+
+        obs_id = self._obs_id_to_int(obs_id)
+        if obs_id is not None and obs_id in self._rejected_target_obs_ids.get(key, set()):
+            return True
+
+        point = self._target_to_numpy(point)
+        if point is None:
+            return False
+
+        for region in self._rejected_target_regions.get(key, []):
+            center = self._target_to_numpy(region.get("center"))
+            if center is None:
+                continue
+            radius = float(region.get("radius", 0.0))
+            if not np.isfinite(radius) or radius <= 0:
+                continue
+            if np.linalg.norm(point[:2] - center[:2]) <= radius:
+                return True
+        return False
+
     def _reject_target_candidate(
         self,
         text: Optional[str],
@@ -1015,6 +1105,8 @@ class RobotAgent:
 
         if obs_id is None and goal is None:
             return
+        if self._skip_lookaround_after_target_reject:
+            self._skip_next_lookaround_target_key = key
 
         if obs_id is not None:
             self._rejected_target_obs_ids.setdefault(key, set()).add(int(obs_id))
@@ -1074,47 +1166,54 @@ class RobotAgent:
             return FocusResult(None, True, None, None)
 
         prev_latest_obs_id = self._latest_observation_id()
-        self._face_target_with_base(expected_goal)
-        self.robot.look_at_target(tar_in_map=expected_goal, blocking=True)
-        time.sleep(2)
-        if not self._realtime_updates:
-            self.update()
-
-        obs_ids = self._observation_ids_snapshot()
-        if not obs_ids:
-            logger.error("No observations available to verify target.")
-            return FocusResult(None, False, prev_latest_obs_id, None)
-
-        new_obs_ids = (
-            [obs_id for obs_id in obs_ids if obs_id > prev_latest_obs_id]
-            if prev_latest_obs_id is not None
-            else obs_ids
-        )
-        if prev_latest_obs_id is not None and not new_obs_ids:
-            logger.warning(
-                "No new focused observation was captured after looking at the target; "
-                "verification is inconclusive."
+        try:
+            self._face_target_with_base(expected_goal)
+            self.robot.look_at_target(
+                tar_in_map=expected_goal,
+                blocking=True,
+                speed=40,
             )
-            return FocusResult(None, False, prev_latest_obs_id, None)
+            time.sleep(2)
+            if not self._realtime_updates:
+                self.update()
 
-        latest_obs_id = new_obs_ids[-1]
-        text_exist, detected_goal_point = self.voxel_map.detect_text(
-            text=text,
-            obs_id=latest_obs_id,
-            return_point=True,
-            allow_feature_fallback=False,
-        )
-        if not text_exist:
-            logger.warning("Target not found in focused view.")
-            return FocusResult(None, True, prev_latest_obs_id, latest_obs_id)
+            obs_ids = self._observation_ids_snapshot()
+            if not obs_ids:
+                logger.error("No observations available to verify target.")
+                return FocusResult(None, False, prev_latest_obs_id, None)
 
-        detected_goal_point = self._target_to_numpy(detected_goal_point)
-        if detected_goal_point is None:
-            logger.warning(
-                "Target detected in focused view, but no valid current-frame target point was available."
+            new_obs_ids = (
+                [obs_id for obs_id in obs_ids if obs_id > prev_latest_obs_id]
+                if prev_latest_obs_id is not None
+                else obs_ids
             )
-            return FocusResult(None, True, prev_latest_obs_id, latest_obs_id)
-        return FocusResult(detected_goal_point, True, prev_latest_obs_id, latest_obs_id)
+            if prev_latest_obs_id is not None and not new_obs_ids:
+                logger.warning(
+                    "No new focused observation was captured after looking at the target; "
+                    "verification is inconclusive."
+                )
+                return FocusResult(None, False, prev_latest_obs_id, None)
+
+            latest_obs_id = new_obs_ids[-1]
+            text_exist, detected_goal_point = self.voxel_map.detect_text(
+                text=text,
+                obs_id=latest_obs_id,
+                return_point=True,
+                allow_feature_fallback=False,
+            )
+            if not text_exist:
+                logger.warning("Target not found in focused view.")
+                return FocusResult(None, True, prev_latest_obs_id, latest_obs_id)
+
+            detected_goal_point = self._target_to_numpy(detected_goal_point)
+            if detected_goal_point is None:
+                logger.warning(
+                    "Target detected in focused view, but no valid current-frame target point was available."
+                )
+                return FocusResult(None, True, prev_latest_obs_id, latest_obs_id)
+            return FocusResult(detected_goal_point, True, prev_latest_obs_id, latest_obs_id)
+        finally:
+            self.robot.move_to_nav_posture()
 
     def _refresh_cached_navigation_goal_if_close(self, text: Optional[str]):
         focused_candidate = self._get_focused_cached_navigation_goal_snapshot(
@@ -1131,7 +1230,7 @@ class RobotAgent:
                     text,
                     goal=focused_candidate.goal,
                     obs_id=focused_candidate.obs_id,
-                    max_obs_id=focus.pre_focus_latest_obs_id,
+                    max_obs_id=self._focused_reject_max_obs_id(focus),
                 )
                 self._clear_cached_navigation_goal()
             else:
@@ -1262,18 +1361,27 @@ class RobotAgent:
             navigation_result.append(navigation_goal.tolist())
         return navigation_result
 
-    def _face_target_with_base(self, goal_point) -> None:
+    def _bearing_to_target(self, current_xyt, goal_point):
         goal = self._target_to_numpy(goal_point)
         if goal is None:
-            return
+            return None, None, None
 
-        current_xyt = self.robot.get_base_in_map_xyt()
-        vec_to_goal = np.asarray(goal[:2], dtype=float) - np.asarray(current_xyt[:2], dtype=float)
-        if np.linalg.norm(vec_to_goal) < 1e-6:
-            return
+        current_xyt = np.asarray(current_xyt, dtype=float).reshape(-1)
+        vec_to_goal = goal[:2] - current_xyt[:2]
+        target_dist = float(np.linalg.norm(vec_to_goal))
+        if target_dist < 1e-6:
+            return target_dist, None, 0.0
 
         target_yaw = float(np.arctan2(vec_to_goal[1], vec_to_goal[0]))
         yaw_error = (target_yaw - float(current_xyt[2]) + np.pi) % (2 * np.pi) - np.pi
+        return target_dist, target_yaw, yaw_error
+
+    def _face_target_with_base(self, goal_point) -> None:
+        current_xyt = self.robot.get_base_in_map_xyt()
+        target_dist, target_yaw, yaw_error = self._bearing_to_target(current_xyt, goal_point)
+        if target_dist is None or target_yaw is None:
+            return
+
         if abs(yaw_error) <= self._focused_tracking_yaw_threshold:
             return
 
@@ -1289,20 +1397,19 @@ class RobotAgent:
 
     def _build_close_target_trajectory(self, start_pose, goal_point):
         """Stop regular navigation near the target, optionally rotating in place to face it."""
-        start_xy = np.asarray(start_pose[:2], dtype=float)
-        goal_xy = np.asarray(goal_point[:2], dtype=float)
-        vec_to_goal = goal_xy - start_xy
-        if np.linalg.norm(vec_to_goal) < 1e-6:
+        target_dist, target_yaw, bearing_error = self._bearing_to_target(start_pose, goal_point)
+        if target_dist is None:
+            return None
+        if target_yaw is None:
             return [[np.nan, np.nan, np.nan], goal_point.tolist()]
 
-        target_bearing = np.arctan2(vec_to_goal[1], vec_to_goal[0])
-        base_yaw = float(start_pose[2])
-        bearing_error = (target_bearing - base_yaw + np.pi) % (2 * np.pi) - np.pi
+        if abs(bearing_error) <= self._focused_tracking_yaw_threshold:
+            return [[np.nan, np.nan, np.nan], goal_point.tolist()]
 
         target_xyt = [
             float(start_pose[0]),
             float(start_pose[1]),
-            float(base_yaw + bearing_error),
+            float(target_yaw),
         ]
         logger.alert(
             "Target is within manipulation radius; rotating base in place "
@@ -1327,6 +1434,7 @@ class RobotAgent:
         start_pose,
         navigation_step_num: int,
         allow_early_stop: bool = True,
+        allow_exploration: bool = True,
     ):
         """
         Process the text query and return the trajectory for the robot to follow.
@@ -1386,10 +1494,36 @@ class RobotAgent:
                     rejected_regions=rejected_regions,
                 )
                 if localized_point is not None:
-                    logger.alert("Target point selected!")
+                    if self._target_point_is_rejected(text, localized_point, obs_id=obs):
+                        obs_text = self._obs_id_to_int(obs)
+                        localized_np = self._target_to_numpy(localized_point)
+                        point_text = np.array2string(
+                            localized_np[:2],
+                            precision=3,
+                        ) if localized_np is not None else "unknown"
+                        logger.warning(
+                            "Semantic localization returned a target point inside a "
+                            f"rejected region for '{text}' "
+                            f"(obs_id={obs_text}, point={point_text}); ignoring it."
+                        )
+                        debug_text += (
+                            "#### - Top semantic localization result falls inside a recently "
+                            "rejected region; ignoring it.\n"
+                        )
+                        localized_point = None
+                        obs = None
+                        pointcloud = None
+                    else:
+                        logger.alert("Target point selected!")
 
             # Do Frontier based exploration
             if text is None or text == "" or localized_point is None:
+                if not allow_exploration and text is not None and text != "":
+                    debug_text += (
+                        "## No non-rejected target candidate remains in current memory; "
+                        "rescan before exploration.\n"
+                    )
+                    return []
                 self._clear_cached_navigation_goal()
                 debug_text += "## Navigation fails, so robot starts exploring environments.\n"
                 localized_point = self.space.sample_frontier(self.planner, start_pose, text)
@@ -1419,28 +1553,38 @@ class RobotAgent:
                 finished_point = localized_goal.tolist()
 
                 if np.linalg.norm(start_xy - localized_goal[:2]) <= self._manipulation_radius:
-                    logger.alert(
-                        "Robot already within manipulation radius; skipping target viewpoint planning."
-                    )
-                    debug_text += (
-                        "## Robot already within manipulation radius; skip target viewpoint planning and verify for grasping.\n"
-                    )
                     navigation_result = self._build_close_target_trajectory(start_pose, localized_goal)
-                    self._set_cached_navigation_goal(localized_goal, obs_id=obs)
-                    # self.rerun_visualizer.log_custom_pointcloud(
-                    #     "world/object",
-                    #     [finished_point[0], finished_point[1], 0.5],
-                    #     torch.Tensor([0, 1, 0]),
-                    #     0.1,
-                    # )
-
-                    if text is not None and text != "":
-                        debug_text = "### The goal is to navigate to " + text + ".\n" + debug_text
+                    if navigation_result is None:
+                        logger.warning(
+                            "Robot is within manipulation radius, but the required close-target "
+                            "base turn is unsafe; planning a nearby viewpoint instead."
+                        )
+                        debug_text += (
+                            "## Robot is near the target, but the close-target base turn is unsafe; "
+                            "plan a nearby viewpoint instead.\n"
+                        )
                     else:
-                        debug_text = "### I have not received any text query from human user.\n ### So, I plan to explore the environment with Frontier-based exploration.\n"
-                    debug_text = "# Robot's monologue: \n" + debug_text
-                    self.rerun_visualizer.log_text("robot_monologue", debug_text)
-                    return navigation_result
+                        logger.alert(
+                            "Robot already within manipulation radius; skipping target viewpoint planning."
+                        )
+                        debug_text += (
+                            "## Robot already within manipulation radius; skip target viewpoint planning and verify for grasping.\n"
+                        )
+                        self._set_cached_navigation_goal(localized_goal, obs_id=obs)
+                        self.rerun_visualizer.log_custom_pointcloud(
+                            "world/object",
+                            [finished_point[0], finished_point[1], 0.5],
+                            torch.Tensor([0, 1, 0]),
+                            0.1,
+                        )
+
+                        if text is not None and text != "":
+                            debug_text = "### The goal is to navigate to " + text + ".\n" + debug_text
+                        else:
+                            debug_text = "### I have not received any text query from human user.\n ### So, I plan to explore the environment with Frontier-based exploration.\n"
+                        debug_text = "# Robot's monologue: \n" + debug_text
+                        self.rerun_visualizer.log_text("robot_monologue", debug_text)
+                        return navigation_result
 
             navigation_viewpoint = self.space.sample_target_point(
                 start=start_pose, 
@@ -1469,12 +1613,12 @@ class RobotAgent:
 
         navigation_result = []
         if waypoints is not None:
-            # self.rerun_visualizer.log_custom_pointcloud(
-            #     "world/object",
-            #     [localized_point[0], localized_point[1], 0.5],
-            #     torch.Tensor([0, 1, 0]),
-            #     0.1,
-            # )
+            self.rerun_visualizer.log_custom_pointcloud(
+                "world/object",
+                [localized_point[0], localized_point[1], 0.5],
+                torch.Tensor([0, 1, 0]),
+                0.1,
+            )
 
             navigation_result = self._build_navigation_result(
                 waypoints=waypoints,
@@ -1571,7 +1715,7 @@ class RobotAgent:
         theta_cumulative = 0.0
         slam_paused = False
         try:
-            rotation, translation, theta_cumulative = capture_and_process_image(
+            rotation, translation, object_points, theta_cumulative = capture_and_process_image(
                 mode="place",
                 obj=target_receptacle,
                 tar_in_map=target_point,
@@ -1591,6 +1735,7 @@ class RobotAgent:
                     manip_wrapper=self.manip_wrapper,
                     back_object=back_object,
                     translation=translation,
+                    object_points=object_points,
                 )
                 self.robot.resume_slam()
                 slam_paused = False

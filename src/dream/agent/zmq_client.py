@@ -420,10 +420,11 @@ class RobotZmqClient(AbstractRobotClient):
         self, 
         tar_in_map: np.ndarray,
         blocking: bool=True, 
-        timeout: float=10.0
+        timeout: float=10.0,
+        speed: int=20,
     ):
-        self.look_at_target_tilt(tar_in_map, blocking=blocking, timeout=timeout)
-        self.look_at_target_pan(tar_in_map, blocking=blocking, timeout=timeout)
+        self.look_at_target_tilt(tar_in_map, blocking=blocking, timeout=timeout, speed=speed)
+        self.look_at_target_pan(tar_in_map, blocking=blocking, timeout=timeout, speed=speed)
         # sleep for a while ensure image is newest
         time.sleep(0.5)
         print(f"look at target_point in map frame: {tar_in_map}")
@@ -433,7 +434,8 @@ class RobotZmqClient(AbstractRobotClient):
         self, 
         tar_in_map: np.ndarray, 
         blocking: bool=True,
-        timeout: float=10.0
+        timeout: float=10.0,
+        speed: int=20,
     ):
         """Let robot look at the target point by rotate TILT."""
         if isinstance(tar_in_map, list):
@@ -463,14 +465,15 @@ class RobotZmqClient(AbstractRobotClient):
             ee_in_arm_base_pose=ee_in_arm_base_pose,
             camera_K=camera_K,
         )
-        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout)
+        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout, speed=speed)
 
 
     def look_at_target_pan(
         self, 
         tar_in_map: np.ndarray,
         blocking: bool=True,
-        timeout: float=10.0
+        timeout: float=10.0,
+        speed: int=20,
     ):
         """Let robot look at the target point by rotate PAN."""
         if isinstance(tar_in_map, list):
@@ -500,7 +503,7 @@ class RobotZmqClient(AbstractRobotClient):
             ee_in_arm_base_pose=ee_in_arm_base_pose,
             camera_K=camera_K,
         )
-        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout)
+        self.arm_to(arm_angles_deg, blocking=blocking, timeout=timeout, speed=speed)
 
 
     def base_to(
@@ -623,6 +626,31 @@ class RobotZmqClient(AbstractRobotClient):
             
             return False
 
+    def _wait_for_arm_configuration(
+        self,
+        target_angles,
+        tolerance_deg: float = 2.0,
+        timeout: float = 10.0,
+    ) -> bool:
+        target_angles = np.asarray(target_angles, dtype=float)
+        t0 = timeit.default_timer()
+        while True:
+            joint_states, _, _ = self.get_joint_state(timeout=1.0)
+            if joint_states is not None:
+                arm_state = np.asarray(self._extract_joint_state(joint_states), dtype=float)
+                if arm_state.shape == target_angles.shape:
+                    max_error = float(np.max(np.abs(arm_state - target_angles)))
+                    if max_error <= tolerance_deg:
+                        return True
+
+            if timeit.default_timer() - t0 > timeout:
+                logger.warning(
+                    "Timeout waiting for arm configuration "
+                    f"{np.array2string(target_angles, precision=1)}"
+                )
+                return False
+            time.sleep(0.05)
+
     def gripper_to(
         self, 
         position: float,
@@ -703,11 +731,23 @@ class RobotZmqClient(AbstractRobotClient):
             logger.info("Waiting for manipulation mode")
         self._wait_for_mode("manipulation", verbose=verbose)
 
-    def move_to_nav_posture(self) -> None:
+    def move_to_nav_posture(
+        self,
+        blocking: bool = True,
+        timeout: float = 12.0,
+        arm_tolerance_deg: float = 2.0,
+    ) -> None:
         """Move the robot to the navigation posture. This is where the head is looking forward and the arm is tucked in."""
         next_action = {"posture": "navigation", "step": self._iter}
-        next_action = self.send_action(next_action)
-        self._wait_for_mode("navigation")
+        self.send_action(next_action)
+        if not blocking:
+            return
+        self._wait_for_mode("navigation", timeout=timeout)
+        self._wait_for_arm_configuration(
+            constants.look_front,
+            tolerance_deg=arm_tolerance_deg,
+            timeout=timeout,
+        )
         assert self.in_navigation_mode()
 
     def move_to_manip_posture(self):

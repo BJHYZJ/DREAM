@@ -123,13 +123,27 @@ def main(
 
     # return
 
+    command = [("place_only", ["screwdriver", 'green box'])]
+    executor(command)
 
-    if input_path is None:
-        start_command = [("rotate_in_place", "")]
-    else:
-        start_command = [("read_from_pickle", input_path)]
-    executor(start_command)
+    # if input_path is None:
+    #     start_command = [("rotate_in_place", "")]
+    # else:
+    #     start_command = [("read_from_pickle", input_path)]
+    # executor(start_command)
 
+
+
+    # target_object = "yellow knife"
+    # target_receptacle = "red basket"
+    # llm_response = [("pickup", target_object), ("place", target_receptacle)]
+    # ok = executor(llm_response)
+
+
+    # target_object = "screwdriver"
+    # target_receptacle = "green box"
+    # llm_response = [("pickup", target_object), ("place", target_receptacle)]
+    # ok = executor(llm_response)
 
 
     # Parse things and listen to the user
@@ -143,10 +157,12 @@ def main(
             if explore.upper() == "E":
                 llm_response = [("explore", None)]
             else:
-                if target_object is None or len(target_object) == 0:
-                    target_object = input("Enter the target object: ")
-                if target_receptacle is None or len(target_receptacle) == 0:
-                    target_receptacle = input("Enter the target receptacle: ")
+                # if target_object is None or len(target_object) == 0:
+                #     target_object = input("Enter the target object: ")
+                # if target_receptacle is None or len(target_receptacle) == 0:
+                #     target_receptacle = input("Enter the target receptacle: ")
+                target_object = "screwdriver"
+                target_receptacle = "green box"
                 llm_response = [("pickup", target_object), ("place", target_receptacle)]
 
 
