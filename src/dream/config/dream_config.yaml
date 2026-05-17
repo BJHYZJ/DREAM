@@ -202,7 +202,7 @@ motion_planner:
   goals:
     # manipulation_radius: 0.45
     # manipulation_radius: 0.55
-    manipulation_radius: 0.75
+    manipulation_radius: 0.8
 
 # Trajectory following - how closely we follow intermediate waypoints
 # These should be less strict than whatever parameters the low-level controller is using; this will
