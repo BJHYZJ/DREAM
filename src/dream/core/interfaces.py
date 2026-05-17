@@ -322,7 +322,10 @@ class RtabmapData(BaseObservations):
     rgb_compressed: Optional[array.array] = None
     depth_compressed: Optional[array.array] = None
     camera_K: Optional[np.ndarray] = None
+    tracking_in_map_pose: Optional[np.ndarray] = None
+    camera_in_tracking_pose: Optional[np.ndarray] = None
     camera_in_map_pose: Optional[np.ndarray] = None
+    base_in_tracking_pose: Optional[np.ndarray] = None
     base_in_map_pose: Optional[np.ndarray] = None
     step: Optional[int] = None
     is_simulation: bool = False
@@ -341,7 +344,10 @@ class Observations(BaseObservations):
     rgb: array.array | np.ndarray = None
     depth: array.array | np.ndarray = None
     camera_K: array.array | np.ndarray = None
-    camera_in_map_pose: Optional[np.ndarray] = None  # camera_in_map_pose = base_in_map_pose @ camera_in_base_pose
+    tracking_in_map_pose: Optional[np.ndarray] = None
+    camera_in_tracking_pose: Optional[np.ndarray] = None
+    camera_in_map_pose: Optional[np.ndarray] = None  # Derived from tracking_in_map_pose @ camera_in_tracking_pose for RTAB-Map observations.
+    base_in_tracking_pose: Optional[np.ndarray] = None
     base_in_map_pose: Optional[np.ndarray] = None
     xyz: Optional[np.ndarray] = None
     depth_K: Optional[np.ndarray] = None

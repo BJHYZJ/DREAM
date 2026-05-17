@@ -1062,6 +1062,30 @@ class RobotZmqClient(AbstractRobotClient):
         # Returns the current action in case we want to do something with it like resend
         return current_action
 
+    @staticmethod
+    def _compose_map_frame_poses(obs: Dict[str, Any]) -> None:
+        """Derive map-frame camera/base poses from RTAB-Map tracking-frame data."""
+        tracking_in_map_pose = obs.get("tracking_in_map_pose")
+        if tracking_in_map_pose is None:
+            return
+        tracking_in_map_pose = np.asarray(tracking_in_map_pose, dtype=float)
+        obs["tracking_in_map_pose"] = tracking_in_map_pose
+
+        camera_in_tracking_pose = obs.get("camera_in_tracking_pose")
+        if camera_in_tracking_pose is None:
+            obs["camera_in_map_pose"] = tracking_in_map_pose
+            return
+        camera_in_tracking_pose = np.asarray(camera_in_tracking_pose, dtype=float)
+        obs["camera_in_tracking_pose"] = camera_in_tracking_pose
+
+        obs["camera_in_map_pose"] = tracking_in_map_pose @ camera_in_tracking_pose
+
+        base_in_tracking_pose = obs.get("base_in_tracking_pose")
+        if base_in_tracking_pose is not None:
+            base_in_tracking_pose = np.asarray(base_in_tracking_pose, dtype=float)
+            obs["base_in_tracking_pose"] = base_in_tracking_pose
+            obs["base_in_map_pose"] = tracking_in_map_pose @ base_in_tracking_pose
+
     def blocking_spin(self, verbose: bool=False, visualize: bool=False):
         """Listen for incoming observations and update internal state"""
         sum_time = 0.0
@@ -1078,6 +1102,7 @@ class RobotZmqClient(AbstractRobotClient):
 
             # For history nodes that do not have RGB values, both depth and RGB values ​​should be set to None / np.array(B).
             if not output["just_pose_graph"]:
+                self._compose_map_frame_poses(output)
                 output["rgb"] = compression.from_array(output["rgb"], is_rgb=True)
                 output["depth"] = compression.from_array(output["depth"], is_rgb=False) / 1000
                 rgb_height, rgb_width = output["rgb"].shape[:2]

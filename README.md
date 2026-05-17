@@ -58,6 +58,13 @@ source ~/DREAM_ws/DREAM_ws/install/setup.bash
 ros2 launch dream_ros2_bridge dream_rtabmap_slam.launch.py
 ```
 
+RTAB-Map's `frame_id` is the tracking frame used by the bridge pose names:
+`tracking_in_map_pose` is `map_T_frame_id`, while `camera_in_tracking_pose`
+and `base_in_tracking_pose` are local transforms relative to that frame. The
+default is `body`, matching FAST-LIO2's body frame. If you are not using
+FAST-LIO2, change `frame_id` in `dream_rtabmap_slam.launch.py` and make sure TF
+from that frame to the camera and base exists.
+
 Terminal 3 (DREAM ROS2 bridge server):
 
 ```bash

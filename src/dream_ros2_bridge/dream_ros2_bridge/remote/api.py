@@ -260,6 +260,9 @@ class DreamClient(AbstractRobotClient):
 
     def get_base_in_map_pose(self) -> np.ndarray:
         return self._ros_client.get_base_in_map_pose()
+
+    def get_base_in_tracking_pose(self) -> np.ndarray:
+        return self._ros_client.get_base_in_tracking_pose()
     
     def get_base_in_map_xyt(self) -> np.ndarray:
         """Get the robot's base pose as XYT (required by AbstractRobotClient)."""
@@ -340,6 +343,20 @@ class DreamClient(AbstractRobotClient):
 
         return graph
 
+    def _get_node_local_transform(self, node) -> Optional[np.ndarray]:
+        """Return RTAB-Map's per-node tracking-frame-to-camera transform."""
+        if len(node.data.local_transform) == 0:
+            return None
+
+        return transform_to_sophus(node.data.local_transform[0]).matrix()
+
+    def _pose_graph_from_rtabmap_graph(self, graph) -> Dict[int, np.ndarray]:
+        """Return RTAB-Map graph poses as tracking-frame poses in map."""
+        return {
+            nid: pose_to_sophus(pose).matrix()
+            for nid, pose in zip(graph.poses_id, graph.poses)
+        }
+
     def load_map(self, filename: str):
         self.mapping.load_map(filename)
 
@@ -362,10 +379,10 @@ class DreamClient(AbstractRobotClient):
         return self.nav.base_to(xyt, relative=relative, blocking=blocking)
 
     def get_full_observation(self) -> RtabmapData:
-        
+
         rtabmap_data = self._ros_client.get_rtabmapdata()
-        base_in_map_pose = self.get_base_in_map_pose()
-        if rtabmap_data is None or base_in_map_pose is None:
+        base_in_tracking_pose = self.get_base_in_tracking_pose()
+        if rtabmap_data is None:
             return None
         
         timestamp = (
@@ -373,28 +390,30 @@ class DreamClient(AbstractRobotClient):
             + rtabmap_data.header.stamp.nanosec / 1e9
         )
 
-        node = rtabmap_data.nodes[0]
         graph = rtabmap_data.graph
-        node_id = node.id
-
-        # Always use the latest pose graph
-        # note that the latest node in the pose graph cannot be included in this judgment, 
-        # as it may only be an intermediate node.
-        assert max(graph.poses_id) == graph.poses_id[-1]
-        pose_graph = {
-            nid: pose_to_sophus(pose).matrix()
-            for nid, pose in zip(
-                graph.poses_id, graph.poses
+        pose_graph = self._pose_graph_from_rtabmap_graph(graph)
+        if len(rtabmap_data.nodes) == 0:
+            return RtabmapData(
+                timestamp=timestamp,
+                pose_graph=pose_graph,
+                just_pose_graph=True,
             )
-        }
+
+        node = rtabmap_data.nodes[0]
+        node_id = node.id
+        camera_in_tracking_pose = self._get_node_local_transform(node)
 
         rgb = node.data.left_compressed
         depth = node.data.right_compressed
 
         # if history node, don't need to delete pose_graph[node_id], cause it pose is new
         if (self._last_node_id is not None and node_id <= self._last_node_id) or \
-            (len(rgb) == 0) or (len(depth) == 0):
-            print("[warning] 🛑 received history node or empty node")
+            (len(rgb) == 0) or (len(depth) == 0) or \
+            (node_id not in pose_graph) or \
+            (camera_in_tracking_pose is None) or \
+            (base_in_tracking_pose is None) or \
+            (len(node.data.left_camera_info) == 0):
+            print("[warning] 🛑 received history node or incomplete RGBD node")
             return RtabmapData(
                 timestamp=timestamp,
                 pose_graph=pose_graph,
@@ -403,17 +422,17 @@ class DreamClient(AbstractRobotClient):
         else:
             self._last_node_id = node_id
 
-        current_pose = pose2sophus(pose_graph[node_id])
+        tracking_in_map_pose = pose_graph[node_id]
         del pose_graph[node_id]
         
-        # local_tf = transform_to_sophus(node.data.local_transform[0])
         left_ci = camera_info_to_dict(node.data.left_camera_info[0])
         camera_K = np.array(left_ci['K']).reshape(3, 3)
 
-        euler_angles = current_pose.so3().log()
+        tracking_in_map_sophus = pose2sophus(tracking_in_map_pose)
+        euler_angles = tracking_in_map_sophus.so3().log()
         compass = np.array([euler_angles[-1]])
         # GPS in robot coordinates
-        gps = current_pose.translation()[:2]
+        gps = tracking_in_map_sophus.translation()[:2]
 
         return RtabmapData(
             timestamp=timestamp,
@@ -425,8 +444,9 @@ class DreamClient(AbstractRobotClient):
             depth_compressed=depth,
             camera_K=camera_K,
             pose_graph=pose_graph,
-            camera_in_map_pose=current_pose.matrix(),
-            base_in_map_pose=base_in_map_pose.matrix(),
+            tracking_in_map_pose=tracking_in_map_pose,
+            camera_in_tracking_pose=camera_in_tracking_pose,
+            base_in_tracking_pose=base_in_tracking_pose.matrix(),
         )
 
 

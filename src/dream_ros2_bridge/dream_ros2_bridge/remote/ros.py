@@ -174,6 +174,7 @@ class DreamRosInterface(Node):
         # self.se3_camera_pose: Optional[sp.SE3] = None
 
         self.se3_base_in_map_pose: Optional[sp.SE3] = None
+        self.se3_base_in_tracking_pose: Optional[sp.SE3] = None
         self.se3_arm_base_in_map_pose: Optional[sp.SE3] = None
         self.se3_camera_in_arm_base_pose: Optional[sp.SE3] = None
         self.se3_camera_in_base_pose: Optional[sp.SE3] = None
@@ -389,6 +390,7 @@ class DreamRosInterface(Node):
 
         # tf pose publisher
         self._tf_base_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_in_map_pose", self._tf_base_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
+        self._tf_base_in_tracking_pose_sub = self.create_subscription(PoseStamped, "tf_pose/base_in_tracking_pose", self._tf_base_in_tracking_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_arm_base_in_map_pose_sub = self.create_subscription(PoseStamped, "tf_pose/arm_base_in_map_pose", self._tf_arm_base_in_map_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_camera_in_arm_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/camera_in_arm_base_pose", self._tf_camera_in_arm_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
         self._tf_camera_in_base_pose_sub = self.create_subscription(PoseStamped, "tf_pose/camera_in_base_pose", self._tf_camera_in_base_pose_callback, self.best_effort_qos, callback_group=self.cb_tf_group)
@@ -591,6 +593,12 @@ class DreamRosInterface(Node):
         with self._lock_tf:
             self.se3_base_in_map_pose = se3
 
+    def _tf_base_in_tracking_pose_callback(self, msg: PoseStamped):
+        """base pose in RTAB-Map tracking frame callback"""
+        se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
+        with self._lock_tf:
+            self.se3_base_in_tracking_pose = se3
+
     def _tf_arm_base_in_map_pose_callback(self, msg: PoseStamped):
         """arm base pose in map callback"""
         se3 = sp.SE3(matrix_from_pose_msg(msg.pose))
@@ -639,6 +647,10 @@ class DreamRosInterface(Node):
     def get_base_in_map_pose(self):
         with self._lock_tf:
             return self.se3_base_in_map_pose
+
+    def get_base_in_tracking_pose(self):
+        with self._lock_tf:
+            return self.se3_base_in_tracking_pose
 
     def get_arm_base_in_map_pose(self):
         with self._lock_tf:

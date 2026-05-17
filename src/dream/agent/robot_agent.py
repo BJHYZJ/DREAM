@@ -217,6 +217,23 @@ class RobotAgent:
             self._get_observations_thread = Thread(target=self.get_observations_loop)
             self._get_observations_thread.start()
 
+    @staticmethod
+    def _camera_pose_from_tracking_pose(obs, tracking_pose) -> torch.Tensor:
+        """Compose map_T_camera from map_T_tracking and the observation local TF."""
+        tracking_pose = torch.as_tensor(tracking_pose, dtype=torch.float32)
+        camera_in_tracking_pose = getattr(obs, "camera_in_tracking_pose", None)
+        if camera_in_tracking_pose is None:
+            return tracking_pose
+        return tracking_pose @ camera_in_tracking_pose.to(dtype=torch.float32)
+
+    @staticmethod
+    def _base_pose_from_tracking_pose(obs, tracking_pose) -> torch.Tensor:
+        """Compose map_T_base from map_T_tracking and the observation local TF."""
+        tracking_pose = torch.as_tensor(tracking_pose, dtype=torch.float32)
+        base_in_tracking_pose = getattr(obs, "base_in_tracking_pose", None)
+        if base_in_tracking_pose is None:
+            return tracking_pose
+        return tracking_pose @ base_in_tracking_pose.to(dtype=torch.float32)
 
     def get_observations_loop(self, verbose: bool=False, visualize_map: bool=True) -> None:
         while self.robot.running:
@@ -237,6 +254,9 @@ class RobotAgent:
                     camera_pose=obs.camera_in_map_pose,
                     base_pose=obs.base_in_map_pose,
                     obs_id=obs.obs_id,
+                    tracking_in_map_pose=obs.tracking_in_map_pose,
+                    camera_in_tracking_pose=obs.camera_in_tracking_pose,
+                    base_in_tracking_pose=obs.base_in_tracking_pose,
                 )
 
                 if visualize_map:
@@ -331,8 +351,9 @@ class RobotAgent:
                     obs = self.voxel_map.observations[sid]
                     assert obs.is_pose_graph_node, "The is_pose_graph_node should set to True when Node in pose_graph."
                     
-                    camera_pose_now = torch.tensor(
-                        pose_graph[sid], dtype=torch.float32)
+                    camera_pose_now = self._camera_pose_from_tracking_pose(
+                        obs, pose_graph[sid]
+                    )
                     
                     rot_origin = obs.camera_pose[:3, :3]
                     trans_origin = obs.camera_pose[:3, 3]
@@ -356,9 +377,16 @@ class RobotAgent:
             def re_add_semantic_memory(obs):
                 # update obs pose from pose graph
                 if obs.obs_id in pose_graph:
-                    camera_pose_now = torch.tensor(
+                    tracking_pose_now = torch.tensor(
                         pose_graph[obs.obs_id], dtype=torch.float32)
+                    camera_pose_now = self._camera_pose_from_tracking_pose(
+                        obs, tracking_pose_now
+                    )
+                    obs.tracking_pose = tracking_pose_now
                     obs.camera_pose = camera_pose_now
+                    obs.base_pose = self._base_pose_from_tracking_pose(
+                        obs, tracking_pose_now
+                    )
 
                 features = obs.feats
                 if self.voxel_map.compression_features and features is not None:
@@ -647,6 +675,9 @@ class RobotAgent:
                 camera_pose=obs.camera_in_map_pose,
                 base_pose=obs.base_in_map_pose,
                 obs_id=obs.obs_id,
+                tracking_in_map_pose=obs.tracking_in_map_pose,
+                camera_in_tracking_pose=obs.camera_in_tracking_pose,
+                base_in_tracking_pose=obs.base_in_tracking_pose,
             )
             if visualize_map:
                 if self.voxel_map.semantic_memory._points is not None and \

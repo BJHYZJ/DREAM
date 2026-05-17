@@ -40,6 +40,9 @@ class Frame:
     valid_depth: Any
     obs_id: Any
     feats: Any
+    tracking_pose: Any = None  # tracking frame in map pose
+    camera_in_tracking_pose: Any = None
+    base_in_tracking_pose: Any = None
     is_pose_graph_node: bool=False
     info: Any = None
 
@@ -557,6 +560,9 @@ class SparseVoxelMap:
         intrinsics: np.ndarray, 
         camera_pose: np.ndarray, 
         base_pose: np.ndarray,
+        tracking_in_map_pose: np.ndarray,
+        camera_in_tracking_pose: np.ndarray,
+        base_in_tracking_pose: np.ndarray,
         obs_id: int,
         save_all_obs: bool=False,
         **info,
@@ -576,6 +582,9 @@ class SparseVoxelMap:
         intrinsics = torch.Tensor(intrinsics)
         camera_pose = torch.Tensor(camera_pose)
         base_pose = torch.Tensor(base_pose)
+        tracking_pose = torch.Tensor(tracking_in_map_pose)
+        camera_in_tracking_pose = torch.Tensor(camera_in_tracking_pose)
+        base_in_tracking_pose = torch.Tensor(base_in_tracking_pose)
 
         # Resize depth/rgb and scale intrinsics once here
         if self.image_shape is not None:
@@ -641,6 +650,9 @@ class SparseVoxelMap:
             valid_depth=valid_depth,
             obs_id=obs_id,
             feats=compressed_feats if self.compression_features else feats,
+            tracking_pose=tracking_pose,
+            camera_in_tracking_pose=camera_in_tracking_pose,
+            base_in_tracking_pose=base_in_tracking_pose,
             info=info,
         )
 

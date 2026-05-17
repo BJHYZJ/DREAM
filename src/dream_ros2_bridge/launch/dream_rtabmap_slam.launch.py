@@ -227,9 +227,13 @@ def generate_launch_description():
       'use_rtabmap_viz', default_value='false',
       description='Use rtabmap_viz'),
 
+    # The bridge calls RTAB-Map's frame_id the "tracking" frame.
+    # Pose names such as tracking_in_map_pose and camera_in_tracking_pose come from this.
     DeclareLaunchArgument(
       'frame_id', default_value='body',
       description='Tracking frame used by RTAB-Map. Recommended: body (FAST-LIO body frame). '
+                  'Bridge pose names like tracking_in_map_pose, camera_in_tracking_pose, '
+                  'and base_in_tracking_pose use this frame as "tracking". '
                   'TF chain is typically map->camera_init->body->livox_frame->base_link.'),
     
     DeclareLaunchArgument(

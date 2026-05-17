@@ -28,10 +28,13 @@ class TFPosePublisher(Node):
         # TF Buffer and Listener
         self.buffer = tf2_ros.Buffer(cache_time=Duration(seconds=cache_sec))
         self.listener = tf2_ros.TransformListener(self.buffer, self, spin_thread=True)
-        
+
         # TF pose configuration - maps pose keys to frame pairs
         self.tf_poses = {
             "base_in_map_pose": ["base_link", "map"],
+            # "tracking" follows dream_rtabmap_slam.launch.py's RTAB-Map frame_id.
+            # The default hardware setup uses FAST-LIO2's body frame.
+            "base_in_tracking_pose": ["base_link", "body"],
             "arm_base_in_map_pose": ["arm_base", "map"],
             "camera_in_arm_base_pose": ["camera_color_optical_frame", "arm_base"],
             "camera_in_base_pose": ["camera_color_optical_frame", "base_link"],
