@@ -1,6 +1,7 @@
 import os
 import time
 import timeit
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Union
 from uuid import uuid4
@@ -34,6 +35,22 @@ from dream.perception.wrapper import OvmmPerception
 from dream.utils.logger import Logger, color_text
 
 logger = Logger(__name__)
+
+
+@dataclass(frozen=True)
+class CachedNavigationGoal:
+    goal: np.ndarray
+    version: int
+    obs_id: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class FocusResult:
+    detected_goal: Optional[np.ndarray]
+    observation_is_current: bool
+    pre_focus_latest_obs_id: Optional[int]
+    detected_obs_id: Optional[int]
+
 
 class RobotAgent:
     """Basic demo code. Collects everything that we need to make this work."""
@@ -116,6 +133,9 @@ class RobotAgent:
         self._rejected_target_regions: Dict[str, List[Dict[str, Any]]] = {}
         self._target_reject_region_radius = float(
             parameters.get("agent/target_reject_region_radius", 0.30)
+        )
+        self._target_relocation_radius = float(
+            parameters.get("agent/target_relocation_radius", 0.50)
         )
         self._max_rejected_target_regions_per_text = int(
             parameters.get("agent/max_rejected_target_regions_per_text", 20)
@@ -707,7 +727,7 @@ class RobotAgent:
             if not self._realtime_updates:
                 self.update()
             else:
-                time.sleep(0.1)  # waiting for 1 second
+                time.sleep(0.1)  # waiting for 0.1 second
 
     def rotate_in_place(self, speed: int=50):
         print("*" * 10, "Rotate in place", "*" * 10)
@@ -796,14 +816,19 @@ class RobotAgent:
             self._clear_cached_navigation_goal()
             return True, planned_goal_point
 
+        planned_goal = self._target_to_numpy(planned_goal_point)
+        planned_obs_id = self._cached_obs_id_for_goal(planned_goal)
+
         logger.info("Verifying target existence after navigation...")
-        detected_goal_point, verification_is_current = self._focus_and_detect_goal(
-            text,
-            planned_goal_point,
-        )
-        if detected_goal_point is None:
-            if verification_is_current:
-                self._reject_cached_navigation_goal(text)
+        focus = self._focus_and_detect_goal(text, planned_goal_point)
+        if focus.detected_goal is None:
+            if focus.observation_is_current:
+                self._reject_target_candidate(
+                    text,
+                    goal=planned_goal,
+                    obs_id=planned_obs_id,
+                    max_obs_id=focus.pre_focus_latest_obs_id,
+                )
                 self._clear_cached_navigation_goal()
             else:
                 logger.warning(
@@ -813,30 +838,46 @@ class RobotAgent:
             return False, None
 
         robot_xy = np.array(self.robot.get_base_in_map_xyt()[:2], dtype=float)
-        planned_goal = self._target_to_numpy(planned_goal_point)
         planned_dist = (
             float(np.linalg.norm(robot_xy - planned_goal[:2]))
             if planned_goal is not None
             else float("nan")
         )
-        detected_dist = float(np.linalg.norm(robot_xy - detected_goal_point[:2]))
+        planned_to_detected_dist = (
+            float(np.linalg.norm(planned_goal[:2] - focus.detected_goal[:2]))
+            if planned_goal is not None
+            else float("nan")
+        )
+        detected_dist = float(np.linalg.norm(robot_xy - focus.detected_goal[:2]))
         logger.info(
             "Target verification distance check: "
             f"robot_xy={np.array2string(robot_xy, precision=3)}, "
             f"planned_goal={np.array2string(planned_goal, precision=3) if planned_goal is not None else None}, "
-            f"detected_goal={np.array2string(detected_goal_point, precision=3)}, "
-            f"dist_to_planned={planned_dist:.2f} m, dist_to_detected={detected_dist:.2f} m"
+            f"detected_goal={np.array2string(focus.detected_goal, precision=3)}, "
+            f"dist_to_planned={planned_dist:.2f} m, "
+            f"dist_to_detected={detected_dist:.2f} m, "
+            f"planned_to_detected={planned_to_detected_dist:.2f} m"
         )
-        if detected_dist > self._manipulation_radius:
-            logger.warning(
-                f"Target detected but outside manipulation radius ({detected_dist:.2f} m), continue navigation..."
+        if planned_to_detected_dist > self._target_relocation_radius:
+            self._reject_target_candidate(
+                text,
+                goal=planned_goal,
+                obs_id=planned_obs_id,
+                max_obs_id=focus.pre_focus_latest_obs_id,
+                reason="after focused verification found the target at a different location.",
             )
-            self._clear_cached_navigation_goal()
+
+        if detected_dist > self._manipulation_radius:
+            self._set_cached_navigation_goal(focus.detected_goal, obs_id=focus.detected_obs_id)
+            logger.warning(
+                f"Target detected but outside manipulation radius ({detected_dist:.2f} m), "
+                "replanning to current detection..."
+            )
             return False, None
 
         self._clear_cached_navigation_goal()
         logger.alert(f"Target verified within manipulation radius ({detected_dist:.2f} m).")
-        return True, detected_goal_point
+        return True, focus.detected_goal
 
     def _target_to_numpy(self, point) -> Optional[np.ndarray]:
         if point is None:
@@ -867,12 +908,24 @@ class RobotAgent:
                 return None
             return self._cached_navigation_goal.copy()
 
-    def _get_cached_navigation_goal_snapshot(self):
+    def _get_cached_navigation_goal_snapshot(self) -> Optional[CachedNavigationGoal]:
         with self._cached_navigation_goal_lock:
-            cached_goal = self._get_cached_navigation_goal()
-            if cached_goal is None:
-                return None, self._cached_navigation_goal_version, self._cached_navigation_goal_obs_id
-            return cached_goal, self._cached_navigation_goal_version, self._cached_navigation_goal_obs_id
+            if self._cached_navigation_goal is None:
+                return None
+            return CachedNavigationGoal(
+                goal=self._cached_navigation_goal.copy(),
+                version=self._cached_navigation_goal_version,
+                obs_id=self._cached_navigation_goal_obs_id,
+            )
+
+    def _cached_obs_id_for_goal(self, goal_point) -> Optional[int]:
+        goal = self._target_to_numpy(goal_point)
+        candidate = self._get_cached_navigation_goal_snapshot()
+        if candidate is None or goal is None:
+            return None
+        if not np.allclose(candidate.goal[:2], goal[:2]):
+            return None
+        return candidate.obs_id
 
     def _cached_navigation_goal_version_matches(self, version: int) -> bool:
         with self._cached_navigation_goal_lock:
@@ -946,18 +999,19 @@ class RobotAgent:
             regions.append(copied)
         return regions
 
-    def _reject_cached_navigation_goal(self, text: Optional[str]) -> None:
+    def _reject_target_candidate(
+        self,
+        text: Optional[str],
+        goal,
+        obs_id: Optional[int] = None,
+        max_obs_id: Optional[int] = None,
+        reason: str = "after focused verification failed.",
+    ) -> None:
         key = self._target_text_key(text)
         if not key:
             return
 
-        with self._cached_navigation_goal_lock:
-            obs_id = self._cached_navigation_goal_obs_id
-            goal = (
-                self._cached_navigation_goal.copy()
-                if self._cached_navigation_goal is not None
-                else None
-            )
+        goal = self._target_to_numpy(goal)
 
         if obs_id is None and goal is None:
             return
@@ -966,7 +1020,8 @@ class RobotAgent:
             self._rejected_target_obs_ids.setdefault(key, set()).add(int(obs_id))
 
         if goal is not None:
-            max_obs_id = self._latest_observation_id()
+            if max_obs_id is None:
+                max_obs_id = self._latest_observation_id()
             regions = self._rejected_target_regions.setdefault(key, [])
             regions.append(
                 {
@@ -989,7 +1044,7 @@ class RobotAgent:
             "Rejected stale target candidate "
             f"({obs_text}, region_center={goal_text}, "
             f"radius={self._target_reject_region_radius:.2f} m) for '{text}' "
-            "after focused verification failed."
+            f"{reason}"
         )
 
     def _target_distance(self, start_pose, goal_point: np.ndarray) -> float:
@@ -998,19 +1053,25 @@ class RobotAgent:
         return float(np.linalg.norm(start_xy - goal_xy))
 
     def _get_focused_cached_navigation_goal(self, start_pose) -> Optional[np.ndarray]:
-        cached_goal = self._get_cached_navigation_goal()
-        if cached_goal is None:
-            return None
-        if self._target_distance(start_pose, cached_goal) > self._focused_tracking_radius:
-            return None
-        return cached_goal
+        candidate = self._get_focused_cached_navigation_goal_snapshot(start_pose)
+        return None if candidate is None else candidate.goal.copy()
 
-    def _focus_and_detect_goal(self, text: Optional[str], expected_goal_point) -> tuple:
+    def _get_focused_cached_navigation_goal_snapshot(
+        self, start_pose
+    ) -> Optional[CachedNavigationGoal]:
+        candidate = self._get_cached_navigation_goal_snapshot()
+        if candidate is None:
+            return None
+        if self._target_distance(start_pose, candidate.goal) > self._focused_tracking_radius:
+            return None
+        return candidate
+
+    def _focus_and_detect_goal(self, text: Optional[str], expected_goal_point) -> FocusResult:
         if text is None or text == "":
-            return None, True
+            return FocusResult(None, True, None, None)
         expected_goal = self._target_to_numpy(expected_goal_point)
         if expected_goal is None:
-            return None, True
+            return FocusResult(None, True, None, None)
 
         prev_latest_obs_id = self._latest_observation_id()
         self._face_target_with_base(expected_goal)
@@ -1022,7 +1083,7 @@ class RobotAgent:
         obs_ids = self._observation_ids_snapshot()
         if not obs_ids:
             logger.error("No observations available to verify target.")
-            return None, False
+            return FocusResult(None, False, prev_latest_obs_id, None)
 
         new_obs_ids = (
             [obs_id for obs_id in obs_ids if obs_id > prev_latest_obs_id]
@@ -1034,7 +1095,7 @@ class RobotAgent:
                 "No new focused observation was captured after looking at the target; "
                 "verification is inconclusive."
             )
-            return None, False
+            return FocusResult(None, False, prev_latest_obs_id, None)
 
         latest_obs_id = new_obs_ids[-1]
         text_exist, detected_goal_point = self.voxel_map.detect_text(
@@ -1045,25 +1106,33 @@ class RobotAgent:
         )
         if not text_exist:
             logger.warning("Target not found in focused view.")
-            return None, True
+            return FocusResult(None, True, prev_latest_obs_id, latest_obs_id)
 
         detected_goal_point = self._target_to_numpy(detected_goal_point)
         if detected_goal_point is None:
             logger.warning(
                 "Target detected in focused view, but no valid current-frame target point was available."
             )
-            return None, True
-        return detected_goal_point, True
+            return FocusResult(None, True, prev_latest_obs_id, latest_obs_id)
+        return FocusResult(detected_goal_point, True, prev_latest_obs_id, latest_obs_id)
 
     def _refresh_cached_navigation_goal_if_close(self, text: Optional[str]):
-        focused_goal = self._get_focused_cached_navigation_goal(self.robot.get_base_in_map_xyt())
-        if focused_goal is None:
+        focused_candidate = self._get_focused_cached_navigation_goal_snapshot(
+            self.robot.get_base_in_map_xyt()
+        )
+        if focused_candidate is None:
             return False, None
+        focused_goal = focused_candidate.goal
 
-        detected_goal_point, verification_is_current = self._focus_and_detect_goal(text, focused_goal)
-        if detected_goal_point is None:
-            if verification_is_current:
-                self._reject_cached_navigation_goal(text)
+        focus = self._focus_and_detect_goal(text, focused_goal)
+        if focus.detected_goal is None:
+            if focus.observation_is_current:
+                self._reject_target_candidate(
+                    text,
+                    goal=focused_candidate.goal,
+                    obs_id=focused_candidate.obs_id,
+                    max_obs_id=focus.pre_focus_latest_obs_id,
+                )
                 self._clear_cached_navigation_goal()
             else:
                 logger.warning(
@@ -1073,33 +1142,45 @@ class RobotAgent:
             return False, None
 
         robot_xy = np.asarray(self.robot.get_base_in_map_xyt()[:2], dtype=float)
-        detected_dist = float(np.linalg.norm(robot_xy - detected_goal_point[:2]))
+        detected_dist = float(np.linalg.norm(robot_xy - focus.detected_goal[:2]))
+        focused_to_detected_dist = float(
+            np.linalg.norm(focused_goal[:2] - focus.detected_goal[:2])
+        )
         logger.info(
             "Focused target distance check: "
             f"robot_xy={np.array2string(robot_xy, precision=3)}, "
-            f"detected_goal={np.array2string(detected_goal_point, precision=3)}, "
-            f"dist_to_detected={detected_dist:.2f} m"
+            f"detected_goal={np.array2string(focus.detected_goal, precision=3)}, "
+            f"dist_to_detected={detected_dist:.2f} m, "
+            f"focused_to_detected={focused_to_detected_dist:.2f} m"
         )
+        if focused_to_detected_dist > self._target_relocation_radius:
+            self._reject_target_candidate(
+                text,
+                goal=focused_candidate.goal,
+                obs_id=focused_candidate.obs_id,
+                max_obs_id=focus.pre_focus_latest_obs_id,
+                reason="after focused verification found the target at a different location.",
+            )
 
         if detected_dist <= self._manipulation_radius:
             self._clear_cached_navigation_goal()
             logger.alert(f"Target verified within manipulation radius ({detected_dist:.2f} m).")
-            return True, detected_goal_point
+            return True, focus.detected_goal
 
-        self._set_cached_navigation_goal(detected_goal_point)
+        self._set_cached_navigation_goal(focus.detected_goal, obs_id=focus.detected_obs_id)
         logger.warning(
             f"Target detected but outside manipulation radius ({detected_dist:.2f} m), replanning from current pose..."
         )
         return False, None
 
     def _plan_to_cached_navigation_goal(self, start_pose, navigation_step_num: int):
-        cached_goal, cache_version, cached_obs_id = self._get_cached_navigation_goal_snapshot()
-        if cached_goal is None:
+        candidate = self._get_cached_navigation_goal_snapshot()
+        if candidate is None:
             return None
 
         navigation_viewpoint = self.space.sample_target_point(
             start=start_pose,
-            point=cached_goal,
+            point=candidate.goal,
             planner=self.planner,
             debug=False,
         )
@@ -1115,18 +1196,18 @@ class RobotAgent:
             self._clear_cached_navigation_goal()
             return None
 
-        if not self._cached_navigation_goal_version_matches(cache_version):
+        if not self._cached_navigation_goal_version_matches(candidate.version):
             logger.warning("Cached navigation goal changed during replanning; discarding stale plan.")
             return None
 
         waypoints = [pt.state for pt in plan_result.trajectory]
         return self._build_navigation_result(
             waypoints=waypoints,
-            navigation_goal=cached_goal,
+            navigation_goal=candidate.goal,
             navigation_step_num=navigation_step_num,
             cache_target=True,
-            expected_cache_version=cache_version,
-            navigation_goal_obs_id=cached_obs_id,
+            expected_cache_version=candidate.version,
+            navigation_goal_obs_id=candidate.obs_id,
         )
 
     def _build_navigation_result(

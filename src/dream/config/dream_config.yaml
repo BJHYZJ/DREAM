@@ -139,6 +139,9 @@ agent:
   # When a focused verification fails, reject old semantic candidates for the
   # same target text within this radius around the failed cached goal.
   target_reject_region_radius: 0.30
+  # If focused detection lands farther than this from the memory goal, treat the
+  # memory goal as stale and replan toward the focused detection.
+  target_relocation_radius: 0.50
   # Bound the number of rejected regions retained for one target text.
   max_rejected_target_regions_per_text: 20
 
@@ -199,7 +202,7 @@ motion_planner:
   goals:
     # manipulation_radius: 0.45
     # manipulation_radius: 0.55
-    manipulation_radius: 0.85
+    manipulation_radius: 0.75
 
 # Trajectory following - how closely we follow intermediate waypoints
 # These should be less strict than whatever parameters the low-level controller is using; this will

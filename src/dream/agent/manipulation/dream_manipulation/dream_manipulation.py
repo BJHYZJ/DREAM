@@ -88,7 +88,10 @@ class DreamManipulationWrapper:
             self.robot.base_to([0, 0, base_theta], relative=True, blocking=blocking)
             return
 
-        if any([joint1, joint2, joint3, joint4, joint5, joint6]):
+        if any(
+            joint is not None
+            for joint in (joint1, joint2, joint3, joint4, joint5, joint6)
+        ):
             arm_joint_state = self.robot.get_arm_joint_state()
             if joint1 is not None:
                 arm_joint_state[0] += joint1
@@ -103,7 +106,7 @@ class DreamManipulationWrapper:
             if joint6 is not None:
                 arm_joint_state[5] += joint6
 
-            self.robot.arm_to(angle=arm_joint_state)
+            self.robot.arm_to(angle=arm_joint_state, blocking=blocking)
 
         if gripper_pos is not None:
             self.robot.gripper_to(gripper_pos, blocking=blocking)

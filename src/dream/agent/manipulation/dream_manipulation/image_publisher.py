@@ -44,23 +44,9 @@ class DreamCamera:
         # selected ix and iy coordinates
         self.ix, self.iy = None, None
 
-    def capture_image(self, timeout: float = 1.0, poll_interval: float = 0.02):
-        """Return a fresh servo RGB-D frame when possible.
-
-        The old code slept for 3 seconds unconditionally. Instead, wait until the
-        servo stream advances once, then use that frame. If the stream timestamp
-        is unavailable or does not advance in time, fall back to the latest frame.
-        """
-        start_obs = self.robot.get_servo_observation()
-        start_timestamp = getattr(start_obs, "timestamp", None)
-        deadline = time.monotonic() + timeout
-
-        while time.monotonic() < deadline:
-            obs = self.robot.get_servo_observation()
-            if obs is not None and getattr(obs, "timestamp", None) != start_timestamp:
-                return obs.rgb, obs.depth, obs.camera_in_arm_base_pose
-            time.sleep(poll_interval)
-
+    def capture_image(self, wait_time: float = 1.5):
+        """Return the latest servo RGB-D frame after a short settling delay."""
+        time.sleep(wait_time)
         rgb_image, depth_image, c2ab = self.robot.get_servo_images(compute_xyz=False)
         return rgb_image, depth_image, c2ab
 
