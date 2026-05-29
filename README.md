@@ -1,9 +1,9 @@
 # DREAM: Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation
 
 ## Introduction
-Reliable mobile manipulation in dynamic indoor environments requires a 3D semantic representation that stays aligned with a changing world. Existing approaches often depend on pre-built maps, static-scene assumptions, or highly accurate camera poses, which can cause representation drift and degrade navigation and manipulation in practice.
-We present DREAM, a mobile manipulation framework for unseen indoor environments without pre-built maps. DREAM combines lightweight LiDAR–Inertial–Visual SLAM with a dynamic spatio-semantic memory, and uses Redundancy-Aware Memory Pruning (RMP) to remove stale and redundant information. It also includes hybrid localization and task-oriented navigation to acquire and reacquire targets after relocation through active exploration.
-Deployed on a real robot across four dynamic indoor labs, DREAM improves navigation, pickup, placement, and long-horizon task success and reliability over a strong voxel-map baseline, while using substantially less memory and computation.
+Reliable mobile manipulation in dynamic indoor environments requires a 3D semantic representation that remains consistent with the evolving real world. Most existing systems rely on pre-built maps, assume static environments, or presuppose highly accurate camera poses; when these assumptions break, navigation and manipulation operate on stale information.
+
+DREAM is a mobile manipulation framework for previously unseen indoor environments without any pre-built map. It integrates a lightweight indoor LiDAR-Inertial-Visual SLAM backend with dynamic spatio-semantic memory, Redundancy-Aware Memory Pruning, hybrid localization, task-oriented navigation, and robust grasping and placement strategies.
 
 ![log](docs/dream.png)
 
