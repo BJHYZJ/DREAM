@@ -71,79 +71,12 @@ def main(
         skip_confirmations=skip_confirmations,
     )
 
-    # while True:
-        # command = [("pause_slam", "")]
-        # executor(command)
-        # command = [("resume_slam", "")]
-        # executor(command)
-        # command = [("look_around", "")]
-        # executor(command)
-        # command = [("base_to_relative", [0.8, 0, 0])]
-        # executor(command)
-        # command = [("base_to_relative", [-0.8, 0, 0])]
-        # executor(command)
-        # command = [("base_to_relative", [0, 0, 3.14 / 2])]
-        # executor(command)
 
-        # command = [("find", "red pepper")]
-        # executor(command)
-
-
-        # (1)
-        # start_command = [("rotate_in_place", "")]
-        # executor(start_command)
-        # import time
-        # flag1 = True
-        # while flag1:
-        #     command = [("look_around", "")]
-        #     executor(command)
-        #     time.sleep(10)
-
-        # (2)
-        # import time
-        # time.sleep(10)
-        # command = [("pickup_only", "wrench")]
-        # executor(command)
-
-        # # (3)
-        # flag2 = True    
-        # import time
-        # while flag2:
-        #     command = [("look_around", "")]
-        #     executor(command)
-        #     # # executor(command)
-        #     time.sleep(10)
-
-        # # (4)
-        # command = [("place_only", "garbage can")]
-        # executor(command)
-        # import time
-        # while True:
-        #     time.sleep(0.1)
-
-    # return
-
-    command = [("place_only", ["screwdriver", 'green box'])]
-    executor(command)
-
-    # if input_path is None:
-    #     start_command = [("rotate_in_place", "")]
-    # else:
-    #     start_command = [("read_from_pickle", input_path)]
-    # executor(start_command)
-
-
-
-    # target_object = "yellow knife"
-    # target_receptacle = "red basket"
-    # llm_response = [("pickup", target_object), ("place", target_receptacle)]
-    # ok = executor(llm_response)
-
-
-    # target_object = "screwdriver"
-    # target_receptacle = "green box"
-    # llm_response = [("pickup", target_object), ("place", target_receptacle)]
-    # ok = executor(llm_response)
+    if input_path is None:
+        start_command = [("rotate_in_place", "")]
+    else:
+        start_command = [("read_from_pickle", input_path)]
+    executor(start_command)
 
 
     # Parse things and listen to the user
@@ -157,15 +90,11 @@ def main(
             if explore.upper() == "E":
                 llm_response = [("explore", None)]
             else:
-                # if target_object is None or len(target_object) == 0:
-                #     target_object = input("Enter the target object: ")
-                # if target_receptacle is None or len(target_receptacle) == 0:
-                #     target_receptacle = input("Enter the target receptacle: ")
-                target_object = "screwdriver"
-                target_receptacle = "green box"
+                if target_object is None or len(target_object) == 0:
+                    target_object = input("Enter the target object: ")
+                if target_receptacle is None or len(target_receptacle) == 0:
+                    target_receptacle = input("Enter the target receptacle: ")
                 llm_response = [("pickup", target_object), ("place", target_receptacle)]
-
-
             ok = executor(llm_response)
             target_object = None
             target_receptacle = None
