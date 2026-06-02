@@ -12,6 +12,35 @@ DREAM is a mobile manipulation framework for previously unseen indoor environmen
 - Hardware side: Ubuntu 22.04, ROS2 Humble, CUDA 12.1, system RAM >= 16 GB
 - Service machine: Ubuntu 22.04, no ROS distro restriction, CUDA 12.1, at least 24 GB VRAM on one GPU or two GPUs with at least 16 GB VRAM each
 
+## Hardware and Calibration Assumptions
+
+The provided ROS2 launch files and configs target our reference hardware:
+
+- AgileX Ranger Mini V3 mobile base
+- UFACTORY xArm6 arm with gripper
+- Livox MID-360 LiDAR/IMU
+- Intel RealSense D435i RGB-D camera
+
+DREAM's SLAM and mapping pipeline uses LiDAR + IMU for geometric odometry and
+an RGB-D camera for visual/depth observations. The RGB-D camera only needs a
+calibrated TF chain to the LiDAR/tracking frame. It can be fixed relative to the
+LiDAR/base, or it can be mounted on the arm with a dynamic transform from robot
+joint states. Our reference system uses the second layout: the D435i is mounted
+on xArm6 `link6`, and CAD-exported extrinsics define `link6_to_camera`.
+
+Our experiments did not rely on high-precision vision-based hand-eye
+calibration or complex hardware time synchronization. We measured the sensor
+and robot transforms in CAD and exported them as extrinsics. For indoor
+navigation and pick-and-place tasks, small residual transform errors were
+tolerated well by RTAB-Map's multi-sensor fusion in our setup. A large-scale
+SLAM demo is available at
+[slam_test.mp4](https://bjhyzj.github.io/dream-web/media/videos/slam_test.mp4).
+Higher-precision calibration is still encouraged if your setup requires it.
+
+You can use a different mechanical layout if you provide the matching drivers,
+topics, URDF, and extrinsics. Reference CAD files and calibration notes are in
+[hardware_install.md](docs/hardware_install.md).
+
 ## Installation Guides
 
 - Hardware-side installation: [hardware_install.md](docs/hardware_install.md)
@@ -46,7 +75,7 @@ Common options:
 ```bash
 ros2 launch dream_ros2_bridge dream_node_start.launch.py use_rviz:=true
 ros2 launch dream_ros2_bridge dream_node_start.launch.py use_simple_urdf:=false
-ros2 launch dream_ros2_bridge dream_node_start.launch.py robot_ip:=192.168.1.233 joint_states_rate:=50
+ros2 launch dream_ros2_bridge dream_node_start.launch.py xarm_ip:=192.168.1.233 joint_states_rate:=50
 ```
 
 
@@ -105,8 +134,9 @@ SKIP_CAN_SETUP=1 bash src/dream_ros2_bridge/run_hardware_system.sh
 If you deploy manipulation service on a separate server, run:
 
 ```bash
+export DREAM_ROOT=~/path/to/DREAM
 conda activate anygrasp
-cd src/anygrasp_manipulation
+cd "$DREAM_ROOT/src/anygrasp_manipulation"
 python demo.py --open_communication --port 5557
 ```
 
@@ -115,8 +145,9 @@ Optional
 If you want to debug AnyGrasp locally without running the robot, disable socket communication and enable debug visualization:
 
 ```bash
+export DREAM_ROOT=~/path/to/DREAM
 conda activate anygrasp
-cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation
+cd "$DREAM_ROOT/src/anygrasp_manipulation"
 python demo.py --debug
 ```
 
@@ -124,7 +155,8 @@ This runs `demo.py` with `open_communication` disabled, so it will load the loca
 
 #### Run Dream
 ```bash
-cd ~/path/to/DREAM
+export DREAM_ROOT=~/path/to/DREAM
+cd "$DREAM_ROOT"
 conda activate dream
 python src/dream/app/run_dream.py --robot_ip 10.33.140.5 --server_ip 127.0.0.1  --skip_confirmations
 ```
@@ -132,6 +164,23 @@ python src/dream/app/run_dream.py --robot_ip 10.33.140.5 --server_ip 127.0.0.1  
 Change `--robot_ip` to your hardware machine.
 If you run anygrasp in other machine, you should change `--server_ip`
 
+
+## Citation
+
+If you find DREAM useful for your research or projects, please consider citing
+our paper:
+
+```bibtex
+@misc{yan2026dynamicresilientspatiosemanticmemory,
+      title={Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation},
+      author={Zhijie Yan and Shufei Li and Ze Zhang and Xin Liu and Yuhang Zheng and Zuoxu Wang},
+      year={2026},
+      eprint={2606.00576},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2606.00576},
+}
+```
 
 ## Reference
 - Dynamem: [https://dynamem.github.io/](https://dynamem.github.io/)

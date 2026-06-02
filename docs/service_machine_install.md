@@ -1,6 +1,10 @@
 # DREAM Service-Machine Setup
 
-This document covers setup on the service machine (DREAM service environment + AnyGrasp environment).
+This document covers setup on the service machine. It creates two separate
+conda environments:
+
+- `dream`: DREAM service runtime.
+- `anygrasp`: AnyGrasp, SAM2, MinkowskiEngine, and PointNet2 runtime.
 
 ## Target environment
 
@@ -10,18 +14,47 @@ This document covers setup on the service machine (DREAM service environment + A
 - GPU requirement: at least 24 GB VRAM on a single GPU, or two GPUs with at least 16 GB VRAM each.
 - AnyGrasp typically uses around 10 GB VRAM. If AnyGrasp and DREAM run on the same GPU, 24 GB VRAM is recommended. Otherwise, use two GPUs and split workloads.
 
+## 0. Choose the DREAM source path
+
+The DREAM source tree does not need to live in `~/DREAM_ws`. Choose any path for
+the DREAM repository and reuse it consistently as `DREAM_ROOT`:
+
+```bash
+export DREAM_ROOT="$HOME/path/to/DREAM"
+```
+
+If you are cloning DREAM from scratch:
+
+```bash
+mkdir -p "$(dirname "$DREAM_ROOT")"
+git clone https://github.com/BJHYZJ/DREAM.git --recursive "$DREAM_ROOT"
+cd "$DREAM_ROOT"
+```
+
+If DREAM is already cloned elsewhere, just point `DREAM_ROOT` to that existing
+repository:
+
+```bash
+export DREAM_ROOT="/absolute/path/to/DREAM"
+cd "$DREAM_ROOT"
+git submodule update --init --recursive
+```
+
+Keep `DREAM_ROOT` set in each terminal that follows this guide. You can add the
+`export DREAM_ROOT=...` line to your shell startup file after choosing the path.
+
 ## 1. DREAM environment (`conda`)
 
 ```bash
 sudo apt update
 sudo apt install -y libasound2-dev portaudio19-dev
 
-cd ~/path/to/your/code
-git clone https://github.com/BJHYZJ/DREAM.git --recursive
-cd DREAM
+cd "$DREAM_ROOT"
 
 conda create -n dream python=3.10 -y
 conda activate dream
+conda env config vars set PYTHONNOUSERSITE=1
+conda deactivate && conda activate dream
 
 pip install -e ./src/
 pip install rerun-sdk==0.26.1
@@ -30,12 +63,10 @@ pip install transforms3d==0.3.1
 pip install zstd
 ```
 
-Recommended (avoid user-site pollution in `dream` env):
+Check the `dream` environment:
 
 ```bash
 conda activate dream
-conda env config vars set PYTHONNOUSERSITE=1
-conda deactivate && conda activate dream
 python -c "import site, sys; print('ENABLE_USER_SITE=', site.ENABLE_USER_SITE); print('\\n'.join(sys.path))"
 ```
 
@@ -44,11 +75,12 @@ python -c "import site, sys; print('ENABLE_USER_SITE=', site.ENABLE_USER_SITE); 
 From this section onward, all steps are for the AnyGrasp stack.
 
 ```bash
-export PYTHONNOUSERSITE=1
 conda create -n anygrasp python=3.10 -y
 conda activate anygrasp
+conda env config vars set PYTHONNOUSERSITE=1
+conda deactivate && conda activate anygrasp
 
-cd ~/DREAM_ws/DREAM/third_party/segment-anything-2
+cd "$DREAM_ROOT/third_party/segment-anything-2"
 pip install -e .
 
 pip install torch==2.3.1+cu121 torchvision==0.18.1+cu121 torchaudio==2.3.1 \
@@ -90,7 +122,7 @@ patch `/usr/include/c++/11/bits/shared_ptr_base.h`:
 Install MinkowskiEngine:
 
 ```bash
-cd ~/DREAM_ws
+cd "$(dirname "$DREAM_ROOT")"
 git clone https://github.com/pccws/MinkowskiEngine
 cd MinkowskiEngine
 python setup.py install
@@ -109,7 +141,7 @@ If compilation fails, patch these headers in the cloned repo:
 conda activate anygrasp
 
 pip install --upgrade --no-deps --force-reinstall scikit-learn==1.4.0
-pip install torch_cluster -f https://data.pyg.org/whl/torch-2.1.0+cu121.html
+pip install torch_cluster -f https://data.pyg.org/whl/torch-2.3.1+cu121.html
 pip install numpy==1.23.0
 
 export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
@@ -120,7 +152,7 @@ pip install git+https://github.com/luca-medeiros/lang-segment-anything.git
 Set AnyGrasp binary modules (`python==3.10` example):
 
 ```bash
-cd ~/DREAM_ws/DREAM
+cd "$DREAM_ROOT"
 cp third_party/anygrasp_sdk/grasp_detection/gsnet_versions/gsnet.cpython-310-x86_64-linux-gnu.so src/anygrasp_manipulation/gsnet.so
 cp third_party/anygrasp_sdk/license_registration/lib_cxx_versions/lib_cxx.cpython-310-x86_64-linux-gnu.so src/anygrasp_manipulation/lib_cxx.so
 ```
@@ -128,7 +160,7 @@ cp third_party/anygrasp_sdk/license_registration/lib_cxx_versions/lib_cxx.cpytho
 Build pointnet2 and finalize Python deps:
 
 ```bash
-cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation/pointnet2
+cd "$DREAM_ROOT/src/anygrasp_manipulation/pointnet2"
 python -m pip install --upgrade "pip>=23" "setuptools>=64"
 pip install --no-build-isolation -e .
 
@@ -140,7 +172,7 @@ pip install transforms3d==0.3.1
 Prepare checkpoints directory:
 
 ```bash
-cd ~/DREAM_ws/DREAM
+cd "$DREAM_ROOT"
 mkdir -p checkpoints/anygrasp
 mkdir -p checkpoints/sam2
 ```
@@ -149,7 +181,7 @@ mkdir -p checkpoints/sam2
 
 ```bash
 sudo apt install -y libssl-dev
-cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation
+cd "$DREAM_ROOT/src/anygrasp_manipulation"
 ./anygrasp_license_registration/license_checker -f
 ```
 
@@ -165,11 +197,11 @@ License instructions:
 
 - [AnyGrasp license README](../src/anygrasp_manipulation/anygrasp_license_registration/README.md)
 - Put license file under [`src/anygrasp_manipulation/license`](../src/anygrasp_manipulation/license)
-- Put AnyGrasp model checkpoints under [`checkpoints/anygrasp`](../checkpoints/anygrasp)
+- Put AnyGrasp model checkpoints under `checkpoints/anygrasp` created above.
 
 Check license status:
 
 ```bash
-cd ~/DREAM_ws/DREAM/src/anygrasp_manipulation
+cd "$DREAM_ROOT/src/anygrasp_manipulation"
 ./anygrasp_license_registration/license_checker -c license/licenseCfg.json
 ```
