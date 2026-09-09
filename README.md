@@ -1,5 +1,7 @@
 # DREAM: Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation
 
+For simulation code and demos, see the [simulation branch](https://github.com/BJHYZJ/DREAM/tree/simulation).
+
 ## Introduction
 Reliable mobile manipulation in dynamic indoor environments requires a 3D semantic representation that remains consistent with the evolving real world. Most existing systems rely on pre-built maps, assume static environments, or presuppose highly accurate camera poses; when these assumptions break, navigation and manipulation operate on stale information.
 
@@ -186,12 +188,3 @@ our paper:
 - Dynamem: [https://dynamem.github.io/](https://dynamem.github.io/)
 - DovSG: [https://bjhyzj.github.io/dovsg-web/](https://bjhyzj.github.io/dovsg-web/)
 - Ok-Robot: [https://ok-robot.github.io/](https://ok-robot.github.io/)
-
-## Indoor simulation
-
-The standalone ManiSkill reproduction, environment tutorial and per-video provenance
-are maintained on the [`simulation` branch](https://github.com/BJHYZJ/DREAM/tree/simulation).
-The [simulation gallery](https://bjhyzj.github.io/dream-web/simulation/) presents
-ten selected cross-room dynamic pick-and-place demonstrations. The hardware
-implementation on this `realtime` branch is unchanged.
-
