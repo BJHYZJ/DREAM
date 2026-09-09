@@ -1,0 +1,183 @@
+{
+  "source_video_sha256": "3b669e551f9214807846188ed1f5db966e260b9056d61197206b489d94d792c4",
+  "frame_record_sha256": "47d9491a1a500f985893b84e384f178ddedbe5508410266b113ecc29c621ea13",
+  "output_sha256": "747e499bf68c08a75f510c255198734a14f9c5cd504e02825f50c6fe4e0c9414",
+  "output_bytes": 45042336,
+  "source_frames": 2447,
+  "decoded_output_frames": 2447,
+  "resolution": [
+    1440,
+    600
+  ],
+  "source_fps": 5.0,
+  "output_fps": 20.0,
+  "playback_speed": 4,
+  "source_duration_s": 489.4,
+  "output_duration_s": 122.35,
+  "codec": "h264",
+  "pixel_format": "yuv420p",
+  "preset": "slow",
+  "crf": 18,
+  "all_frames_preserved": true,
+  "interpolation": false,
+  "audio_in_source": false,
+  "source_inputs_unchanged": true,
+  "edited_region_xyxy": [
+    746,
+    7,
+    978,
+    33
+  ],
+  "edited_content": "time/speed header only; original simulator timestamps preserved",
+  "quality_samples": [
+    {
+      "frame": 0,
+      "full_ssim": 0.9954429273816006,
+      "head_ssim": 0.9957761409313696,
+      "map_ssim": 0.9999229163859572,
+      "psnr_db": 39.33759661479509
+    },
+    {
+      "frame": 122,
+      "full_ssim": 0.9945388035731803,
+      "head_ssim": 0.9946667124311662,
+      "map_ssim": 0.9992252693916459,
+      "psnr_db": 39.241966149032486
+    },
+    {
+      "frame": 244,
+      "full_ssim": 0.9912308530532453,
+      "head_ssim": 0.9824875206085013,
+      "map_ssim": 0.9992357971025742,
+      "psnr_db": 39.07934485204224
+    },
+    {
+      "frame": 366,
+      "full_ssim": 0.9884221249423375,
+      "head_ssim": 0.9898768979341921,
+      "map_ssim": 0.9992606373375079,
+      "psnr_db": 38.84646909857395
+    },
+    {
+      "frame": 489,
+      "full_ssim": 0.9913966871077274,
+      "head_ssim": 0.9892401223838868,
+      "map_ssim": 0.9992617875333046,
+      "psnr_db": 39.28039964083869
+    },
+    {
+      "frame": 611,
+      "full_ssim": 0.9946886977270046,
+      "head_ssim": 0.9848780943998211,
+      "map_ssim": 0.9994961144959136,
+      "psnr_db": 39.912442317132296
+    },
+    {
+      "frame": 733,
+      "full_ssim": 0.9959047814975631,
+      "head_ssim": 0.9862765321966362,
+      "map_ssim": 0.99947307454567,
+      "psnr_db": 39.35631356977185
+    },
+    {
+      "frame": 856,
+      "full_ssim": 0.9884594961891772,
+      "head_ssim": 0.9887015351986299,
+      "map_ssim": 0.9994410913552798,
+      "psnr_db": 38.63414282597156
+    },
+    {
+      "frame": 978,
+      "full_ssim": 0.9888443835025421,
+      "head_ssim": 0.9740173024455561,
+      "map_ssim": 0.9986415931335676,
+      "psnr_db": 38.6265234102005
+    },
+    {
+      "frame": 1100,
+      "full_ssim": 0.9836534864818931,
+      "head_ssim": 0.9665409458798124,
+      "map_ssim": 0.9993377128842773,
+      "psnr_db": 37.79447696716332
+    },
+    {
+      "frame": 1223,
+      "full_ssim": 0.9837764597306553,
+      "head_ssim": 0.9976288067684062,
+      "map_ssim": 0.9993334717268522,
+      "psnr_db": 38.23638131170425
+    },
+    {
+      "frame": 1345,
+      "full_ssim": 0.9892886428684975,
+      "head_ssim": 0.9953269616526862,
+      "map_ssim": 0.9995281740321931,
+      "psnr_db": 38.52991670556851
+    },
+    {
+      "frame": 1467,
+      "full_ssim": 0.9940954581678949,
+      "head_ssim": 0.99551933664318,
+      "map_ssim": 0.9995298411351712,
+      "psnr_db": 39.06859938843576
+    },
+    {
+      "frame": 1589,
+      "full_ssim": 0.9944872269126409,
+      "head_ssim": 0.9975052815674902,
+      "map_ssim": 0.9995849194410139,
+      "psnr_db": 38.898548973055874
+    },
+    {
+      "frame": 1712,
+      "full_ssim": 0.9927238830934175,
+      "head_ssim": 0.9987196980342846,
+      "map_ssim": 0.9995590707083323,
+      "psnr_db": 38.95384224382163
+    },
+    {
+      "frame": 1834,
+      "full_ssim": 0.9725614236370344,
+      "head_ssim": 0.9561275038035278,
+      "map_ssim": 0.9996052829942947,
+      "psnr_db": 37.18035082841373
+    },
+    {
+      "frame": 1956,
+      "full_ssim": 0.9886285599609325,
+      "head_ssim": 0.9869455636008386,
+      "map_ssim": 0.9995731889145922,
+      "psnr_db": 38.5604430800796
+    },
+    {
+      "frame": 2079,
+      "full_ssim": 0.9931999644234321,
+      "head_ssim": 0.9867939332757754,
+      "map_ssim": 0.9995552768248105,
+      "psnr_db": 39.15257765694154
+    },
+    {
+      "frame": 2201,
+      "full_ssim": 0.9948778516176412,
+      "head_ssim": 0.9923052549411712,
+      "map_ssim": 0.9992435424828175,
+      "psnr_db": 39.54644448850487
+    },
+    {
+      "frame": 2323,
+      "full_ssim": 0.9931549272296615,
+      "head_ssim": 0.9967103447020792,
+      "map_ssim": 0.9996018344378035,
+      "psnr_db": 39.15491914275462
+    },
+    {
+      "frame": 2446,
+      "full_ssim": 0.9967060606210281,
+      "head_ssim": 0.9960589229618729,
+      "map_ssim": 0.9995988740075717,
+      "psnr_db": 39.74878453810669
+    }
+  ],
+  "sampled_quality_and_size_gate_passed": true,
+  "visual_review_pending": true
+}

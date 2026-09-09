@@ -1,0 +1,242 @@
+{
+  "checks": {
+    "protocol_scoring": true,
+    "source_hashes_match": true,
+    "saved_source_matches_hashes": true,
+    "instruction_first": true,
+    "actual_control_reexecution": true,
+    "reexecuted_protocol_success": true,
+    "replay_sources_verified": true,
+    "replay_refers_to_this_run": true,
+    "no_native_contact_above_threshold": true,
+    "complete_aligned_traces": true,
+    "identity_records_consistent_with_saved_masks_and_replayed_positions": true,
+    "fresh_visual_discovery_at_standoff_during_translation": true,
+    "old_location_update_has_measured_free_depth": true,
+    "reacquisition_follows_observed_invalidation": true,
+    "continuous_1x_frame_steps": true,
+    "all_source_videos_decode_completely": true,
+    "matching_5fps_playback": true,
+    "current_observation_panel_matches_raw_camera": true,
+    "observed_memory_update_caption_visible": true,
+    "annotated_video_retains_all_frames": true
+  },
+  "identity_checks": [
+    {
+      "step": 623,
+      "consistent": true,
+      "correct": true,
+      "score": 0.20027217268943787,
+      "observation_id": 10
+    },
+    {
+      "step": 703,
+      "consistent": true,
+      "correct": true,
+      "score": 0.16387033462524414,
+      "observation_id": 17
+    },
+    {
+      "step": 739,
+      "consistent": true,
+      "correct": true,
+      "score": 0.18348945677280426,
+      "observation_id": 20
+    },
+    {
+      "step": 1467,
+      "consistent": true,
+      "correct": true,
+      "score": 0.16483764350414276,
+      "observation_id": 74
+    },
+    {
+      "step": 1491,
+      "consistent": true,
+      "correct": true,
+      "score": 0.16373701393604279,
+      "observation_id": 76
+    },
+    {
+      "step": 1618,
+      "consistent": true,
+      "correct": true,
+      "score": 0.17075227200984955,
+      "observation_id": 86
+    },
+    {
+      "step": 1655,
+      "consistent": true,
+      "correct": true,
+      "score": 0.17625239491462708,
+      "observation_id": 89
+    },
+    {
+      "step": 1667,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3054572641849518,
+      "observation_id": 90
+    },
+    {
+      "step": 1679,
+      "consistent": true,
+      "correct": true,
+      "score": 0.17652463912963867,
+      "observation_id": 91
+    },
+    {
+      "step": 1705,
+      "consistent": true,
+      "correct": true,
+      "score": 0.205716073513031,
+      "observation_id": 94
+    },
+    {
+      "step": 1785,
+      "consistent": true,
+      "correct": true,
+      "score": 0.2359522134065628,
+      "observation_id": 101
+    },
+    {
+      "step": 1826,
+      "consistent": true,
+      "correct": true,
+      "score": 0.25910255312919617,
+      "observation_id": 104
+    },
+    {
+      "step": 1838,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3447987139225006,
+      "observation_id": 105
+    },
+    {
+      "step": 1850,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3004954755306244,
+      "observation_id": 106
+    },
+    {
+      "step": 1862,
+      "consistent": true,
+      "correct": true,
+      "score": 0.31430548429489136,
+      "observation_id": 107
+    },
+    {
+      "step": 1892,
+      "consistent": true,
+      "correct": true,
+      "score": 0.27248677611351013,
+      "observation_id": 108
+    },
+    {
+      "step": 1892,
+      "consistent": true,
+      "correct": true,
+      "score": 0.27248677611351013,
+      "observation_id": 110
+    },
+    {
+      "step": 1972,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3027099668979645,
+      "observation_id": 117
+    },
+    {
+      "step": 2013,
+      "consistent": true,
+      "correct": true,
+      "score": 0.19651374220848083,
+      "observation_id": 120
+    },
+    {
+      "step": 2037,
+      "consistent": true,
+      "correct": true,
+      "score": 0.16116900742053986,
+      "observation_id": 122
+    },
+    {
+      "step": 2049,
+      "consistent": true,
+      "correct": true,
+      "score": 0.35715189576148987,
+      "observation_id": 123
+    },
+    {
+      "step": 2087,
+      "consistent": true,
+      "correct": true,
+      "score": 0.32557588815689087,
+      "observation_id": 124
+    },
+    {
+      "step": 2095,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3400760293006897,
+      "observation_id": 126
+    },
+    {
+      "step": 2203,
+      "consistent": true,
+      "correct": true,
+      "score": 0.37745362520217896,
+      "observation_id": 133
+    },
+    {
+      "step": 2223,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3491077423095703,
+      "observation_id": 134
+    }
+  ],
+  "memory_evidence": [
+    {
+      "step": 781,
+      "observation_id": 22,
+      "measured_free_depth": true,
+      "time_aligned": true
+    }
+  ],
+  "temporal_evidence": {
+    "definition_version": 2,
+    "first_moved_detection_step": 1467,
+    "observed_loss_step": 781,
+    "observed_loss_observation_id": 22,
+    "reacquisition_step": 1467,
+    "reacquisition_observation_id": 74,
+    "strict_loss_then_reacquisition": true,
+    "boundary": "Continuous visual tracking alone does not satisfy lost-and-found. Saved depth/identity and physical replay must also pass."
+  },
+  "review_definition_version": 2,
+  "original_reacquisition_step": 1467,
+  "decoded_frames": 1615,
+  "maximum_observation_panel_mae": 1.607281378600823,
+  "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen11/07_ArchitecTHOR-Val-01_seed104_dynamic",
+  "annotated": true,
+  "source_video_sha256": {
+    "overview_raw": "b7a300666138e22fe98e591c2490e069ce907aed89e55d799df825140c7ae63d",
+    "observation_raw": "0725b6823e494daf40464dc7e632069eba3a5494a185291d0d4d841b7872dd1d",
+    "reviewer_view": "e267e3d8f35d92d906124508e699571775e9056a240542520af98b0205a100c6"
+  },
+  "events_sha256": "906828e13e1fecd766ec90d853e4a74addcc3048403388b55b4ae57450fb94af",
+  "physical_audit_sha256": "3fb6c2f4d701ba219038b6e99ac29bc7f5eb11b2aa5ddc71cf3f7e1dc195ed89",
+  "review_script_sha256": "084fdc15e9be3df415609e316cbaf39057913aae63ddbfab77f18b42b446c49c",
+  "review_dependency_sha256": {
+    "instruction_evaluation.py": "e5797d662d47be86823160359e2f0294d051c01f0a5b00835f0d53ab864c057c",
+    "instruction_geometry.py": "df181d9d44fb484e05a8f62dee87805a072c11eb962ab93f3feaa196c2ff36dd",
+    "instruction_task.py": "6da3e742b8428a35d4f585d24811e0bfc81a9c2792600fe79900e79d45e7eea6"
+  },
+  "release_ready": false,
+  "boundary": "Recorded-data/visibility/physical-replay/video check, not an additional task. Visual inspection and final frozen-study release remain separate.",
+  "annotated_video_sha256": "92cfe36847e380c2fbd7347cab2d5a40e8e956e6912c19479f5a04e44aacb1ed",
+  "record_review_passed": true
+}

@@ -1,0 +1,20 @@
+{
+  "checks": {
+    "all_original_frames_retained": true,
+    "head_and_memory_panels_preserved": true,
+    "source_video_unchanged": true,
+    "source_review_unchanged": true
+  },
+  "render_checks_passed": true,
+  "frames": 2447,
+  "maximum_panel_mae": 1.0856643518518518,
+  "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen07/09_ProcTHOR-Test-244_seed102_dynamic",
+  "original_review_sha256": "8b2b02bf891c9337340658720efe306d8600110641ac20fb61f5b28dc7ca7903",
+  "original_video_sha256": "8478bc8adb086e4ae610d6f84f54ce8aa68217a8346ec64663413eac1c220264",
+  "reframed_video_sha256": "3b669e551f9214807846188ed1f5db966e260b9056d61197206b489d94d792c4",
+  "renderer_script_sha256": "eba488e847c44adbd9a8f6ddbee3ad569839ee5100fb4f657c2fedf8dda99913",
+  "spectator_mode": "tool-front-placement",
+  "visual_acceptance_pending": true,
+  "release_ready": false,
+  "boundary": "Alternate simulator-rendered spectator view of the SAME saved controls/forces at 1x. Recorded head/memory panels retained. Physical replay must independently match; this is not another policy trial."
+}

@@ -108,6 +108,16 @@ of perception, rendering and saved evidence.
 | 09 | ProcTHOR-Val-632 | 105 | Tomato → bowl on white table |
 | 10 | ProcTHOR-Train-7819 | 104 | Bread → plate on white table |
 
+The public videos are named `01.mp4`–`10.mp4`, and the website displays
+**Video 01**–**Video 10**. These numbers are exactly the profile IDs above;
+renaming does not change the recording, task, seed, controller or evaluation.
+Full source/scene identifiers, original filenames, encoding reports and video
+checksums are centralized in [`evidence/gallery/manifest.json`](evidence/gallery/manifest.json).
+The [gallery guide](evidence/gallery/README.md) explains the mapping and its
+provenance records. The website intentionally does not duplicate this metadata.
+The upstream split name does not select a different runtime mode and these
+selected examples are not claimed to constitute a held-out evaluation.
+
 The full instruction is authoritative in the profile catalog. The unified entry
 point is new packaging around the original source versions, not a claim that
 all historical videos used one latest controller. Cases 01–08 retain their

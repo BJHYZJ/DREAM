@@ -1,0 +1,371 @@
+{
+  "checks": {
+    "protocol_scoring": true,
+    "source_hashes_match": true,
+    "saved_source_matches_hashes": true,
+    "instruction_first": true,
+    "actual_control_reexecution": true,
+    "reexecuted_protocol_success": true,
+    "replay_sources_verified": true,
+    "replay_refers_to_this_run": true,
+    "no_native_contact_above_threshold": true,
+    "complete_aligned_traces": true,
+    "identity_records_consistent_with_saved_masks_and_replayed_positions": true,
+    "fresh_visual_discovery_at_standoff_during_translation": true,
+    "old_location_update_has_measured_free_depth": true,
+    "reacquisition_follows_observed_invalidation": true,
+    "continuous_1x_frame_steps": true,
+    "all_source_videos_decode_completely": true,
+    "matching_5fps_playback": true,
+    "current_observation_panel_matches_raw_camera": true,
+    "observed_memory_update_caption_visible": true,
+    "external_relocation_caption_visible": true,
+    "annotated_video_retains_all_frames": true
+  },
+  "identity_checks": [
+    {
+      "step": 835,
+      "consistent": true,
+      "correct": true,
+      "score": 0.27044278383255005,
+      "observation_id": 22
+    },
+    {
+      "step": 932,
+      "consistent": true,
+      "correct": true,
+      "score": 0.22630351781845093,
+      "observation_id": 25
+    },
+    {
+      "step": 955,
+      "consistent": true,
+      "correct": true,
+      "score": 0.1721298098564148,
+      "observation_id": 27
+    },
+    {
+      "step": 1037,
+      "consistent": true,
+      "correct": true,
+      "score": 0.17477008700370789,
+      "observation_id": 34
+    },
+    {
+      "step": 1142,
+      "consistent": true,
+      "correct": true,
+      "score": 0.1665249615907669,
+      "observation_id": 41
+    },
+    {
+      "step": 1356,
+      "consistent": true,
+      "correct": true,
+      "score": 0.16474969685077667,
+      "observation_id": 55
+    },
+    {
+      "step": 1456,
+      "consistent": true,
+      "correct": true,
+      "score": 0.1566058099269867,
+      "observation_id": 65
+    },
+    {
+      "step": 1665,
+      "consistent": true,
+      "correct": true,
+      "score": 0.16215676069259644,
+      "observation_id": 79
+    },
+    {
+      "step": 2424,
+      "consistent": true,
+      "correct": true,
+      "score": 0.24719658493995667,
+      "observation_id": 167
+    },
+    {
+      "step": 2506,
+      "consistent": true,
+      "correct": true,
+      "score": 0.24477329850196838,
+      "observation_id": 174
+    },
+    {
+      "step": 2520,
+      "consistent": true,
+      "correct": true,
+      "score": 0.2306615263223648,
+      "observation_id": 175
+    },
+    {
+      "step": 2534,
+      "consistent": true,
+      "correct": true,
+      "score": 0.2686341106891632,
+      "observation_id": 176
+    },
+    {
+      "step": 2594,
+      "consistent": true,
+      "correct": true,
+      "score": 0.1901753693819046,
+      "observation_id": 179
+    },
+    {
+      "step": 2676,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3200339674949646,
+      "observation_id": 186
+    },
+    {
+      "step": 2732,
+      "consistent": true,
+      "correct": true,
+      "score": 0.48726481199264526,
+      "observation_id": 190
+    },
+    {
+      "step": 2746,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4394090175628662,
+      "observation_id": 191
+    },
+    {
+      "step": 2760,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4560950696468353,
+      "observation_id": 192
+    },
+    {
+      "step": 2774,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4723092317581177,
+      "observation_id": 193
+    },
+    {
+      "step": 2815,
+      "consistent": true,
+      "correct": true,
+      "score": 0.43870577216148376,
+      "observation_id": 194
+    },
+    {
+      "step": 2826,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4852730333805084,
+      "observation_id": 196
+    },
+    {
+      "step": 2908,
+      "consistent": true,
+      "correct": true,
+      "score": 0.521235466003418,
+      "observation_id": 203
+    },
+    {
+      "step": 2939,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4826051592826843,
+      "observation_id": 205
+    },
+    {
+      "step": 2953,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3064935803413391,
+      "observation_id": 206
+    },
+    {
+      "step": 2967,
+      "consistent": true,
+      "correct": true,
+      "score": 0.5447062253952026,
+      "observation_id": 207
+    },
+    {
+      "step": 2981,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4854370653629303,
+      "observation_id": 208
+    },
+    {
+      "step": 3014,
+      "consistent": true,
+      "correct": true,
+      "score": 0.5294262170791626,
+      "observation_id": 209
+    },
+    {
+      "step": 3016,
+      "consistent": true,
+      "correct": true,
+      "score": 0.5698790550231934,
+      "observation_id": 211
+    },
+    {
+      "step": 3036,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3526144027709961,
+      "observation_id": 214
+    },
+    {
+      "step": 3050,
+      "consistent": true,
+      "correct": true,
+      "score": 0.24883127212524414,
+      "observation_id": 215
+    },
+    {
+      "step": 3064,
+      "consistent": true,
+      "correct": true,
+      "score": 0.460958331823349,
+      "observation_id": 216
+    },
+    {
+      "step": 3078,
+      "consistent": true,
+      "correct": true,
+      "score": 0.35290077328681946,
+      "observation_id": 217
+    },
+    {
+      "step": 3104,
+      "consistent": true,
+      "correct": true,
+      "score": 0.5514030456542969,
+      "observation_id": 218
+    },
+    {
+      "step": 3126,
+      "consistent": true,
+      "correct": true,
+      "score": 0.5613367557525635,
+      "observation_id": 219
+    }
+  ],
+  "memory_evidence": [
+    {
+      "step": 1037,
+      "observation_id": 34,
+      "measured_free_depth": true,
+      "time_aligned": true
+    },
+    {
+      "step": 1100,
+      "observation_id": 38,
+      "measured_free_depth": true,
+      "time_aligned": true
+    },
+    {
+      "step": 1200,
+      "observation_id": 42,
+      "measured_free_depth": true,
+      "time_aligned": true
+    },
+    {
+      "step": 1200,
+      "observation_id": 42,
+      "measured_free_depth": true,
+      "time_aligned": true
+    },
+    {
+      "step": 1427,
+      "observation_id": 63,
+      "measured_free_depth": true,
+      "time_aligned": true
+    },
+    {
+      "step": 1496,
+      "observation_id": 68,
+      "measured_free_depth": true,
+      "time_aligned": true
+    },
+    {
+      "step": 1817,
+      "observation_id": 98,
+      "measured_free_depth": true,
+      "time_aligned": true
+    }
+  ],
+  "temporal_evidence": {
+    "definition_version": 2,
+    "first_moved_detection_step": 1142,
+    "observed_loss_step": 1100,
+    "observed_loss_observation_id": 38,
+    "reacquisition_step": 1142,
+    "reacquisition_observation_id": 41,
+    "strict_loss_then_reacquisition": true,
+    "boundary": "Continuous visual tracking alone does not satisfy lost-and-found. Saved depth/identity and physical replay must also pass."
+  },
+  "primary_task_evidence": {
+    "original_task_scoring": true,
+    "reexecuted_task_success": true,
+    "correct_visual_moved_target_observation": true,
+    "all_logged_updates_have_observed_free_depth": true,
+    "logged_updates_have_variant_correct_caption": true
+  },
+  "memory_variant": "dynamic",
+  "review_definition_version": 4,
+  "original_protocol_scoring": true,
+  "scoring_reassessment": null,
+  "original_reacquisition_step": 1142,
+  "decoded_frames": 3032,
+  "maximum_observation_panel_mae": 1.44931841563786,
+  "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen21/01_ProcTHOR-Train-7819_seed104_dynamic",
+  "annotated": true,
+  "source_video_sha256": {
+    "overview_raw": "850b4146b4463202bde261b69b9913e966c6ee53923e80bb1fed1ca3be411351",
+    "observation_raw": "fec48fc185c207d74ced80d2fe131c359d680e35382ce6972332d39c51f7ad3f",
+    "reviewer_view": "fa4e23ef21d302fd3b96413fdd717e4925159d749cbacfc9e75cd87d3625eda5"
+  },
+  "events_sha256": "4bcd876699852b604216d149c7daccfd7b5dda968bb3a638f919a9024cc743eb",
+  "physical_audit_sha256": "413f52a6d0153e56909081e0f6c70e830abd4f80b49b5d17882597bbbcd6589a",
+  "review_script_sha256": "ebb3300986e81bc0f035d620fe63daa0a09d916e32ce46a9b08b3103a5049d2b",
+  "review_dependency_sha256": {
+    "instruction_evaluation.py": "e5797d662d47be86823160359e2f0294d051c01f0a5b00835f0d53ab864c057c",
+    "instruction_geometry.py": "8b3afc17dcf425ea1517f29c1f53c943b23c9c91eebfc01076a18a4ddf94ae86",
+    "instruction_task.py": "6da3e742b8428a35d4f585d24811e0bfc81a9c2792600fe79900e79d45e7eea6"
+  },
+  "release_ready": false,
+  "boundary": "Recorded-data/visibility/physical-replay/video check, not an additional task. Visual inspection and final frozen-study release remain separate.",
+  "annotated_video_sha256": "3a546fb474e814a6b577cb50fa54c89863f7e6ab659d8f0c7bda8b557e4f270c",
+  "record_review_passed": true,
+  "primary_task_checks": {
+    "source_hashes_match": true,
+    "saved_source_matches_hashes": true,
+    "instruction_first": true,
+    "actual_control_reexecution": true,
+    "replay_sources_verified": true,
+    "replay_refers_to_this_run": true,
+    "no_native_contact_above_threshold": true,
+    "complete_aligned_traces": true,
+    "identity_records_consistent_with_saved_masks_and_replayed_positions": true,
+    "fresh_visual_discovery_at_standoff_during_translation": true,
+    "continuous_1x_frame_steps": true,
+    "all_source_videos_decode_completely": true,
+    "matching_5fps_playback": true,
+    "current_observation_panel_matches_raw_camera": true,
+    "external_relocation_caption_visible": true,
+    "annotated_video_retains_all_frames": true,
+    "original_task_scoring": true,
+    "reexecuted_task_success": true,
+    "correct_visual_moved_target_observation": true,
+    "all_logged_updates_have_observed_free_depth": true,
+    "logged_updates_have_variant_correct_caption": true
+  },
+  "primary_task_record_review_passed": true,
+  "requested_endpoint": "task",
+  "requested_endpoint_passed": true
+}

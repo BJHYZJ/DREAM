@@ -1,4 +1,4 @@
-"""Offline integrity verification of compact study/component/reproduction records.
+"""Offline integrity verification of compact records and public-video mappings.
 
 This checks stored bytes, not experiment validity or new simulator execution.
 """
@@ -26,6 +26,26 @@ def verify_files(root, files):
                         raise ValueError(f"Archived record changed: {member}")
 
 
+def validate_gallery_manifest(manifest, catalog):
+    """Numeric public labels must still identify the exact frozen case."""
+    profiles = {row["id"]: row for row in catalog["cases"]}
+    identifiers = [f"{index:02d}" for index in range(1, 11)]
+    if [row.get("profile_id") for row in manifest["cases"]] != identifiers:
+        raise ValueError("Gallery must map each public video to exactly one ordered profile")
+    for row in manifest["cases"]:
+        identifier = row["profile_id"]
+        profile = profiles[identifier]
+        if row["video"] != identifier + ".mp4" or row["index"] != int(identifier):
+            raise ValueError("Public video numbering does not match its profile")
+        for key in ("scene", "seed", "instruction", "source_id", "task_sha256"):
+            if row[key] != profile[key]:
+                raise ValueError(f"Gallery changes original profile {identifier}: {key}")
+        if row["original_video_sha256"] != profile["video_sha256"]:
+            raise ValueError("Gallery changes original recording identity")
+        if row["source_run"] != profile["original_source_run"]:
+            raise ValueError("Gallery changes original source-run provenance")
+
+
 def main():
     evidence = Path(__file__).parent / "evidence"
     study = json.loads((evidence / "study" / "manifest.json").read_text())
@@ -38,8 +58,18 @@ def main():
     if reproduction["new_policy_attempts"] != 10 or len(reproduction["cases"]) != 10:
         raise ValueError("Incomplete delivery reproduction records")
     verify_files(evidence / "reproduction", reproduction["files"])
+    gallery_root = evidence / "gallery"
+    gallery = json.loads((gallery_root / "manifest.json").read_text())
+    catalog = json.loads((gallery_root / gallery["profile_catalog"]).read_text())
+    validate_gallery_manifest(gallery, catalog)
+    verify_files(gallery_root, gallery["files"])
+    for row in gallery["cases"]:
+        encoding = json.loads((gallery_root / row["encoding_report"]).read_text())
+        if encoding["output_sha256"] != row["video_sha256"]:
+            raise ValueError("Gallery video identity differs from its encoding record")
     print(json.dumps({"compact_evidence_verified": True, "attempts_retained": 60,
                       "reproduction_cases_retained": 10, "component_groups": len(components["groups"]),
+                      "public_video_profile_mappings_verified": 10,
                       "raw_sensor_video_audit_performed": False, "new_policy_execution": False}))
 
 

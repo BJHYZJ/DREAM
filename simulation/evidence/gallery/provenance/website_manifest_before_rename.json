@@ -1,0 +1,2094 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "index": 1,
+      "scene": "ProcTHOR-Train-283",
+      "seed": 100,
+      "recipe": "mug_plate_wooden_table",
+      "instruction": "Please pick up the mug and place it on the plate on the wooden table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen03/01_ProcTHOR-Train-283_seed100_dynamic",
+      "video": "../media/simulation/01_ProcTHOR-Train-283_seed100_4x.mp4",
+      "poster": "posters/01_ProcTHOR-Train-283_seed100.png",
+      "video_sha256": "3ae70039a853dc8578d90bb629062244edf5954a3a1465fa879733ddcd08760b",
+      "duration_s": 81.7,
+      "held_transport_m": 4.246365875346267,
+      "stable_release_s": 19.5,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/01_ProcTHOR-Train-283_seed100/audit.json",
+        "evidence/01_ProcTHOR-Train-283_seed100/record_review.json"
+      ],
+      "original_video_sha256": "d7d19d36e78ec630888a504485b98d750882c87831a91e459a8657eebcf34562",
+      "playback_speed": 4,
+      "encoding_report": "01_ProcTHOR-Train-283_seed100_4x.json",
+      "poster_sha256": "93d249188115990073e6c9a80d9c46c302199970218677c0041e90f4368117c9",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "d7d19d36e78ec630888a504485b98d750882c87831a91e459a8657eebcf34562",
+        "frame_record_sha256": "9227035c75d53ff393b7e2e21228ae7e25ff1e83265ccfc41db0e0c199ea302d",
+        "output_sha256": "3ae70039a853dc8578d90bb629062244edf5954a3a1465fa879733ddcd08760b",
+        "output_bytes": 42962322,
+        "source_frames": 1634,
+        "decoded_output_frames": 1634,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 326.8,
+        "output_duration_s": 81.7,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 18,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9904229167718159,
+            "head_ssim": 0.9847025941113677,
+            "map_ssim": 0.9999441260680321,
+            "psnr_db": 39.66803375862314
+          },
+          {
+            "frame": 81,
+            "full_ssim": 0.9839428214315427,
+            "head_ssim": 0.9786527432569723,
+            "map_ssim": 0.9996757736389692,
+            "psnr_db": 38.835426472591266
+          },
+          {
+            "frame": 163,
+            "full_ssim": 0.9820642943186366,
+            "head_ssim": 0.9739744065382696,
+            "map_ssim": 0.9995252161615152,
+            "psnr_db": 38.681259247320035
+          },
+          {
+            "frame": 244,
+            "full_ssim": 0.9772486362068642,
+            "head_ssim": 0.9798626984660815,
+            "map_ssim": 0.9992483602646396,
+            "psnr_db": 38.60747368741726
+          },
+          {
+            "frame": 326,
+            "full_ssim": 0.9710852016972346,
+            "head_ssim": 0.9661472629986638,
+            "map_ssim": 0.9994964235135645,
+            "psnr_db": 38.142223027691344
+          },
+          {
+            "frame": 408,
+            "full_ssim": 0.9774630077691615,
+            "head_ssim": 0.959532783337322,
+            "map_ssim": 0.9994768178675355,
+            "psnr_db": 38.246413904635865
+          },
+          {
+            "frame": 489,
+            "full_ssim": 0.9871040535909389,
+            "head_ssim": 0.9666062252006574,
+            "map_ssim": 0.9994972337564789,
+            "psnr_db": 38.43917917723433
+          },
+          {
+            "frame": 571,
+            "full_ssim": 0.9616661792195416,
+            "head_ssim": 0.954968757279506,
+            "map_ssim": 0.9995089077618152,
+            "psnr_db": 36.90918064566769
+          },
+          {
+            "frame": 653,
+            "full_ssim": 0.9822009355147157,
+            "head_ssim": 0.961553653213024,
+            "map_ssim": 0.9993893008823952,
+            "psnr_db": 38.08101901340049
+          },
+          {
+            "frame": 734,
+            "full_ssim": 0.9895724107074019,
+            "head_ssim": 0.9856036147090471,
+            "map_ssim": 0.9993732132802114,
+            "psnr_db": 39.06113094408399
+          },
+          {
+            "frame": 816,
+            "full_ssim": 0.9931031351194167,
+            "head_ssim": 0.9931059012472995,
+            "map_ssim": 0.9997562321444273,
+            "psnr_db": 39.67818007479507
+          },
+          {
+            "frame": 898,
+            "full_ssim": 0.9924171803117259,
+            "head_ssim": 0.9912109297069356,
+            "map_ssim": 0.9997556991219855,
+            "psnr_db": 39.41582402253375
+          },
+          {
+            "frame": 979,
+            "full_ssim": 0.9919333455493398,
+            "head_ssim": 0.9885585426285444,
+            "map_ssim": 0.9997557065565859,
+            "psnr_db": 39.43317713119545
+          },
+          {
+            "frame": 1061,
+            "full_ssim": 0.9803796370292435,
+            "head_ssim": 0.9782377888172612,
+            "map_ssim": 0.9997224181969594,
+            "psnr_db": 37.970375925986744
+          },
+          {
+            "frame": 1143,
+            "full_ssim": 0.9652240012138655,
+            "head_ssim": 0.9703693382803295,
+            "map_ssim": 0.9997033423813633,
+            "psnr_db": 37.25400690727749
+          },
+          {
+            "frame": 1224,
+            "full_ssim": 0.966697093704851,
+            "head_ssim": 0.9796742193226727,
+            "map_ssim": 0.9996794653712745,
+            "psnr_db": 37.695146876211886
+          },
+          {
+            "frame": 1306,
+            "full_ssim": 0.9776269495560931,
+            "head_ssim": 0.9677898905892072,
+            "map_ssim": 0.999741314399617,
+            "psnr_db": 38.4319187502444
+          },
+          {
+            "frame": 1388,
+            "full_ssim": 0.9902184234345353,
+            "head_ssim": 0.9812179883172505,
+            "map_ssim": 0.9997330385557103,
+            "psnr_db": 39.875831458113
+          },
+          {
+            "frame": 1469,
+            "full_ssim": 0.9903913060744433,
+            "head_ssim": 0.9873041648147721,
+            "map_ssim": 0.9997331880569594,
+            "psnr_db": 39.854014516354525
+          },
+          {
+            "frame": 1551,
+            "full_ssim": 0.9928696539149021,
+            "head_ssim": 0.9854425948148691,
+            "map_ssim": 0.9997587226266855,
+            "psnr_db": 40.0164427979493
+          },
+          {
+            "frame": 1633,
+            "full_ssim": 0.9951758809569239,
+            "head_ssim": 0.9944353893535888,
+            "map_ssim": 0.9997589980362218,
+            "psnr_db": 40.58237586185359
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 2,
+      "scene": "ProcTHOR-Train-8361",
+      "seed": 100,
+      "recipe": "mug_plate_wooden_table",
+      "instruction": "Please pick up the mug and place it on the plate on the wooden table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen05/05_ProcTHOR-Train-8361_seed100_dynamic",
+      "video": "../media/simulation/02_ProcTHOR-Train-8361_seed100_4x.mp4",
+      "poster": "posters/02_ProcTHOR-Train-8361_seed100.png",
+      "video_sha256": "1065868a5a2a9e74d46210cfea4184cc8203df3bb0d5a723260b80f5d1abfa2f",
+      "duration_s": 198.45,
+      "held_transport_m": 3.387608721310558,
+      "stable_release_s": 19.5,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/02_ProcTHOR-Train-8361_seed100/audit.json",
+        "evidence/02_ProcTHOR-Train-8361_seed100/record_review.json"
+      ],
+      "original_video_sha256": "c3abfb216025a41b1064a776d9a5c06af315c292a97c08549ef325931bef9151",
+      "playback_speed": 4,
+      "encoding_report": "02_ProcTHOR-Train-8361_seed100_4x.json",
+      "poster_sha256": "607cde3604ef6df879f7b44679783760999f0782efa4e9747b1d58e9e457d497",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "c3abfb216025a41b1064a776d9a5c06af315c292a97c08549ef325931bef9151",
+        "frame_record_sha256": "f81d69d48e609285ebdfa88bfdafdf018f4802a060f9bb583a2f2a7a43173505",
+        "output_sha256": "1065868a5a2a9e74d46210cfea4184cc8203df3bb0d5a723260b80f5d1abfa2f",
+        "output_bytes": 54813774,
+        "source_frames": 3969,
+        "decoded_output_frames": 3969,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 793.8,
+        "output_duration_s": 198.45,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.994845117867803,
+            "head_ssim": 0.9933153392563383,
+            "map_ssim": 0.9999321251395596,
+            "psnr_db": 40.342855739259946
+          },
+          {
+            "frame": 198,
+            "full_ssim": 0.9857830167421197,
+            "head_ssim": 0.9864372084145419,
+            "map_ssim": 0.9992342051151014,
+            "psnr_db": 38.92779107568983
+          },
+          {
+            "frame": 396,
+            "full_ssim": 0.9845713890980169,
+            "head_ssim": 0.9711681161856077,
+            "map_ssim": 0.9992706590928879,
+            "psnr_db": 38.77966495279381
+          },
+          {
+            "frame": 595,
+            "full_ssim": 0.9680485723788003,
+            "head_ssim": 0.9762820906973141,
+            "map_ssim": 0.9996606743614994,
+            "psnr_db": 36.95859320894592
+          },
+          {
+            "frame": 793,
+            "full_ssim": 0.9718459719560323,
+            "head_ssim": 0.9835945900495463,
+            "map_ssim": 0.9997064197520046,
+            "psnr_db": 37.38719793335909
+          },
+          {
+            "frame": 992,
+            "full_ssim": 0.9924063668338552,
+            "head_ssim": 0.9930672848222479,
+            "map_ssim": 0.9996090054547649,
+            "psnr_db": 39.60956561012562
+          },
+          {
+            "frame": 1190,
+            "full_ssim": 0.9927685395502268,
+            "head_ssim": 0.9843996992124002,
+            "map_ssim": 0.9996102053294149,
+            "psnr_db": 39.953375041924815
+          },
+          {
+            "frame": 1388,
+            "full_ssim": 0.9671033297734916,
+            "head_ssim": 0.9706674662222369,
+            "map_ssim": 0.9996511744740572,
+            "psnr_db": 36.90912284932891
+          },
+          {
+            "frame": 1587,
+            "full_ssim": 0.9876733294745788,
+            "head_ssim": 0.9866550182895175,
+            "map_ssim": 0.9997093191674707,
+            "psnr_db": 38.99114144732931
+          },
+          {
+            "frame": 1785,
+            "full_ssim": 0.9708413673987244,
+            "head_ssim": 0.9885857214699851,
+            "map_ssim": 0.9996596540828158,
+            "psnr_db": 37.304524347739026
+          },
+          {
+            "frame": 1984,
+            "full_ssim": 0.9890256228004319,
+            "head_ssim": 0.9904396483018976,
+            "map_ssim": 0.9996157388997368,
+            "psnr_db": 39.15167464983764
+          },
+          {
+            "frame": 2182,
+            "full_ssim": 0.994595129084737,
+            "head_ssim": 0.9972660864061433,
+            "map_ssim": 0.9996954877231307,
+            "psnr_db": 39.521550258338735
+          },
+          {
+            "frame": 2380,
+            "full_ssim": 0.9927529085850824,
+            "head_ssim": 0.9808684067409613,
+            "map_ssim": 0.9996765917819395,
+            "psnr_db": 39.58064034986101
+          },
+          {
+            "frame": 2579,
+            "full_ssim": 0.9895229881933179,
+            "head_ssim": 0.9792161260422272,
+            "map_ssim": 0.9994340446861946,
+            "psnr_db": 39.32559598064665
+          },
+          {
+            "frame": 2777,
+            "full_ssim": 0.983454506268815,
+            "head_ssim": 0.9679591335485079,
+            "map_ssim": 0.9994138157086996,
+            "psnr_db": 38.116784741200064
+          },
+          {
+            "frame": 2976,
+            "full_ssim": 0.9814130889421883,
+            "head_ssim": 0.9685505232891001,
+            "map_ssim": 0.9994184625198242,
+            "psnr_db": 38.229594810136554
+          },
+          {
+            "frame": 3174,
+            "full_ssim": 0.9920912619827061,
+            "head_ssim": 0.9853173373458012,
+            "map_ssim": 0.9995766041233618,
+            "psnr_db": 38.94715939220278
+          },
+          {
+            "frame": 3372,
+            "full_ssim": 0.9834700433270769,
+            "head_ssim": 0.9495119400290752,
+            "map_ssim": 0.999573789442397,
+            "psnr_db": 38.50418574809439
+          },
+          {
+            "frame": 3571,
+            "full_ssim": 0.9839880417240625,
+            "head_ssim": 0.9912545280272482,
+            "map_ssim": 0.9995499908688306,
+            "psnr_db": 38.46452384105944
+          },
+          {
+            "frame": 3769,
+            "full_ssim": 0.9938648182811854,
+            "head_ssim": 0.9910503617762065,
+            "map_ssim": 0.9996055925456212,
+            "psnr_db": 39.05698592257138
+          },
+          {
+            "frame": 3968,
+            "full_ssim": 0.9951171291497919,
+            "head_ssim": 0.9955577851918528,
+            "map_ssim": 0.9996054954095873,
+            "psnr_db": 39.5779684659698
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 3,
+      "scene": "ProcTHOR-Train-9031",
+      "seed": 100,
+      "recipe": "egg_plate_wooden_table",
+      "instruction": "Please pick up the egg and place it on the plate on the wooden table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen05/07_ProcTHOR-Train-9031_seed100_dynamic",
+      "video": "../media/simulation/03_ProcTHOR-Train-9031_seed100_4x.mp4",
+      "poster": "posters/03_ProcTHOR-Train-9031_seed100.png",
+      "video_sha256": "e45b7589a303904cc42d51251a369a6cf518dba53ecab476900483c95bb717ad",
+      "duration_s": 77.75,
+      "held_transport_m": 4.44178288611494,
+      "stable_release_s": 19.7,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/03_ProcTHOR-Train-9031_seed100/audit.json",
+        "evidence/03_ProcTHOR-Train-9031_seed100/record_review.json"
+      ],
+      "original_video_sha256": "4fd4a875a370aed1feb3f679bacd7c0d508b7c0095d40154aec6a5df35a7e210",
+      "playback_speed": 4,
+      "encoding_report": "03_ProcTHOR-Train-9031_seed100_4x.json",
+      "poster_sha256": "4a9a7aa9792818c46da341579d257f2998b1e94e523ac084a1bbfce80ca5591f",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "4fd4a875a370aed1feb3f679bacd7c0d508b7c0095d40154aec6a5df35a7e210",
+        "frame_record_sha256": "80c7e007301d5d94bb17e9bdd3f89162bc8a368e7e5332723a2078c9d39a5a83",
+        "output_sha256": "e45b7589a303904cc42d51251a369a6cf518dba53ecab476900483c95bb717ad",
+        "output_bytes": 19553569,
+        "source_frames": 1555,
+        "decoded_output_frames": 1555,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 311.0,
+        "output_duration_s": 77.75,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9926294553306461,
+            "head_ssim": 0.9948486072736665,
+            "map_ssim": 0.9999328683077856,
+            "psnr_db": 38.946138595585246
+          },
+          {
+            "frame": 77,
+            "full_ssim": 0.9874496755076682,
+            "head_ssim": 0.9862604568163948,
+            "map_ssim": 0.999214964790153,
+            "psnr_db": 38.239611547999914
+          },
+          {
+            "frame": 155,
+            "full_ssim": 0.9822886344538118,
+            "head_ssim": 0.9718823068475684,
+            "map_ssim": 0.9993862075967836,
+            "psnr_db": 37.91478457889531
+          },
+          {
+            "frame": 233,
+            "full_ssim": 0.99052496704173,
+            "head_ssim": 0.9792185240420627,
+            "map_ssim": 0.9992525473129739,
+            "psnr_db": 38.07647501136781
+          },
+          {
+            "frame": 310,
+            "full_ssim": 0.9886247082916038,
+            "head_ssim": 0.9641366361889767,
+            "map_ssim": 0.9995364564495144,
+            "psnr_db": 38.135474282370666
+          },
+          {
+            "frame": 388,
+            "full_ssim": 0.9885183443237324,
+            "head_ssim": 0.9772636572241944,
+            "map_ssim": 0.999563777771484,
+            "psnr_db": 38.229451859090624
+          },
+          {
+            "frame": 466,
+            "full_ssim": 0.985502659269825,
+            "head_ssim": 0.9672959921492083,
+            "map_ssim": 0.9994990305117724,
+            "psnr_db": 38.18309222086488
+          },
+          {
+            "frame": 543,
+            "full_ssim": 0.9848118357325704,
+            "head_ssim": 0.976822326892213,
+            "map_ssim": 0.9997161557107282,
+            "psnr_db": 38.20653266803085
+          },
+          {
+            "frame": 621,
+            "full_ssim": 0.991842665911851,
+            "head_ssim": 0.9898359222922488,
+            "map_ssim": 0.9997156116637966,
+            "psnr_db": 38.88170639925451
+          },
+          {
+            "frame": 699,
+            "full_ssim": 0.9905945607108516,
+            "head_ssim": 0.9903935604480695,
+            "map_ssim": 0.9997173227800995,
+            "psnr_db": 38.703044313851976
+          },
+          {
+            "frame": 777,
+            "full_ssim": 0.9901385847210857,
+            "head_ssim": 0.9869064299740864,
+            "map_ssim": 0.9997466337151287,
+            "psnr_db": 38.57403595268627
+          },
+          {
+            "frame": 854,
+            "full_ssim": 0.9904842438352088,
+            "head_ssim": 0.9891278615811491,
+            "map_ssim": 0.9997507677168922,
+            "psnr_db": 38.70752181551587
+          },
+          {
+            "frame": 932,
+            "full_ssim": 0.9832801362644016,
+            "head_ssim": 0.9727601729885886,
+            "map_ssim": 0.99971497385486,
+            "psnr_db": 38.09395104754966
+          },
+          {
+            "frame": 1010,
+            "full_ssim": 0.9851804040052018,
+            "head_ssim": 0.9639896480054629,
+            "map_ssim": 0.9997406973228071,
+            "psnr_db": 37.704352204797395
+          },
+          {
+            "frame": 1087,
+            "full_ssim": 0.989455796732868,
+            "head_ssim": 0.974749225489772,
+            "map_ssim": 0.9997239549909172,
+            "psnr_db": 38.39575696869915
+          },
+          {
+            "frame": 1165,
+            "full_ssim": 0.9869498411916022,
+            "head_ssim": 0.9749192765913088,
+            "map_ssim": 0.9997193634767102,
+            "psnr_db": 38.17613004447636
+          },
+          {
+            "frame": 1243,
+            "full_ssim": 0.9836963888590078,
+            "head_ssim": 0.9785450928281586,
+            "map_ssim": 0.9996843522516959,
+            "psnr_db": 38.234697334692626
+          },
+          {
+            "frame": 1320,
+            "full_ssim": 0.9917944099709273,
+            "head_ssim": 0.9889038403889993,
+            "map_ssim": 0.9997351018027014,
+            "psnr_db": 38.91894521879418
+          },
+          {
+            "frame": 1398,
+            "full_ssim": 0.9940366844608037,
+            "head_ssim": 0.991638238607864,
+            "map_ssim": 0.9997338970512817,
+            "psnr_db": 39.16458258152623
+          },
+          {
+            "frame": 1476,
+            "full_ssim": 0.9928040981443689,
+            "head_ssim": 0.9892255785208399,
+            "map_ssim": 0.9997386672025136,
+            "psnr_db": 38.83450922744406
+          },
+          {
+            "frame": 1554,
+            "full_ssim": 0.9974952677607785,
+            "head_ssim": 0.9965288042674117,
+            "map_ssim": 0.9997621211460948,
+            "psnr_db": 39.66240669190466
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 4,
+      "scene": "ProcTHOR-Train-5318",
+      "seed": 101,
+      "recipe": "mug_plate_wooden_table",
+      "instruction": "Please pick up the mug and place it on the plate on the wooden table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen07/06_ProcTHOR-Train-5318_seed101_dynamic",
+      "video": "../media/simulation/04_ProcTHOR-Train-5318_seed101_4x.mp4",
+      "poster": "posters/04_ProcTHOR-Train-5318_seed101.png",
+      "video_sha256": "534c816e5ccb28b453148161e1934a2b386dca5a08ee1fa56600d13e1f98ab3f",
+      "duration_s": 105.05,
+      "held_transport_m": 7.4666164230526935,
+      "stable_release_s": 19.4,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/04_ProcTHOR-Train-5318_seed101/audit.json",
+        "evidence/04_ProcTHOR-Train-5318_seed101/record_review.json"
+      ],
+      "original_video_sha256": "cd3896d9530926813bc20fff9cb7ffa942eef9fc01bd0a0b39686fd4429bd3c1",
+      "playback_speed": 4,
+      "encoding_report": "04_ProcTHOR-Train-5318_seed101_4x.json",
+      "poster_sha256": "45132720978af11a47b2d5c6aba23b6c7a4afeded146e85ad074bd03e8fe5602",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "cd3896d9530926813bc20fff9cb7ffa942eef9fc01bd0a0b39686fd4429bd3c1",
+        "frame_record_sha256": "584249c3cfb31eed1871502a840c4211251af6f5bf034e61cd62b96c1fd96cbf",
+        "output_sha256": "534c816e5ccb28b453148161e1934a2b386dca5a08ee1fa56600d13e1f98ab3f",
+        "output_bytes": 43240953,
+        "source_frames": 2101,
+        "decoded_output_frames": 2101,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 420.2,
+        "output_duration_s": 105.05,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9913453868977544,
+            "head_ssim": 0.9877762833694677,
+            "map_ssim": 0.9999337869183517,
+            "psnr_db": 38.94022516498669
+          },
+          {
+            "frame": 105,
+            "full_ssim": 0.9840976914356514,
+            "head_ssim": 0.9643584958420488,
+            "map_ssim": 0.9995241848920018,
+            "psnr_db": 38.132930530368206
+          },
+          {
+            "frame": 210,
+            "full_ssim": 0.981011216160892,
+            "head_ssim": 0.9797205210766987,
+            "map_ssim": 0.9994779519199563,
+            "psnr_db": 38.03573448644199
+          },
+          {
+            "frame": 315,
+            "full_ssim": 0.9761754780254392,
+            "head_ssim": 0.9787805790951007,
+            "map_ssim": 0.9996470831773991,
+            "psnr_db": 37.266631955260124
+          },
+          {
+            "frame": 420,
+            "full_ssim": 0.9777634083746237,
+            "head_ssim": 0.9747951281814671,
+            "map_ssim": 0.9993811950696962,
+            "psnr_db": 37.796877742525474
+          },
+          {
+            "frame": 525,
+            "full_ssim": 0.968975505880458,
+            "head_ssim": 0.940537005251201,
+            "map_ssim": 0.9997303801883639,
+            "psnr_db": 36.827773113045986
+          },
+          {
+            "frame": 630,
+            "full_ssim": 0.9581303862668139,
+            "head_ssim": 0.9404710624656838,
+            "map_ssim": 0.99965399751435,
+            "psnr_db": 36.154838350713185
+          },
+          {
+            "frame": 735,
+            "full_ssim": 0.974472903534265,
+            "head_ssim": 0.9455889534172229,
+            "map_ssim": 0.9996529279341084,
+            "psnr_db": 37.200483139836145
+          },
+          {
+            "frame": 840,
+            "full_ssim": 0.992155667265088,
+            "head_ssim": 0.9930141269590653,
+            "map_ssim": 0.9997804326444844,
+            "psnr_db": 39.28623553067539
+          },
+          {
+            "frame": 945,
+            "full_ssim": 0.9838783405636996,
+            "head_ssim": 0.9845599372554281,
+            "map_ssim": 0.9997596041035635,
+            "psnr_db": 38.14600132198737
+          },
+          {
+            "frame": 1050,
+            "full_ssim": 0.9913212332158049,
+            "head_ssim": 0.9868407092862893,
+            "map_ssim": 0.9997933190577596,
+            "psnr_db": 39.07337309387602
+          },
+          {
+            "frame": 1155,
+            "full_ssim": 0.9860447575265266,
+            "head_ssim": 0.9802943244606808,
+            "map_ssim": 0.9997934953900922,
+            "psnr_db": 38.44553869023554
+          },
+          {
+            "frame": 1260,
+            "full_ssim": 0.963942767127875,
+            "head_ssim": 0.9610612483846832,
+            "map_ssim": 0.999769802222761,
+            "psnr_db": 36.87639560518521
+          },
+          {
+            "frame": 1365,
+            "full_ssim": 0.973361403386819,
+            "head_ssim": 0.9439396495807056,
+            "map_ssim": 0.9996986075293187,
+            "psnr_db": 36.96228262279918
+          },
+          {
+            "frame": 1470,
+            "full_ssim": 0.9755215447700498,
+            "head_ssim": 0.9545284697601915,
+            "map_ssim": 0.9996916604566884,
+            "psnr_db": 37.08084398172778
+          },
+          {
+            "frame": 1575,
+            "full_ssim": 0.9573626846990679,
+            "head_ssim": 0.9497651293422542,
+            "map_ssim": 0.999728927638032,
+            "psnr_db": 36.30637119870963
+          },
+          {
+            "frame": 1680,
+            "full_ssim": 0.9844436336612333,
+            "head_ssim": 0.9804061160442061,
+            "map_ssim": 0.9996063963377867,
+            "psnr_db": 38.405952589451566
+          },
+          {
+            "frame": 1785,
+            "full_ssim": 0.986211727365839,
+            "head_ssim": 0.9687992380556784,
+            "map_ssim": 0.9997085782903825,
+            "psnr_db": 38.73601553690631
+          },
+          {
+            "frame": 1890,
+            "full_ssim": 0.9918659735283042,
+            "head_ssim": 0.9884521620473452,
+            "map_ssim": 0.9996771248358174,
+            "psnr_db": 39.25752878727539
+          },
+          {
+            "frame": 1995,
+            "full_ssim": 0.9934424052960704,
+            "head_ssim": 0.9930268356177437,
+            "map_ssim": 0.9996766988375925,
+            "psnr_db": 39.68470338476918
+          },
+          {
+            "frame": 2100,
+            "full_ssim": 0.995762981694383,
+            "head_ssim": 0.9949988748680983,
+            "map_ssim": 0.9997757221152955,
+            "psnr_db": 40.219804428307945
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 5,
+      "scene": "ArchitecTHOR-Test-02",
+      "seed": 103,
+      "recipe": "bread_plate_white_table",
+      "instruction": "Please pick up the bread and put it on the plate on the white table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen09/02_ArchitecTHOR-Test-02_seed103_dynamic",
+      "video": "../media/simulation/05_ArchitecTHOR-Test-02_seed103_4x.mp4",
+      "poster": "posters/05_ArchitecTHOR-Test-02_seed103.png",
+      "video_sha256": "b3323609ead0391b11e4efb4bac6aecb9bd6bbb15e540c36d7dc9d8250157744",
+      "duration_s": 178.65,
+      "held_transport_m": 5.307262069138519,
+      "stable_release_s": 19.3,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": true,
+      "evidence": [
+        "evidence/05_ArchitecTHOR-Test-02_seed103/audit.json",
+        "evidence/05_ArchitecTHOR-Test-02_seed103/record_review.json"
+      ],
+      "original_video_sha256": "a57e9137d5d25b6b168ef64a8c480db813d8f3517104f6a917b362ae7cf1b7c4",
+      "playback_speed": 4,
+      "encoding_report": "05_ArchitecTHOR-Test-02_seed103_4x.json",
+      "poster_sha256": "8ce8bbda94332f356e2e6a26f6a78a1bbcb09d60e27b86c7e1e3aba23dc64d28",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "a57e9137d5d25b6b168ef64a8c480db813d8f3517104f6a917b362ae7cf1b7c4",
+        "frame_record_sha256": "150a38a33036268774b127d29d81e62ca04ea4a6ea1aacf9ec12a633ba99adc8",
+        "output_sha256": "b3323609ead0391b11e4efb4bac6aecb9bd6bbb15e540c36d7dc9d8250157744",
+        "output_bytes": 38343589,
+        "source_frames": 3573,
+        "decoded_output_frames": 3573,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 714.6,
+        "output_duration_s": 178.65,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9922508309926721,
+            "head_ssim": 0.995762399570087,
+            "map_ssim": 0.9999316060289666,
+            "psnr_db": 39.22138217000246
+          },
+          {
+            "frame": 178,
+            "full_ssim": 0.982439569958454,
+            "head_ssim": 0.9802763855403438,
+            "map_ssim": 0.9988315490675908,
+            "psnr_db": 38.54884104524149
+          },
+          {
+            "frame": 357,
+            "full_ssim": 0.9928601651482669,
+            "head_ssim": 0.991941520865187,
+            "map_ssim": 0.9994580564711565,
+            "psnr_db": 39.775420314392036
+          },
+          {
+            "frame": 535,
+            "full_ssim": 0.9842335808147963,
+            "head_ssim": 0.9819282929937311,
+            "map_ssim": 0.9992311392686608,
+            "psnr_db": 38.99378476181001
+          },
+          {
+            "frame": 714,
+            "full_ssim": 0.9846986554610604,
+            "head_ssim": 0.9875391679131704,
+            "map_ssim": 0.9991077440422454,
+            "psnr_db": 39.27596984769367
+          },
+          {
+            "frame": 893,
+            "full_ssim": 0.9932149593036521,
+            "head_ssim": 0.9908314093175951,
+            "map_ssim": 0.9995064087702533,
+            "psnr_db": 40.34993120020612
+          },
+          {
+            "frame": 1071,
+            "full_ssim": 0.9785753216314309,
+            "head_ssim": 0.9800465302324699,
+            "map_ssim": 0.9993496629333659,
+            "psnr_db": 38.223297601157036
+          },
+          {
+            "frame": 1250,
+            "full_ssim": 0.9951248218427751,
+            "head_ssim": 0.9967316287058801,
+            "map_ssim": 0.9995437306867966,
+            "psnr_db": 40.537895695589825
+          },
+          {
+            "frame": 1428,
+            "full_ssim": 0.9844983655169264,
+            "head_ssim": 0.9577926591323837,
+            "map_ssim": 0.9994136424654999,
+            "psnr_db": 38.17403669544013
+          },
+          {
+            "frame": 1607,
+            "full_ssim": 0.9848406127800475,
+            "head_ssim": 0.9628445244298965,
+            "map_ssim": 0.9994914420631948,
+            "psnr_db": 38.278081762793015
+          },
+          {
+            "frame": 1786,
+            "full_ssim": 0.9892692958449898,
+            "head_ssim": 0.9818210697198763,
+            "map_ssim": 0.9995650075134879,
+            "psnr_db": 39.40724960692797
+          },
+          {
+            "frame": 1964,
+            "full_ssim": 0.9835687627926276,
+            "head_ssim": 0.9761865442663646,
+            "map_ssim": 0.9992837184785978,
+            "psnr_db": 38.72932223519446
+          },
+          {
+            "frame": 2143,
+            "full_ssim": 0.9823909303483588,
+            "head_ssim": 0.97017233862675,
+            "map_ssim": 0.9994446513791261,
+            "psnr_db": 38.42976736188859
+          },
+          {
+            "frame": 2321,
+            "full_ssim": 0.9862694779504486,
+            "head_ssim": 0.9906473957094056,
+            "map_ssim": 0.9996778638270536,
+            "psnr_db": 39.23145665667978
+          },
+          {
+            "frame": 2500,
+            "full_ssim": 0.9956262033699335,
+            "head_ssim": 0.9962984664194928,
+            "map_ssim": 0.999477598163106,
+            "psnr_db": 40.40639516192266
+          },
+          {
+            "frame": 2679,
+            "full_ssim": 0.9804092129174611,
+            "head_ssim": 0.9629598872087272,
+            "map_ssim": 0.9996267080653927,
+            "psnr_db": 38.33834615814124
+          },
+          {
+            "frame": 2857,
+            "full_ssim": 0.9792573980079292,
+            "head_ssim": 0.9839793422707156,
+            "map_ssim": 0.9996584047851778,
+            "psnr_db": 38.61505616672868
+          },
+          {
+            "frame": 3036,
+            "full_ssim": 0.9900128781102588,
+            "head_ssim": 0.981637785519583,
+            "map_ssim": 0.9996101131650758,
+            "psnr_db": 39.191497530329556
+          },
+          {
+            "frame": 3214,
+            "full_ssim": 0.9832082945221357,
+            "head_ssim": 0.988508931192334,
+            "map_ssim": 0.999612753354681,
+            "psnr_db": 38.18888134650497
+          },
+          {
+            "frame": 3393,
+            "full_ssim": 0.9874138631906776,
+            "head_ssim": 0.9647811217106284,
+            "map_ssim": 0.9996795065276128,
+            "psnr_db": 38.80483553027763
+          },
+          {
+            "frame": 3572,
+            "full_ssim": 0.996363978632232,
+            "head_ssim": 0.9945400861959961,
+            "map_ssim": 0.9996700621956557,
+            "psnr_db": 39.89731612472518
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 6,
+      "scene": "ProcTHOR-Train-5080",
+      "seed": 102,
+      "recipe": "egg_plate_wooden_table",
+      "instruction": "Please pick up the egg and place it on the plate on the wooden table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen07/08_ProcTHOR-Train-5080_seed102_dynamic",
+      "video": "../media/simulation/06_ProcTHOR-Train-5080_seed102_4x.mp4",
+      "poster": "posters/06_ProcTHOR-Train-5080_seed102.png",
+      "video_sha256": "84fc48d6689dcc78b56ecbeca41ccc72af0cbd1622432838f6a1bca1e2e52d16",
+      "duration_s": 75.2,
+      "held_transport_m": 3.6293922589953604,
+      "stable_release_s": 19.4,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/06_ProcTHOR-Train-5080_seed102/audit.json",
+        "evidence/06_ProcTHOR-Train-5080_seed102/record_review.json"
+      ],
+      "original_video_sha256": "a2ccb5079a60292e87b81c8875b09dc4d547de1b00d1b69bbd2ba44179a1d941",
+      "playback_speed": 4,
+      "encoding_report": "06_ProcTHOR-Train-5080_seed102_4x.json",
+      "poster_sha256": "fa3c6fd9b9f672d122c3b3f0f66e76a6723addc005d0646b8609cb960911d62c",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "a2ccb5079a60292e87b81c8875b09dc4d547de1b00d1b69bbd2ba44179a1d941",
+        "frame_record_sha256": "a062fdc9a366468fd3f28b3e11f7d126664b41ae757cfb4624944f86404b2e1e",
+        "output_sha256": "84fc48d6689dcc78b56ecbeca41ccc72af0cbd1622432838f6a1bca1e2e52d16",
+        "output_bytes": 11781228,
+        "source_frames": 1504,
+        "decoded_output_frames": 1504,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 300.8,
+        "output_duration_s": 75.2,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9895600957413644,
+            "head_ssim": 0.9847097835636793,
+            "map_ssim": 0.9999326340541629,
+            "psnr_db": 38.62035838069458
+          },
+          {
+            "frame": 75,
+            "full_ssim": 0.9839983554800971,
+            "head_ssim": 0.9986199207358022,
+            "map_ssim": 0.9991960624947493,
+            "psnr_db": 38.20316099248298
+          },
+          {
+            "frame": 150,
+            "full_ssim": 0.982273228199279,
+            "head_ssim": 0.9739073277307757,
+            "map_ssim": 0.999424863877773,
+            "psnr_db": 37.762949066370254
+          },
+          {
+            "frame": 225,
+            "full_ssim": 0.9800023858176089,
+            "head_ssim": 0.9868209287213108,
+            "map_ssim": 0.9993122308605878,
+            "psnr_db": 37.862301244396576
+          },
+          {
+            "frame": 300,
+            "full_ssim": 0.9884453327537763,
+            "head_ssim": 0.9812544140840556,
+            "map_ssim": 0.9991741456668529,
+            "psnr_db": 38.83255301938481
+          },
+          {
+            "frame": 375,
+            "full_ssim": 0.9840089632259204,
+            "head_ssim": 0.9862885468144139,
+            "map_ssim": 0.9992234384615479,
+            "psnr_db": 38.6753571916027
+          },
+          {
+            "frame": 450,
+            "full_ssim": 0.9927292163798241,
+            "head_ssim": 0.9834195084661567,
+            "map_ssim": 0.9992789903558579,
+            "psnr_db": 40.06145959499304
+          },
+          {
+            "frame": 526,
+            "full_ssim": 0.9931659319139642,
+            "head_ssim": 0.9814044024328059,
+            "map_ssim": 0.9996523627515401,
+            "psnr_db": 39.9549137657055
+          },
+          {
+            "frame": 601,
+            "full_ssim": 0.9958582159117055,
+            "head_ssim": 0.9932158003233302,
+            "map_ssim": 0.99964727178534,
+            "psnr_db": 40.648953857103095
+          },
+          {
+            "frame": 676,
+            "full_ssim": 0.9956002857493578,
+            "head_ssim": 0.9939731260397633,
+            "map_ssim": 0.9996507114369747,
+            "psnr_db": 40.49513090470866
+          },
+          {
+            "frame": 751,
+            "full_ssim": 0.9946185759433173,
+            "head_ssim": 0.9934123644305473,
+            "map_ssim": 0.9996558762237677,
+            "psnr_db": 40.257765332415275
+          },
+          {
+            "frame": 826,
+            "full_ssim": 0.9960216836536167,
+            "head_ssim": 0.9937615497949902,
+            "map_ssim": 0.9996733333877198,
+            "psnr_db": 40.7204798044389
+          },
+          {
+            "frame": 901,
+            "full_ssim": 0.9962074526032875,
+            "head_ssim": 0.9948994579868021,
+            "map_ssim": 0.9996730215080051,
+            "psnr_db": 40.80627341366392
+          },
+          {
+            "frame": 976,
+            "full_ssim": 0.9906402948891446,
+            "head_ssim": 0.9737286544193275,
+            "map_ssim": 0.9996502380803318,
+            "psnr_db": 39.44802197020884
+          },
+          {
+            "frame": 1052,
+            "full_ssim": 0.9871071524246793,
+            "head_ssim": 0.9723926945927233,
+            "map_ssim": 0.9996433727101263,
+            "psnr_db": 39.26725112729862
+          },
+          {
+            "frame": 1127,
+            "full_ssim": 0.9832158580774142,
+            "head_ssim": 0.9800321255594514,
+            "map_ssim": 0.9996432513477156,
+            "psnr_db": 38.25018150738485
+          },
+          {
+            "frame": 1202,
+            "full_ssim": 0.9885022202562808,
+            "head_ssim": 0.9831863781508411,
+            "map_ssim": 0.9996229752780781,
+            "psnr_db": 38.85250661457392
+          },
+          {
+            "frame": 1277,
+            "full_ssim": 0.9934393434482729,
+            "head_ssim": 0.9899907768211683,
+            "map_ssim": 0.999686823965823,
+            "psnr_db": 39.493206167206736
+          },
+          {
+            "frame": 1352,
+            "full_ssim": 0.9946268235357921,
+            "head_ssim": 0.9914676909127244,
+            "map_ssim": 0.999687865133703,
+            "psnr_db": 39.821311969317684
+          },
+          {
+            "frame": 1427,
+            "full_ssim": 0.9921436224182146,
+            "head_ssim": 0.985755154972778,
+            "map_ssim": 0.999687259301244,
+            "psnr_db": 39.294461291073375
+          },
+          {
+            "frame": 1503,
+            "full_ssim": 0.9924966157564288,
+            "head_ssim": 0.991210762947897,
+            "map_ssim": 0.9986827586596561,
+            "psnr_db": 39.32774107670482
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 7,
+      "scene": "ProcTHOR-Test-244",
+      "seed": 102,
+      "recipe": "egg_bowl_white_table",
+      "instruction": "Please pick up the egg and put it in the bowl on the white table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen07/09_ProcTHOR-Test-244_seed102_dynamic",
+      "video": "../media/simulation/07_ProcTHOR-Test-244_seed102_4x.mp4",
+      "poster": "posters/07_ProcTHOR-Test-244_seed102.png",
+      "video_sha256": "747e499bf68c08a75f510c255198734a14f9c5cd504e02825f50c6fe4e0c9414",
+      "duration_s": 122.35,
+      "held_transport_m": 4.321575132962569,
+      "stable_release_s": 4.5,
+      "same_controls_spectator_rerender": true,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/07_ProcTHOR-Test-244_seed102/audit.json",
+        "evidence/07_ProcTHOR-Test-244_seed102/record_review.json",
+        "evidence/07_ProcTHOR-Test-244_seed102/spectator_video_review.json"
+      ],
+      "original_video_sha256": "3b669e551f9214807846188ed1f5db966e260b9056d61197206b489d94d792c4",
+      "playback_speed": 4,
+      "encoding_report": "07_ProcTHOR-Test-244_seed102_4x.json",
+      "poster_sha256": "e53208e4f421680b18f2918f86afb6a29dea94da5bbb401589ddd28622733a40",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "3b669e551f9214807846188ed1f5db966e260b9056d61197206b489d94d792c4",
+        "frame_record_sha256": "47d9491a1a500f985893b84e384f178ddedbe5508410266b113ecc29c621ea13",
+        "output_sha256": "747e499bf68c08a75f510c255198734a14f9c5cd504e02825f50c6fe4e0c9414",
+        "output_bytes": 45042336,
+        "source_frames": 2447,
+        "decoded_output_frames": 2447,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 489.4,
+        "output_duration_s": 122.35,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 18,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9954429273816006,
+            "head_ssim": 0.9957761409313696,
+            "map_ssim": 0.9999229163859572,
+            "psnr_db": 39.33759661479509
+          },
+          {
+            "frame": 122,
+            "full_ssim": 0.9945388035731803,
+            "head_ssim": 0.9946667124311662,
+            "map_ssim": 0.9992252693916459,
+            "psnr_db": 39.241966149032486
+          },
+          {
+            "frame": 244,
+            "full_ssim": 0.9912308530532453,
+            "head_ssim": 0.9824875206085013,
+            "map_ssim": 0.9992357971025742,
+            "psnr_db": 39.07934485204224
+          },
+          {
+            "frame": 366,
+            "full_ssim": 0.9884221249423375,
+            "head_ssim": 0.9898768979341921,
+            "map_ssim": 0.9992606373375079,
+            "psnr_db": 38.84646909857395
+          },
+          {
+            "frame": 489,
+            "full_ssim": 0.9913966871077274,
+            "head_ssim": 0.9892401223838868,
+            "map_ssim": 0.9992617875333046,
+            "psnr_db": 39.28039964083869
+          },
+          {
+            "frame": 611,
+            "full_ssim": 0.9946886977270046,
+            "head_ssim": 0.9848780943998211,
+            "map_ssim": 0.9994961144959136,
+            "psnr_db": 39.912442317132296
+          },
+          {
+            "frame": 733,
+            "full_ssim": 0.9959047814975631,
+            "head_ssim": 0.9862765321966362,
+            "map_ssim": 0.99947307454567,
+            "psnr_db": 39.35631356977185
+          },
+          {
+            "frame": 856,
+            "full_ssim": 0.9884594961891772,
+            "head_ssim": 0.9887015351986299,
+            "map_ssim": 0.9994410913552798,
+            "psnr_db": 38.63414282597156
+          },
+          {
+            "frame": 978,
+            "full_ssim": 0.9888443835025421,
+            "head_ssim": 0.9740173024455561,
+            "map_ssim": 0.9986415931335676,
+            "psnr_db": 38.6265234102005
+          },
+          {
+            "frame": 1100,
+            "full_ssim": 0.9836534864818931,
+            "head_ssim": 0.9665409458798124,
+            "map_ssim": 0.9993377128842773,
+            "psnr_db": 37.79447696716332
+          },
+          {
+            "frame": 1223,
+            "full_ssim": 0.9837764597306553,
+            "head_ssim": 0.9976288067684062,
+            "map_ssim": 0.9993334717268522,
+            "psnr_db": 38.23638131170425
+          },
+          {
+            "frame": 1345,
+            "full_ssim": 0.9892886428684975,
+            "head_ssim": 0.9953269616526862,
+            "map_ssim": 0.9995281740321931,
+            "psnr_db": 38.52991670556851
+          },
+          {
+            "frame": 1467,
+            "full_ssim": 0.9940954581678949,
+            "head_ssim": 0.99551933664318,
+            "map_ssim": 0.9995298411351712,
+            "psnr_db": 39.06859938843576
+          },
+          {
+            "frame": 1589,
+            "full_ssim": 0.9944872269126409,
+            "head_ssim": 0.9975052815674902,
+            "map_ssim": 0.9995849194410139,
+            "psnr_db": 38.898548973055874
+          },
+          {
+            "frame": 1712,
+            "full_ssim": 0.9927238830934175,
+            "head_ssim": 0.9987196980342846,
+            "map_ssim": 0.9995590707083323,
+            "psnr_db": 38.95384224382163
+          },
+          {
+            "frame": 1834,
+            "full_ssim": 0.9725614236370344,
+            "head_ssim": 0.9561275038035278,
+            "map_ssim": 0.9996052829942947,
+            "psnr_db": 37.18035082841373
+          },
+          {
+            "frame": 1956,
+            "full_ssim": 0.9886285599609325,
+            "head_ssim": 0.9869455636008386,
+            "map_ssim": 0.9995731889145922,
+            "psnr_db": 38.5604430800796
+          },
+          {
+            "frame": 2079,
+            "full_ssim": 0.9931999644234321,
+            "head_ssim": 0.9867939332757754,
+            "map_ssim": 0.9995552768248105,
+            "psnr_db": 39.15257765694154
+          },
+          {
+            "frame": 2201,
+            "full_ssim": 0.9948778516176412,
+            "head_ssim": 0.9923052549411712,
+            "map_ssim": 0.9992435424828175,
+            "psnr_db": 39.54644448850487
+          },
+          {
+            "frame": 2323,
+            "full_ssim": 0.9931549272296615,
+            "head_ssim": 0.9967103447020792,
+            "map_ssim": 0.9996018344378035,
+            "psnr_db": 39.15491914275462
+          },
+          {
+            "frame": 2446,
+            "full_ssim": 0.9967060606210281,
+            "head_ssim": 0.9960589229618729,
+            "map_ssim": 0.9995988740075717,
+            "psnr_db": 39.74878453810669
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 8,
+      "scene": "ArchitecTHOR-Val-01",
+      "seed": 104,
+      "recipe": "egg_bowl_white_table",
+      "instruction": "Please pick up the egg and put it in the bowl on the white table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen11/07_ArchitecTHOR-Val-01_seed104_dynamic",
+      "video": "../media/simulation/08_ArchitecTHOR-Val-01_seed104_4x.mp4",
+      "poster": "posters/08_ArchitecTHOR-Val-01_seed104.png",
+      "video_sha256": "23c0ceb6f717da58d2fd6cf39015879f93ab9b48d2d7028d60c2581311d8ab83",
+      "duration_s": 80.75,
+      "held_transport_m": 4.837404205322542,
+      "stable_release_s": 3.9,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/08_ArchitecTHOR-Val-01_seed104/audit.json",
+        "evidence/08_ArchitecTHOR-Val-01_seed104/record_review.json"
+      ],
+      "original_video_sha256": "92cfe36847e380c2fbd7347cab2d5a40e8e956e6912c19479f5a04e44aacb1ed",
+      "playback_speed": 4,
+      "encoding_report": "08_ArchitecTHOR-Val-01_seed104_4x.json",
+      "poster_sha256": "a86fdd6a15dcf3187f7b77a2327d64e179f86f6f3fa28345d904338b7e22743f",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "92cfe36847e380c2fbd7347cab2d5a40e8e956e6912c19479f5a04e44aacb1ed",
+        "frame_record_sha256": "0da730beafb5f24be69fc98d5db29ec33e8e042cf2ac1c4c11b0a66ee55153b8",
+        "output_sha256": "23c0ceb6f717da58d2fd6cf39015879f93ab9b48d2d7028d60c2581311d8ab83",
+        "output_bytes": 18348839,
+        "source_frames": 1615,
+        "decoded_output_frames": 1615,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 323.0,
+        "output_duration_s": 80.75,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9919346429394837,
+            "head_ssim": 0.9825401091742558,
+            "map_ssim": 0.9999340160974978,
+            "psnr_db": 39.854864468787135
+          },
+          {
+            "frame": 80,
+            "full_ssim": 0.9913191355202445,
+            "head_ssim": 0.9957983747831185,
+            "map_ssim": 0.9991951715190548,
+            "psnr_db": 39.647989456686624
+          },
+          {
+            "frame": 161,
+            "full_ssim": 0.9863461471134469,
+            "head_ssim": 0.9850219341422503,
+            "map_ssim": 0.9991293287621598,
+            "psnr_db": 38.94673337402837
+          },
+          {
+            "frame": 242,
+            "full_ssim": 0.9857496487476959,
+            "head_ssim": 0.9784591599371557,
+            "map_ssim": 0.9993967012452745,
+            "psnr_db": 38.77163485905587
+          },
+          {
+            "frame": 322,
+            "full_ssim": 0.9854746248634869,
+            "head_ssim": 0.9778013525458893,
+            "map_ssim": 0.9992463468870536,
+            "psnr_db": 39.77360340378677
+          },
+          {
+            "frame": 403,
+            "full_ssim": 0.9802763424744289,
+            "head_ssim": 0.9678128191617548,
+            "map_ssim": 0.998923721598435,
+            "psnr_db": 38.724884457093694
+          },
+          {
+            "frame": 484,
+            "full_ssim": 0.9658651969345213,
+            "head_ssim": 0.9626049442845057,
+            "map_ssim": 0.9987364511380539,
+            "psnr_db": 37.50947836771402
+          },
+          {
+            "frame": 564,
+            "full_ssim": 0.985539546911959,
+            "head_ssim": 0.9823567872383767,
+            "map_ssim": 0.9993448310272321,
+            "psnr_db": 39.13815202592458
+          },
+          {
+            "frame": 645,
+            "full_ssim": 0.9916994791883654,
+            "head_ssim": 0.9905237444886569,
+            "map_ssim": 0.9992828865262894,
+            "psnr_db": 39.64825036221662
+          },
+          {
+            "frame": 726,
+            "full_ssim": 0.9761100910476994,
+            "head_ssim": 0.9807556054404425,
+            "map_ssim": 0.9992718243945904,
+            "psnr_db": 38.20323442120913
+          },
+          {
+            "frame": 807,
+            "full_ssim": 0.9930799407951904,
+            "head_ssim": 0.9886598696711439,
+            "map_ssim": 0.9995633910724647,
+            "psnr_db": 39.71094109789125
+          },
+          {
+            "frame": 887,
+            "full_ssim": 0.9918176137257976,
+            "head_ssim": 0.9882134211525536,
+            "map_ssim": 0.9995610878230196,
+            "psnr_db": 39.70101124061112
+          },
+          {
+            "frame": 968,
+            "full_ssim": 0.9783437396099826,
+            "head_ssim": 0.9941720742484093,
+            "map_ssim": 0.9994821638093621,
+            "psnr_db": 38.157075628821126
+          },
+          {
+            "frame": 1049,
+            "full_ssim": 0.9869071103903678,
+            "head_ssim": 0.9818955515144521,
+            "map_ssim": 0.9993789828807912,
+            "psnr_db": 39.637683167824854
+          },
+          {
+            "frame": 1129,
+            "full_ssim": 0.9885229111286771,
+            "head_ssim": 0.9819476592712847,
+            "map_ssim": 0.9992001344221787,
+            "psnr_db": 39.66554781834895
+          },
+          {
+            "frame": 1210,
+            "full_ssim": 0.9877550794891959,
+            "head_ssim": 0.9832282536147565,
+            "map_ssim": 0.9992351017679263,
+            "psnr_db": 39.13779939299859
+          },
+          {
+            "frame": 1291,
+            "full_ssim": 0.9893408881378654,
+            "head_ssim": 0.9826789121235056,
+            "map_ssim": 0.9994871940636678,
+            "psnr_db": 38.89018667502039
+          },
+          {
+            "frame": 1371,
+            "full_ssim": 0.9935716078170227,
+            "head_ssim": 0.9915892642113896,
+            "map_ssim": 0.9994830910556453,
+            "psnr_db": 40.09593318744385
+          },
+          {
+            "frame": 1452,
+            "full_ssim": 0.9925530957232527,
+            "head_ssim": 0.990911312919554,
+            "map_ssim": 0.999483020506265,
+            "psnr_db": 39.61044465511109
+          },
+          {
+            "frame": 1533,
+            "full_ssim": 0.9936564381855285,
+            "head_ssim": 0.9932604750101235,
+            "map_ssim": 0.9995114547150773,
+            "psnr_db": 39.960863184744596
+          },
+          {
+            "frame": 1614,
+            "full_ssim": 0.9934341154099222,
+            "head_ssim": 0.9925401313109774,
+            "map_ssim": 0.99951162811721,
+            "psnr_db": 39.925620878895444
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 9,
+      "scene": "ProcTHOR-Val-632",
+      "seed": 105,
+      "recipe": "tomato_bowl_white_table",
+      "instruction": "Please pick up the tomato and put it in the bowl on the white table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen18/01_ProcTHOR-Val-632_seed105_dynamic",
+      "video": "../media/simulation/09_ProcTHOR-Val-632_seed105_4x.mp4",
+      "poster": "posters/09_ProcTHOR-Val-632_seed105.png",
+      "video_sha256": "1d22f2ea5af48f6715f542f2a3a119cbf2ddf555dd6bc89a65e4599104ff950b",
+      "duration_s": 118.65,
+      "held_transport_m": 4.767674564667057,
+      "stable_release_s": 18.9,
+      "same_controls_spectator_rerender": false,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/09_ProcTHOR-Val-632_seed105/audit.json",
+        "evidence/09_ProcTHOR-Val-632_seed105/record_review.json"
+      ],
+      "original_video_sha256": "42081af088f1961c0ea0a7aeaeb3be60d910f8280e7d0560a40d07ceff0c44e9",
+      "playback_speed": 4,
+      "encoding_report": "09_ProcTHOR-Val-632_seed105_4x.json",
+      "poster_sha256": "61bd5efc535e19dd53ce53b223df0233e2b1d2903101000d802f1cb754dda15d",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "42081af088f1961c0ea0a7aeaeb3be60d910f8280e7d0560a40d07ceff0c44e9",
+        "frame_record_sha256": "04f32f47da9795409d82bf6b321614e4d9c075af0d5e3f87d953965eb18be507",
+        "output_sha256": "1d22f2ea5af48f6715f542f2a3a119cbf2ddf555dd6bc89a65e4599104ff950b",
+        "output_bytes": 54023198,
+        "source_frames": 2373,
+        "decoded_output_frames": 2373,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 474.6,
+        "output_duration_s": 118.65,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 18,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9940123256120605,
+            "head_ssim": 0.9888388567295445,
+            "map_ssim": 0.9999421972705517,
+            "psnr_db": 39.88060790473575
+          },
+          {
+            "frame": 118,
+            "full_ssim": 0.9879370005723028,
+            "head_ssim": 0.9626610762875355,
+            "map_ssim": 0.9995688895190084,
+            "psnr_db": 39.13399408951445
+          },
+          {
+            "frame": 237,
+            "full_ssim": 0.9790205996277915,
+            "head_ssim": 0.9578959781631071,
+            "map_ssim": 0.9994106970381545,
+            "psnr_db": 38.163217887843565
+          },
+          {
+            "frame": 355,
+            "full_ssim": 0.9880186387818918,
+            "head_ssim": 0.9743055033718716,
+            "map_ssim": 0.9995683564975398,
+            "psnr_db": 39.07415190637154
+          },
+          {
+            "frame": 474,
+            "full_ssim": 0.979835188658706,
+            "head_ssim": 0.9588758433416399,
+            "map_ssim": 0.9995485868029015,
+            "psnr_db": 38.51208630463133
+          },
+          {
+            "frame": 593,
+            "full_ssim": 0.986086532751578,
+            "head_ssim": 0.9573907737217099,
+            "map_ssim": 0.9994859389758419,
+            "psnr_db": 38.81871908025925
+          },
+          {
+            "frame": 711,
+            "full_ssim": 0.9689410307628024,
+            "head_ssim": 0.9607471021881417,
+            "map_ssim": 0.9995233502894803,
+            "psnr_db": 37.38322087751531
+          },
+          {
+            "frame": 830,
+            "full_ssim": 0.9863686708101168,
+            "head_ssim": 0.9744849334053294,
+            "map_ssim": 0.9991408021368781,
+            "psnr_db": 38.62971568182778
+          },
+          {
+            "frame": 948,
+            "full_ssim": 0.9911968813688768,
+            "head_ssim": 0.9888374010016359,
+            "map_ssim": 0.9995727579649654,
+            "psnr_db": 39.17546745970731
+          },
+          {
+            "frame": 1067,
+            "full_ssim": 0.9849138566991218,
+            "head_ssim": 0.9710487241974174,
+            "map_ssim": 0.9997670518084851,
+            "psnr_db": 38.49519534578795
+          },
+          {
+            "frame": 1186,
+            "full_ssim": 0.9904758862885744,
+            "head_ssim": 0.9851966903549133,
+            "map_ssim": 0.9997629871104968,
+            "psnr_db": 39.19112920343033
+          },
+          {
+            "frame": 1304,
+            "full_ssim": 0.9948973856358378,
+            "head_ssim": 0.9930774905558114,
+            "map_ssim": 0.9997688044568757,
+            "psnr_db": 40.03654838354379
+          },
+          {
+            "frame": 1423,
+            "full_ssim": 0.9854543055700202,
+            "head_ssim": 0.9703044538585242,
+            "map_ssim": 0.9997531314867624,
+            "psnr_db": 38.39786733844768
+          },
+          {
+            "frame": 1541,
+            "full_ssim": 0.986107187025695,
+            "head_ssim": 0.9767511016604576,
+            "map_ssim": 0.9997619389756471,
+            "psnr_db": 38.36698252723627
+          },
+          {
+            "frame": 1660,
+            "full_ssim": 0.9741260438798622,
+            "head_ssim": 0.9662115761406231,
+            "map_ssim": 0.9997369508827092,
+            "psnr_db": 37.98872028042868
+          },
+          {
+            "frame": 1779,
+            "full_ssim": 0.9830273538653246,
+            "head_ssim": 0.9624374093051778,
+            "map_ssim": 0.999754082269836,
+            "psnr_db": 38.82539499481347
+          },
+          {
+            "frame": 1897,
+            "full_ssim": 0.987063042776625,
+            "head_ssim": 0.9777280001130603,
+            "map_ssim": 0.9997331235196975,
+            "psnr_db": 39.123738351980556
+          },
+          {
+            "frame": 2016,
+            "full_ssim": 0.9883127779436183,
+            "head_ssim": 0.9626560946960407,
+            "map_ssim": 0.9997850523138159,
+            "psnr_db": 39.07350361485708
+          },
+          {
+            "frame": 2134,
+            "full_ssim": 0.9941012777651526,
+            "head_ssim": 0.9946548928722267,
+            "map_ssim": 0.9997792709605225,
+            "psnr_db": 39.681841480830464
+          },
+          {
+            "frame": 2253,
+            "full_ssim": 0.9961563532780604,
+            "head_ssim": 0.995501304035901,
+            "map_ssim": 0.9997734134588079,
+            "psnr_db": 39.87626669293286
+          },
+          {
+            "frame": 2372,
+            "full_ssim": 0.9963315171377187,
+            "head_ssim": 0.9952541527062331,
+            "map_ssim": 0.9997756250043159,
+            "psnr_db": 39.97828615597537
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    },
+    {
+      "index": 10,
+      "scene": "ProcTHOR-Train-7819",
+      "seed": 104,
+      "recipe": "bread_plate_white_table",
+      "instruction": "Please pick up the bread and put it on the plate on the white table.",
+      "source_run": "DREAM_code/experiments/results/instruction_development_frozen21/01_ProcTHOR-Train-7819_seed104_dynamic",
+      "video": "../media/simulation/10_ProcTHOR-Train-7819_seed104_4x.mp4",
+      "poster": "posters/10_ProcTHOR-Train-7819_seed104.png",
+      "video_sha256": "dd011c54b88080f490efe60ca7d406188dbffeea6a6513a0c84ece1528de16d5",
+      "duration_s": 151.6,
+      "held_transport_m": 4.476916155381826,
+      "stable_release_s": 19.3,
+      "same_controls_spectator_rerender": true,
+      "scoring_reassessment": false,
+      "evidence": [
+        "evidence/10_ProcTHOR-Train-7819_seed104/audit.json",
+        "evidence/10_ProcTHOR-Train-7819_seed104/record_review.json",
+        "evidence/10_ProcTHOR-Train-7819_seed104/spectator_video_review.json"
+      ],
+      "original_video_sha256": "3d0896b56882bbe307cea892408ca61404a82db37cce2e3af24d95e0bba84691",
+      "playback_speed": 4,
+      "encoding_report": "10_ProcTHOR-Train-7819_seed104_4x.json",
+      "poster_sha256": "9e97ac9ccaa9b8ebd35e100dd271fb22754715e05793f5d4bfa2de71391f4d4e",
+      "poster_frame": 0,
+      "encoding": {
+        "source_video_sha256": "3d0896b56882bbe307cea892408ca61404a82db37cce2e3af24d95e0bba84691",
+        "frame_record_sha256": "d244abecb28b5594e1be593ccab7508d210e362a567614041eec9e1c2ea63032",
+        "output_sha256": "dd011c54b88080f490efe60ca7d406188dbffeea6a6513a0c84ece1528de16d5",
+        "output_bytes": 45986879,
+        "source_frames": 3032,
+        "decoded_output_frames": 3032,
+        "resolution": [
+          1440,
+          600
+        ],
+        "source_fps": 5.0,
+        "output_fps": 20.0,
+        "playback_speed": 4,
+        "source_duration_s": 606.4,
+        "output_duration_s": 151.6,
+        "codec": "h264",
+        "pixel_format": "yuv420p",
+        "preset": "slow",
+        "crf": 20,
+        "all_frames_preserved": true,
+        "interpolation": false,
+        "audio_in_source": false,
+        "source_inputs_unchanged": true,
+        "edited_region_xyxy": [
+          746,
+          7,
+          978,
+          33
+        ],
+        "edited_content": "time/speed header only; original simulator timestamps preserved",
+        "quality_samples": [
+          {
+            "frame": 0,
+            "full_ssim": 0.9874980474448164,
+            "head_ssim": 0.9834139398158015,
+            "map_ssim": 0.9999089769034123,
+            "psnr_db": 38.20022417999805
+          },
+          {
+            "frame": 151,
+            "full_ssim": 0.9774098653779969,
+            "head_ssim": 0.9729483456481535,
+            "map_ssim": 0.9991540088703726,
+            "psnr_db": 37.54402568961611
+          },
+          {
+            "frame": 303,
+            "full_ssim": 0.9690004169426316,
+            "head_ssim": 0.9600131737561688,
+            "map_ssim": 0.9993510153512785,
+            "psnr_db": 37.06806115524963
+          },
+          {
+            "frame": 454,
+            "full_ssim": 0.9838511338826088,
+            "head_ssim": 0.9744267587278015,
+            "map_ssim": 0.9994381107255564,
+            "psnr_db": 38.03705902997173
+          },
+          {
+            "frame": 606,
+            "full_ssim": 0.9632806317849198,
+            "head_ssim": 0.9639274587322357,
+            "map_ssim": 0.9995623516991765,
+            "psnr_db": 36.86141070276965
+          },
+          {
+            "frame": 757,
+            "full_ssim": 0.9745903978585286,
+            "head_ssim": 0.9745011277032143,
+            "map_ssim": 0.9996249468620791,
+            "psnr_db": 37.92865311040363
+          },
+          {
+            "frame": 909,
+            "full_ssim": 0.9861520746701451,
+            "head_ssim": 0.9904301520996417,
+            "map_ssim": 0.9996254111841075,
+            "psnr_db": 38.9586852093218
+          },
+          {
+            "frame": 1060,
+            "full_ssim": 0.9776438278598507,
+            "head_ssim": 0.973623890486706,
+            "map_ssim": 0.9995885501065352,
+            "psnr_db": 38.24957636356324
+          },
+          {
+            "frame": 1212,
+            "full_ssim": 0.9845230452708843,
+            "head_ssim": 0.9854887350887217,
+            "map_ssim": 0.9996117805327146,
+            "psnr_db": 38.56647171635379
+          },
+          {
+            "frame": 1363,
+            "full_ssim": 0.9707185993232063,
+            "head_ssim": 0.9714628151572285,
+            "map_ssim": 0.999528902330023,
+            "psnr_db": 37.4751501002513
+          },
+          {
+            "frame": 1515,
+            "full_ssim": 0.9686937205777872,
+            "head_ssim": 0.9748565249459636,
+            "map_ssim": 0.9995762037613848,
+            "psnr_db": 37.27985740011873
+          },
+          {
+            "frame": 1667,
+            "full_ssim": 0.9805213060285116,
+            "head_ssim": 0.9760836176911843,
+            "map_ssim": 0.999539580388583,
+            "psnr_db": 37.656940970393464
+          },
+          {
+            "frame": 1818,
+            "full_ssim": 0.9816562404977636,
+            "head_ssim": 0.9836969077258776,
+            "map_ssim": 0.999344929929634,
+            "psnr_db": 37.97952506768438
+          },
+          {
+            "frame": 1970,
+            "full_ssim": 0.9757207715050233,
+            "head_ssim": 0.9542192511616835,
+            "map_ssim": 0.9991788594597228,
+            "psnr_db": 37.31081714891913
+          },
+          {
+            "frame": 2121,
+            "full_ssim": 0.9845202653087539,
+            "head_ssim": 0.9890559492734645,
+            "map_ssim": 0.9994610340465822,
+            "psnr_db": 38.104160140207206
+          },
+          {
+            "frame": 2273,
+            "full_ssim": 0.97809652679971,
+            "head_ssim": 0.9861497098826385,
+            "map_ssim": 0.9994963148546805,
+            "psnr_db": 37.718435573973
+          },
+          {
+            "frame": 2424,
+            "full_ssim": 0.9785655638710588,
+            "head_ssim": 0.9962683837690458,
+            "map_ssim": 0.9994621927344265,
+            "psnr_db": 37.83666362258966
+          },
+          {
+            "frame": 2576,
+            "full_ssim": 0.9760562501637284,
+            "head_ssim": 0.9768901512995144,
+            "map_ssim": 0.9992865947634727,
+            "psnr_db": 37.69506685344524
+          },
+          {
+            "frame": 2727,
+            "full_ssim": 0.9783849594307157,
+            "head_ssim": 0.9413019149581409,
+            "map_ssim": 0.9993529765194135,
+            "psnr_db": 37.373148766934044
+          },
+          {
+            "frame": 2879,
+            "full_ssim": 0.9782157694220326,
+            "head_ssim": 0.9833879258957857,
+            "map_ssim": 0.9994464761091925,
+            "psnr_db": 37.83853687571205
+          },
+          {
+            "frame": 3031,
+            "full_ssim": 0.9964074226318089,
+            "head_ssim": 0.9967786787399492,
+            "map_ssim": 0.9994071765585752,
+            "psnr_db": 39.00634658632039
+          }
+        ],
+        "sampled_quality_and_size_gate_passed": true,
+        "visual_review_pending": true
+      }
+    }
+  ],
+  "video_bytes": 374096687,
+  "original_gallery_manifest_sha256": "aac5c38bbe1118407a84ae3f3ac0a8218b8bb77254670e9d951a944b56acb33a",
+  "selection": "development_selected_successful_examples",
+  "distinct_houses": 10,
+  "frame_preserving_4x": true,
+  "public_release_performed": false,
+  "total_size_gate_passed": true
+}
