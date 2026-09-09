@@ -1,2 +1,0 @@
-# Optional PDF-page screenshots and release packaging, not policy execution.
-PyMuPDF==1.26.4

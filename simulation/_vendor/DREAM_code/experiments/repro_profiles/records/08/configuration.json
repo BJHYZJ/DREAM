@@ -1,8 +1,0 @@
-{
-  "variant": "dynamic",
-  "threshold": 0.15,
-  "navigation_budget": 110,
-  "video": true,
-  "entrypoint": "run_instruction_task.py",
-  "status": "per_episode_record; study design is declared by the parent frozen protocol"
-}
