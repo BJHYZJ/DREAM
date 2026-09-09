@@ -2,7 +2,7 @@
 <package format="3">
 	<name>dream_ros2_bridge</name>
 	<version>0.0.0</version>
-	<description>TODO: Package description</description>
+	<description>ROS 2 interface for DREAM sensors, localization, navigation, and manipulation</description>
 	<maintainer email="yanzhijie@buaa.edu.cn">ZhijieYan</maintainer>
 	<license>Apache-2.0</license>
 	<test_depend>ament_copyright</test_depend>

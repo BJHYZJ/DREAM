@@ -34,7 +34,7 @@ setup(
     zip_safe=True,
     maintainer="Zhijie Yan",
     maintainer_email="yanzhijie@buaa.edu.cn",
-    description="TODO: Package description",
+    description="ROS 2 interface for DREAM sensors, localization, navigation, and manipulation",
     license="Apache-2.0",
     tests_require=["pytest"],
     entry_points={

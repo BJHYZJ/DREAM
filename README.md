@@ -47,6 +47,7 @@ topics, URDF, and extrinsics. Reference CAD files and calibration notes are in
 
 - Hardware-side installation: [hardware_install.md](docs/hardware_install.md)
 - Service-machine installation: [service_machine_install.md](docs/service_machine_install.md)
+- Troubleshooting: [sensor, mapping, and runtime diagnostics](docs/install_debug.md)
 
 ## Run
 
