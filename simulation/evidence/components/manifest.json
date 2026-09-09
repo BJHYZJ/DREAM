@@ -1,0 +1,159 @@
+{
+  "new_experiment_execution": false,
+  "raw_dataset_images_included": false,
+  "groups": {
+    "rmp": {
+      "file": "rmp.zip",
+      "bytes": 11106,
+      "sha256": "b83da640379f653346920194080c77a7204756e4e0fcf27beb027806657fb74e",
+      "members": {
+        "experiments/results/rmp/bonn_moving_nonobstructing_box.csv": {
+          "sha256": "517f997e618590890f0e6cded5fa8e9a0e4ea54d6dd67d651ed408af4eddf84e",
+          "bytes": 4168
+        },
+        "experiments/results/rmp/bonn_moving_nonobstructing_box_metadata.json": {
+          "sha256": "11f46c05cb1fa81937f78198343e36a0c0d50265d016ff8dd896a616b07f72c0",
+          "bytes": 966
+        },
+        "experiments/results/rmp/bonn_moving_obstructing_box.csv": {
+          "sha256": "b488d01a5978faaab89f453993575a1b34098d80f12889389fc50ab67115b1d3",
+          "bytes": 3919
+        },
+        "experiments/results/rmp/bonn_moving_obstructing_box_metadata.json": {
+          "sha256": "f0ab3d9782e7f1deaca25112627df4ab6669af2334d339e21d9dcd15d7835594",
+          "bytes": 957
+        },
+        "experiments/results/rmp/bonn_removing_nonobstructing_box.csv": {
+          "sha256": "043f1fadc4f89b13cea56dfeefe3cd4350edae0f0b55be5c6f491d518873ead5",
+          "bytes": 4001
+        },
+        "experiments/results/rmp/bonn_removing_nonobstructing_box_metadata.json": {
+          "sha256": "57145bc324c4b9ab7fe18b369004efbc18aa430e886fd473142a808f86d53537",
+          "bytes": 972
+        },
+        "experiments/results/rmp/paired_tests.json": {
+          "sha256": "fbbab837fa8d050e445d9a63b7d5ead873b4589acb483baaf4811a645c1bd71c",
+          "bytes": 773
+        },
+        "experiments/results/rmp/summary.csv": {
+          "sha256": "aec636d8d13ec20bcf1b8d7bf3180cbfe7842bacd09d158aa94e389de3aee587",
+          "bytes": 7484
+        },
+        "experiments/results/rmp/tum_fr1_room.csv": {
+          "sha256": "a04bc17d5dd334352aea451101e3fd3f099f8d3c7b3511e3427ba35f0d18783d",
+          "bytes": 3700
+        },
+        "experiments/results/rmp/tum_fr1_room_metadata.json": {
+          "sha256": "26632932262df4492626342b485926490565523c06cc739f9579186910f92018",
+          "bytes": 909
+        },
+        "experiments/results/rmp/tum_fr2_pioneer_slam2.csv": {
+          "sha256": "f8be3895118de5538d405936a1000ed5bae2fd75e95b87b60935ccfa3d6b70c7",
+          "bytes": 3613
+        },
+        "experiments/results/rmp/tum_fr2_pioneer_slam2_metadata.json": {
+          "sha256": "8abaa3f2c919d16b827c849e78487b5ec6a163fca24756beb79800496153bde7",
+          "bytes": 936
+        }
+      }
+    },
+    "rmp_scaling": {
+      "file": "rmp_scaling.zip",
+      "bytes": 399,
+      "sha256": "26e6d82503bf1c7204f358d7d5be8e01a271f719c05013771e2b8af42f09e4df",
+      "members": {
+        "experiments/results/rmp_scaling/policy_scaling.csv": {
+          "sha256": "478fa7ae0a0c920a70cef3be91c13266704a0e9c11d9b0c2bfcdb59c7e717856",
+          "bytes": 391
+        }
+      }
+    },
+    "rmp_sensitivity": {
+      "file": "rmp_sensitivity.zip",
+      "bytes": 2441,
+      "sha256": "3959abeff1b654e654ff1ad9ed93f77501146b281e76f922acdae847ca92dcbb",
+      "members": {
+        "experiments/results/rmp_sensitivity/metadata.json": {
+          "sha256": "3cce3fcaa0b78418c15d44c1f9b45fb94a6b226b1d9c2bf67cd92de69b41de0b",
+          "bytes": 363
+        },
+        "experiments/results/rmp_sensitivity/threshold_runs.csv": {
+          "sha256": "1e3e3a241f1f24197b79d843ed8254ff63bdb54dfa9114fdd6cde850322a8341",
+          "bytes": 11750
+        }
+      }
+    },
+    "rmp_timing": {
+      "file": "rmp_timing.zip",
+      "bytes": 1395,
+      "sha256": "aa308e76c9163a4be7379658888a185db4ef4290f76dbbd5b0c6d428e820ffed",
+      "members": {
+        "experiments/results/rmp_timing/bonn_removing_nonobstructing_box.csv": {
+          "sha256": "3fd74f665012235c3a5a8b0f23b3f4e55d8283c376e130ba865bfccb9c7197db",
+          "bytes": 1486
+        },
+        "experiments/results/rmp_timing/bonn_removing_nonobstructing_box_metadata.json": {
+          "sha256": "f2d85d84e0f76533bcbbfca2e91eff0186098811bf8072c610c977eb0f5f92ae",
+          "bytes": 915
+        }
+      }
+    },
+    "exploration": {
+      "file": "exploration.zip",
+      "bytes": 36984,
+      "sha256": "82b9ffb5779916f6bb3aca5eef2b0dacfb3b17b01b5deda7878732933bf71662",
+      "members": {
+        "experiments/results/exploration/episodes.csv": {
+          "sha256": "feeb0251252107ecdd549c8e4fd016c0c60df5a7a562fa2c182b499b19dbc33c",
+          "bytes": 154308
+        },
+        "experiments/results/exploration/metadata.json": {
+          "sha256": "3c1d12ca539c4dc35d6495bd6033394dfcaa1732cbc35d1fca3466bcc4490707",
+          "bytes": 487
+        },
+        "experiments/results/exploration/paired_tests.json": {
+          "sha256": "dfb16ccc27b9de39c15579230ae53e51544ccb47974543097440bd8f5b93b76b",
+          "bytes": 838
+        },
+        "experiments/results/exploration/summary.csv": {
+          "sha256": "306165d95e00d2be57dbb748bdd71a66d7fffc5d7b5d2a2e42cfae0fe3d13ede",
+          "bytes": 1701
+        }
+      }
+    },
+    "exploration_sensitivity": {
+      "file": "exploration_sensitivity.zip",
+      "bytes": 431,
+      "sha256": "2639c065e71b5903efc36ca8752be8f738e1d475ab5f375e5fb61b0869fdd2ef",
+      "members": {
+        "experiments/results/exploration_sensitivity/semantic_weight.csv": {
+          "sha256": "f3a1fc0af29cff62848219d38bf19c6ee79278f233b1de40949b89a95f88bf5f",
+          "bytes": 394
+        }
+      }
+    },
+    "houseexpo_cross_room": {
+      "file": "houseexpo_cross_room.zip",
+      "bytes": 44711,
+      "sha256": "4114d2e2216a53398d9003c853529a9d47657bcf62281c917391720ab286fa01",
+      "members": {
+        "experiments/results/houseexpo_cross_room/episodes.csv": {
+          "sha256": "1ed77509641339e2788210608322a6d7a4f5977b033a473583bd3c1897d9c56e",
+          "bytes": 315320
+        },
+        "experiments/results/houseexpo_cross_room/metadata.json": {
+          "sha256": "c94b8b2c79c3fa812aad65346b8eed74dabd43c7664f2fc49cb3212da0101560",
+          "bytes": 1423
+        },
+        "experiments/results/houseexpo_cross_room/paired_tests.json": {
+          "sha256": "74145cfaa5af31e21f154a03554ddd6c911b53ff88be3ab8cbd6a6100e51ecba",
+          "bytes": 936
+        },
+        "experiments/results/houseexpo_cross_room/summary.csv": {
+          "sha256": "55658d1cfecad69e2d0f4f84434a7138c26a15d0a821557b448b2acee41ada44",
+          "bytes": 2869
+        }
+      }
+    }
+  }
+}

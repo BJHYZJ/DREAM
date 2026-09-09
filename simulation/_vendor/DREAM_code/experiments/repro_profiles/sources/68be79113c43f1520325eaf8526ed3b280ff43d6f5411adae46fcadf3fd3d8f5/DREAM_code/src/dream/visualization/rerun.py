@@ -1,0 +1,618 @@
+#!/usr/bin/env python3
+
+import os
+import time
+import timeit
+from typing import List, Optional, Tuple, Union
+
+import numpy as np
+import rerun as rr
+import rerun.blueprint as rrb
+import torch
+
+from dream.core.interfaces import Observations, ServoObservations, StateObservations
+from dream.mapping.voxel.voxel_map import SparseVoxelMapNavigationSpace
+from dream.motion import DreamIdx
+from dream.motion.robot import Footprint
+from dream.perception.wrapper import OvmmPerception
+from dream.utils.logger import Logger
+from dream.visualization import urdf_visualizer
+from dream.utils.geometry import xyt2sophus
+
+logger = Logger(__name__)
+
+
+def decompose_homogeneous_matrix(homogeneous_matrix: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Decomposes a 4x4 homogeneous transformation matrix into its rotation matrix and translation vector components.
+
+    Args:
+        homogeneous_matrix (numpy.ndarray): A 4x4 matrix representing a homogeneous transformation.
+
+    Returns:
+        tuple: A tuple containing:
+            - rotation_matrix : A 3x3 matrix representing the rotation component.
+            - translation_vector : A 1D array of length 3 representing the translation component.
+    """
+    if homogeneous_matrix.shape != (4, 4):
+        raise ValueError("Input matrix must be 4x4")
+    rotation_matrix = homogeneous_matrix[:3, :3]
+    translation_vector = homogeneous_matrix[:3, 3]
+    return rotation_matrix, translation_vector
+
+
+def occupancy_map_to_indices(occupancy_map):
+    """
+    Convert a 2D occupancy map to an Nx3 array of float indices of occupied cells.
+
+    Args:
+    occupancy_map (np.ndarray): 2D boolean array where True represents occupied cells.
+
+    Returns:
+    np.ndarray: Nx3 float array where each row is [x, y, 0] of an occupied cell.
+    """
+    # Find the indices of occupied cells
+    occupied_indices = np.where(occupancy_map)
+
+    # Create the Nx3 array
+    num_points = len(occupied_indices[0])
+    xyz_array = np.zeros((num_points, 3), dtype=float)
+
+    # Fill in x and y coordinates
+    xyz_array[:, 0] = occupied_indices[0]  # x coordinates
+    xyz_array[:, 1] = occupied_indices[1]  # y coordinates
+    # z coordinates are already 0
+
+    return xyz_array
+
+
+def occupancy_map_to_3d_points(
+    occupancy_map: np.ndarray,
+    grid_center: Union[np.ndarray, torch.Tensor],
+    grid_resolution: float,
+    offset: Optional[np.ndarray] = np.zeros(3),
+) -> np.ndarray:
+    """
+    Converts a 2D occupancy map to a list of 3D points.
+    Args:
+        occupancy_map: A 2D array boolean map
+        grid_center: The (x, y, z) coordinates of the center of the grid map
+        grid_resolution: The resolution of the grid map
+        offset: The (x, y, z) offset to be added to the points
+
+    Returns:
+        np.ndarray: A array of 3D points representing the occupied cells in the world frame.
+    """
+    points = []
+    rows, cols = occupancy_map.shape
+    center_row, center_col, _ = grid_center
+
+    if isinstance(grid_center, torch.Tensor):
+        grid_center = grid_center.cpu().numpy()
+
+    indices = occupancy_map_to_indices(occupancy_map)
+    points = (indices - grid_center) * grid_resolution + offset
+    return points
+
+
+def log_to_rerun(topic_name, data, **kwargs):
+    """
+    Log data to rerun
+    Args:
+        topic_name (str): Topic name
+        data (object): Data to log
+    """
+    rr.log(topic_name, rr.Clear(recursive=True))
+    rr.log(topic_name, data, **kwargs)
+
+
+class DreamURDFLogger(urdf_visualizer.URDFVisualizer):
+    link_names = []
+    link_poses = []
+
+    def load_robot_mesh(self, cfg: dict = None, use_collision: bool = False):
+        """
+        Load robot mesh using urdf visualizer to rerun
+        This is to be run once at the beginning of the rerun
+        Args:
+            cfg (dict): Configuration of the robot
+            use_collision (bool): use collision mesh
+        """
+        trimesh_list = self.get_tri_meshes(cfg=cfg, use_collision=use_collision)
+        self.link_names = trimesh_list["link"]
+        self.link_poses = trimesh_list["pose"]
+        for i in range(len(trimesh_list["link"])):
+            rr.log(
+                f"world/robot/mesh/{trimesh_list['link'][i]}",
+                rr.Mesh3D(
+                    vertex_positions=trimesh_list["mesh"][i].vertices,
+                    triangle_indices=trimesh_list["mesh"][i].faces,
+                    vertex_normals=trimesh_list["mesh"][i].vertex_normals,
+                ),
+                static=True,
+            )
+
+    def log_transforms(self, obs, debug: bool = False):
+        """
+        Log robot mesh using urdf visualizer to rerun
+        Args:
+            obs (dict): Observation dataclass
+            use_collision (bool): use collision mesh
+        """
+        state = obs["joint"]
+        cfg = {}
+        for k in DreamIdx.name_to_idx:
+            cfg[k] = state[DreamIdx.name_to_idx[k]]
+        lk_cfg = {
+            "joint1": cfg["joint1"],
+            "joint2": cfg["joint2"],
+            "joint3": cfg["joint3"],
+            "joint4": cfg["joint4"],
+            "joint5": cfg["joint5"],
+            "joint6": cfg["joint6"],
+        }
+        # if "gripper" in cfg.keys():
+        #     lk_cfg["joint_gripper_finger_left"] = cfg["gripper"]
+        #     lk_cfg["joint_gripper_finger_right"] = cfg["gripper"]
+        t0 = timeit.default_timer()
+        tms = self.get_tri_meshes(cfg=lk_cfg, use_collision=False)
+        t1 = timeit.default_timer()
+        self.link_poses = tms["pose"]
+        self.link_names = tms["link"]
+        for link in self.link_names:
+            idx = self.link_names.index(link)
+            rr.set_time("realtime", timestamp=time.time())
+            rr.log(
+                f"world/robot/mesh/{link}",
+                rr.Transform3D(
+                    translation=self.link_poses[idx][:3, 3],
+                    mat3x3=self.link_poses[idx][:3, :3],
+                    axis_length=0.0,
+                ),
+            )
+        t2 = timeit.default_timer()
+        if debug:
+            print("Time to get tri meshes (ms): ", 1000 * (t1 - t0))
+            print("Time to log robot transforms (ms): ", 1000 * (t2 - t1))
+            print("Total time to log robot transforms (ms): ", 1000 * (t2 - t0))
+
+
+class RerunVisualizer:
+
+    camera_point_radius = 0.01
+    max_displayed_points_per_camera: int = 10000
+    robot_marker_alpha = 160
+    nav_goal_z_offset = 0.08
+
+    def __init__(
+        self,
+        display_robot_mesh: bool = False,
+        spawn_gui: bool = False,
+        open_browser: bool = True,
+        memory_limit: str = "6GB",
+        server_memory_limit: str = "4GB",
+        collapse_panels: bool = False,
+        show_cameras_in_3d_view: bool = False,
+        show_camera_point_clouds: bool = False,
+        output_path=None,
+        footprint: Footprint=None
+    ):
+        """Rerun visualizer class
+        Args:
+            display_robot_mesh (bool): Display robot mesh
+            open_browser (bool): Open browser at start
+            server_memory_limit (str): Server memory limit E.g. 2GB or 20%
+            collapse_panels (bool): Set to false to have customizable rerun panels
+        """
+        assert not (spawn_gui and open_browser), "spawn_gui and open_browser cannot be True at the same time"
+        
+        self.open_browser = open_browser
+        self.spawn_gui = spawn_gui
+
+        # rr.init("Dream_robot", spawn=False)
+        rr.init("Dream_robot", spawn=spawn_gui)
+        
+        # Only spawn GUI if spawn_gui is True
+        # if spawn_gui and hasattr(rr, "spawn"):
+            # rr.spawn(
+            #     memory_limit=memory_limit,
+            #     server_memory_limit=server_memory_limit,
+            # )
+
+        if open_browser or spawn_gui:
+            server_uri = rr.serve_grpc(server_memory_limit=server_memory_limit)
+            rr.serve_web_viewer(
+                open_browser=open_browser, 
+                connect_to=server_uri,
+            )
+        else:
+            if output_path is not None:
+                rr.save(output_path / "rerun_log.rrd")
+        
+        self.footprint = footprint
+        
+        # Serve web viewer if open_browser is True
+        # if open_browser:
+        #     server_uri = rr.serve_grpc(
+        #         server_memory_limit=server_memory_limit, 
+        #         newest_first=True, 
+        #     )
+        #     rr.serve_web_viewer(
+        #         open_browser=open_browser, 
+        #         connect_to=server_uri,
+        #     )
+
+        self.display_robot_mesh = display_robot_mesh
+        self.show_cameras_in_3d_view = show_cameras_in_3d_view
+        self.show_camera_point_clouds = show_camera_point_clouds
+
+        if self.display_robot_mesh:
+            self.urdf_logger = DreamURDFLogger()
+            self.urdf_logger.load_robot_mesh(use_collision=False)
+
+        # Create environment Box place holder
+        rr.log(
+            "world/map_box",
+            rr.Boxes3D(half_sizes=[10, 10, 3], centers=[0, 0, 2], colors=[255, 255, 255, 255]),
+            static=True,
+        )
+        # World Origin
+        # rr.log(
+        #     "world/xyz",
+        #     rr.Arrows3D(
+        #         # Keep a short frame so it doesn't dominate the view
+        #         vectors=[[0.25, 0, 0], [0, 0.25, 0], [0, 0, 0.25]],
+        #         colors=[[255, 0, 0], [0, 255, 0], [0, 0, 255]],
+        #     ),
+        #     static=True,
+        # )
+
+        self.bbox_colors_memory = {}
+        self.step_delay_s = 0.3
+        self.setup_blueprint(collapse_panels)
+
+    def setup_blueprint(self, collapse_panels: bool):
+        """Setup the blueprint for the visualizer
+        Args:
+            collapse_panels (bool): fully hides the blueprint/selection panels,
+                                    and shows the simplified time panel
+        """
+        main = rrb.Horizontal(
+            rrb.Spatial3DView(name="3D View", origin="world"),
+            rrb.Vertical(
+                rrb.Spatial2DView(name="rgb", origin="/world/camera/rgb"),
+                # rrb.Spatial2DView(name="ee_rgb", origin="/world/ee_camera"),
+            ),
+            column_shares=[3, 1],
+        )
+        my_blueprint = rrb.Blueprint(
+            rrb.Vertical(main, rrb.TimePanel(state=True)),
+            collapse_panels=collapse_panels,
+        )
+        rr.send_blueprint(my_blueprint)
+
+    def clear_identity(self, identity_name: str):
+        """Clear existing rerun identity.
+
+        This is useful if you want to clear a rerun identity and leave a blank there.
+        Args:
+            identity_name (str): rerun identity name
+        """
+        rr.log(identity_name, rr.Clear(recursive=True))
+
+    def log_custom_2d_image(self, identity_name: str, img: Union[np.ndarray, torch.Tensor]):
+        """Log custom 2d image
+
+        Args:
+            identity_name (str): rerun identity name
+            img (2D or 3D array): the 2d image you want to log into rerun
+        """
+        log_to_rerun(identity_name, rr.Image(img))
+
+    def log_text(self, identity_name: str, text: str):
+        """Log a custom markdown text
+
+        Args:
+            identity_name (str): rerun identity name
+            text (str): Markdown codes you want to log in rerun
+        """
+        rr.log(identity_name, rr.TextDocument(text, media_type=rr.MediaType.MARKDOWN))
+
+    def log_arrow3D(
+        self,
+        identity_name: str,
+        origins: Union[list, List[list], np.ndarray, torch.Tensor],
+        vectors: Union[list, List[list], np.ndarray, torch.Tensor],
+        colors: Union[list, List[list], np.ndarray, torch.Tensor],
+        radii: float,
+    ):
+        """Log custom 3D arrows
+
+        Args:
+            identity_name (str): rerun identity name
+            origins (a N x 3 array): origins of all 3D arrows
+            vectors (a N x 3 array): directions and lengths of all 3D arrows
+            colors (a N x 3 array): RGB colors of all 3D arrows
+            radii (float): size of the arrows
+        """
+        rr.log(
+            identity_name,
+            rr.Arrows3D(origins=origins, vectors=vectors, colors=colors, radii=radii),
+        )
+
+    def log_custom_pointcloud(
+        self,
+        identity_name: str,
+        points: Union[list, List[list], np.ndarray, torch.Tensor],
+        colors: Union[list, List[list], np.ndarray, torch.Tensor],
+        radii: float,
+    ):
+        """Log custom 3D pointcloud
+
+        Args:
+            identity_name (str): rerun identity name
+            points (a N x 3 array): xyz coordinates of all 3D points
+            colors (a N x 3 array): RGB colors of all 3D points
+            radii (float): size of the arrows
+        """
+        log_to_rerun(
+            identity_name,
+            rr.Points3D(
+                points,
+                colors=colors,
+                radii=radii,
+            ),
+        )
+
+    def log_camera_servo(self, servo: ServoObservations):
+        """Log camera pose and images
+
+        Args:
+            obs (Observations): Observation dataclass
+        """
+        rr.set_time("realtime", timestamp=time.time())
+        log_to_rerun("world/camera/rgb_servo", rr.Image(servo.rgb))
+
+    def log_camera(self, obs: Observations):
+        """Log camera pose and images
+
+        Args:
+            obs (Observations): Observation dataclass
+        """
+        rr.set_time("realtime", timestamp=time.time())
+        log_to_rerun("world/camera/rgb", rr.Image(obs.rgb))
+
+        if self.show_camera_point_clouds:
+            xyz = obs.get_xyz_in_world_frame().reshape(-1, 3)
+            rgb = obs.rgb.reshape(-1, 3)
+            log_to_rerun(
+                "world/camera/points",
+                rr.Points3D(
+                    positions=xyz,
+                    radii=np.ones(xyz.shape[:2]) * self.camera_point_radius,
+                    colors=np.uint8(rgb),
+                ),
+            )
+
+        if self.show_cameras_in_3d_view:
+            rot, trans = decompose_homogeneous_matrix(obs.camera_pose_in_map)
+            log_to_rerun(
+                "world/camera", rr.Transform3D(translation=trans, mat3x3=rot, axis_length=0.3)
+            )
+            log_to_rerun(
+                "world/camera",
+                rr.Pinhole(
+                    resolution=[obs.rgb.shape[1], obs.rgb.shape[0]],
+                    image_from_camera=obs.camera_K,
+                    image_plane_distance=0.15,
+                    axis_length=0.15,
+                ),
+            )
+
+    def log_robot_xyt(self, state: StateObservations):
+        """Log robot world pose"""
+        base_pose = state.base_in_map_pose
+        rotation_matrix = base_pose[:3, :3]
+        translation_vector = base_pose[:3, 3]
+        
+        rb_arrow = rr.Arrows3D(
+            origins=[0, 0, 0],
+            vectors=[0.3, 0, 0],
+            radii=0.01,
+            colors=[255, 0, 0, self.robot_marker_alpha],
+        )
+
+        rr.log("world/robot/arrow", rb_arrow, static=True)
+        if self.footprint:
+            footprint_box = self.footprint.get_box()
+            half_sizes = footprint_box / 2.0
+            foot_center = np.array(
+                [
+                    self.footprint.length_offset,
+                    self.footprint.width_offset,
+                    half_sizes[2],
+                ]
+            )
+            rr.log(
+                "world/robot/footprint",
+                rr.Boxes3D(
+                    half_sizes=[half_sizes],
+                    centers=[foot_center.tolist()],
+                    colors=[[255, 0, 0, 80]],
+                    fill_mode=rr.components.FillMode.Solid,
+                ),
+                static=True,
+            )
+        else:
+            rr.log(
+                "world/robot/blob",
+                rr.Points3D([0, 0, 0], colors=[255, 0, 0, 255], radii=0.13),
+            )
+        rr.log(
+            "world/robot",
+            rr.Transform3D(
+                translation=translation_vector,
+                mat3x3=rotation_matrix,
+                axis_length=0.0,
+            ),
+        )
+
+    def log_robot_state(self, obs):
+        """Log robot joint states"""
+        rr.set_time("realtime", timestamp=time.time())
+        state = obs["joint"]
+        for k in DreamIdx.name_to_idx:
+            rr.log(
+                f"robot_state/joint_pose/{k}",
+                rr.Scalars(state[DreamIdx.name_to_idx[k]]),
+                static=True,
+            )
+
+    def log_robot_transforms(self, obs):
+        """
+        Log robot mesh transforms using urdf visualizer"""
+        self.urdf_logger.log_transforms(obs)
+
+    def update_voxel_map(
+        self,
+        space: SparseVoxelMapNavigationSpace,
+        debug: bool = False,
+        explored_radius=0.025,
+        obstacle_radius=0.05,
+        world_radius=0.03,
+    ):
+        """Log voxel map and send it to Rerun visualizer
+
+        Args:
+            space (SparseVoxelMapNavigationSpace): Voxel map object
+        """
+        rr.set_time("realtime", timestamp=time.time())
+
+        t0 = timeit.default_timer()
+        points, _, _, rgb = space.voxel_map.semantic_memory.get_pointcloud()
+        if rgb is None:
+            return
+
+        log_to_rerun(
+            "world/point_cloud",
+            rr.Points3D(
+                positions=points, radii=np.ones(rgb.shape[0]) * world_radius, colors=np.uint8(rgb)
+            ),
+        )
+
+        t1 = timeit.default_timer()
+        grid_origin = space.voxel_map.grid_origin
+        t2 = timeit.default_timer()
+        obstacles, explored = space.voxel_map.get_2d_map()
+        t3 = timeit.default_timer()
+
+        # Get obstacles and explored points
+        grid_resolution = space.voxel_map.grid_resolution
+        obs_points = np.array(occupancy_map_to_3d_points(obstacles, grid_origin, grid_resolution))
+
+        # Move obs_points z up slightly to avoid z-fighting
+        obs_points[:, 2] += 0.01
+        t4 = timeit.default_timer()
+
+        # Get explored points
+        explored_points = np.array(
+            occupancy_map_to_3d_points(explored, grid_origin, grid_resolution)
+        )
+        # Move explored z points down slightly to avoid z-fighting
+        explored_points[:, 2] -= 0.01
+        t5 = timeit.default_timer()
+
+        # Log points
+        rr.log(
+            "world/obstacles",
+            rr.Points3D(
+                positions=obs_points,
+                radii=np.ones(points.shape[0]) * obstacle_radius,
+                colors=[255, 0, 0],
+            ),
+        )
+        rr.log(
+            "world/explored",
+            rr.Points3D(
+                positions=explored_points,
+                radii=np.ones(points.shape[0]) * explored_radius,
+                colors=[255, 255, 255],
+            ),
+        )
+        t6 = timeit.default_timer()
+
+        if debug:
+            print("Time to get point cloud: ", t1 - t0, "% = ", (t1 - t0) / (t6 - t0))
+            print("Time to get grid origin: ", t2 - t1, "% = ", (t2 - t1) / (t6 - t0))
+            print("Time to get 2D map: ", t3 - t2, "% = ", (t3 - t2) / (t6 - t0))
+            print("Time to get obstacles points: ", t4 - t3, "% = ", (t4 - t3) / (t6 - t0))
+            print("Time to get explored points: ", t5 - t4, "% = ", (t5 - t4) / (t6 - t0))
+            print("Time to log points: ", t6 - t5, "% = ", (t6 - t5) / (t6 - t0))
+
+    def update_nav_goal(self, goal, timeout=10):
+        se3_goal = xyt2sophus(goal).matrix()
+        translation = se3_goal[:3, 3]
+        rotation = se3_goal[:3, :3]
+        """Log navigation goal
+        Args:
+            goal (np.ndarray): Goal coordinates
+        """
+        ts = time.time()
+        rr.set_time("realtime", timestamp=ts)
+        log_to_rerun("world/xyt_goal", rr.Points3D([0, 0, 0], colors=[0, 255, 0, 50], radii=0.05))
+        log_to_rerun(
+            "world/xyt_goal",
+            rr.Transform3D(
+                translation=translation,
+                mat3x3=rotation,
+                axis_length=0.15,
+            ),
+        )
+        # rr.set_time_seconds("realtime", ts + timeout)
+        # log_to_rerun("world/xyt_goal", rr.Clear(recursive=True))
+        # rr.set_time_seconds("realtime", ts)
+
+    def step(self, obs, state, servo):
+        """Log all the data"""
+        if state and servo:
+            # Use the actual data timestamp if available, otherwise fall back to current time
+            now_timestamp = time.time()
+            # data_timestamp = state["timestamp"]
+            # logger.info(f"now_timestamp - data_timestamp: {now_timestamp - data_timestamp}")
+            # data_timestamp = time.time()
+            # if obs and "timestamp" in obs:
+            #     data_timestamp = obs["timestamp"]
+            # elif state and "timestamp" in state:
+            #     data_timestamp = state["timestamp"]
+            
+            # # Check if we have recent data (within last 5 seconds) to avoid stale data
+            # current_time = time.time()
+            # if current_time - data_timestamp > 5.0:
+            #     logger.warning(f"Using stale data: timestamp {data_timestamp}, current {current_time}")
+            #     return
+            
+            rr.set_time("realtime", timestamp=now_timestamp)
+            try:
+                t0 = timeit.default_timer()
+                self.log_robot_xyt(state)
+                # self.log_ee_frame(servo)
+
+                # Cameras use the lower-res servo object
+                if obs and not obs.just_pose_graph:
+                    self.log_camera(obs)
+                self.log_camera_servo(servo)
+                # self.log_ee_camera(servo)
+
+                # self.log_robot_state(state)
+
+                # if self.display_robot_mesh:
+                #     self.log_robot_transforms(obs)
+                
+                t1 = timeit.default_timer()
+                sleep_time = self.step_delay_s - (t1 - t0)
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+
+            except Exception as e:
+                logger.error(e)
+                raise e

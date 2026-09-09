@@ -7,6 +7,27 @@ DREAM is a mobile manipulation framework for previously unseen indoor environmen
 
 ![log](docs/dream.png)
 
+## Reproducible indoor simulation
+
+The [ManiSkill simulation tutorial](simulation/README.md) provides ten versioned
+cross-room dynamic pick-and-place profiles corresponding to the
+[simulation videos](https://bjhyzj.github.io/dream-web/simulation/).
+The simulation workflow is isolated in `simulation/`; it does not require ROS,
+replace the original hardware instructions below, or change the hardware source.
+
+After installing the separate simulation environment and locked assets/models:
+
+```bash
+python -m simulation.run --preflight
+python -m simulation.run --case 01 --output simulation/results/my_case01
+python -m simulation.run --all --output simulation/results/my_ten_cases
+```
+
+These commands execute learned perception and closed-loop control, then audit
+the saved episode in fresh physics. They do not play prerecorded robot paths.
+See the tutorial for supported configuration, version differences, grasp/place
+adaptations and the distinction between selected demonstrations and evaluation.
+
 ## Requirements
 
 - Hardware side: Ubuntu 22.04, ROS2 Humble, CUDA 12.1, system RAM >= 16 GB

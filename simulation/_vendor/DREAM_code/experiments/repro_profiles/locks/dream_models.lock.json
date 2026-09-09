@@ -1,0 +1,6 @@
+{
+  "google/siglip-base-patch16-224": "7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed",
+  "google/owlv2-base-patch16-ensemble": "cfd3195ba4ea9592eec887ded089f4c08eff231d",
+  "google/siglip-so400m-patch14-384": "9fdffc58afc957d1a03a25b10dba0329ab15c2a3",
+  "google/owlv2-large-patch14-ensemble": "95e26936e865f87db1742128404b3c035d47d89d"
+}

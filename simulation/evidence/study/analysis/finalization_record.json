@@ -1,0 +1,41 @@
+{
+  "scope": "finite_study_postprocessing_only",
+  "protocol_sha256": "f88e4faeba2423fc96340e0173f2aa2769a40e8525a263abeaaed1876159eaab",
+  "analysis_script": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/clips/instruction_pickplace_development/analysis_tools_source01/frozen_workspace/DREAM_code/experiments/summarize_instruction_study.py",
+  "analysis_script_sha256": "520438e8dfb86a5034ccd328e9b56250a2381f6d912f5047bb5685e4e27bed49",
+  "runner_pid": 1272943,
+  "auditor_pid": 1343779,
+  "runner_identity": {
+    "start_ticks": "4398627104",
+    "command_sha256": "7e7de44f1b2214dbb41d1eae3d8e1581e7594832a9479b7e2aa8ebcf7e2579bb"
+  },
+  "auditor_identity": {
+    "start_ticks": "4399247194",
+    "command_sha256": "bf6a6389496e04652b4e54baa29cc75653544e6833480bbbf9689affd1d59eff"
+  },
+  "output": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/clips/instruction_pickplace_development/paired_study_final_analysis01",
+  "policy_jobs_started_by_watcher": false,
+  "public_release_performed": false,
+  "author_acceptance_pending": true,
+  "state": "analysis_finished",
+  "completed_attempts": 60,
+  "batch_terminal": true,
+  "audit_entries": 60,
+  "all_audits_terminal": true,
+  "ready_for_analysis": true,
+  "checked_utc": "2026-09-08T23:48:51.513585+00:00",
+  "command": [
+    "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/.venv-maniskill/bin/python",
+    "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/clips/instruction_pickplace_development/analysis_tools_source01/frozen_workspace/DREAM_code/experiments/summarize_instruction_study.py",
+    "--batch",
+    "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_paired_study_frozen01",
+    "--audits",
+    "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/clips/instruction_pickplace_development/automatic_audits_paired_bound01",
+    "--output",
+    "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/clips/instruction_pickplace_development/paired_study_final_analysis01"
+  ],
+  "aggregate_available": true,
+  "unresolved_evidence": 0,
+  "analysis_report_sha256": "3825a27379fcd5e410bc569d5be29022b2fd56327ed5ba7c3a30f8ae1045c404",
+  "boundary": "Read the complete report and its limitations before revising the response. No public release or author acceptance is implied."
+}

@@ -1,0 +1,159 @@
+{
+  "spawn_xy": [
+    -9.456000228881836,
+    -2.7400000004470355
+  ],
+  "yaw_rad": 3.08793284037362,
+  "sampling": {
+    "seed": 105,
+    "valid_candidate_count": 277,
+    "sampling": "uniform over valid room-core grid cells",
+    "footprint_radius_m": 0.4,
+    "initial_room": 2,
+    "minimum_pickup_distance_m": 2.0
+  },
+  "fixtures": {
+    "table": {
+      "asset": "Dining_Table_9_1",
+      "asset_sha256": "c448e9d1d0eee1d9fbf8eaa8902a7c3939cb6951538141c0b71dbcbfb376a214",
+      "physical_scale": 1.0,
+      "local_bounds_z_up_m": [
+        [
+          -0.3684878945350647,
+          -0.37877318263053894,
+          -1.6940658566432772e-23
+        ],
+        [
+          0.3618968427181244,
+          0.37114500999450684,
+          0.7773512005805969
+        ]
+      ],
+      "initial_origin_xyz": [
+        -9.212704702973365,
+        -3.816185914129019,
+        0.002
+      ],
+      "collision": "static_concave_triangle_mesh",
+      "boundary": "Environment construction/evaluation metadata, never a policy localization input."
+    },
+    "receptacle": {
+      "asset": "Bowl_1",
+      "asset_sha256": "130a6f4d30eb113e94b3d27a7ded7f4c5de286acfcf580c326cff43904be4112",
+      "physical_scale": 1.0,
+      "local_bounds_z_up_m": [
+        [
+          -0.09436753392219543,
+          -0.09436755627393723,
+          0.0
+        ],
+        [
+          0.0943676084280014,
+          0.09436754137277603,
+          0.08729199320077896
+        ]
+      ],
+      "initial_origin_xyz": [
+        -9.438220507150577,
+        -3.708889861312665,
+        0.7813512005805969
+      ],
+      "collision": "static_concave_triangle_mesh",
+      "boundary": "Environment construction/evaluation metadata, never a policy localization input."
+    },
+    "target": {
+      "asset": "Tomato_1",
+      "asset_sha256": "1bbc63354463e2c4e52c85f68770422a86f772519c14c0f7bddd54aed0d7c54a",
+      "physical_scale": 0.8,
+      "local_bounds_z_up_m": [
+        [
+          -0.04270727336406708,
+          -0.043870931863784796,
+          -0.032265964150428775
+        ],
+        [
+          0.042579528689384465,
+          0.04379628598690033,
+          0.027646568417549134
+        ]
+      ],
+      "initial_origin_xyz": [
+        -11.676000228881836,
+        -2.0800000004470354,
+        0.9552659641504289
+      ],
+      "collision": "dynamic_convex_mesh",
+      "boundary": "Environment construction/evaluation metadata, never a policy localization input."
+    },
+    "cart": {
+      "top_height_m": 0.921,
+      "top_half_extent_m": 0.15,
+      "tray_rim_height_m": 0.02,
+      "floor_friction": [
+        0.02,
+        0.01
+      ],
+      "locked_rotation_axes": true,
+      "boundary": "Separate visible externally driven support; payload remains unattached and dynamic"
+    }
+  },
+  "excluded_initial_actors": [
+    {
+      "name": "scs-[0]_objects/Bowl_16_0",
+      "initial_pose": [
+        [
+          -14.971631050109863,
+          -9.323953628540039,
+          0.9424716234207153,
+          4.329780301713277e-17,
+          4.329780301713277e-17,
+          -0.7071067690849304,
+          -0.7071067690849304
+        ]
+      ]
+    },
+    {
+      "name": "scs-[0]_objects/Tomato_12_2",
+      "initial_pose": [
+        [
+          -15.199556350708008,
+          -9.16950511932373,
+          1.0092447996139526,
+          4.329780301713277e-17,
+          4.329780301713277e-17,
+          -0.7071067690849304,
+          -0.7071067690849304
+        ]
+      ]
+    },
+    {
+      "name": "scs-[0]_objects/Bowl_17_42",
+      "initial_pose": [
+        [
+          -7.609537601470947,
+          -11.06031608581543,
+          0.805594801902771,
+          4.329780301713277e-17,
+          4.329780301713277e-17,
+          -0.7071067690849304,
+          -0.7071067690849304
+        ]
+      ]
+    },
+    {
+      "name": "scs-[0]_objects/Bowl_16_82",
+      "initial_pose": [
+        [
+          -6.375820159912109,
+          -4.424961566925049,
+          0.7549556493759155,
+          0.5,
+          0.5,
+          -0.5,
+          -0.5
+        ]
+      ]
+    }
+  ],
+  "boundary": "Environment/evaluator only. All pose initialization precedes control step one."
+}

@@ -1,0 +1,160 @@
+import base64
+import sys
+from io import BytesIO
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
+
+import numpy as np
+from openai import OpenAI
+from PIL import Image
+
+try:
+    from dream.llms.base import AbstractLLMClient, AbstractPromptBuilder
+except ModuleNotFoundError:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+    from dream.llms.base import AbstractLLMClient, AbstractPromptBuilder
+
+
+class OpenaiClient(AbstractLLMClient):
+    """Simple client for creating agents using an OpenAI API call.
+
+    Parameters:
+        use_specific_objects(bool): override list of objects and have the AI only return those.
+
+    TODO: add the support for audio input
+    """
+
+    model_choices = [
+        "gpt-4o", "gpt-4o-mini", "chatgpt-4o-latest",
+        "gpt-5.1-2025-11-13", "gpt-5.1", "gpt-5", "gpt-5-mini",                
+    ]
+
+    def __init__(
+        self,
+        prompt: Union[str, AbstractPromptBuilder],
+        prompt_kwargs: Optional[Dict[str, Any]] = None,
+        model: str = "gpt-5.1-2025-11-13",
+    ):
+        super().__init__(prompt, prompt_kwargs)
+        self.model = model
+        if self.model not in self.model_choices:
+            print("Your GPT model:", self.model)
+            # print("Below are some recommended GPT models:")
+            # for model_choice in self.model_choices:
+            #     print(model_choice)
+        self._openai = OpenAI()
+
+    def _process_input(self, command, verbose=False):
+        """
+        Transform command sent from the user to the command query OpenAI GPT
+
+        TODO: Add audio support
+        """
+        if isinstance(command, str):
+            user_commands = command
+        else:
+            user_commands = []  # type:ignore
+            for c in command:
+                # If this is a dict, then we assume it has already been formtted in the form of {"type": ""}
+                if isinstance(c, dict):
+                    user_commands.append(c)
+                # If this is a strungm then we assume it is a text message from the user
+                elif isinstance(c, str):
+                    user_commands.append({"type": "text", "text": c})
+                # For now, the only remaining option is image
+                elif isinstance(c, Image.Image) or isinstance(c, np.ndarray):
+                    if isinstance(c, np.ndarray):
+                        image = Image.fromarray(c.astype(np.uint8), mode="RGB")
+                    else:
+                        image = c
+
+                    buffered = BytesIO()
+                    image.save(buffered, format="PNG"),
+                    img_bytes = buffered.getvalue()
+                    base64_encoded = base64.b64encode(img_bytes).decode("utf-8")
+                    user_commands.append(
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64_encoded}",
+                            },
+                        }
+                    )
+                else:
+                    raise NotImplementedError("We only support text and image for now!")
+
+        if verbose:
+            print("input to the model:")
+            if isinstance(user_commands, str):
+                print(user_commands)
+            else:
+                for (idx, user_command) in enumerate(user_commands):
+                    if "image_url" in user_command:
+                        print(idx, ".", user_command["type"])
+                    else:
+                        print(idx, ".", user_command["type"], user_command["text"])
+        return user_commands
+
+    def __call__(self, command: Union[str, list], verbose: bool = False):
+        if verbose:
+            print(f"{self.system_prompt=}")
+
+        command = self._process_input(command, verbose=verbose)  # type:ignore
+
+        completion = self._openai.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": command},
+            ],
+        )
+        output_text = completion.choices[0].message.content
+        if verbose:
+            print(f"output_text={output_text}")
+        return output_text
+
+    def sample(self, command: Union[str, list], n_samples: int, verbose: bool = False):
+        if verbose:
+            print(f"{self.system_prompt=}")
+
+        command = self._process_input(command, verbose=verbose)  # type:ignore
+
+        completion = self._openai.chat.completions.create(
+            model=self.model,
+            temperature=1,
+            messages=[
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": command},
+            ],
+            n=n_samples,
+        )
+        choices = completion.choices
+        if verbose:
+            print(f"choices={choices}")
+        return choices
+
+
+def main():
+    # ---- Hardcoded test data: edit these values directly ----
+    test_model = "gpt-5.1-2025-11-13"
+    test_system_prompt = "You are a precise visual assistant. Answer briefly."
+    test_image_path = "/tmp/test.jpg"
+    test_user_text = "The object you need to verify is blue bottle"
+    test_verbose = False
+    # ---------------------------------------------------------
+
+    client = OpenaiClient(prompt=test_system_prompt, model=test_model)
+
+    if Path(test_image_path).exists():
+        image = Image.open(test_image_path).convert("RGB")
+        command = [image, test_user_text]
+    else:
+        print(f"[OpenaiClient main] image not found: {test_image_path}; testing text-only.")
+        command = test_user_text
+
+    response = client(command, verbose=test_verbose)
+    print(response)
+
+
+if __name__ == "__main__":
+    main()

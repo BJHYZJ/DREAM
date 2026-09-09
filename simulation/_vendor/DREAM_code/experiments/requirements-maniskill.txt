@@ -1,0 +1,4 @@
+# Optional qualitative renderer. Numerical experiments do not depend on it.
+mani_skill==3.0.1
+imageio-ffmpeg==0.6.0
+remotezip==0.12.3

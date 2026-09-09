@@ -1,0 +1,134 @@
+{
+  "checks": {
+    "protocol_scoring": true,
+    "source_hashes_match": true,
+    "saved_source_matches_hashes": true,
+    "instruction_first": true,
+    "actual_control_reexecution": true,
+    "reexecuted_protocol_success": true,
+    "replay_sources_verified": true,
+    "replay_refers_to_this_run": true,
+    "no_native_contact_above_threshold": true,
+    "complete_aligned_traces": true,
+    "identity_records_consistent_with_saved_masks_and_replayed_positions": true,
+    "fresh_visual_discovery_at_standoff_during_translation": true,
+    "old_location_update_has_measured_free_depth": true,
+    "reacquisition_follows_observed_invalidation": true,
+    "continuous_1x_frame_steps": true,
+    "all_source_videos_decode_completely": true,
+    "matching_5fps_playback": true,
+    "current_observation_panel_matches_raw_camera": true,
+    "observed_memory_update_caption_visible": true,
+    "annotated_video_retains_all_frames": true
+  },
+  "identity_checks": [
+    {
+      "step": 668,
+      "consistent": true,
+      "correct": true,
+      "score": 0.18141943216323853,
+      "observation_id": 10
+    },
+    {
+      "step": 2589,
+      "consistent": true,
+      "correct": true,
+      "score": 0.46092814207077026,
+      "observation_id": 142
+    },
+    {
+      "step": 2687,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3944927155971527,
+      "observation_id": 145
+    },
+    {
+      "step": 2692,
+      "consistent": true,
+      "correct": true,
+      "score": 0.24230268597602844,
+      "observation_id": 147
+    },
+    {
+      "step": 2757,
+      "consistent": true,
+      "correct": true,
+      "score": 0.40827232599258423,
+      "observation_id": 153
+    },
+    {
+      "step": 2781,
+      "consistent": true,
+      "correct": true,
+      "score": 0.4361131191253662,
+      "observation_id": 155
+    },
+    {
+      "step": 2822,
+      "consistent": true,
+      "correct": true,
+      "score": 0.44711723923683167,
+      "observation_id": 157
+    },
+    {
+      "step": 2822,
+      "consistent": true,
+      "correct": true,
+      "score": 0.44711723923683167,
+      "observation_id": 159
+    },
+    {
+      "step": 2840,
+      "consistent": true,
+      "correct": true,
+      "score": 0.3646542429924011,
+      "observation_id": 162
+    },
+    {
+      "step": 2864,
+      "consistent": true,
+      "correct": true,
+      "score": 0.33955448865890503,
+      "observation_id": 164
+    },
+    {
+      "step": 2904,
+      "consistent": true,
+      "correct": true,
+      "score": 0.44802045822143555,
+      "observation_id": 166
+    },
+    {
+      "step": 2924,
+      "consistent": true,
+      "correct": true,
+      "score": 0.46469616889953613,
+      "observation_id": 167
+    }
+  ],
+  "memory_evidence": [
+    {
+      "step": 966,
+      "observation_id": 33,
+      "measured_free_depth": true,
+      "time_aligned": true
+    }
+  ],
+  "decoded_frames": 1634,
+  "maximum_observation_panel_mae": 2.009979423868313,
+  "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen03/01_ProcTHOR-Train-283_seed100_dynamic",
+  "annotated": true,
+  "source_video_sha256": {
+    "overview_raw": "b4371fd59519c4e2725b8eb093ba5c6b807f25365dce2d68df365ea5d1aec3f9",
+    "observation_raw": "9f879dd45f562dd419469ec5e2bac23740aa8b150171cc5e645316fd8b1e43b6",
+    "reviewer_view": "5b6be49e16bc0aa311300305f9e86a5a923ecd7004b66cfbd4fae778866c3b1f"
+  },
+  "events_sha256": "7f339a483472f731d81b32115f831449bf17f85662c6a2f3c6da6f803fa9a368",
+  "physical_audit_sha256": "73f26eeddbab083da3a3c67916d7bcfd2654fc364b18e3be27bba68efb332e06",
+  "review_script_sha256": "37868e0d7adf03ac527c912a1e5f2a02b117c07c391e095fd0131a511c95a78b",
+  "release_ready": false,
+  "boundary": "Recorded-data/visibility/physical-replay/video check, not an additional task. Visual inspection and final frozen-study release remain separate.",
+  "annotated_video_sha256": "d7d19d36e78ec630888a504485b98d750882c87831a91e459a8657eebcf34562",
+  "record_review_passed": true
+}

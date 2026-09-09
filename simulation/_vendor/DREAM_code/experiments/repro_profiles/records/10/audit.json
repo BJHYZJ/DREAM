@@ -1,0 +1,209 @@
+{
+  "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen21/01_ProcTHOR-Train-7819_seed104_dynamic",
+  "steps": 12130,
+  "maximum_error": {
+    "base_xy_m": 0.0,
+    "yaw_rad": 0.0,
+    "tcp_xyz_m": 0.0,
+    "target_xyz_m": 0.0
+  },
+  "tolerance": 0.0001,
+  "physical_reexecution_passed": true,
+  "evaluation": {
+    "evaluator_protocol_success": true,
+    "criteria": {
+      "instruction_before_initial_scan": true,
+      "correct_discovery_before_relocation": true,
+      "relocation_triggered_during_translation": true,
+      "external_relocation_finished": true,
+      "external_move_preserved_payload_support": true,
+      "observed_stale_check": true,
+      "correct_visual_reacquisition": true,
+      "sustained_physical_lift": true,
+      "held_base_transport": true,
+      "second_language_search": true,
+      "stable_released_receptacle_placement": true,
+      "cross_room_search": true,
+      "cross_room_delivery": true
+    },
+    "evaluator_task_success": true,
+    "task_criteria": {
+      "instruction_before_initial_scan": true,
+      "correct_discovery_before_relocation": true,
+      "relocation_triggered_during_translation": true,
+      "external_relocation_finished": true,
+      "external_move_preserved_payload_support": true,
+      "sustained_physical_lift": true,
+      "held_base_transport": true,
+      "second_language_search": true,
+      "stable_released_receptacle_placement": true,
+      "cross_room_search": true,
+      "cross_room_delivery": true,
+      "correct_visual_moved_target_observation": true
+    },
+    "sustained_lift_s": 9.0,
+    "held_base_transport_m": 4.476916155381826,
+    "stable_placement_s": 19.3,
+    "legacy_height_gated_transport_m": 0.01320230204154661,
+    "legacy_grasp_room_core": 1,
+    "legacy_placement_room_core": 2,
+    "transport_definition": "Bilateral contact after >=1 s witnessed >6 cm lift; reset on contact loss; no constant carry-height requirement",
+    "room_definition": "Wall-only geometry partition propagated from >=0.60 m-clearance cores; stable 1 s grasp/place base-region endpoints, not semantic annotations",
+    "base_distance_m": 9.49786988014136,
+    "initial_room": 2,
+    "grasp_room": 1,
+    "placement_room": 2,
+    "relocation_start_step": 956,
+    "relocation_done_step": 1819,
+    "reacquisition_step": 1142,
+    "temporal_evidence": {
+      "definition_version": 2,
+      "first_moved_detection_step": 1142,
+      "observed_loss_step": 1100,
+      "observed_loss_observation_id": 38,
+      "reacquisition_step": 1142,
+      "reacquisition_observation_id": 41,
+      "strict_loss_then_reacquisition": true,
+      "boundary": "Continuous visual tracking alone does not satisfy lost-and-found. Saved depth/identity and physical replay must also pass."
+    },
+    "evaluation_definition_version": 4,
+    "independent_control_contact_audit_pending": true,
+    "release_ready": false,
+    "boundary": "New instruction-protocol scoring; native-contact/control re-execution audit is still required"
+  },
+  "contact_audit": {
+    "physics_substeps": 60650,
+    "physics_dt_s": 0.009999999776482582,
+    "scope": "Read-only contact sampling after every native PhysX substep during exact control re-execution. Includes robot/native and payload/native contacts. Robot self/target contacts and low horizontal floor support are excluded. >=0.5 N contacts retained; fixtures distinguished from native environment.",
+    "includes_payload_native_contacts": true,
+    "pairs": [
+      {
+        "phase": "Build memory",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 2913,
+        "max_force_n": 25.592848741662102
+      },
+      {
+        "phase": "Search across rooms",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 3405,
+        "max_force_n": 9.314018137321282
+      },
+      {
+        "phase": "Active observation",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 3780,
+        "max_force_n": 11.33751671025567
+      },
+      {
+        "phase": "Verify remembered location",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 3230,
+        "max_force_n": 11.261512963358603
+      },
+      {
+        "phase": "Turn in observed clearance",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 1515,
+        "max_force_n": 9.389772476027291
+      },
+      {
+        "phase": "Translate through observed passage",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 860,
+        "max_force_n": 8.607199421685921
+      },
+      {
+        "phase": "Prepare grasp",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 950,
+        "max_force_n": 8.645536481046934
+      },
+      {
+        "phase": "Grasp",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 2800,
+        "max_force_n": 56.911604464639446
+      },
+      {
+        "phase": "Lift",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 29,
+        "max_force_n": 12.811750459933664
+      },
+      {
+        "phase": "Place in observed receptacle",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_placement_Plate_9",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 1603,
+        "max_force_n": 25.840163808468667
+      },
+      {
+        "phase": "Check released placement",
+        "robot_link": "instruction_pickup_Bread_1",
+        "other": "scene-0_instruction_placement_Plate_9",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 500,
+        "max_force_n": 8.657118126536567
+      }
+    ],
+    "native_environment_contact_rows": [],
+    "native_environment_contact_control_steps": 0
+  },
+  "source_recording_unchanged": true,
+  "replay_environment_source_matches_recording": true,
+  "replay_source_unchanged": true,
+  "wall_time_s": 356.7146726846695,
+  "release_ready": false,
+  "boundary": "Exact saved-control/force re-execution. Not a new learned-policy trial; video/visibility/source review remains separate.",
+  "alternate_spectator_video": {
+    "checks": {
+      "all_original_frames_retained": true,
+      "head_and_memory_panels_preserved": true,
+      "source_video_unchanged": true,
+      "source_review_unchanged": true
+    },
+    "render_checks_passed": true,
+    "frames": 3032,
+    "maximum_panel_mae": 0.9917743055555556,
+    "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen21/01_ProcTHOR-Train-7819_seed104_dynamic",
+    "original_review_sha256": "2904a5158324dc53e956daf54061ef592991a416c8e187081ec9cdb5f3065a31",
+    "original_video_sha256": "3a546fb474e814a6b577cb50fa54c89863f7e6ab659d8f0c7bda8b557e4f270c",
+    "reframed_video_sha256": "3d0896b56882bbe307cea892408ca61404a82db37cce2e3af24d95e0bba84691",
+    "renderer_script_sha256": "13492775d75127d92fc0bdca412f31d52bfaea4560b67725d9ffeb8bce694272",
+    "spectator_mode": "tool-front-placement",
+    "visual_acceptance_pending": true,
+    "release_ready": false,
+    "boundary": "Alternate simulator-rendered spectator view of the SAME saved controls/forces at 1x. Recorded head/memory panels retained. Physical replay must independently match; this is not another policy trial."
+  }
+}

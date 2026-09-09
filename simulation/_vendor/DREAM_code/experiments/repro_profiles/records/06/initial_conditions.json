@@ -1,0 +1,145 @@
+{
+  "spawn_xy": [
+    -2.5919998703002944,
+    -6.280000000447035
+  ],
+  "yaw_rad": 0.5399990296914869,
+  "sampling": {
+    "seed": 102,
+    "valid_candidate_count": 193,
+    "sampling": "uniform over valid room-core grid cells",
+    "footprint_radius_m": 0.4,
+    "initial_room": 3,
+    "minimum_pickup_distance_m": 2.0
+  },
+  "fixtures": {
+    "table": {
+      "asset": "Dining_Table_208_1",
+      "asset_sha256": "2edb421a4d0a601c971fd8806eddd788210aee159aace4ddf015de22c8d4b381",
+      "physical_scale": 1.0,
+      "local_bounds_z_up_m": [
+        [
+          -0.8863341808319092,
+          -0.494086891412735,
+          -0.0005649052327498794
+        ],
+        [
+          0.8862926959991455,
+          0.494086891412735,
+          0.7812911868095398
+        ]
+      ],
+      "initial_origin_xyz": [
+        -1.9319791278839133,
+        -4.840000000447035,
+        0.0025649052327498794
+      ],
+      "collision": "static_concave_triangle_mesh",
+      "boundary": "Environment construction/evaluation metadata, never a policy localization input."
+    },
+    "receptacle": {
+      "asset": "Plate_9",
+      "asset_sha256": "b5c726bf3cb70aff5f4cbc8255f2b9a09920b9a4ca5e1d3efbf505a8f3748dc7",
+      "physical_scale": 1.0,
+      "local_bounds_z_up_m": [
+        [
+          -0.14579147100448608,
+          -0.14579132199287415,
+          -2.1454872694448568e-05
+        ],
+        [
+          0.14579132199287415,
+          0.14579100906848907,
+          0.017051415517926216
+        ]
+      ],
+      "initial_origin_xyz": [
+        -2.6482224492213198,
+        -4.77488885690876,
+        0.7858775469149841
+      ],
+      "collision": "static_concave_triangle_mesh",
+      "boundary": "Environment construction/evaluation metadata, never a policy localization input."
+    },
+    "target": {
+      "asset": "Egg_1",
+      "asset_sha256": "396c0569221ae88d90a9c1d7dafe5fab731cba00e5ed0b6733f531244a5716b7",
+      "physical_scale": 1.0,
+      "local_bounds_z_up_m": [
+        [
+          -0.028810705989599228,
+          -0.028810707852244377,
+          -0.0375354178249836
+        ],
+        [
+          0.028810670599341393,
+          0.028807925060391426,
+          0.038571104407310486
+        ]
+      ],
+      "initial_origin_xyz": [
+        -5.051999870300294,
+        -4.6600000004470346,
+        0.9605354178249836
+      ],
+      "collision": "dynamic_convex_mesh",
+      "boundary": "Environment construction/evaluation metadata, never a policy localization input."
+    },
+    "cart": {
+      "top_height_m": 0.921,
+      "top_half_extent_m": 0.15,
+      "tray_rim_height_m": 0.02,
+      "floor_friction": [
+        0.02,
+        0.01
+      ],
+      "locked_rotation_axes": true,
+      "boundary": "Separate visible externally driven support; payload remains unattached and dynamic"
+    }
+  },
+  "excluded_initial_actors": [
+    {
+      "name": "scs-[0]_objects/Egg_15_33",
+      "initial_pose": [
+        [
+          -2.8469765186309814,
+          -7.5754008293151855,
+          0.23105399310588837,
+          -1.0357265409766114e-06,
+          -1.0357265409766114e-06,
+          -0.7071067690849304,
+          -0.7071067690849304
+        ]
+      ]
+    },
+    {
+      "name": "scs-[0]_objects/Egg_29_34",
+      "initial_pose": [
+        [
+          -2.7518789768218994,
+          -7.5164971351623535,
+          0.24969260394573212,
+          -1.0357265409766114e-06,
+          -1.0357265409766114e-06,
+          -0.7071067690849304,
+          -0.7071067690849304
+        ]
+      ]
+    },
+    {
+      "name": "scs-[0]_objects/Plate_24_51",
+      "initial_pose": [
+        [
+          -2.647632598876953,
+          -0.6424206495285034,
+          0.8199244141578674,
+          5.64941785796691e-07,
+          5.64941785796691e-07,
+          -0.7071067690849304,
+          -0.7071067690849304
+        ]
+      ]
+    }
+  ],
+  "boundary": "Environment/evaluator only. All pose initialization precedes control step one."
+}

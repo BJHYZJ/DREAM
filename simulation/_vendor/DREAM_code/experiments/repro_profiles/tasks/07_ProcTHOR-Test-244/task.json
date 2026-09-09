@@ -1,0 +1,116 @@
+{
+  "protocol": "instruction_pickplace_development_v1",
+  "status": "constructed_not_executed",
+  "scene": "ProcTHOR-Test-244",
+  "instruction": "Please pick up the egg and put it in the bowl on the white table.",
+  "recipe": {
+    "id": "egg_bowl_white_table",
+    "instruction": "Please pick up the egg and put it in the bowl on the white table.",
+    "environment_assets": {
+      "pickup": "Egg_1",
+      "placement": "Bowl_2",
+      "support": "Dining_Table_27_1"
+    },
+    "placement_relation": "in"
+  },
+  "seed": 102,
+  "initial_room": 3,
+  "target_xy": [
+    -11.121000041961668,
+    -5.560000000447035
+  ],
+  "endpoint": [
+    -14.121000041961668,
+    -5.560000000447035
+  ],
+  "disturbance_waypoints": [
+    [
+      -11.361000041961669,
+      -5.560000000447035
+    ],
+    [
+      -11.601000041961669,
+      -5.560000000447035
+    ],
+    [
+      -11.841000041961669,
+      -5.560000000447035
+    ],
+    [
+      -12.08100004196167,
+      -5.560000000447035
+    ],
+    [
+      -12.321000041961668,
+      -5.560000000447035
+    ],
+    [
+      -12.56100004196167,
+      -5.560000000447035
+    ],
+    [
+      -12.801000041961668,
+      -5.560000000447035
+    ],
+    [
+      -13.041000041961668,
+      -5.560000000447035
+    ],
+    [
+      -13.281000041961669,
+      -5.560000000447035
+    ],
+    [
+      -13.521000041961669,
+      -5.560000000447035
+    ],
+    [
+      -13.761000041961669,
+      -5.560000000447035
+    ],
+    [
+      -14.001000041961667,
+      -5.560000000447035
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -11.361844133138655,
+    -8.439223635047675
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -11.310376919455672,
+    -8.212195949170049
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 1488,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1200,
+  "cart_rim_height_m": 0.02,
+  "construction_boundary": "Development only: native house geometry reused, not historical robot routes/results. Random initial state and new query-driven destinations."
+}

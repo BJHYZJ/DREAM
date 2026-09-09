@@ -1,0 +1,158 @@
+{
+  "source_run": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/DREAM_code/experiments/results/instruction_development_frozen05/07_ProcTHOR-Train-9031_seed100_dynamic",
+  "steps": 6223,
+  "maximum_error": {
+    "base_xy_m": 0.0,
+    "yaw_rad": 0.0,
+    "tcp_xyz_m": 0.0,
+    "target_xyz_m": 0.0
+  },
+  "tolerance": 0.0001,
+  "physical_reexecution_passed": true,
+  "evaluation": {
+    "evaluator_protocol_success": true,
+    "criteria": {
+      "instruction_before_initial_scan": true,
+      "correct_discovery_before_relocation": true,
+      "relocation_triggered_during_translation": true,
+      "external_relocation_finished": true,
+      "external_move_preserved_payload_support": true,
+      "observed_stale_check": true,
+      "correct_visual_reacquisition": true,
+      "sustained_physical_lift": true,
+      "held_base_transport": true,
+      "second_language_search": true,
+      "stable_released_receptacle_placement": true,
+      "cross_room_search": true,
+      "cross_room_delivery": true
+    },
+    "sustained_lift_s": 74.1,
+    "held_base_transport_m": 4.44178288611494,
+    "stable_placement_s": 19.7,
+    "base_distance_m": 9.128378641621483,
+    "initial_room": 2,
+    "grasp_room": 1,
+    "placement_room": 2,
+    "relocation_start_step": 612,
+    "relocation_done_step": 1294,
+    "reacquisition_step": 747,
+    "independent_control_contact_audit_pending": true,
+    "release_ready": false,
+    "boundary": "New instruction-protocol scoring; native-contact/control re-execution audit is still required"
+  },
+  "contact_audit": {
+    "physics_substeps": 31115,
+    "physics_dt_s": 0.009999999776482582,
+    "scope": "Read-only contact sampling after every native PhysX substep during exact control re-execution. Includes robot/native and payload/native contacts. Robot self/target contacts and low horizontal floor support are excluded. >=0.5 N contacts retained; fixtures distinguished from native environment.",
+    "includes_payload_native_contacts": true,
+    "pairs": [
+      {
+        "phase": "Build memory",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 2833,
+        "max_force_n": 2.1165756981799535
+      },
+      {
+        "phase": "Search across rooms",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 2530,
+        "max_force_n": 1.6666528210040812
+      },
+      {
+        "phase": "Active observation",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 1919,
+        "max_force_n": 1.3276453426699044
+      },
+      {
+        "phase": "Verify remembered location",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 4252,
+        "max_force_n": 1.848261658435948
+      },
+      {
+        "phase": "Prepare grasp",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 950,
+        "max_force_n": 0.845421310784399
+      },
+      {
+        "phase": "Grasp",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 1816,
+        "max_force_n": 46.19940975807976
+      },
+      {
+        "phase": "Grasp",
+        "robot_link": "r_gripper_finger_link",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "robot",
+        "substeps": 330,
+        "max_force_n": 43.183911811945855
+      },
+      {
+        "phase": "Lift",
+        "robot_link": "r_gripper_finger_link",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "robot",
+        "substeps": 63,
+        "max_force_n": 39.865915250761404
+      },
+      {
+        "phase": "Lift",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_external_cart",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 63,
+        "max_force_n": 40.64797551888173
+      },
+      {
+        "phase": "Place in observed receptacle",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_placement_Plate_9",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 1467,
+        "max_force_n": 3.216020462275009
+      },
+      {
+        "phase": "Check released placement",
+        "robot_link": "instruction_pickup_Egg_1",
+        "other": "scene-0_instruction_placement_Plate_9",
+        "kind": "task_fixture",
+        "body_kind": "payload",
+        "substeps": 500,
+        "max_force_n": 0.8333181450140061
+      }
+    ],
+    "native_environment_contact_rows": [],
+    "native_environment_contact_control_steps": 0
+  },
+  "source_recording_unchanged": true,
+  "replay_environment_source_matches_recording": true,
+  "replay_source_unchanged": true,
+  "wall_time_s": 49.42893589287996,
+  "release_ready": false,
+  "boundary": "Exact saved-control/force re-execution. Not a new learned-policy trial; video/visibility/source review remains separate."
+}

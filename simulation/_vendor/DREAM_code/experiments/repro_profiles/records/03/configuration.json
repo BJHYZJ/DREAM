@@ -1,0 +1,8 @@
+{
+  "variant": "dynamic",
+  "threshold": 0.15,
+  "navigation_budget": 110,
+  "video": true,
+  "entrypoint": "run_instruction_task.py",
+  "status": "development_not_frozen_benchmark"
+}
