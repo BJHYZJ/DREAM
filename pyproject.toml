@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dream-sim"
+version = "1.0.0"
+description = "Version-pinned DREAM cross-room dynamic pick-and-place reproduction"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = {file = "LICENSE"}
+
+[project.scripts]
+dream-sim = "dream_sim.run:main"
+dream-sim-sources = "dream_sim.sources:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["dream_sim*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,2220 @@
+{
+  "schema_version": 1,
+  "scope": "single_case_packaging_smoke_not_a_new_ten_case_study",
+  "new_policy_attempts": 1,
+  "case_ids": [
+    "01"
+  ],
+  "all_passed": true,
+  "physical_and_record_audit_passed": true,
+  "automatic_retries": false,
+  "same_source_as_original_video": true,
+  "action_trajectory_comparison_to_prior_reproduction": {
+    "actions.json": {
+      "sha256": "5994a2093e5b788159c483cd6ed92ab53cba44942647b372aca2b1620a70725d",
+      "previous_reproduction_sha256": "5994a2093e5b788159c483cd6ed92ab53cba44942647b372aca2b1620a70725d",
+      "identical": true
+    },
+    "evaluator_trajectory.json": {
+      "sha256": "b0dc4dac2ae06a31258448e75b233088e24795c51edb664f29d3fb0dad06edd5",
+      "previous_reproduction_sha256": "b0dc4dac2ae06a31258448e75b233088e24795c51edb664f29d3fb0dad06edd5",
+      "identical": true
+    }
+  },
+  "runtime_preflight": {
+    "catalog_sha256": "94b911e77766854db847982f4312ef0cb150ac76a57b67547304e713d6a71e9e",
+    "profiles_verified": 10,
+    "source_snapshots_verified": 7,
+    "original_video_review_versions_verified": 10,
+    "runtime_checked": true,
+    "policy_executed": false,
+    "public_case_index_verified": true,
+    "public_config_files_verified": 22,
+    "python": "3.11.15 (main, Jun 11 2026, 15:20:16) [GCC 14.3.0]",
+    "packages": {
+      "numpy": "1.26.4",
+      "scipy": "1.17.1",
+      "torch": "2.10.0",
+      "matplotlib": "3.11.1",
+      "opencv-python-headless": "4.11.0.86",
+      "pytest": "9.1.1",
+      "mani_skill": "3.0.1",
+      "imageio-ffmpeg": "0.6.0",
+      "remotezip": "0.12.3",
+      "transformers": "4.51.3",
+      "huggingface-hub": "0.36.0",
+      "sentencepiece": "0.2.2",
+      "protobuf": "7.35.1",
+      "sapien": "3.0.3",
+      "trimesh": "5.0.0",
+      "scikit-learn": "1.9.0",
+      "imageio": "2.37.4",
+      "hydra-core": "1.3.5",
+      "omegaconf": "2.3.1",
+      "yacs": "0.1.8",
+      "torchvision": "0.25.0"
+    },
+    "asset_files_verified": 1339,
+    "asset_dir": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/.maniskill_assets",
+    "model_cache": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/.dream_model_cache",
+    "model_revisions_verified": true,
+    "model_contents_sha256_verified": false,
+    "cuda_devices": 2,
+    "vulkan_icd": "/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
+    "renderer_execution_tested": false,
+    "boundary": "Preflight is not a task result; rendering and behavior are tested by actual execution."
+  },
+  "raw_records_retained_at": "/nfs/dataset-ofs-voyager-research/yanzhijie/workspace/code/TMECH/.delivery_work/branch_refactor_20260909/fresh_case01",
+  "omitted_payload_files": {
+    "case_01/audit/physical.log": {
+      "bytes": 4221,
+      "sha256": "6a0b95968a8a019dd7c531c013edd2d7823ac210bba7cc7f873f77ffd456d922"
+    },
+    "case_01/audit/record/memory_update_frame.png": {
+      "bytes": 879916,
+      "sha256": "1d3cbd840b5b98dfe78c2a0d864bbe791889e34eebe4b6df911ab3155bfc787d"
+    },
+    "case_01/audit/record/reviewer_view.mp4": {
+      "bytes": 176474909,
+      "sha256": "d7d19d36e78ec630888a504485b98d750882c87831a91e459a8657eebcf34562"
+    },
+    "case_01/audit/record.log": {
+      "bytes": 2274,
+      "sha256": "a0360cb9b0fad30f9a05958767e64f503b40f180b240fb375e86f5aa26b5603f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_room_map.npz": {
+      "bytes": 4725,
+      "sha256": "e1b7067784fb45646f1dc36308d9b2b6339ad12729ef4e98af7346784e41b157"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00010.npz": {
+      "bytes": 593,
+      "sha256": "f4ddb2b8518898f37c9254682973f285e29b16253e3f579b39797822ca837ff0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00142.npz": {
+      "bytes": 711,
+      "sha256": "0bb16b3f8d05aca72f6afe33b326a9965c832cfbd8b08dcc751b731ec3113e58"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00145.npz": {
+      "bytes": 655,
+      "sha256": "c0838d4f8fb5e0dabf73c4e1cad525627ccaf505952cbbb306b75ed804f2ecc6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00147.npz": {
+      "bytes": 652,
+      "sha256": "6faf2833ab543187308acf4f10f47e16dc5da5b944d20ae034385582e11d9ea3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00153.npz": {
+      "bytes": 715,
+      "sha256": "7c6847dc81868f700dde4489fa3bb6154c93ef32748f09dbd4738eea563be856"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00155.npz": {
+      "bytes": 713,
+      "sha256": "39109f9ade312a7a33425f42695d7094a5ef3747db46799269324eb0778a343e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00157.npz": {
+      "bytes": 706,
+      "sha256": "f0a819eb5cf8cb97a3a6bc7cc059d6abac67eff7a47d801e866fecc85007a421"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00159.npz": {
+      "bytes": 706,
+      "sha256": "f0a819eb5cf8cb97a3a6bc7cc059d6abac67eff7a47d801e866fecc85007a421"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00162.npz": {
+      "bytes": 692,
+      "sha256": "ae8c3987c522d2215955e1053e31a05f5428b06e5825809b6ee57c5bbde5e279"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00164.npz": {
+      "bytes": 696,
+      "sha256": "4dcf27b3ae690caa6c179d8aa685e75a71a71ea5f8e8f630ba551b81cb71be07"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00166.npz": {
+      "bytes": 711,
+      "sha256": "3a957c51053de4d96a8324df6059e14f0af94f2ace6c149275ce2ffee2b7d459"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_visibility/visibility_00167.npz": {
+      "bytes": 704,
+      "sha256": "e9bd84527a91289893851b514506cc97848ba3580b8921e4da32ccdbed222338"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/latest_frame.png": {
+      "bytes": 942308,
+      "sha256": "9cb67b35b3f9454e53992bc49d5191e6ed91ef0425e314112a80a118127a4401"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00009.npz": {
+      "bytes": 443569,
+      "sha256": "e1930fd7352a7a9d5d681bdeaf64863e8f090a2d33fbadb285b600d05285d89e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00011.npz": {
+      "bytes": 475756,
+      "sha256": "a135de2e63006997b6a773fce571024f2c8b3afcf71e210d691d53f4eb8b9ddb"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00012.npz": {
+      "bytes": 439023,
+      "sha256": "05dc90d10646f8f31a432974b715c7c1d8781d96e218eba8f17ffa16cec8f330"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00013.npz": {
+      "bytes": 459063,
+      "sha256": "0d770da000b1be1140df28948cf8a5b2b9c58fdfeabcf9fa1b1f51427ad4a361"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00014.npz": {
+      "bytes": 459277,
+      "sha256": "4d2196027aa40ad4391bb1de7ab29fd160539233e88bf4394a2e39092a373f5c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00015.npz": {
+      "bytes": 454124,
+      "sha256": "4f10a0139bd8a3c9dd8a89eca9da1d75f1b69ef22b28636106864b2acb319ede"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00016.npz": {
+      "bytes": 445591,
+      "sha256": "df373ca5d6b3737425285846a29cddd889af4bb0c602fb41f933578bb03aa2fe"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00018.npz": {
+      "bytes": 434805,
+      "sha256": "caaa35ed191f833e7f26bd4b4ac205be672573f0323325ab4826b1416d0025c8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00019.npz": {
+      "bytes": 416904,
+      "sha256": "763e70a1b7c6a52751df218d999f1bd4109d15ab2f111da5894da00de823c23b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00020.npz": {
+      "bytes": 415257,
+      "sha256": "343cc72841eed01ecc3adba4e47c059b669eeb1a4e5fa246cdb429b2cdfbf7ee"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00025.npz": {
+      "bytes": 387558,
+      "sha256": "e4136d119f180452dcd9cdee65fc116c5d99f251b1cf9dd8cb8fdcef4ef35f6a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00027.npz": {
+      "bytes": 345567,
+      "sha256": "6faf72c329a15f513e9e11b1a9f6fe72cc2aa4af5cf769e86e52dc2a50dea445"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00028.npz": {
+      "bytes": 355015,
+      "sha256": "ae5716767a8d18a6f7cea307cce17db0b80491a774824aa9b01f9e07803780e5"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00029.npz": {
+      "bytes": 346809,
+      "sha256": "30ea47f79f11645fa2589a7947ef6c6ace0fc929ec388584f7d3bb477aea8c5b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00030.npz": {
+      "bytes": 332555,
+      "sha256": "1072f787d07a643c0bf1270bce5766455b4c8587c369814c8123b4ec9182a150"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00031.npz": {
+      "bytes": 337171,
+      "sha256": "02dc279615f0f2db3ffd7920f1c1e7029bff4e887f7d77f2ab8e4eef5469805f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00032.npz": {
+      "bytes": 342041,
+      "sha256": "22179bb4a61f58bfbb78bbc56d808de13fc7e231aa87ef23af7af251d2edf7d6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00034.npz": {
+      "bytes": 343973,
+      "sha256": "d28ad716804a1bee497a125ad60b1a0db1b7831a5b6eba8ab244d664e9c25767"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00035.npz": {
+      "bytes": 332825,
+      "sha256": "11d8417d2e656a69a63b82f93f49d2af30ac201b8a0c52a4820a31339b6e0627"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00040.npz": {
+      "bytes": 343770,
+      "sha256": "66d11b163d558868af02447cf07eab94bd389eafd3941cc217ad2dd6b555789d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00042.npz": {
+      "bytes": 343770,
+      "sha256": "fc0e02e0cb288abce608f0c732443dda53e04a5e26780217aa018d3c8405fee7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00043.npz": {
+      "bytes": 334483,
+      "sha256": "233e65e38df5ccc911ba03af27afd3235c630c967243bf84c4d83674456ff0b3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00044.npz": {
+      "bytes": 329835,
+      "sha256": "d91a8ff182c5308ca3934988abad3bf42df428b916e748b66d73ebaf99f034e7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00045.npz": {
+      "bytes": 326871,
+      "sha256": "5f30b9b05c079a59da3b37fd0c6ab5768a41c4119ccf42b009435265efaa539a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00046.npz": {
+      "bytes": 328125,
+      "sha256": "41a0b33db16d0c2602f7fe1559df44008264660f3c1b9e6e6f0d129bc87a057d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00047.npz": {
+      "bytes": 326845,
+      "sha256": "25f9ed6ffc1115e3e04bd4c1477fb36e5073da40384422a980d41d18a0a06d9f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00049.npz": {
+      "bytes": 325485,
+      "sha256": "b743bb5f7b75ac5a3408887c77f8606be0e091ce1a9c098c30a8d47340846c94"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00050.npz": {
+      "bytes": 319292,
+      "sha256": "8ab50e9258d6f83c3ff9a0f787b186aa59c96bac9725e088a8d6a51bbc539d9c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00055.npz": {
+      "bytes": 302483,
+      "sha256": "35b25dc246054fe038aebf37f4b01d7917ce45f84635d362caeca4a55932be64"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00057.npz": {
+      "bytes": 491926,
+      "sha256": "92559315e14c64a53f4b1c392da375bd9cd7259a257a3947692ddda0b52b51ae"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00058.npz": {
+      "bytes": 577541,
+      "sha256": "ff3f5b56bbaaab73b06761d04cf90e312547e16e45dc76d48fd182a5f3dcc03d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00059.npz": {
+      "bytes": 566645,
+      "sha256": "036e6007560af6fad64436791495addf76a91e9d01a4e6de76fedba752739b0d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00060.npz": {
+      "bytes": 557801,
+      "sha256": "2d3a3c5a5ffa60b1aa38bf2e0d72cba74161a14bd164b68ca764981cbd917601"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00061.npz": {
+      "bytes": 540198,
+      "sha256": "1dede770f9012b6cbf8c9406222970d82ffe2dc776429329674eda438b43aec3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00062.npz": {
+      "bytes": 521079,
+      "sha256": "e863f65f7e1e359f659d4a509dfc96d2e313f0423d24b488a4e52611fcf68cf3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00064.npz": {
+      "bytes": 497350,
+      "sha256": "9cb5050e02bffc1c6457d22dbcea7ef88c52c77f49c04813905c94d1203cd45e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00065.npz": {
+      "bytes": 466363,
+      "sha256": "be047792aed965b1ae4b7b18ec37b0b5aa654ee2fa73fba11a2202172b209fec"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00066.npz": {
+      "bytes": 424812,
+      "sha256": "e70643ab7f8be0142b7f42e6588552e8d773df206b58c315791d5ed7dfcaf211"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00067.npz": {
+      "bytes": 438690,
+      "sha256": "3acfa34bf820ff8f461e82efe2934cbf558e3483e17d1ee7d9fa53fae48ee7d4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00072.npz": {
+      "bytes": 420921,
+      "sha256": "7685a6337bc899caef8b228140d206611df058e911ec419c73f037e6f2df7120"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00074.npz": {
+      "bytes": 506919,
+      "sha256": "6a71bb2312d7f4e172632bdd03e4a793aeee1b2eb0835ac0a00120dcfe8d085f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00075.npz": {
+      "bytes": 542879,
+      "sha256": "b49212c043f359094ede4e2512602512f4fd2028c7825add9f33f2bebce19a4e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00076.npz": {
+      "bytes": 572104,
+      "sha256": "1154100702ac93ff8d5255dae91ab833d4a33a99261fdb60210351483ddc50f7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00077.npz": {
+      "bytes": 565235,
+      "sha256": "b8af02235442a2a01769802ae1094321e16d70683db5a4794c3e85ba1d425fbc"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00078.npz": {
+      "bytes": 554716,
+      "sha256": "57ebd152dde0034fa74aa5e11dbd0edb8cfb4a585b0143153fc77f759b3bec4e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00079.npz": {
+      "bytes": 524660,
+      "sha256": "f907dbf8e799f12d747adc87382a37d02ef4d71ba7e14f59511264bab739c59d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00085.npz": {
+      "bytes": 517317,
+      "sha256": "db071c4541966e8275f10e4bd14c892bdd9a06cbd3e52482c39ae0542313409d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00087.npz": {
+      "bytes": 477353,
+      "sha256": "70a31289ee8477333193829c93bc5538f01fa519c9e80fed9221f6ddb950163f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00088.npz": {
+      "bytes": 469460,
+      "sha256": "b21a4cda017afe1fc6ae29a75616966946c8f20f3ddc2b268eff6fe1759184ce"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00089.npz": {
+      "bytes": 470632,
+      "sha256": "ebc649f5145ae9cac7f1baf6080b3f0300cd1ad040ca8bfb771bf9d29297af85"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00090.npz": {
+      "bytes": 474240,
+      "sha256": "04b9482d6750edff01debcc2973f18dd586f8824827aa29362c8bc1c633ba9ba"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00099.npz": {
+      "bytes": 524990,
+      "sha256": "b249cb43b0b7aa933d10a612c0024f428ab4a37f37cd349dcb7575cda0451add"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00101.npz": {
+      "bytes": 549334,
+      "sha256": "0fc65ca5281862e2f953ba0e5b6591f2766e8ec221d29a4a770d204191fa9895"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00102.npz": {
+      "bytes": 575581,
+      "sha256": "ec4143db2515cad6159caff90affafff4c16e9770ca00dd2c01f992c7e803c69"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00103.npz": {
+      "bytes": 581979,
+      "sha256": "1fead3d7fb251a4e473888e2a15a051b19392d52456c1dae08bd81dd1b817e18"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00104.npz": {
+      "bytes": 550362,
+      "sha256": "0d1883fe32cee34841c1c35711f3f582ed11fd85ff8523a92402126c5954562a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00105.npz": {
+      "bytes": 583449,
+      "sha256": "494b8a9bf56c8da9e766b5ec7bf051701cc044951d9e34ff6ce451861448cf3f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00106.npz": {
+      "bytes": 578153,
+      "sha256": "f28054f21e86256798806fd76162d24e679a72ce8d460ae17eaeb872b65a510f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00108.npz": {
+      "bytes": 569531,
+      "sha256": "d6e192eb258653077ae98d25175a147e43fef44480e6ea585de88f3162ae92e1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00109.npz": {
+      "bytes": 567178,
+      "sha256": "0bc41f3247f95c14ad816b52d26e88fec2637cacb25c722c672b6714fdc20be0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00114.npz": {
+      "bytes": 578486,
+      "sha256": "4f3235e1e9ea230be1a0675cbb801dfd5a0f84b45d114658058374329a45d81e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00116.npz": {
+      "bytes": 557096,
+      "sha256": "5f2e8b648e240f84fa3819d05106fe3fc54006a0697cd200d85f4eb65a3af243"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00117.npz": {
+      "bytes": 565680,
+      "sha256": "87072ea8a42229c66bc729931ba40bc1f25dc62480f3b81ee3814acceb1c8999"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00118.npz": {
+      "bytes": 579581,
+      "sha256": "917316a61bc0900c1e6bd0b800a7d8ad06ffa563754f9f8c0a00be0c4bfbb55a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00119.npz": {
+      "bytes": 586625,
+      "sha256": "d0df92d745c6ffa6f1191683f9aef5834c8b425b60d31f4787063a66e4ae229e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00120.npz": {
+      "bytes": 590646,
+      "sha256": "eda392f8efd06d30d7ec541cb33dc887dc1b5b67eb8a8721c0b030ef741af432"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00121.npz": {
+      "bytes": 596414,
+      "sha256": "9f3643c2679d00a8aa3904859acfd31b20a30bda1634990445128dae4bf0bcde"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00123.npz": {
+      "bytes": 585370,
+      "sha256": "56544ed39adf727732acf388e30217080ca6afd98179069b37bdfdfa187205cd"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00124.npz": {
+      "bytes": 589988,
+      "sha256": "3e22839f43529911eb27118b3ae7210b282a27ffc84fe42618a2b8645813e403"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00129.npz": {
+      "bytes": 588490,
+      "sha256": "794d9c7ea9c296876bb0b8de49d1a60813cced09e08f20d87dc475030e45045d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00131.npz": {
+      "bytes": 635571,
+      "sha256": "50d6769c5ad05350c04e0f5ed621e44d7ec8eba90a6ed27922265a9395f60922"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00132.npz": {
+      "bytes": 602207,
+      "sha256": "fd69b3433804fc25dde45a34a6f39579a71048e4e8429e18f4c437884328d8c8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00133.npz": {
+      "bytes": 576238,
+      "sha256": "89a45172715d94b7e24b1b0dd843dd8b000a8b071ba79b8fbfae0faae0b2d1c4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00134.npz": {
+      "bytes": 564742,
+      "sha256": "57345144e8bbe2cb016e0ac34e79975c61e91a0eac582c4ea3589de5e86b4d6a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00135.npz": {
+      "bytes": 553462,
+      "sha256": "c6bf69d358e9b6277b259209c0dd9a8e37f718001f96d9621a7f652270d41050"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00136.npz": {
+      "bytes": 534941,
+      "sha256": "e5d5867260342f9e95008126c19eed2ef32b3abe965e0f3d58bcec1b1a239681"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00138.npz": {
+      "bytes": 512578,
+      "sha256": "f355b3509d92d356b0ed7f8ce15804662041ab0c585781ff6b9b7beb51c91c25"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00139.npz": {
+      "bytes": 490870,
+      "sha256": "b783b9ea9c94dabcc610634c90c728eb683d7db64e878557507c6ab408ebf4bd"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00140.npz": {
+      "bytes": 461213,
+      "sha256": "9086a3a582770fb476ea4ec3f9c1a9df9ff34071aeb91399cbc173bebcbd8149"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00146.npz": {
+      "bytes": 525631,
+      "sha256": "f8d7cf12a108d015d2b4f0051a956ce896a0ad00c9e82090a8d5fc4e5713e242"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00148.npz": {
+      "bytes": 585981,
+      "sha256": "e292ccf731dfa9abaa2396ca4ef8103cf723314bbcef2ad013eb5e7ebcaa85b0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00149.npz": {
+      "bytes": 614854,
+      "sha256": "fd208572247f5cf9613d578467969e49cae519827ebf9844e7c3e1c56a4dd428"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00150.npz": {
+      "bytes": 578604,
+      "sha256": "2b31046430a9f16f230bc3d3ef82912700bf6c142cf388b95c4a6b3eb78a057b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00151.npz": {
+      "bytes": 576550,
+      "sha256": "39340337e80dce0447eb43d128d915bae569465f9022e1b99cd7af775b9cb839"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00152.npz": {
+      "bytes": 594420,
+      "sha256": "6b403c496e2f3ce89dff611ee38490386f806a9a3ce841bd1ff407fda358703f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00158.npz": {
+      "bytes": 599819,
+      "sha256": "0bb7ce9c1a0da688a0fbea9ebae99cb9abb83cd1890cefffee177cff7ef02fd1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00160.npz": {
+      "bytes": 599819,
+      "sha256": "a6e8c503c9247370e2ad8fe42f7de38bf2b8c198099ee22025c137148c7ff94c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00161.npz": {
+      "bytes": 621239,
+      "sha256": "f3de1e822187a1a05076096cfe2667895ff14c54d9337d2b66aa79d0b5e7f66b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00170.npz": {
+      "bytes": 596409,
+      "sha256": "fdb5f39f78bc447e38b9185a5bdcc589cfd7ff41ae2ea041b050830bcdc6bc6f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00172.npz": {
+      "bytes": 582493,
+      "sha256": "56e59446e30736fbb65a3846e435630811b4c7ac85fffa68995d1d732b39983c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00173.npz": {
+      "bytes": 770558,
+      "sha256": "c018ae199322cea77d7ebf6f4e45fdfb84f36c4efaf86b16ee7367bd0ad406a9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00174.npz": {
+      "bytes": 742658,
+      "sha256": "4bdf3b7cd1cb2de806adfc888df7d29c07dc5468b62205d2cbc82319af5df24d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00175.npz": {
+      "bytes": 728480,
+      "sha256": "2ae8df06a48e75c62329220292c1a3aed528d746506ae5f2879aa1bd28576aa5"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00176.npz": {
+      "bytes": 717645,
+      "sha256": "3d4c00d1db99b5c95216edcf8091e6e447e5a2f1e5c2ba7045c5aa1d51a44535"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00177.npz": {
+      "bytes": 710672,
+      "sha256": "6f6e9ed2fdaa6b12197c256c9504e548aeb4a234231bd96d08177570d82bbd59"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00179.npz": {
+      "bytes": 711988,
+      "sha256": "e969302c884586514e8a080695dadd42522ef807427b26b5f09607eaf6569ebc"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00180.npz": {
+      "bytes": 715408,
+      "sha256": "393e55efba5081074eab020d9d03bae75e5e178c3e3d3827a5bee16770d39eda"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00181.npz": {
+      "bytes": 710407,
+      "sha256": "676fc9507f3518fbae6de59742c8696fbab38028b6afff3fa0b9dbb7761addff"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00186.npz": {
+      "bytes": 609981,
+      "sha256": "b1d2850592bccb2f8294a19ad3493f15c965853a365457d66a30994e18325751"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00188.npz": {
+      "bytes": 611549,
+      "sha256": "8727379807868a732f967ba9c46da231a936fa7ef3902f396831895b914ad2b0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00189.npz": {
+      "bytes": 605798,
+      "sha256": "d4fe2e97be13e6a15349a6ac8377b819b065381ad9b96280e709ad0fbcbc5f14"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00190.npz": {
+      "bytes": 588644,
+      "sha256": "bff61d1f20261ec224880bed534dedf1f06faa3a661373d8cc6f2668891670b7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00191.npz": {
+      "bytes": 574272,
+      "sha256": "c9d26030eae0a2fd81b0a029952aafe47cf6975d18affadfffbef70d54e1289c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00192.npz": {
+      "bytes": 559834,
+      "sha256": "b6e0f071a4a494944f22064189057b6efd6cd02fc6beaa5e7393fc55d26af157"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00193.npz": {
+      "bytes": 545391,
+      "sha256": "811a9c4058a2f2154c0996959539222067db2be3e0bf44acba3a40b67c698c30"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00195.npz": {
+      "bytes": 536660,
+      "sha256": "1f6873aae63d2a7fa746fe6ad7d4d402bfa1d372659268350f7a7b6b2e3b4080"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00196.npz": {
+      "bytes": 528602,
+      "sha256": "d8025eb0c1f92bb62a7666169b2f751e68b9527f6b97ed34b25f78e3eed67d9a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00201.npz": {
+      "bytes": 543103,
+      "sha256": "859f6b89a4838c71d14a7039d1a93132ea07206ac2f05478190b1774639d5d81"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00203.npz": {
+      "bytes": 410369,
+      "sha256": "445d9171697d8ebe399fe58f1e2216e3d1887928fa92b8cc4867826b0e77577b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00204.npz": {
+      "bytes": 374014,
+      "sha256": "232902c89e60c643a600eea4731d2e5870d8b479a801682da352f1f73f81a52f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00205.npz": {
+      "bytes": 360254,
+      "sha256": "f73d363a39c160d0e8c69091401b90d3da05beda952152bd5b09bc2fc2160144"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00206.npz": {
+      "bytes": 352612,
+      "sha256": "aa9e9c6aa68baf4136a846bb9a9bbfebbf62918e8afbf1143aa4e27a82a455c2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00207.npz": {
+      "bytes": 368814,
+      "sha256": "96c37447ad5a5bfce4254b6481b33250024e319b4369b4d3b43f6f7b4e4a24f4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00208.npz": {
+      "bytes": 373547,
+      "sha256": "7e16a93eb0c54c562f67115853ab99ae811c79193290b53dadcf7684f7795d39"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00210.npz": {
+      "bytes": 354876,
+      "sha256": "4fb685d2bef7123b598d88f1257210d60c5c1f8f43a5bdeefc5e90ddefd9d480"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00211.npz": {
+      "bytes": 368462,
+      "sha256": "2b038644c6b817d0b8e940cc9136596a28151ef7566dd5119156a7e35cb7239c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00216.npz": {
+      "bytes": 346321,
+      "sha256": "2b24c9848a23df90f222109efc061a0eef986878c11cd7cff0190d3e3a34f4a3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00218.npz": {
+      "bytes": 313992,
+      "sha256": "126467ee923e7a1af9f1aab52e4f4a627f103267bcd94d0d21b2bdc45cc6acb7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00219.npz": {
+      "bytes": 307804,
+      "sha256": "b3aacc994fad6ea8db6d5a74ee505490080e08157a6c0abd378066c78cb1929b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00220.npz": {
+      "bytes": 302856,
+      "sha256": "42b53cef6808d29bdf25122f13ee15fed4bf5d1cb7417e4ba242eca7a3227bcf"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00221.npz": {
+      "bytes": 298340,
+      "sha256": "229f67d5f80175e8cc881da8bab7d2ef12d6e61ca261dc41d19283682accb542"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00222.npz": {
+      "bytes": 298155,
+      "sha256": "e63d03cacfbd8b4d37826c93f4c28926d87be727afd1b3ce541226a9b0cecfe1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00223.npz": {
+      "bytes": 291619,
+      "sha256": "ac8453fe9ffee0c5f32e6bbb8fe68b2b54a27fe3b7728ff912deb05f534b6036"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00225.npz": {
+      "bytes": 292237,
+      "sha256": "1b5219fecc406e64fd022cd8e6c910e0c7e44716027131ef7ab2ebc636a2713e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00226.npz": {
+      "bytes": 287340,
+      "sha256": "35cfd7666d5a731bc0c3de5de2dc7c865b2abb50c5ae73952fdf9e76782f2030"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00232.npz": {
+      "bytes": 453290,
+      "sha256": "ad3c40fa85e769008fc0c9a92c43da4e516a02a863cdbf8b964dfd64cabdc879"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00234.npz": {
+      "bytes": 466044,
+      "sha256": "d37aad8c4f5763bba94a43e7e7579717147cfff25adaa8f3bef9c20c11e36bd1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00235.npz": {
+      "bytes": 369023,
+      "sha256": "7498b798bb3a3e5c712a7e2e02a380751022c0392dd65a82fc0da502feef05e9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00236.npz": {
+      "bytes": 374960,
+      "sha256": "145887212c50381d50ede17f0a48bb559eeed53a6199157449c37ad1320ae692"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00237.npz": {
+      "bytes": 380256,
+      "sha256": "51eb19b1f90dd0d854c9121c6b77e1d6c4c3034a2b126968a658130683d66af0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00238.npz": {
+      "bytes": 380708,
+      "sha256": "b17dfb35bd5af3027cbf033ca7d8a3f07507db8715269a1d85f583d1f877c46f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00239.npz": {
+      "bytes": 376998,
+      "sha256": "9be1a91a5857999485464e75c00c8adf5a1f04dc5b4b01d209b6a2c814d579f0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00241.npz": {
+      "bytes": 365356,
+      "sha256": "d807a2df72d3a42f9938f49eaa3f3844ed54920bdfea8d3cc9fd3a9446bbfa40"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00242.npz": {
+      "bytes": 317357,
+      "sha256": "8fd6f212ae48b678d1e79e60d1a110bc36826fc25eedb900a1c5b7207a462238"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00248.npz": {
+      "bytes": 465869,
+      "sha256": "63cbf92915387c6304e72d161f3cdb7859d0d6d553bbf5486ed8211b57dbb311"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00250.npz": {
+      "bytes": 477341,
+      "sha256": "af0646860360c82e6baef024ed1a6525c8a484e9f7659d9948060fbc551f77e9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00251.npz": {
+      "bytes": 370408,
+      "sha256": "597fbb88256d8ae879e044f0b46b2dbd6dd887a7db698ed2226f9e7b1f0d7d11"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00252.npz": {
+      "bytes": 363495,
+      "sha256": "e9e997554725d97593e14f43085e88864ed2c2843fad2ac736e50c5da3ba33d7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00253.npz": {
+      "bytes": 336409,
+      "sha256": "4e7d4de7b4001bd91468554f0b6ee22bb65624dee3e6ed6d31f1f9700a230767"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/navigation_depth_00254.npz": {
+      "bytes": 344553,
+      "sha256": "240eed9731981a2e17b0d1a77e2c7c2378467ccab5f83048d6e2b5cb8098473d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00001.npz": {
+      "bytes": 341198,
+      "sha256": "e708691fc6bf9e2699b3e9544f08c738c9fa8f32336219bb813b2a40f7de6e47"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00002.npz": {
+      "bytes": 361031,
+      "sha256": "452ed16317a2002d6a6814d67dfeaa9d0716209361498b6c1b53b0f0c30cc8d2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00003.npz": {
+      "bytes": 236307,
+      "sha256": "b1e991a8be21ab51e83b82b8555bfc5e8f956723af7c3f2feafbbafeda2489c7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00004.npz": {
+      "bytes": 415485,
+      "sha256": "14e86be10435e67fd04f4f4b32420281a7d98bfa5783e27f9778405fd1569fe8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00005.npz": {
+      "bytes": 465692,
+      "sha256": "b3fce1481ae73f17929b4ee3cf7f9badad65528e0cbb07df34dd67c14bc587c9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00006.npz": {
+      "bytes": 466452,
+      "sha256": "70c4fc974f6fea4c17528034d131687a1c4d11491b574820c5aeba4a55a2198e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00007.npz": {
+      "bytes": 555117,
+      "sha256": "d010e9b469ba5880c5c0c9e4d8cda3022e1efa58cfc3ededaf9ee14fecf74b90"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00008.npz": {
+      "bytes": 432963,
+      "sha256": "36d67ff305ca20483afa40452df006917565934e93ba05146e70c441c8fc6853"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00010.npz": {
+      "bytes": 475756,
+      "sha256": "f7b264e6d578b02af54b2d2f183bcf2af37d1b368c515752a4fc76a9143f8f33"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00017.npz": {
+      "bytes": 445591,
+      "sha256": "646b77d9c7f8d8b29c05f4b1e15ace687a6756bcf22a6ba2c03df2ddb17404f1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00021.npz": {
+      "bytes": 414321,
+      "sha256": "928613369a9882c41a0191216c56812d71c6967d6571430c26008c90488770e1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00022.npz": {
+      "bytes": 402094,
+      "sha256": "dc139760d9db709b0df895c9a285f342b07a98804d684e40bcd66f6724a75665"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00023.npz": {
+      "bytes": 465997,
+      "sha256": "34f57e8cab566164bed7cc3081fc1eb48caa14e8171d8cf72d1a58fedd9e9d30"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00024.npz": {
+      "bytes": 295782,
+      "sha256": "f86fca6c30b945a881c6a8e77551e34f16074e17aee32e75d145e0c1cf345db2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00026.npz": {
+      "bytes": 345567,
+      "sha256": "6f994c59e820774248d603ff0be103cff2f6b72ccc49131355f308a9fdebbdaf"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00033.npz": {
+      "bytes": 342041,
+      "sha256": "227312e6257f78206bcd61ff867632a512eb0b2d1241ced263ce30358c5cd5b6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00036.npz": {
+      "bytes": 315679,
+      "sha256": "3e0977f8c3c9a0e2c293b8d19a1651d65210a6e3001b2cd6679df0e1ac850fc9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00037.npz": {
+      "bytes": 237057,
+      "sha256": "4ec07ed46f07ed59c4bea270f5abf4903deb34206bc6e92d2f0a474d6391b667"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00038.npz": {
+      "bytes": 330125,
+      "sha256": "b799169031d165c2eae1a5e6adfffdbab726c3ca9707e6fa072d4cb98168e4e0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00039.npz": {
+      "bytes": 443667,
+      "sha256": "b7bcf5ece12626c0d2429d7b1768286e536926a6333235b36fda8d84f66e7d4c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00041.npz": {
+      "bytes": 343770,
+      "sha256": "a7cb4ebf952ca1adbedd21537356d71362b2d799aef335cd56d951d8c4cf8086"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00048.npz": {
+      "bytes": 326845,
+      "sha256": "1028b0d6bc6ebf921af8707657f7f26516ca5e4740a8548505fd121e1eb4b175"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00051.npz": {
+      "bytes": 315900,
+      "sha256": "67881d025fb7cad3e8e9f35976d5b28a7945c10b5b6dd97efe95e426a0b60faf"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00052.npz": {
+      "bytes": 209308,
+      "sha256": "062ca7a1ab45af645288f981dc258742f540dbcf0322362b21daa27af1a3f6ad"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00053.npz": {
+      "bytes": 332430,
+      "sha256": "8bdeeda1e6e055b277f970aa61af5d8bd5a1d7d99022a9354aa9446b07d95731"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00054.npz": {
+      "bytes": 465161,
+      "sha256": "6313b435d727f289277ec4705f342c9378b637fa1896c33f1d8c6d1aff9d6483"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00056.npz": {
+      "bytes": 491926,
+      "sha256": "bf6b67cf1cd4c95b56f2659e56436a9c6e180b7b2d50754c3fd9f1c32973abf0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00063.npz": {
+      "bytes": 521079,
+      "sha256": "e5ae08c2c12b6712bf60fb7f27f107f7516d50bc72f44ab3974a923008860191"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00068.npz": {
+      "bytes": 454361,
+      "sha256": "bc1bce64eae3119c24fdbe3f4cfc78e0a502748a282909e3aceb07dc1036ab33"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00069.npz": {
+      "bytes": 581774,
+      "sha256": "f5a4f032885e0fad168235512330bf19a3b6a17d1520ae7c3c47f1227c3ef0a8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00070.npz": {
+      "bytes": 517648,
+      "sha256": "ac99f24997bbe2b70c0f1289cb6d7e2c060a1307e06e123e80bb71e94abf8493"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00071.npz": {
+      "bytes": 383644,
+      "sha256": "e8f80e3f0cb15e4951d65c89dd4fe8a4220a7ab203d9faae4849c8bd4106907d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00073.npz": {
+      "bytes": 506919,
+      "sha256": "a88cdd6d0011dc3b813c0775e1b0791208c9b6081c386bc60f1be3cbae5b69ff"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00080.npz": {
+      "bytes": 524660,
+      "sha256": "3d3deacbc839e63b8d27246b831238e16c513732b7592b6c0fefad9c017d081d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00081.npz": {
+      "bytes": 515613,
+      "sha256": "4906aa89fe24727aba0c50922d5e6cf66ba934d9adeb4a1b1359d46d5883ba6c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00082.npz": {
+      "bytes": 517352,
+      "sha256": "42e4cfc704bb9cdad5ee99a40344a029838037809c5bea31a0602cc570ed55dc"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00083.npz": {
+      "bytes": 544255,
+      "sha256": "0e4b00c44a2084331fd3649fde6d04300f839db9f7eee446e2a5bc96b206b382"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00084.npz": {
+      "bytes": 378789,
+      "sha256": "ed315a29b6040140287fbac4140d98534f5949945d84db3bf9d91e4c1b694cc4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00086.npz": {
+      "bytes": 477353,
+      "sha256": "5351a81384e0f301a588987b1fa50d7ecdd0d0ded5f979b9fb59c59209fdbc0c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00091.npz": {
+      "bytes": 476852,
+      "sha256": "17a8e20959439270f9df879714a70dbf02da793767f19fc89bc6857e8ab88b17"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00092.npz": {
+      "bytes": 598978,
+      "sha256": "bf0000caef2ef999f4329cbec16f934e523036fddc0d5c77b39f1225d132b7db"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00093.npz": {
+      "bytes": 470501,
+      "sha256": "985a8e76e9869b47bf14c54bac23a72cc5367c6f54d4de5823a32cd5b51db79d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00094.npz": {
+      "bytes": 472829,
+      "sha256": "c37a558e12e8e9fee242c70b707c948d9724a4069e740f602983f751859324be"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00095.npz": {
+      "bytes": 484609,
+      "sha256": "0564b4900524040cce44c5ff2621e0be3c61863bcf08febefe7b8af48860d0ad"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00096.npz": {
+      "bytes": 117197,
+      "sha256": "88431a36f7938f93639cebb875dae8052c1dd06d1ca8f7f4ec600d3b8ee3ee4c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00097.npz": {
+      "bytes": 329794,
+      "sha256": "8b818cdb1d0653d5fde0a60ee37fc46fb122366a7b15a5110204dc05474a2eed"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00098.npz": {
+      "bytes": 524990,
+      "sha256": "4880c17e13bbe0c1c9164744960cd6a1090ebed0687ce0825168cd9d508255c7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00100.npz": {
+      "bytes": 549334,
+      "sha256": "e824d659feed5e17b7745785363b09529f8e4faa5805f837b752efb851d04b0a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00107.npz": {
+      "bytes": 578153,
+      "sha256": "8d73687f15e08cde4a35f624e8ece0801f7f4a1216e69e998c46a48360e21b9a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00110.npz": {
+      "bytes": 556591,
+      "sha256": "0d20eebf86ee162749a82dcad290391a78c52334f1b40ae8c6e830a89c439e80"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00111.npz": {
+      "bytes": 668834,
+      "sha256": "cb8c4526af3cc869399eeb08787f4ed7e701ec35498224d01c17584043e6e8ca"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00112.npz": {
+      "bytes": 602708,
+      "sha256": "5f06313b1a51a5ec25d03fbc92e80424c67fe75a230b561e8aa4a1d8b8f90434"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00113.npz": {
+      "bytes": 616175,
+      "sha256": "2eb1a5827d780f9a7f9a49f8abe47e4a1a249a00946b6f585a71fb317b092b24"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00115.npz": {
+      "bytes": 557096,
+      "sha256": "9c66968b46fbc479524cfe3b007b2b406d0d96c8d14c58cf6b4dc7cb24803757"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00122.npz": {
+      "bytes": 596414,
+      "sha256": "2704997f85f670702f5750af7f05131193f52cdd53f4ddc7bf7c5f182933043c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00125.npz": {
+      "bytes": 577119,
+      "sha256": "c72d41ecac6d73bde52a5e71901c33f8da894681950c5a647041f688ef1fd752"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00126.npz": {
+      "bytes": 606769,
+      "sha256": "30baaef129f097675df233bce190248d10119abd3f1036d9674a34538ab20e7c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00127.npz": {
+      "bytes": 588127,
+      "sha256": "bf0120808c3ba3bb17eac6f905e906e5f2b0e058cbf096d9271ec766481795d7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00128.npz": {
+      "bytes": 611588,
+      "sha256": "4f96648b63b4b18d08fa5c75a65cd9165cbf5dc72b44e3677da54c6c64a61444"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00130.npz": {
+      "bytes": 635571,
+      "sha256": "5ac65a8af927ba295513bad88f6fc79b4769b425d194030e7cc95e5a157b04d4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00137.npz": {
+      "bytes": 534941,
+      "sha256": "cde3fb518f47fe1c6a1bf5b893cd47676ca97620a6eced077bf40c9d7cd8287f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00141.npz": {
+      "bytes": 438039,
+      "sha256": "a61b3239e1c9892af9d0d55b49498bf518000b9835a2dd092749adfdb53d4aee"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00142.npz": {
+      "bytes": 489210,
+      "sha256": "fcdfdd43034c652d19898d9bb2876c0c8a891d4a17eac16dff538d2bc7a52ef4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00143.npz": {
+      "bytes": 536027,
+      "sha256": "5d90c96eb5c0f746c31c11695f835ea11faaa86ef55023381789ea61d2c4affb"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00144.npz": {
+      "bytes": 534012,
+      "sha256": "0fcc779fdbaaeb4225014fc3ef181441a87bc9fe040ab16e78a7b26b734a2c65"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00145.npz": {
+      "bytes": 525631,
+      "sha256": "56c8c288c9b7ee1b8b88c05691196b3af63419e762680b0220cbec44d8dabd59"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00147.npz": {
+      "bytes": 585981,
+      "sha256": "a98cc2adf41f5bce54f28921dbac90ce813a71fd448d4dfbf6e458c6a4e1d407"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00153.npz": {
+      "bytes": 595769,
+      "sha256": "b05147138c8b529a37750a5da87d1bf65eb7c4c7fd0d1f8cf5293ee28fff0d78"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00154.npz": {
+      "bytes": 685614,
+      "sha256": "7ea7ab108f6ca677615a4e5abcb08f089317901480c68a2d20f90e4ebd3da1ce"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00155.npz": {
+      "bytes": 620335,
+      "sha256": "02ec0c7230cbcb2009ea9af12d9046ff90caffc405e83941d2c62ed20ac06d87"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00156.npz": {
+      "bytes": 469411,
+      "sha256": "03957c7d8f0d086ba2288df5e71b32c149ed1e45103c3bb7aa996dcaa647709c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00157.npz": {
+      "bytes": 599819,
+      "sha256": "21d38c5c20622a86394a25ffb84f01d06f6c3c1ecf93ff830723fb0de775502b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00159.npz": {
+      "bytes": 599819,
+      "sha256": "ec3cbce1e05eb57f207050e5683eccf5aebd93be6868f695e548fc07ed487494"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00162.npz": {
+      "bytes": 619143,
+      "sha256": "e50cbdd2d8652e1b2d978037d301657a107b2756383bf4a5652e64082120d727"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00163.npz": {
+      "bytes": 721644,
+      "sha256": "d54df74380b6e87367ea480f78961d98111603b9957077dffb08cafa6514f71f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00164.npz": {
+      "bytes": 600681,
+      "sha256": "c4e380222bf877715b56b9cb42ef077ad07c7d4579ed2399477a32e833606cda"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00165.npz": {
+      "bytes": 466654,
+      "sha256": "c02d254a5e70473e63fae60451b95fe02631a3da285816dbc43dd132cf19ac41"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00166.npz": {
+      "bytes": 593370,
+      "sha256": "ad9766bb009b52e0faccc309c4921d52c5318fd3c4e0e9232153bff48b29ef2d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00167.npz": {
+      "bytes": 586554,
+      "sha256": "278623c38777988491b9e53f2fc67ca608f01756af19779e20666f8442e0b89c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00168.npz": {
+      "bytes": 614363,
+      "sha256": "da2ed2afa8b3a139e40b77270cbc7c69f58122e6a02c1dd65645141c4193830a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00169.npz": {
+      "bytes": 596409,
+      "sha256": "6bca24f66a99745311e94d43c373b2f468a76c9806a9dcebeba8f5d759687e50"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00171.npz": {
+      "bytes": 582493,
+      "sha256": "2ac6bad36d87ee0af8bd3e2f1c93314b248c4568dcbc3d82b60aac031c51abdc"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00178.npz": {
+      "bytes": 710672,
+      "sha256": "598a7bc38a8d907279bfea20c52da567e5bba8a6ecf6ab083f31483da11aa0c7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00182.npz": {
+      "bytes": 693405,
+      "sha256": "510f4fc8a21ef523658f4096cf98c6cbe910de90835b3c31690488d614097082"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00183.npz": {
+      "bytes": 541628,
+      "sha256": "8dfa9cee0e6c552799c0d0711de26b84484e51b2f77fed2e3396d072880ac5ee"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00184.npz": {
+      "bytes": 654501,
+      "sha256": "16d53f2aa94f3d68ce9afb62e09968b0c440b50fc8a44b0aefd3c8b180f69151"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00185.npz": {
+      "bytes": 849614,
+      "sha256": "1973c1998a281e542a77fb8746c9fd5ceb9f343ea0f96b11ebd2dc93064174e0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00187.npz": {
+      "bytes": 611549,
+      "sha256": "9f42f0410af40aa49217c57ae0c3744c56c803540f2b878ab828759f507fd28e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00194.npz": {
+      "bytes": 545391,
+      "sha256": "b87cfeb223498168f36efa501751b38a910d6bc2bd51ad180eb15f705e0fa0b7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00197.npz": {
+      "bytes": 533527,
+      "sha256": "3fb5583623c4eb5a40f9b6c0a22cabe3cd90f5dd86051994e51871cf88abeb1b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00198.npz": {
+      "bytes": 391668,
+      "sha256": "71bf8b225bdd603c75f649ff7ee7add8acc45c0a9c54a3009b5c5d993a7b879f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00199.npz": {
+      "bytes": 518788,
+      "sha256": "294738f6a2740ce8a185cb42715c832d48de441f7a52cb86a3923ba08620f24b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00200.npz": {
+      "bytes": 693171,
+      "sha256": "5c67e7237f93d2a257bb2ec679f31a8da4e2295c76963b39a1659f00b0db3caa"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00202.npz": {
+      "bytes": 410369,
+      "sha256": "d2fd754f64237cdec32974690226513d9b4be2f4691f482bdf9b9d2e9a6514c8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00209.npz": {
+      "bytes": 373547,
+      "sha256": "fa3c29f098763822bc05caf7206478f5de07e3af94a4eaf8cd826f9c9a09cd29"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00212.npz": {
+      "bytes": 356313,
+      "sha256": "24033ba14e15feeb3512b0b90ee562899fbcd39bf2800cc9f7eefec4e483e51e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00213.npz": {
+      "bytes": 458265,
+      "sha256": "e5dd61638349fcfca317108300e7978d8b4f3b4058e3be1d18112ae55b08e812"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00214.npz": {
+      "bytes": 369881,
+      "sha256": "e145a2300d940acca70897cb44a93548d36f24262731122ecabd95e643b2437b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00215.npz": {
+      "bytes": 401729,
+      "sha256": "50506a744433ef013897822818578d96223ab61f1e3a7b4f3f3fae958eb7848b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00217.npz": {
+      "bytes": 313992,
+      "sha256": "c943eb7a2f4cf0ed697ae9d2b1bdeb38300465f856374809d25643b9313541c2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00224.npz": {
+      "bytes": 291619,
+      "sha256": "0fde255e48098fb6d2da2599444fc1bd4310eb3ec7788fed7209cc2345134e1c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00227.npz": {
+      "bytes": 282627,
+      "sha256": "b51f41dde957a4cf3adb69cbf9f4892fe55a9deeb301e197c309777534554374"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00228.npz": {
+      "bytes": 445582,
+      "sha256": "2908dfbf906e891d79aca8976826834c15ec31aab50f2f08b1976d17448c6bb0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00229.npz": {
+      "bytes": 289376,
+      "sha256": "ffb4eb2625318f4ddb46cbca86528a560d9f330461259c0c69ab34bba24c42c6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00230.npz": {
+      "bytes": 432886,
+      "sha256": "a083af9cd83259441ff723294273492c34791ed9a4784d7d701195cfaf2093e2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00231.npz": {
+      "bytes": 453290,
+      "sha256": "a65be4541f2418a4133f178180a2d41a1082945a4408e25122f18c50e7aac50d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00233.npz": {
+      "bytes": 466044,
+      "sha256": "10aa1eb5555621ad1bc748d4fb91f97c796e985dbc0b91173b73cef06ee4e9c2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00240.npz": {
+      "bytes": 376998,
+      "sha256": "ee119ce0c4e2de25de719cf29778f42a24bfb78e22969dedeb67b8574cbef0f5"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00243.npz": {
+      "bytes": 368492,
+      "sha256": "dc2665fd665d3a8f51047526d1dad418ec2ce0fd1c1573930e80693d28daf3de"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00244.npz": {
+      "bytes": 379579,
+      "sha256": "4e0df282a3424f34e40de73cb97df372263fb98e76f3fe27923ce14f4862d468"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00245.npz": {
+      "bytes": 327533,
+      "sha256": "cb2a28c272471b8c517e3a4c5d6d7dc17d5f8751aa7372563a9b6e2f3f50f21b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00246.npz": {
+      "bytes": 335075,
+      "sha256": "8c8529ec0d5e3d564ae7f997de2ec72c9b35a176e2b3a8420708d82a1946199e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00247.npz": {
+      "bytes": 465869,
+      "sha256": "638fb954e31d0aae648e6ef8522d271ff00db4f8f35f56b6417ea3a541eefcb2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00249.npz": {
+      "bytes": 477341,
+      "sha256": "a8867535e112479765a1510ca62c14fe872e97751611613f3c6c58a3f408054f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00255.npz": {
+      "bytes": 346794,
+      "sha256": "4605fd321df34735609f3e43ca5b3189f984a264fe45031f0418f6a1948ce010"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00256.npz": {
+      "bytes": 275142,
+      "sha256": "a86836d6bcb002f57beebc433d41202ff82a04897fabbbb68438c49823dbea4c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00257.npz": {
+      "bytes": 352492,
+      "sha256": "62e59138ceed67151c4ac5c8a955db329665fed1ee84bb41d4994ee051421da6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00258.npz": {
+      "bytes": 309441,
+      "sha256": "1fed96f09b33c55a1ce3e7d8b073e66c49dc661603bdd9f1675cacbcd20bd50d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00259.npz": {
+      "bytes": 462489,
+      "sha256": "c25d432af2900272f38dbdc01b0ffad858dd60566e931e8b2b32383057e192ca"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_00260.npz": {
+      "bytes": 469596,
+      "sha256": "2b0db626bdf895e1350952ba96c1cecc1496f8445ecad49e989e680ca68c0080"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observation_raw.mp4": {
+      "bytes": 92651608,
+      "sha256": "9f879dd45f562dd419469ec5e2bac23740aa8b150171cc5e645316fd8b1e43b6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/observed_occupancy.npz": {
+      "bytes": 21617,
+      "sha256": "d19685ff681631578837d397e826063bf9b2498c48669044c2f529355570f096"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/overview_raw.mp4": {
+      "bytes": 140234265,
+      "sha256": "b4371fd59519c4e2725b8eb093ba5c6b807f25365dce2d68df365ea5d1aec3f9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/reviewer_view.mp4": {
+      "bytes": 172380503,
+      "sha256": "5b6be49e16bc0aa311300305f9e86a5a923ecd7004b66cfbd4fae778866c3b1f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/architecthor_navigation.py": {
+      "bytes": 16047,
+      "sha256": "b1808ae29417abc2ad6a0f4170f975274c49c0f5aa71a9e4e55000d89f841556"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/attach_learned_display.py": {
+      "bytes": 3677,
+      "sha256": "ce16c602111064b12518adf1fd611d7096bc9f52287a01cd7d65b0911c4ce0aa"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/audit_completed_crossroom_runs.py": {
+      "bytes": 3392,
+      "sha256": "574cbe3360e09e0ab85236b9d2be4ddd787ec86aa13029ff9b99d1160b01786d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/audit_crossroom_attempts.py": {
+      "bytes": 3461,
+      "sha256": "7ed6829af1d6183080c34cc7a90e0614ce75a8b73d43df12ddadf5571b2470f1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/audit_crossroom_success.py": {
+      "bytes": 4166,
+      "sha256": "2503818cb6461a87b6bc9cd57fb8c6e86237fad673e62d85c0e07ca79aa5038e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/audit_learned_evidence.py": {
+      "bytes": 3167,
+      "sha256": "e9adfe33f05aca9f79e794a8d27796db9d622bd8e28737dd84267760f861eebb"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/calibrate_fetch_carry.py": {
+      "bytes": 6815,
+      "sha256": "7ab81741710527225a427b78e192471b8f6f34e91c1a4dd6affc975b9159a2c3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/calibrate_fetch_delivery.py": {
+      "bytes": 6555,
+      "sha256": "6b02659af6df66bedf2914c9ae342266dcce467670aa958b4ea759d156b80f59"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/crossroom_evaluation.py": {
+      "bytes": 2342,
+      "sha256": "64ac11e99d09860a5dafea0cdb0867d05e66396463c791a56d6e811c84040ca4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/datasets.py": {
+      "bytes": 6682,
+      "sha256": "d8387bdb9299652df66152a071eb467eab58389e3f299f8f078d98c0a895d150"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/depth_grasp.py": {
+      "bytes": 2205,
+      "sha256": "19c56c118c5f0138760f804d520dd38417035a8813ab98e83055774941c8186a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/dream_fetch_navigation.py": {
+      "bytes": 6969,
+      "sha256": "0a2dc576c69d95f2ef0017c2db9e518bcf769c339c2d115a48db52c3a31ae3da"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/dream_learned_core.py": {
+      "bytes": 17348,
+      "sha256": "98498bc837deaa0288901f0a162aa311b4c3aa21d03315f06078040f4d07969a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/dream_simulation_core.py": {
+      "bytes": 13129,
+      "sha256": "770db15cd4a7cd6482178bb9e36c78477f28aa5f64576378e81e98a3131d6982"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/exploration_gridworld.py": {
+      "bytes": 21171,
+      "sha256": "5d13c2c827a6e41fc7a5deca5eb88a650cbb39c04d6f975b282b6657e26cfbf6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/exploration_weight_sensitivity.py": {
+      "bytes": 3048,
+      "sha256": "9c74889344c069b365269495cb3beb5a472b564066bc714927e7206b5f29007b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/extract_architecthor_subset.py": {
+      "bytes": 5469,
+      "sha256": "2f3ac8a2c2cee752b5cc6ad568cfd73f151e9b95b31ca7fd36c472b90cc3e6ff"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/extract_procthor_subset.py": {
+      "bytes": 5568,
+      "sha256": "361d4651cd18ce4328db32ce49dee7a4a0f412b7720123a40b0aeee8cf2ed917"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/finalize_learned_suite.py": {
+      "bytes": 13201,
+      "sha256": "1fd36d267412054597781d387f623f67b2a912ce57bc67decad6cd0ff211de25"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/houseexpo_cross_room.py": {
+      "bytes": 33909,
+      "sha256": "e57cf65f3c272feeda7c6bf5071b656ddfc00ec1d81856206bbbd0e2532d78a3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/inspect_fetch_envelope.py": {
+      "bytes": 2284,
+      "sha256": "7e3d1154cd4d7d550df6967860abc5093ec795b93b70d2825cffd07ed58d8ab0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/inspect_learned_run.py": {
+      "bytes": 1612,
+      "sha256": "09c81a707504c57466ce0639eb4137cefe0154f2a723bdfdc38c70a40b5693f9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_assets.py": {
+      "bytes": 2791,
+      "sha256": "02d168e3a540f947e9e7d87ed846636222bd3d4d4f18afbd5bbee88c6de9549d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_environment.py": {
+      "bytes": 10572,
+      "sha256": "1e140c40ea4b3456a8348262d4bf8701cb15f27cd87d9c328ac362c2e903540a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_evaluation.py": {
+      "bytes": 5265,
+      "sha256": "4305b0fe95e91248ef94168104f78f5e3c6d253ae5974a19e29e7424a3561708"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_fixture_geometry.py": {
+      "bytes": 2174,
+      "sha256": "9e311a04476b4ce5df6949e658499931974b56a3454a62d67cfaae504db8185d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_geometry.py": {
+      "bytes": 8431,
+      "sha256": "97e5962d43ed018b14bdca8456e7c7375ba32a07b58f65354016f3a1a5b1c04c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_policy.py": {
+      "bytes": 17359,
+      "sha256": "5bc7827f029d84d7ef4664ae959558cd3254b184295f328b8e3583bfff661b26"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/instruction_task.py": {
+      "bytes": 4467,
+      "sha256": "6da3e742b8428a35d4f585d24811e0bfc81a9c2792600fe79900e79d45e7eea6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/learned_evaluation.py": {
+      "bytes": 3687,
+      "sha256": "9f2031c0a17827ced94d03b18a7163df9a5d0ed2f4db4fdfda8738389059dc7d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/learned_video.py": {
+      "bytes": 7382,
+      "sha256": "c355475f6a201a016c77d7f30e11f4e788ea5117177829f0218884039beec678"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/make_crossroom_gallery.py": {
+      "bytes": 9350,
+      "sha256": "f7d04f18c7d567198bb794b7d1234bb57ad4769b9b14d629e203a7c22e3aa534"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/make_reviewer_preview.py": {
+      "bytes": 8831,
+      "sha256": "ad127b3714ae4d9c93317e262cc87664352ab5676602e4cfbe7ce60d063dee97"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_architecthor_dynamic.py": {
+      "bytes": 19622,
+      "sha256": "ed1210c917203a7685a32031c8285713ca707523f189d5d7ceb45bf16a5397ca"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_cross_room_video.py": {
+      "bytes": 17230,
+      "sha256": "4dc7dc3186a126e0ebcdd6d5823e9ce06bc150f16ed58fbf186f5c1339c2566a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_crossroom_policy.py": {
+      "bytes": 16513,
+      "sha256": "c14ee818a7f30dc64f98565773bd6046449d462d5a9910547f18115ff3a4b686"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_dynamic_dream.py": {
+      "bytes": 81304,
+      "sha256": "4cacc84a20cfdad2bb9cb1d4ce773bff1198a4c09ab28113cdc769f40da3f25a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_grasp_calibration.py": {
+      "bytes": 3174,
+      "sha256": "04c58b7863ed5bde2598ce7d815fcee0d388cbf3f9549c8eb08b29cf3424fe02"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_learned_dynamic.py": {
+      "bytes": 42456,
+      "sha256": "eba32f4d441379b562a65abee7437b9535c47b0f08070cd74199a7a0ffa6f26c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_learned_probe.py": {
+      "bytes": 21760,
+      "sha256": "b38115ec19b63deecb2c04cd9242b8412aefe509ff8e9c1baee6a167cc3ed31f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_replicacad_closed_loop.py": {
+      "bytes": 48908,
+      "sha256": "4db81233ca1ad2af2f078a658f0afbf813af2553b0f48c492369924e817f2eaa"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_replicacad_multiscene_dynamic.py": {
+      "bytes": 10149,
+      "sha256": "38f695867b991c4d8bf1fe44ceb62ce5a80e3a64c63910f811f754207fee9a9f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/maniskill_replicacad_search_video.py": {
+      "bytes": 20985,
+      "sha256": "250bc6741f0344eeb3480b6f93b7945497968fd291061e0a3e5987bd74d26ac8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/package_crossroom_release.py": {
+      "bytes": 12833,
+      "sha256": "9ad4277c69e02459e87e863fd948e98426372162813fbc9a2ba667f4cf75399e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/package_dynamic_revision.py": {
+      "bytes": 6359,
+      "sha256": "ad91182a800a377ceeb3d0a71d96f9bb3b68b68292f6aaeb96331d2bd90526c8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/package_learned_release.py": {
+      "bytes": 9931,
+      "sha256": "5b4d936c9f86c1a4470e03bd146ac1c26dbd40da7cc20c83b088e82de9ff5880"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/physics_contact_audit.py": {
+      "bytes": 3645,
+      "sha256": "ab0dfc7e204d19f7d86820223d152207f6c74d86b80631d1f6b9fd68e8d06589"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/plot_combined_sensitivity.py": {
+      "bytes": 2389,
+      "sha256": "de104b0cf6596e8fd8d9c4c3b1e3b65a0597a74c2b5790de23839280fb576906"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/plot_crossroom_evidence.py": {
+      "bytes": 8059,
+      "sha256": "77a20559941d5efc456c1728957f996f67b2e1419da43cb67c6d46fc17643c34"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/plot_learned_episode_evidence.py": {
+      "bytes": 4843,
+      "sha256": "617e1d33baa9585db9e22dde25a4f71fc37c0e2b44950956802747ee2971a72c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/plot_learned_release_summary.py": {
+      "bytes": 1641,
+      "sha256": "85fad60693822fd4c7c2f71de97cbd7f077f951e71153ea2cb823b63262a1b47"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/prepare_crossroom_tasks.py": {
+      "bytes": 19041,
+      "sha256": "3b601bf9ba53335046cae95c4e6191d8958e394082bab8e0dc0df727bb7d80a0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/prepare_instruction_task.py": {
+      "bytes": 5335,
+      "sha256": "79299a20af748dafa2a9a7515b5b093d496f5afe3439a57e0e06d7fa9ec00afe"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/prepare_learned_models.py": {
+      "bytes": 2632,
+      "sha256": "478fd46911ee7dbb6b131fd80481e2b058da61f5c3f665b4964ac6197bff02a8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/prepare_learned_safe_tasks.py": {
+      "bytes": 5933,
+      "sha256": "c939efc873b7ae21bc010a4642e67ccd6945510e7384efbb608d28dc20a87941"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/prepare_learned_scene_tasks.py": {
+      "bytes": 5565,
+      "sha256": "9fd6380a0dcc928c63c2c638dd062e547e25050bcb1929e948321e67887809c8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/prepare_procthor_crossroom_tasks.py": {
+      "bytes": 4019,
+      "sha256": "16b131d2a5328fbb7ed27f03387f7c0efcd710b538f2d96ca1c8382475ff7b35"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/procthor_fetch_scene.py": {
+      "bytes": 1179,
+      "sha256": "d97a1e5613ac946a3c548ce6c9ef4db304973fe2aeafe09027eaf6e2e90e6672"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/render_dynamic_evidence.py": {
+      "bytes": 11607,
+      "sha256": "066bc8ac090e9e49cdce5bdaaad9a2d0fb96e7ecb3aa27ab5aa1a65f3f1e8af9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/replay_instruction_actions.py": {
+      "bytes": 7871,
+      "sha256": "fb7984c74d8da70999fa96957b99ff71faa20f7ee4a3091a4fc33509139a6ae8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/replay_learned_actions.py": {
+      "bytes": 4675,
+      "sha256": "726c85b0e57398f4313148d81ceb7ffb8cf3f8bbfefd2f4574d69d504a7cb7af"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/replay_learned_memory_evidence.py": {
+      "bytes": 5953,
+      "sha256": "abdba1d9c0ef3292279733eebfb9b89d79ae98942d5889540a0995be5be6c76f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/replay_learned_suite_memory.py": {
+      "bytes": 6119,
+      "sha256": "c3836cdf95f88ad923c38c4339b1f3c88c77a187bffa51aaeb7df62fd1cb8f67"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/replicacad_multiconfig_search.py": {
+      "bytes": 7170,
+      "sha256": "9d5df4136a28cda52e4a5b6703cf564e3c2fca540c6cecd7b776577610800d13"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/rerender_learned_overview.py": {
+      "bytes": 8252,
+      "sha256": "ff551b3da5dcea5aeb2294119e086dc5e73ffcfce5680eba8899a642cd2eed15"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/review_crossroom_video_files.py": {
+      "bytes": 3542,
+      "sha256": "8367d758399dd6706e2dea5d1f330e31fa753068822ede160e8a6608eeb9e6d1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/review_instruction_record.py": {
+      "bytes": 11770,
+      "sha256": "37868e0d7adf03ac527c912a1e5f2a02b117c07c391e095fd0131a511c95a78b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/rmp_policy_scaling.py": {
+      "bytes": 3498,
+      "sha256": "cf30d6d7257b7b2e57542615b88a70e3920ba4841c4199340693674f2f51ed19"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/rmp_rgbd_replay.py": {
+      "bytes": 21345,
+      "sha256": "b1f72704efb122fb2a0871e7e84c36b426ba79ad65a20498f0d64baf7489a033"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/rmp_threshold_sensitivity.py": {
+      "bytes": 4494,
+      "sha256": "88abd7667b370790ffd2884e3ccdf724d43cefc7e91faef82c439c9009638921"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_architecthor_dynamic_suite.py": {
+      "bytes": 7872,
+      "sha256": "4fd3faf941cf64e9f20066865fcc485e902d63d047863ca8b44b34403e7a93a4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_crossroom_frozen_batch.py": {
+      "bytes": 7001,
+      "sha256": "0685f4ea593c763066c61a94ec8b663f1b2afe6abe0287bdf3bdd58c2a913f32"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_dream_simulation.py": {
+      "bytes": 4208,
+      "sha256": "08d157aee8bb8153077a1cf1f3dff736037fd9a39a4bbd33d2e10e29e4bf7588"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_dynamic_video_suite.py": {
+      "bytes": 19778,
+      "sha256": "fd915eb4b8a57f273b8956d997950da2ba217d83fdcb34ff94eccc6ac722515b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_instruction_frozen_batch.py": {
+      "bytes": 9188,
+      "sha256": "5d64e50ca69526b4f64584dd3665c848232264ff86f9f873e19d537e4582e712"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_instruction_task.py": {
+      "bytes": 10251,
+      "sha256": "8119022a59719090637b612e3f8ac08bd18e434b705a4476a061b53d3141c8d6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/run_learned_scene_suite.py": {
+      "bytes": 6963,
+      "sha256": "372cfcc0e70b29b615115e07f00108a6f4b483e2d6fb7e491af8ac35c33bff13"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/select_procthor_room_assets.py": {
+      "bytes": 2960,
+      "sha256": "87815b7b58705a3ab12b24fbb9326aac3a3fbefa03550c307cd83106de5a0b6d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/summarize_rmp.py": {
+      "bytes": 5370,
+      "sha256": "532855a1e71ef16a1211180493f158254ff31306489b9fb063bc3bb19d353ccf"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/update_crossroom_manuscript_numbers.py": {
+      "bytes": 2969,
+      "sha256": "a0800abae95f8b2b27a045b59e3eaf5f91e4be42aac0a199ba95540287ef76ab"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/validate_head_camera_scan.py": {
+      "bytes": 4508,
+      "sha256": "94d26401e663614ed750cb2d240fa3ce5578719fdbe7c4c3f467547026b2c247"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/validate_instruction_assets.py": {
+      "bytes": 6370,
+      "sha256": "98739445981b9dbff330803474122585d523785243a43e8236b321817e571c1f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/validate_instruction_manipulation.py": {
+      "bytes": 11459,
+      "sha256": "1edd42c79bae19c8e11be0cedeb31e30a05f5b9a82d2f0a21754bea4bdecc378"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/validate_learned_scene_setup.py": {
+      "bytes": 2747,
+      "sha256": "7ff0738ac7f37995f05b39e0f57a4448041797f632e748e968b8434f021a1806"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/verify_crossroom_assets.py": {
+      "bytes": 1387,
+      "sha256": "a87d2e840c0ce175eb1988e36c36c5b6828cd81bc20e05724c03f37c1019f70b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/verify_crossroom_release.py": {
+      "bytes": 7692,
+      "sha256": "07ba7ac93fdd0e0b6e877681f91a01fe9206bb00e0fc3396697282b63cb4bd12"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/experiments/video_timeline.py": {
+      "bytes": 3310,
+      "sha256": "8953cc8a30f8be4fbf3590f8c3083dec627fe258445de67a073671abbd870651"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/__init__.py": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/__init__.py": {
+      "bytes": 74,
+      "sha256": "56bdaa60c9c386a0d0f1a392f4375b928a94bfd51c008422d1a0375a08e21e29"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/manipulation/dream_manipulation/dream_manipulation.py": {
+      "bytes": 4546,
+      "sha256": "e7373d00bc92bc0210d2f63c5a029a0bb140b5c8169c4fec3f949f81b8bf3bc9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/manipulation/dream_manipulation/grasper_utils.py": {
+      "bytes": 26751,
+      "sha256": "d583329d463294def60a4e0e7f0a7ade1d146d9888319cb72b255c47e4fd122c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/manipulation/dream_manipulation/image_publisher.py": {
+      "bytes": 4024,
+      "sha256": "d19dccc65f421aef1e8391647ba462890f6947e971f084e4179627963e8894f2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/robot_agent.py": {
+      "bytes": 78825,
+      "sha256": "12fbd307f103ccd2504d924fb3ad9e2c82b618af432403c15bba19bea0c1b017"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/task/__init__.py": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/task/dream/__init__.py": {
+      "bytes": 42,
+      "sha256": "9b3412fc3bed11e5864a07757f370d246127676ff28470a6af4eaed6932806dd"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/task/dream/dream_task.py": {
+      "bytes": 12428,
+      "sha256": "e5954bf18548e7b20c421c1b779de13c547bf0f7aa3438929a7c6993b857add5"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/agent/zmq_client.py": {
+      "bytes": 57845,
+      "sha256": "a8059debabc9be7c859db2038954fd591e19df0bbee9ee6f0a5e21d31e79ce29"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/app/__init__.py": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/app/run_dream.py": {
+      "bytes": 3301,
+      "sha256": "60578376dc44397d9ef094acc159ed8f20201117b9822cb02c9bd34ab2d7ca63"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/config/__init__.py": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/__init__.py": {
+      "bytes": 623,
+      "sha256": "b78fe2da7a329c5d8ccbc49e2fe71c2c68100c420d90cc3b16e08be985276802"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/abstract_agent.py": {
+      "bytes": 783,
+      "sha256": "d2ad0ca8a5d6b1c415dce86f111e090c6b86008ad02a789860c379ee2d040b42"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/abstract_env.py": {
+      "bytes": 813,
+      "sha256": "681d80ca7f980b993829c20a845a90fd4788a3cc3f09c7aa63a29e2e4e85464e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/abstract_perception.py": {
+      "bytes": 1753,
+      "sha256": "8dbc17160f291857dc31fab36dd3669b90bb4ad30e5e064c2126e3960dde2c2f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/client.py": {
+      "bytes": 2462,
+      "sha256": "b7e4316354a8829fca26ca089a9ec06ec143ff8571ce26c994d3d08bb17bf03f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/comms.py": {
+      "bytes": 2926,
+      "sha256": "d067e784882890cfb520c0d33225ce318a3ba3bc45604fb0da37664eb2d79a8f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/evaluator.py": {
+      "bytes": 1277,
+      "sha256": "d50858651871b103bcfb1a12b5be3bd123efe8c53cae083915b861c43d7bd7c9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/interfaces.py": {
+      "bytes": 12516,
+      "sha256": "f302ed8aa2779ce4c1af2b81750cbba4dd3431c9c239d367543a76ed92468aab"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/parameters.py": {
+      "bytes": 3663,
+      "sha256": "96c745e52bd947ef0d8dd520fd5271259a7cce5477f8477349e957d6482b4e46"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/robot.py": {
+      "bytes": 4075,
+      "sha256": "0a3d47fca97f3b27a817c32180a941d339a997c27b3a26b45451e694c1f2b26f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/server.py": {
+      "bytes": 12212,
+      "sha256": "cdc5815eb075ec8dd8e6d7bfbfa4fc4d44e5dac4f370a0f69744e91bcc4a7bf8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/state.py": {
+      "bytes": 301,
+      "sha256": "0a2e8c26c71f3ea23b04bf1746a66f231ab9b7a811fdeeacedf122031c16a5ab"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/status.py": {
+      "bytes": 444,
+      "sha256": "d9569b0aa222cf6e8ed88b14c9091567973a5aac2ef8cf83c6a6c938ee0476c1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/core/task.py": {
+      "bytes": 8698,
+      "sha256": "52f101726739bcd765e8edb98b72f2b39cd506278850ce4632b25fb5cd040fc2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/dynamic_memory.py": {
+      "bytes": 5938,
+      "sha256": "04e87ec348fb194c2e1c2a7efa84ca43cfdc1043b473571b46550abfe4c47837"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/__init__.py": {
+      "bytes": 901,
+      "sha256": "7128d44e3615bbf3de0195baf9ba3e0d90704293c7b3b220e6736ebed82cd2a5"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/base.py": {
+      "bytes": 3526,
+      "sha256": "fb59eae9cbee5821330a2c7e050ccacc7b2e6f83d7fbea86d1226290a7a0b549"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/openai_client.py": {
+      "bytes": 5787,
+      "sha256": "168aefdeb3731048f39b6914e485405315dc5d7e1c3248c0d4466541244ba80e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/prompts/__init__.py": {
+      "bytes": 139,
+      "sha256": "9ab9d78ac83fe09962bb911db1caf782b8b2c5c1d5b9d307a82aa55bc1c90d19"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/prompts/dream_visual_grounding_prompt.py": {
+      "bytes": 1108,
+      "sha256": "2fff8593bc4ffdf60e727a4080d1cbe2bc81fbb680fafc066017f908c063d551"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/prompts/dream_visual_verify_prompt.py": {
+      "bytes": 971,
+      "sha256": "98099bebc17cfb8a3a0d43f7a547dd09769eb42528e9b92a27bc4409a4ec0e49"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/llms/qwen_client.py": {
+      "bytes": 7363,
+      "sha256": "4717f65b812cc7f614e97a91d0839b360a3ec91baee52886b5101e0a9b666d4e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/__init__.py": {
+      "bytes": 64,
+      "sha256": "c38d6413e27df7dccf035d5d2be3bea979ae686ed6c3f21786fa42f93a400e55"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/exploration_policy.py": {
+      "bytes": 2671,
+      "sha256": "7e3c8dee13dd55d08205673082f72d2ba0a99bae22d98d8e2f0312654e716b19"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/grid/__init__.py": {
+      "bytes": 28,
+      "sha256": "e45ed6ede3d41019cd80bb20cd72fc6ebe0f00fb496139e4f5d09247b054e096"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/grid/grid.py": {
+      "bytes": 2898,
+      "sha256": "8332c9666a1893ac792721564a95b8a4c00b1344be81aea1437a487dc8bf49a8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/rmp_policy.py": {
+      "bytes": 3606,
+      "sha256": "8700d71e0435423f65ebf228eeb8bfcbd83236367f4470d94801807be8c92841"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/voxel/__init__.py": {
+      "bytes": 325,
+      "sha256": "200f2265a2d5bd7749a4ea298e49e48c0e0abc3a50b8f3d7dd54f31897a3e290"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/voxel/planners.py": {
+      "bytes": 3022,
+      "sha256": "bd0e6b6ec2fa80fc485ec6d9dfe994e68bdf8dd1a7a126e41dcfbd1aca9cb183"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/voxel/voxel.py": {
+      "bytes": 59929,
+      "sha256": "4bc503985f2cc4adb05f34affb789474bfcb86e5bb83aaabdb5fa91792ba8848"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/voxel/voxel_map.py": {
+      "bytes": 27784,
+      "sha256": "9adba9d36a1a0b3443b2e471f04d33fb4e580b0ea2f073783f72958c15e4f98f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/mapping/voxel/voxel_util.py": {
+      "bytes": 35801,
+      "sha256": "e0b76f2d7dbfacd63b8083a669db54c3174ba9312e41a19820b96835fcf40324"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/__init__.py": {
+      "bytes": 141,
+      "sha256": "2b692cf0ead0e880d22973e3193f512890832b2bcce1aa2a4c09cba6ae0651b3"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/__init__.py": {
+      "bytes": 976,
+      "sha256": "2990d6a6736d5e9cd5cc9868ab9ab655ebcd202cad529ff35786829697fae9c1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/a_star.py": {
+      "bytes": 14806,
+      "sha256": "2e255abf0885db6756a2ef6c54f2962a5aa79cf248197e463f06a213943d4b29"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/node.py": {
+      "bytes": 944,
+      "sha256": "8f5b02e356473f0d667b85dd135ee30488459f6afef2f32c4bcd14c6e949b689"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/rrt.py": {
+      "bytes": 5026,
+      "sha256": "121a1290e6cfa21bb31f558762eaf9a7f5a6cad73a0303306b33a22fc3bc703e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/rrt_connect.py": {
+      "bytes": 3860,
+      "sha256": "9702f64309461c548054ec93089e19e4f26f36ac6ffdc6f1f0296cd319eb1adb"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/shortcut.py": {
+      "bytes": 2632,
+      "sha256": "a80732c8002d820e0813a37ee61bbd4c8521488b8f5e1f13f93a122bd5f01966"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/algo/simplify.py": {
+      "bytes": 9662,
+      "sha256": "c3bfbf2542c7bde6148b1890364e5dfbb616c3b7535f71c6c63ea9e30f10b75a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/base/__init__.py": {
+      "bytes": 127,
+      "sha256": "b018627e50337242cc2e6dffd5269b6d111c5179278ae3f1667802cf10f1aa9d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/base/base.py": {
+      "bytes": 2030,
+      "sha256": "f5712a2ea435c91f4331e78eed2b14366d315ae4ce2ba206e00155d601011065"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/base/ik_solver_base.py": {
+      "bytes": 2302,
+      "sha256": "0c6ea0146ad0f163db70c247412d53cc4630d5b4ea631de44aea0ec25c094c33"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/base/space.py": {
+      "bytes": 2867,
+      "sha256": "22c8166becb779909975d9fff76d99ff726ec5bf1a2ae356a6d1ae50cd9d420c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/constants.py": {
+      "bytes": 1755,
+      "sha256": "8cf7a6300794a5e1adfc0a720aa871914322239d7e6f8a3767335c2cba6ca68a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/control/__init__.py": {
+      "bytes": 179,
+      "sha256": "0fd102b1aa74f2b714b47c9a475d759d38c0ae52a45234303fcbac5f05c00154"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/control/feedback/__init__.py": {
+      "bytes": 179,
+      "sha256": "0fd102b1aa74f2b714b47c9a475d759d38c0ae52a45234303fcbac5f05c00154"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/control/feedback/velocity_controllers.py": {
+      "bytes": 5758,
+      "sha256": "0d032254e002417335c65314e1dd51f5a118893b8f6624d0a6ba581f5f2e65e2"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/control/goto_controller.py": {
+      "bytes": 6853,
+      "sha256": "d30625b7000e5dfc37651411663e704c58b9057a2f5adc4c25d986795e79017e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/kinematics.py": {
+      "bytes": 34719,
+      "sha256": "56f6254f0fe5fb35a108be612b526dcf15f6b9be351d14948c7387dfe14a467f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/pinocchio_ik_solver.py": {
+      "bytes": 16292,
+      "sha256": "43b6dbb1ede932f4a9d2d8e8619f830a6f5194737bda97199e94ec088bcc8766"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/robot.py": {
+      "bytes": 3785,
+      "sha256": "614039ac1eafff2e7f1f357e31b24843701a940bbcba051d059ad68cf21b43bd"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/utils/__init__.py": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/utils/geometry.py": {
+      "bytes": 3185,
+      "sha256": "fa7fda48322369640950837db9f5aa0117ce24e4e89b26b90e2c376a7575b582"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/motion/utils/simple_env.py": {
+      "bytes": 2571,
+      "sha256": "1aa93466bc485845bab7a60a693a733447deb9b622c28564e3af5a92f1485ac5"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/__init__.py": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/base/__init__.py": {
+      "bytes": 28,
+      "sha256": "f4c849d736aaf69f604ba12481207be831461536d7fa5bc0b440aa52b54725e0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/base/base.py": {
+      "bytes": 2787,
+      "sha256": "62ff8041a7111d03f421dd1df27ec49ab59a74a5db864c8ad4add933ed2e5f6f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/orbslam.py": {
+      "bytes": 4435,
+      "sha256": "e14c263643e364c6bfda55ea976a184785a7bb98238034207e58964f0f52eb75"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/utils/__init__.py": {
+      "bytes": 23,
+      "sha256": "94617cb3201ba0720d96c0ab447e6fe03834c829d20172342d3765c10a1be5bf"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/utils/geometry.py": {
+      "bytes": 3622,
+      "sha256": "22602ebd7baa8706b515aceaff0afc83d00b37197b63a360dc935ff6de9d095f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/navigation/utils/visualization.py": {
+      "bytes": 1595,
+      "sha256": "b03c27d2382dff779b3e52efc256067c68aee277b31482d1d8003e6489deac7c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/__init__.py": {
+      "bytes": 559,
+      "sha256": "ea589b093de2e126d2114e085bd88b96efa571e5507759e73e0b110c19cfea38"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/constants.py": {
+      "bytes": 44729,
+      "sha256": "1c141eb0134f3ce513437c97b1a294ded86c397231acb45282438f9106cc1508"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/owl/__init__.py": {
+      "bytes": 311,
+      "sha256": "fea229c15b2d6de5a623e3cef42160ae3b3e03d2e226febb4de85a8560d966c7"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/owl/owl_perception.py": {
+      "bytes": 5122,
+      "sha256": "789549d14ce153340b69a26417bce60e742e5edb1aac71420aa293844eb31f32"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/owl/owlsam_perception.py": {
+      "bytes": 7519,
+      "sha256": "b8e0307ed06953cc24425fe3878fd7f63fc74f82c18e81450db2bae9eccbd79e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/sam2/__init__.py": {
+      "bytes": 43,
+      "sha256": "a52ab26789d5e5f1e9c0cd377a00a4eccf784536dc5596cf93e97eaffe15d920"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/sam2/sam2_perception.py": {
+      "bytes": 6487,
+      "sha256": "4489a9708bfe03d2e01c2595f9ece99d0142c7917ad68ffc27fbad370ed03848"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/scannet_200_classes.py": {
+      "bytes": 3586,
+      "sha256": "dced90f5558e8a8b0e117d17805bd64cefe0439e227911c0171c8600aebe3bc8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/utils.py": {
+      "bytes": 1752,
+      "sha256": "50651a5679ecaa01455690d3b1ada240b9ef2c054dc4b6ca91075dc9b2a1980f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/detection/yoloe.py": {
+      "bytes": 10944,
+      "sha256": "40c71acc303e7c808ed15f8cecd026a05e22f661dd4dae32d7026f6e31fd205b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/encoders/__init__.py": {
+      "bytes": 949,
+      "sha256": "7ce2c23c722f9985e9d4d9e349173304781444efeccc56c87992b051d7f3f511"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/encoders/base_encoder.py": {
+      "bytes": 738,
+      "sha256": "be5f497153acee0c58ac0c0c1923f6f2641b508d3d3c08a7f1ddc162a98cc0a0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/encoders/clip_encoder.py": {
+      "bytes": 5881,
+      "sha256": "8deae833ace2f40582f90cf19ff7bfc02efad647ae21485a6cc8ff6c9d19fc1d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/encoders/siglip2_encoder.py": {
+      "bytes": 8936,
+      "sha256": "1ee507556c4689c061dc42000cc4f960028ee5bb22a3c8554649f5de3cd471a9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/encoders/siglip_encoder.py": {
+      "bytes": 8927,
+      "sha256": "907df5ae89009f4a55c04d827973c0ad63162148e4edb7d6c0885859f69a7446"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/perception/wrapper.py": {
+      "bytes": 12258,
+      "sha256": "12119c73836fa2f699a525e44d1cf281ecf1e00e94fed3204445daf770a41520"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/semantic_retrieval.py": {
+      "bytes": 519,
+      "sha256": "c05d9fd7a68e45bd08214f518a59331c87c6ad0d764443ae2460e67c27fb4138"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/__init__.py": {
+      "bytes": 33,
+      "sha256": "e62ed06c60a0ce77a5f5c4ebac20052afba5981f67e44f72591a43cff8389924"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/compression.py": {
+      "bytes": 3671,
+      "sha256": "110a14f0211ef26a2629b5d779f1040f0c0e9f55c6ba302535686e1c6a4f7b0c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/config.py": {
+      "bytes": 3696,
+      "sha256": "adc2a3893bcd447228fcb80b8ec1394cfda2d5b64c9d8237bfc2a839a077a42b"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/__init__.py": {
+      "bytes": 179,
+      "sha256": "0fd102b1aa74f2b714b47c9a475d759d38c0ae52a45234303fcbac5f05c00154"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/alephzero.py": {
+      "bytes": 1561,
+      "sha256": "e05fc5c748fb7850b4fcf523a06ac98acf8683a1bb2efe4820e232dd91c80d7f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/base.py": {
+      "bytes": 268,
+      "sha256": "5c88587df168785ce2cf48cc8cde64b8d455417334ff9cc933b22145118a2b93"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/camera.py": {
+      "bytes": 1947,
+      "sha256": "1e733eba8eeff21fff077b854e64b78f140cceb13e9568b4bc669240775c8bd9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/dict.py": {
+      "bytes": 1633,
+      "sha256": "ccd2fa03cecd9a1bd2245f20694f71acdcf26c3a011ec8bb23d858f6109cec09"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/h5_utils.py": {
+      "bytes": 2007,
+      "sha256": "f0acf0832615f27dcf49b6aff6822ad44e59552aa237733a21244c56facf928e"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/image.py": {
+      "bytes": 4411,
+      "sha256": "fd2dbabc4ffdab67ecc7a63a6dc2127a896f795c4a31d66782d721e46ccd8df9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/loader.py": {
+      "bytes": 5145,
+      "sha256": "68ff0a7e890f8f5bfd2cb74884fa830db54a9b423ffb0faf5c07d8fbb0c13388"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/record.py": {
+      "bytes": 11193,
+      "sha256": "5ba724162a74a4cae3f1b038aebc84e592c366ba8f5410663ffd2d7824a1ce6c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/robohive.py": {
+      "bytes": 6121,
+      "sha256": "d8e728d3c40a0590db8400a892879c92532e1c6b548961661b3772dcc305cf6a"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/data_tools/writer.py": {
+      "bytes": 6055,
+      "sha256": "c2e5ac85b8dc05d4b5618b3e6a69c7066468506812b990881f78e9b05e5f77d9"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/geometry/__init__.py": {
+      "bytes": 584,
+      "sha256": "86086e419915ff8348cf6de8609f16e9c8993f33bbf4b275fb8be7f4bfb127e6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/geometry/_base.py": {
+      "bytes": 4596,
+      "sha256": "7eb51dd6fbc8c45e9e7e953468ca198ff6ac1d87ed7d499326bad9bc9b6a2949"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/geometry/angles.py": {
+      "bytes": 1123,
+      "sha256": "1c2f50683f86139ea885dd1a443c4ea021e2adbef0ff54d04820c86109127eb0"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/geometry/rotation.py": {
+      "bytes": 4353,
+      "sha256": "16f1bf52a777fb76704980692cbdfc40cc0ab7dbf56513968794f347ca093920"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/hf_model_loader.py": {
+      "bytes": 2737,
+      "sha256": "2cbe701bfc6a054068c0cdb1c26d717aedfc8948a69b0d4b616f671a50800015"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/image.py": {
+      "bytes": 19470,
+      "sha256": "18f748d439d832660c7dbb94d5516942134f8fd5acd16aa20f3cecf5df1c8747"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/logger.py": {
+      "bytes": 2723,
+      "sha256": "3deabfdb5d7e5249c2532241f3fe8add70628a10cf59397d1c7df76a8e24f6ac"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/loop_stats.py": {
+      "bytes": 4519,
+      "sha256": "8603147bba2e699e1e250cd4f5479f53ba8d89b0de4b4f2e8b61a2faaf82f9c6"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/memory.py": {
+      "bytes": 3104,
+      "sha256": "5730aab28b6f3fdc7d03938a0e722122e1284dac0c26f6ecffddb50a45244b32"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/morphology.py": {
+      "bytes": 5099,
+      "sha256": "7c9da25a16e1bfc77bdeb17bfb649a953388e1e1ded0412edff89b1dc3ab6b58"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/point_cloud.py": {
+      "bytes": 24304,
+      "sha256": "960b10e721f9f48d893a7aa97764f215e723eb616a1a103dad5e7d3b9caf0c2c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/point_cloud_torch.py": {
+      "bytes": 9171,
+      "sha256": "14e793be9cc96ee2d86f2ba2fbfff37d9d333aecdb70d73e7c80371db59f4a82"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/pose.py": {
+      "bytes": 5384,
+      "sha256": "3463fcc51eec9a9b57187cdab81affd250064f3076a4a0ddef630f396d00876f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/pytorch3d/__init__.py": {
+      "bytes": 193,
+      "sha256": "7b9b9ca5235c21f2e4721369e77ae71c07470c8e4504a18743cab22876d5ddc4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/pytorch3d/pytorch3d_helpers.py": {
+      "bytes": 7757,
+      "sha256": "dd09f0a56d4824e27a208892c2c3701d13e256fafedc5728dae2da88ad0ccfa8"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/pytorch3d/pytorch3d_utils.py": {
+      "bytes": 8328,
+      "sha256": "bbb564fe6aaaabf2bcca1d1dbcf5370b8e62ff5657015d685749ce86ee982521"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/torch_cluster/__init__.py": {
+      "bytes": 47,
+      "sha256": "35186d7cf6f4f536f5d499f861c84ff0c99812b5231e04e747cc24f39bc11b0d"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/torch_cluster/torch_cluster_helpers.py": {
+      "bytes": 2414,
+      "sha256": "78832d4b80894c43e1d348aa358a20945bed8b3ee33612268349c0e80696bc62"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/torch_geometric/__init__.py": {
+      "bytes": 99,
+      "sha256": "48fd74441464de50d439ac10e70c67e71515ff6d759fec6a4baa4cc16c969df4"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/torch_geometric/torch_geometric_helpers.py": {
+      "bytes": 7228,
+      "sha256": "8407a1d9af81a023c306609c48814839b94c5a2d1567a6096b17877b74ec0fe1"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/torch_scatter/__init__.py": {
+      "bytes": 170,
+      "sha256": "304e37def2bcb3469977ba7b3f2730310bee5e4c779a18e879b34e8351af91fd"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/torch_scatter/torch_scatter_helpers.py": {
+      "bytes": 8520,
+      "sha256": "fd2d04262a90640b55d56427eabf6df31aa1ae68804530dda4978184caf29c83"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/utils/visualization.py": {
+      "bytes": 6847,
+      "sha256": "e1d2e622322c6c87fcefff6b2840d0af3792c002538e971930834f5833792044"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/version.py": {
+      "bytes": 73,
+      "sha256": "6f5e21e84ceb7a8ad40f4c97a36796261a1350519f17f5f4fe8b54028f44fd2f"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/visualization/rerun.py": {
+      "bytes": 21816,
+      "sha256": "d3171c643a2d09473d1693c133d0d8e833c7ac6727a720d5d6f0c79757677968"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_snapshot/src/dream/visualization/urdf_visualizer.py": {
+      "bytes": 5192,
+      "sha256": "19156685c1ecebfa2325cbe512505cc16de58c9a397a8e50b56d12bd9326c64c"
+    },
+    "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic.log": {
+      "bytes": 151832,
+      "sha256": "e5fa059da82d30fc34cddd3ea2a577be797f0d779851a671e02b4babbcb5fe1f"
+    },
+    "case_01/execution/frozen_tasks/01_ProcTHOR-Train-283_seed100/evaluator_room_map.npz": {
+      "bytes": 4725,
+      "sha256": "e1b7067784fb45646f1dc36308d9b2b6339ad12729ef4e98af7346784e41b157"
+    },
+    "case_01/execution/protocol.sha256": {
+      "bytes": 65,
+      "sha256": "7ba3f6262b53922a7e121c7c694cc2d937487044909343c507f4423bab3a9b04"
+    },
+    "case_01/policy.log": {
+      "bytes": 3408,
+      "sha256": "53603a38fe9d1d4e75770772414c4a875d356841afbb07744e84b6b80c790669"
+    }
+  },
+  "files": {
+    "case01_checks.zip": {
+      "kind": "zip",
+      "bytes": 1820485,
+      "sha256": "020a5e76a29d59e0ac6610f8d1b0f71787323ffdea24fe5d8912b496d3ef1bcf",
+      "members": {
+        "acceptance.json": {
+          "bytes": 6711,
+          "sha256": "d8bf923895dacf508aa44ccaeee379fc0df37d25d412e65b99d24a7a42dd2112"
+        },
+        "case_01/acceptance.json": {
+          "bytes": 6101,
+          "sha256": "499d562108d42905ad7b87615ffbabd21b70b1fff4be6bac4eb825982516bcf1"
+        },
+        "case_01/audit/physical/audit.json": {
+          "bytes": 5088,
+          "sha256": "45a538f512ffa0bfdc80424ec38f1b42cce10139d73cf22068578468cca6a749"
+        },
+        "case_01/audit/physical/control_errors.json": {
+          "bytes": 580865,
+          "sha256": "e31ebf5a4750df8c03e5d6ca955482d13b00a63e6150bbda351ea3594db74c47"
+        },
+        "case_01/audit/physical/evaluator_trajectory.json": {
+          "bytes": 2523677,
+          "sha256": "b0dc4dac2ae06a31258448e75b233088e24795c51edb664f29d3fb0dad06edd5"
+        },
+        "case_01/audit/physical/replay_source_hashes.json": {
+          "bytes": 24254,
+          "sha256": "4a98211282c74ae6bc7ebae1ab8c43b2554158df311c94304156debf53ff2ec7"
+        },
+        "case_01/audit/record/caption_provenance.json": {
+          "bytes": 25067,
+          "sha256": "5aaac195107f34a0fe9675c2013ab952f8887fb1b1cd29f4cac3ad18733611ff"
+        },
+        "case_01/audit/record/record_review.json": {
+          "bytes": 4048,
+          "sha256": "1f00b7cbdd7a41ed7a1de73adc48cceb369c368a1323e92f84250a5b8027019f"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/actions.json": {
+          "bytes": 2777005,
+          "sha256": "5994a2093e5b788159c483cd6ed92ab53cba44942647b372aca2b1620a70725d"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/configuration.json": {
+          "bytes": 184,
+          "sha256": "74e9c21078b33f97bb95ee4344d41c268943a89c149477b8a8e628d2a9d4f42f"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/disturbance_forces.json": {
+          "bytes": 132084,
+          "sha256": "4e06c88d8172cca8ac442d1f37d96eb7635b79e2ef464abe9138476673a56346"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/environment_task.json": {
+          "bytes": 3107,
+          "sha256": "d4e9395b91f0aeb3f7a5d3616e7280e242578c02706e1731b222cdfb2d027040"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_discoveries.json": {
+          "bytes": 5635,
+          "sha256": "2e9875f0ae61025c92fcc84201620b9c0ceb405d842ca4e4333e740b9682f375"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_trajectory.json": {
+          "bytes": 2523677,
+          "sha256": "b0dc4dac2ae06a31258448e75b233088e24795c51edb664f29d3fb0dad06edd5"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/evaluator_trajectory.jsonl": {
+          "bytes": 2517137,
+          "sha256": "4c437654dc291a7af148403f15f07ff43fff0bc9fb376ec0b1ec1c750de240f3"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/events.jsonl": {
+          "bytes": 142552,
+          "sha256": "5dfcc1526d2ed41130483d5c8a1b5d7977b866fdac36fd6facf649049fe07506"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/initial_conditions.json": {
+          "bytes": 3804,
+          "sha256": "bdfaee446bff5bc52b1318dec96001f34d903bb714bf98ef423a6dcbeac41944"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/memory_updates.json": {
+          "bytes": 24359,
+          "sha256": "d920c0be322e03b072d5e3ac42cdbda35596fdde7ca2170ab98f2b214c7e5b86"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/result.json": {
+          "bytes": 1345,
+          "sha256": "e0e13b74839ccd4327477bfe597971f3af3adb76885f520b0ad7483f51bd7fb1"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_hashes_after.json": {
+          "bytes": 24254,
+          "sha256": "4a98211282c74ae6bc7ebae1ab8c43b2554158df311c94304156debf53ff2ec7"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/source_hashes_before.json": {
+          "bytes": 24254,
+          "sha256": "4a98211282c74ae6bc7ebae1ab8c43b2554158df311c94304156debf53ff2ec7"
+        },
+        "case_01/execution/01_ProcTHOR-Train-283_seed100_dynamic/video_frames.json": {
+          "bytes": 558943,
+          "sha256": "9227035c75d53ff393b7e2e21228ae7e25ff1e83265ccfc41db0e0c199ea302d"
+        },
+        "case_01/execution/attempts.jsonl": {
+          "bytes": 2056,
+          "sha256": "74564667442ebe24db922b1d614284d04c06d0ceab1675b0cdc12a1d9a4c28e1"
+        },
+        "case_01/execution/batch_result.json": {
+          "bytes": 2576,
+          "sha256": "58357a843ee39513d269910b431136d15acd65b760fab9dc86d728401a970d57"
+        },
+        "case_01/execution/frozen_tasks/01_ProcTHOR-Train-283_seed100/task.json": {
+          "bytes": 3107,
+          "sha256": "d4e9395b91f0aeb3f7a5d3616e7280e242578c02706e1731b222cdfb2d027040"
+        },
+        "case_01/execution/progress.json": {
+          "bytes": 90,
+          "sha256": "7861e85ee31753397de0f177984a98b70f109b06a7e8a321ad9f1253d0edbe96"
+        },
+        "case_01/execution/protocol.json": {
+          "bytes": 26574,
+          "sha256": "34f1ba4e73b95fc172069861041905b3411d3a8101978f03d6d75408093afb8e"
+        },
+        "planned.json": {
+          "bytes": 158,
+          "sha256": "fa437cf8860cb5427cd7fa0167e0fe1b164c1c0e07aa05a0ce3692d2b57d34d3"
+        },
+        "preflight.json": {
+          "bytes": 1531,
+          "sha256": "2b08662c9a45ddd611aa8ba4266fc9cb87c586df82542a5d06987832f887cee1"
+        },
+        "progress.json": {
+          "bytes": 123,
+          "sha256": "286e5c0a2bff9bb52c3bbd27a3a34ee853e5c5c4b1fc494306864c4e43374909"
+        }
+      }
+    }
+  },
+  "boundary": "One fresh learned-policy execution after packaging, then separate audits. Does not alter the selected videos or the 60-attempt comparison."
+}

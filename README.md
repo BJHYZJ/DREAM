@@ -1,209 +1,75 @@
-# DREAM: Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation
+# DREAM: indoor simulation reproduction
 
-## Introduction
-Reliable mobile manipulation in dynamic indoor environments requires a 3D semantic representation that remains consistent with the evolving real world. Most existing systems rely on pre-built maps, assume static environments, or presuppose highly accurate camera poses; when these assumptions break, navigation and manipulation operate on stale information.
+This is the **simulation** branch of [DREAM](https://github.com/BJHYZJ/DREAM).
+The ROS real-robot implementation and hardware setup remain on
+[`realtime`](https://github.com/BJHYZJ/DREAM/tree/realtime). This branch needs
+neither ROS nor the physical robot's drivers.
 
-DREAM is a mobile manipulation framework for previously unseen indoor environments without any pre-built map. It integrates a lightweight indoor LiDAR-Inertial-Visual SLAM backend with dynamic spatio-semantic memory, Redundancy-Aware Memory Pruning, hybrid localization, task-oriented navigation, and robust grasping and placement strategies.
+Ten selected demonstrations show observation-driven cross-room search, a target
+relocated after discovery, memory updates, rediscovery, and automatic pick/place
+in ten distinct ManiSkill indoor houses. Watch
+[Video 01–10](https://bjhyzj.github.io/dream-web/simulation/).
+These are selected qualitative demonstrations, not a held-out benchmark or a
+population success-rate estimate.
 
-![log](docs/dream.png)
-
-## Reproducible indoor simulation
-
-The [ManiSkill simulation tutorial](simulation/README.md) provides ten versioned
-cross-room dynamic pick-and-place profiles corresponding to the
-[simulation videos](https://bjhyzj.github.io/dream-web/simulation/).
-The simulation workflow is isolated in `simulation/`; it does not require ROS,
-replace the original hardware instructions below, or change the hardware source.
-
-After installing the separate simulation environment and locked assets/models:
+## Get started
 
 ```bash
-python -m simulation.run --preflight
-python -m simulation.run --case 01 --output simulation/results/my_case01
-python -m simulation.run --all --output simulation/results/my_ten_cases
+git clone --branch simulation https://github.com/BJHYZJ/DREAM.git
+cd DREAM
+python3.11 -m venv .venv-simulation
+source .venv-simulation/bin/activate
+python -m pip install -r requirements/requirements-learned.txt
+python -m pip install --no-deps -e .
+python -m pip check
 ```
 
-These commands execute learned perception and closed-loop control, then audit
-the saved episode in fresh physics. They do not play prerecorded robot paths.
-See the tutorial for supported configuration, version differences, grasp/place
-adaptations and the distinction between selected demonstrations and evaluation.
-
-## Requirements
-
-- Hardware side: Ubuntu 22.04, ROS2 Humble, CUDA 12.1, system RAM >= 16 GB
-- Service machine: Ubuntu 22.04, no ROS distro restriction, CUDA 12.1, at least 24 GB VRAM on one GPU or two GPUs with at least 16 GB VRAM each
-
-## Hardware and Calibration Assumptions
-
-The provided ROS2 launch files and configs target our reference hardware:
-
-- AgileX Ranger Mini V3 mobile base
-- UFACTORY xArm6 arm with gripper
-- Livox MID-360 LiDAR/IMU
-- Intel RealSense D435i RGB-D camera
-
-DREAM's SLAM and mapping pipeline uses LiDAR + IMU for geometric odometry and
-an RGB-D camera for visual/depth observations. The RGB-D camera only needs a
-calibrated TF chain to the LiDAR/tracking frame. It can be fixed relative to the
-LiDAR/base, or it can be mounted on the arm with a dynamic transform from robot
-joint states. Our reference system uses the second layout: the D435i is mounted
-on xArm6 `link6`, and CAD-exported extrinsics define `link6_to_camera`.
-
-Our experiments did not rely on high-precision vision-based hand-eye
-calibration or complex hardware time synchronization. We measured the sensor
-and robot transforms in CAD and exported them as extrinsics. For indoor
-navigation and pick-and-place tasks, small residual transform errors were
-tolerated well by RTAB-Map's multi-sensor fusion in our setup. A large-scale
-SLAM demo is available at
-[slam_test.mp4](https://bjhyzj.github.io/dream-web/media/videos/slam_test.mp4).
-Higher-precision calibration is still encouraged if your setup requires it.
-
-You can use a different mechanical layout if you provide the matching drivers,
-topics, URDF, and extrinsics. Reference CAD files and calibration notes are in
-[hardware_install.md](docs/hardware_install.md).
-
-## Installation Guides
-
-- Hardware-side installation: [hardware_install.md](docs/hardware_install.md)
-- Service-machine installation: [service_machine_install.md](docs/service_machine_install.md)
-
-## Run
-
-### Hardware machine (ROS runtime)
-
-Always source ROS2 + workspace first in each terminal:
+Follow the [reproduction tutorial](docs/reproduction.md) to prepare the locked
+models/assets and Vulkan/CUDA runtime. After preparation:
 
 ```bash
-source /opt/ros/humble/setup.bash
-source ~/DREAM_ws/DREAM_ws/install/setup.bash
+python -m dream_sim.run --preflight
+python -m dream_sim.run --case 01 --output results/my_case01
+python -m dream_sim.run --all --output results/my_ten_cases
 ```
 
-Start Ranger mini v3
-```bash
-sudo apt install -y can-utils
-sudo modprobe gs_usb
-sudo ip link set can0 up type can bitrate 500000
+The runner makes **one fresh policy attempt per case**, followed by separate
+physics/record checks. It does not play saved actions as a policy, retry failed
+cases, change seeds, or overwrite previous attempts. Keep every new outcome.
+Recorded outcomes are reproducible in the documented same-server environment;
+identical behavior on arbitrary hardware is not guaranteed.
+
+## Repository layout
+
+```text
+src/dream_sim/                   public execution, preparation and audit package
+configs/                        numbered cases, readable tasks and dependency locks
+requirements/                   exact Python runtime package versions
+tests/                          offline integrity, runner and regression checks
+docs/                           environment, execution and architecture tutorials
+reproducibility/source_archives/ byte-preserved historical Python source bundle
+reproducibility/evidence/        original records, including failed attempts
 ```
 
-
-Terminal 1 (Start Sensors and Fast-LIO2):
-```bash
-ros2 launch dream_ros2_bridge dream_node_start.launch.py use_rviz:=false
-```
-
-Common options:
-
-```bash
-ros2 launch dream_ros2_bridge dream_node_start.launch.py use_rviz:=true
-ros2 launch dream_ros2_bridge dream_node_start.launch.py use_simple_urdf:=false
-ros2 launch dream_ros2_bridge dream_node_start.launch.py xarm_ip:=192.168.1.233 joint_states_rate:=50
-```
-
-
-Terminal 2 (RTAB-Map SLAM):
-
-```bash
-source /opt/ros/humble/setup.bash
-source ~/DREAM_ws/DREAM_ws/install/setup.bash
-ros2 launch dream_ros2_bridge dream_rtabmap_slam.launch.py
-```
-
-RTAB-Map's `frame_id` is the tracking frame used by the bridge pose names:
-`tracking_in_map_pose` is `map_T_frame_id`, while `camera_in_tracking_pose`
-and `base_in_tracking_pose` are local transforms relative to that frame. The
-default is `body`, matching FAST-LIO2's body frame. If you are not using
-FAST-LIO2, change `frame_id` in `dream_rtabmap_slam.launch.py` and make sure TF
-from that frame to the camera and base exists.
-
-Terminal 3 (DREAM ROS2 bridge server):
+The ten recordings used six historical controller versions; a seventh belongs
+to the separate comparison. They have not been silently replaced by one latest
+controller. The [architecture guide](docs/architecture.md) explains the source
+archive, its integrity checks and how to inspect the exact policy for each video.
+All historical source bytes are retained; archive extraction is automatic.
 
 ```bash
-source /opt/ros/humble/setup.bash
-source ~/DREAM_ws/DREAM_ws/install/setup.bash
-ros2 launch dream_ros2_bridge dream_server.launch.py
+python -m dream_sim.sources --case 01
+python -m dream_sim.run --preflight --dry-run
+python -m dream_sim.verify_evidence
+python -m pytest -q
 ```
 
-You can also start the hardware-side ROS runtime with one script. It uses
-Terminator to open one terminal window with three split panes for the node start
-launch, RTAB-Map SLAM, and DREAM ROS2 bridge server:
+These offline checks do not execute experiments. The
+[video manifest](reproducibility/evidence/gallery/manifest.json) records full
+scene IDs, seeds, source hashes and video checksums. Upstream Train/Val/Test
+names do not select a controller training/test mode.
 
-```bash
-sudo apt install -y terminator
-```
-
-```bash
-cd ~/DREAM_ws/DREAM_ws
-bash src/dream_ros2_bridge/run_hardware_system.sh
-```
-
-If a machine needs more time for sensors or RTAB-Map startup, increase the waits:
-
-```bash
-NODE_START_WAIT=25 RTABMAP_WAIT=15 bash src/dream_ros2_bridge/run_hardware_system.sh
-```
-
-If `can0` is already up, skip CAN setup:
-
-```bash
-SKIP_CAN_SETUP=1 bash src/dream_ros2_bridge/run_hardware_system.sh
-```
-
-### Service machine (AnyGrasp server)
-
-#### Run Anygrasp
-
-If you deploy manipulation service on a separate server, run:
-
-```bash
-export DREAM_ROOT=~/path/to/DREAM
-conda activate anygrasp
-cd "$DREAM_ROOT/src/anygrasp_manipulation"
-python demo.py --open_communication --port 5557
-```
-
-Optional
-
-If you want to debug AnyGrasp locally without running the robot, disable socket communication and enable debug visualization:
-
-```bash
-export DREAM_ROOT=~/path/to/DREAM
-conda activate anygrasp
-cd "$DREAM_ROOT/src/anygrasp_manipulation"
-python demo.py --debug
-```
-
-This runs `demo.py` with `open_communication` disabled, so it will load the local example data instead of waiting for the robot and lets you inspect the AnyGrasp outputs directly.
-
-#### Run Dream
-```bash
-export DREAM_ROOT=~/path/to/DREAM
-cd "$DREAM_ROOT"
-conda activate dream
-python src/dream/app/run_dream.py --robot_ip 10.33.140.5 --server_ip 127.0.0.1  --skip_confirmations
-```
-
-Change `--robot_ip` to your hardware machine.
-If you run anygrasp in other machine, you should change `--server_ip`
-
-
-## Citation
-
-If you find DREAM useful for your research or projects, please consider citing
-our paper:
-
-```bibtex
-@misc{yan2026dynamicresilientspatiosemanticmemory,
-      title={Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation},
-      author={Zhijie Yan and Shufei Li and Ze Zhang and Xin Liu and Yuhang Zheng and Zuoxu Wang},
-      year={2026},
-      eprint={2606.00576},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO},
-      url={https://arxiv.org/abs/2606.00576},
-}
-```
-
-## Reference
-- Dynamem: [https://dynamem.github.io/](https://dynamem.github.io/)
-- DovSG: [https://bjhyzj.github.io/dovsg-web/](https://bjhyzj.github.io/dovsg-web/)
-- Ok-Robot: [https://ok-robot.github.io/](https://ok-robot.github.io/)
+The [implementation boundaries](docs/reproduction.md#implementation-boundary)
+and [original reproduction records](reproducibility/evidence/reproduction/README.md)
+distinguish observation-grounded geometric grasping, simulator odometry and
+bounded instruction parsing from the complete physical DREAM stack.

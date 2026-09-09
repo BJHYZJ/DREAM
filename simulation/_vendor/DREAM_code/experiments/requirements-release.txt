@@ -1,2 +1,0 @@
-# Optional PDF/archive verification tools, not required for simulator inference.
-PyMuPDF==1.26.4

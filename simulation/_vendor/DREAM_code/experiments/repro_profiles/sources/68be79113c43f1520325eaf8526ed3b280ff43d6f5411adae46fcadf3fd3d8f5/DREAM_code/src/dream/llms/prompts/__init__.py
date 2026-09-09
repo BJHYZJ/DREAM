@@ -1,2 +1,0 @@
-from .dream_visual_grounding_prompt import DREAM_VISUAL_GROUNDING_PROMPT
-from .dream_visual_verify_prompt import DREAM_VISUAL_VERIFY_PROMPT
