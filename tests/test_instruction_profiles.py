@@ -1,4 +1,4 @@
-"""Synthetic portability checks only; these are not simulated task outcomes."""
+"""Synthetic configuration and profile validation cases."""
 import json
 from pathlib import Path
 import sys

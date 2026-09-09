@@ -1,13 +1,11 @@
-# Immutable, inspectable source release
+# Controller source archive
 
-`selected_profiles_v1.zip` preserves the exact helper, policy, configuration
-and original-record files from the pre-refactor release, including independently
-pinned reviewers. Its adjacent lock records every member and checksum.
+`selected_profiles_v1.zip` contains the Python controllers, execution helpers, task configurations, and associated records used by the simulation profiles. The adjacent lock lists the archive checksum and each member's size and SHA256.
 
-The archive uses historical relative workspace paths so the original code can
-execute without source changes. This is not an installation directory: the
-public `dream_sim` package checks and expands it automatically. Use
-`python -m dream_sim.sources --case 01` to locate and inspect a case's source.
+The `dream_sim` package verifies and extracts the archive automatically. To locate the controller for a case:
 
-See [architecture](../../docs/architecture.md) for version boundaries and
-[reproduction](../../docs/reproduction.md) for the supported runtime.
+```bash
+python -m dream_sim.sources --case 01
+```
+
+The extracted workspace keeps the relative paths required by the controller imports and resource loaders. See the [architecture guide](../../docs/architecture.md) for the module map and source-cache layout, and the [run guide](../../docs/reproduction.md) for environment setup.

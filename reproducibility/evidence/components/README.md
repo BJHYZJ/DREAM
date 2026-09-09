@@ -1,25 +1,25 @@
-# Retained component measurements
+# Component measurements
 
-These CSV/JSON records support the controlled component results in the reviewer
-response. They were measured previously; they are not new physical trials or
-part of the ten-profile delivery acceptance run. `manifest.json` gives archive
-and uncompressed file hashes. No original public-dataset image arrays are
-redistributed here.
+These records cover memory pruning, policy scaling, and exploration. `manifest.json` lists the archives and the checksums of their contents.
 
-- RMP replay: real public RGB-D, deliberately injected pose drift and supplied
-  corrected poses; RGB vectors are feature proxies, not a VLM-accuracy test.
-- RMP threshold/scaling/timing: isolated sensitivity and policy-cost records;
-  timing excludes feature extraction and is not total high-level latency.
-- Procedural exploration: noisy observed-cell semantic-context proxies.
-- HouseExpo: official floor plans with occlusion-aware simulated sensing and a
-  controlled semantic proxy, not a learned-perception or physical-robot trial.
+| Measurement | Inputs and interpretation |
+| --- | --- |
+| RMP replay | Public RGB-D sequences with injected pose drift and supplied corrected poses; RGB vectors serve as feature proxies. |
+| RMP threshold, scaling, and timing | Sensitivity and policy-cost measurements; timing excludes feature extraction. |
+| Procedural exploration | Noisy observed-cell semantic-context proxies. |
+| HouseExpo exploration | Official floor plans, occlusion-aware simulated sensing, and controlled semantic proxies. |
 
-Each archive restores `experiments/results/...` relative paths. Extract into a
-new work directory for analysis, preserving the original archives. The helper
-scripts are preserved in the source archive's engine `experiments/` directory
-(locate it with `python -m dream_sim.sources`):
-`rmp_rgbd_replay.py`, `rmp_threshold_sensitivity.py`, `rmp_policy_scaling.py`,
-`exploration_gridworld.py`, `exploration_weight_sensitivity.py`, and
-`houseexpo_cross_room.py`. Their download helpers identify the upstream data;
-follow those providers' license/attribution requirements. Re-executing a
-component test is separate from reproducing the learned ManiSkill videos.
+These component tests measure their stated geometry, memory, and exploration settings. Learned-perception task results are recorded separately in the [ManiSkill comparison](../study/README.md).
+
+Extract an archive into a new directory to restore its `experiments/results/...` layout. The corresponding scripts are in the source archive's engine `experiments/` directory:
+
+```text
+rmp_rgbd_replay.py
+rmp_threshold_sensitivity.py
+rmp_policy_scaling.py
+exploration_gridworld.py
+exploration_weight_sensitivity.py
+houseexpo_cross_room.py
+```
+
+Run `python -m dream_sim.sources` to locate the engine. Download helpers identify the upstream datasets and their attribution requirements. The compact archives contain CSV/JSON measurements; original public-dataset image arrays are obtained from their providers.

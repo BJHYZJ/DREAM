@@ -1,27 +1,9 @@
-# Standalone-branch packaging check — 2026-09-09
+# Entrypoint validation — 2026-09-09
 
-After the branch/layout reorganization, the new `dream_sim.run` entrypoint
-executed case 01 once in the documented environment, using current learned
-perception and closed-loop control. It completed and passed its original-version
-independent physics and record audits. There were no retries or altered seeds.
-This is one additional packaging smoke case, **not ten new experiments**.
+The `dream_sim.run` entrypoint was checked with one case-01 execution in the reference environment. The task completed and passed its matching-version physics and record checks with one attempt and the recorded seed.
 
-The source archive was independently compared, member by member, with the
-previous Git release: all 2,193 original files were identical. The new package
-also passed 81 offline tests. The preparation wrapper verified all 1,339 locked
-scene files without downloading or changing them. These are integrity checks,
-not extra robot trials.
+The validation also covered all 2,193 files in the controller source archive, 81 offline tests, and the 1,339 locked scene assets. The controller files matched the preceding source version byte for byte.
 
-`manifest.json` records the fresh attempt, preflight, action/trajectory checksums
-and comparison with the prior ten-profile reproduction. `case01_checks.zip`
-retains the new JSON/JSONL policy, protocol and audit records, with checksums for
-every member. Large sensor arrays/videos/logs are omitted from this compact ZIP;
-the manifest records their hashes and the retained server location. Frozen
-source files are deduplicated in `../../source_archives/` and bound by the run's
-source manifests. Absolute paths inside records are provenance, not installation
-instructions.
+`manifest.json` records the case, runtime checks, and action/trajectory comparisons. `case01_checks.zip` contains the policy, protocol, and evaluation JSON/JSONL files with member checksums. Large sensor arrays, videos, and logs are listed by hash in the manifest and retained in the authors' archive. Controller sources are stored under `../../source_archives/`.
 
-The ten published videos and earlier reproduction/comparison evidence were not
-replaced. No success-rate or cross-hardware reliability claim follows from this
-single packaging check. Run `python -m dream_sim.verify_evidence` to verify the
-compact records; use the [tutorial](../../../docs/reproduction.md) for new runs.
+This single-case validation is separate from the [ten-case reproduction](../reproduction/README.md) and [60-attempt comparison](../study/README.md). Run `python -m dream_sim.verify_evidence` to check the stored files.

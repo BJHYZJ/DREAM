@@ -1,4 +1,4 @@
-"""Offline entrypoint checks: these tests do not claim task success."""
+"""CLI setup, case configuration, and evaluator-version checks."""
 from pathlib import Path
 
 import pytest

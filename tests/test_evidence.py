@@ -1,4 +1,4 @@
-"""Integrity-verifier behavior, not experiment outcome tests."""
+"""Checksums and path validation for experiment records."""
 import hashlib
 import zipfile
 

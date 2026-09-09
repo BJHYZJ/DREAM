@@ -1,8 +1,4 @@
-"""Audit existing complete episodes using their original video-review versions.
-
-No learned policy is executed. Prior verdicts/files are retained unchanged.
-This is also useful after correcting an orchestration/version-mapping error.
-"""
+"""Evaluate recorded episodes using physics replay and versioned record reviewers."""
 from __future__ import annotations
 
 import argparse
@@ -64,7 +60,7 @@ def main() -> None:
         rows = list(pool.map(one, cases))
     report = {"cases": rows, "all_passed": all(row["passed"] for row in rows),
               "new_policy_execution": False, "original_attempts_retained": True,
-              "boundary": "Matching-version audit of existing fresh executions; not new trials or relaxed task criteria."}
+              "boundary": "Physics replay and record validation for previously recorded episodes."}
     (output / "acceptance.json").write_text(json.dumps(report, indent=2) + "\n")
     raise SystemExit(0 if report["all_passed"] else 1)
 

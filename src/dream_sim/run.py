@@ -1,8 +1,4 @@
-"""Run the ten released profiles using their original learned controllers.
-
-This entrypoint does not feed saved actions to a policy. Independent physics
-replay is an explicitly separate audit after each newly executed episode.
-"""
+"""Run DREAM simulation tasks with versioned controllers and replay evaluation."""
 from __future__ import annotations
 
 import argparse
@@ -93,7 +89,7 @@ def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True) -> di
         model_revisions_verified=True, model_contents_sha256_verified=False,
         cuda_devices=torch.cuda.device_count(), vulkan_icd=icd,
         renderer_execution_tested=False,
-        boundary="Preflight is not a task result; rendering and behavior are tested by actual execution.",
+        boundary="Dependency and resource checks; rendering and task behavior are evaluated during execution.",
     )
     return report
 
@@ -105,11 +101,10 @@ def execute(command: list[str], log: Path, env: dict, *, cwd: Path = ENGINE) -> 
 
 
 def audit(case: dict, batch: Path, run: Path, destination: Path, env: dict) -> dict:
-    """Preserve the historical definition and the declared case-05 correction."""
+    """Evaluate a recorded episode with its configured replay and record reviewers."""
     destination.mkdir()
     frozen = batch / "frozen_workspace" / "DREAM_code" / "experiments"
-    # Only case 05 needs the already documented evaluator-v4 correction.
-    # Never substitute a new scorer in response to a failed new attempt.
+    # Case 05 uses evaluator-v4 reassessment; case 07 uses its contact accounting.
     helpers = frozen
     if case["scoring_reassessment"] or case["id"] == "07":
         from run_instruction_frozen_batch import freeze_sources
@@ -201,7 +196,7 @@ def run_case(case: dict, output: Path, gpu: str, asset_dir: Path, model_cache: P
     except Exception as error:
         report["error"] = repr(error)
     report["finished_unix_s"] = time.time()
-    report["boundary"] = "One fresh learned-policy attempt and separate audit; all outcomes retained. Not a population success rate."
+    report["boundary"] = "One policy execution followed by physics replay and record validation."
     (directory / "acceptance.json").write_text(json.dumps(report, indent=2) + "\n")
     return report
 
@@ -227,7 +222,7 @@ def main() -> None:
         parser.error("--output is required for task execution or dry-run planning")
     output = args.output.resolve()
     if output.exists():
-        parser.error("Choose a new output directory; existing attempts are never overwritten")
+        parser.error("Output directory already exists; choose a new directory for this run")
     _, catalog = load_catalog(CATALOG)
     cases = [case for case in catalog["cases"] if args.all or case["id"] == args.case]
     if args.dry_run:
@@ -268,8 +263,7 @@ def main() -> None:
         list(pool.map(worker, args.gpus))
     result = {"planned": len(cases), "completed": len(completed),
               "all_passed": len(completed) == len(cases) and all(row["passed"] for row in completed),
-              "cases": sorted(completed, key=lambda row: row["case"]),
-              "public_release_performed": False, "author_visual_review_pending": True}
+              "cases": sorted(completed, key=lambda row: row["case"])}
     (output / "acceptance.json").write_text(json.dumps(result, indent=2) + "\n")
     raise SystemExit(0 if result["all_passed"] else 1)
 

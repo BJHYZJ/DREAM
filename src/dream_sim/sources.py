@@ -1,9 +1,4 @@
-"""Verify and expand byte-preserved controller sources for the published cases.
-
-The source archive is ordinary inspectable Python, not saved robot actions.
-Its historical workspace names are private compatibility details; the public
-API and new work use the dream_sim package.
-"""
+"""Verify and extract the controller source trees used by the simulation profiles."""
 from __future__ import annotations
 
 import argparse
@@ -61,8 +56,7 @@ def source_root() -> Path:
     cache = Path(os.environ.get("DREAM_SIM_SOURCE_CACHE", PROJECT / ".runtime" / "sources")).resolve()
     cache.mkdir(parents=True, exist_ok=True)
     destination = cache / lock["sha256"]
-    # Multiple workers may import simultaneously. Never use a partially expanded
-    # tree, and never silently repair a modified source tree.
+    # Serialize extraction so concurrent workers see a complete, verified tree.
     with (cache / "extract.lock").open("a") as guard:
         fcntl.flock(guard, fcntl.LOCK_EX)
         if not destination.exists():

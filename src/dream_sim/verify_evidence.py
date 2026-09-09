@@ -1,7 +1,4 @@
-"""Offline integrity verification of compact records and public-video mappings.
-
-This checks stored bytes, not experiment validity or new simulator execution.
-"""
+"""Verify experiment archive checksums and video-to-case mappings offline."""
 import hashlib
 import json
 from pathlib import Path
@@ -57,7 +54,7 @@ def main():
     verify_files(evidence / "components", {row["file"]: row for row in components["groups"].values()})
     reproduction = json.loads((evidence / "reproduction" / "manifest.json").read_text())
     if reproduction["new_policy_attempts"] != 10 or len(reproduction["cases"]) != 10:
-        raise ValueError("Incomplete delivery reproduction records")
+        raise ValueError("Incomplete ten-case reproduction records")
     verify_files(evidence / "reproduction", reproduction["files"])
     gallery_root = evidence / "gallery"
     gallery = json.loads((gallery_root / "manifest.json").read_text())

@@ -1,4 +1,4 @@
-"""Regression coverage for packaging; not claims of new task execution."""
+"""Source extraction and integrity regression checks."""
 import hashlib
 import json
 from pathlib import Path

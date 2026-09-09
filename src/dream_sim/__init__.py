@@ -1,1 +1,1 @@
-"""Isolated, versioned ManiSkill reproduction of DREAM demonstrations."""
+"""DREAM indoor mobile manipulation in ManiSkill."""

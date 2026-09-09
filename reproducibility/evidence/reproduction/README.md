@@ -1,38 +1,24 @@
-# Final delivery reproduction check — 2026-09-09
+# Reproduction results — 2026-09-09
 
-All ten published profiles were executed once in the documented separate Python
-environment on the same server. The new `actions.json` and
-`evaluator_trajectory.json` match their original runs byte-for-byte in all ten
-cases. No policy retries, changed seeds or saved-action inputs were used in
-these learned-policy runs. The complete existing asset lock (1,339 files) was
-verified; the fixed model cache was reused. This is not an all-assets-fresh
-download check or a cross-hardware guarantee.
+The ten gallery profiles were each executed once in the reference Python environment on the same server. All ten `actions.json` files and all ten `evaluator_trajectory.json` files matched the corresponding source recordings byte for byte. The existing 1,339-file scene-asset lock was verified, and the prepared model cache was reused.
 
-Read `manifest.json` and the per-case ZIPs together. Each archive retains the
-fresh controls, forces, event/memory records, original score, initial audit,
-and subsequent matching-version independent physics/record checks. All ten
-matching-version audits passed. Cases 07 and 10 also passed display-only
-replays using their original spectator renderer versions. These audits and
-re-renders are not additional learned-policy trials.
+All ten executions passed their matching-version physics and record checks. Cases 07 and 10 also passed spectator-render checks using their recorded renderer versions. Replays and presentation renders are recorded separately from policy attempts.
 
-The initial packaging wrapper selected older reviewers for 02 and 06, which
-checked the wrong rediscovery event and reported failures. These reports and
-the initial wrapper source are preserved, not overwritten. Reviewer selection
-was corrected to the script hashes already recorded with the original videos;
-the same unchanged episodes were re-audited. Case 05 retains its original false
-score and its **pre-declared** evaluator-v4 correction. This is not a new scoring
-change chosen after this run failed. Case 07 retains its previously declared
-physical-accounting version. The manifest records these distinctions per case.
+## Evaluation versions
 
-Large sensor arrays and rendered videos are omitted from these compact ZIPs;
-their original bytes/hash identities are listed. Raw data remain in the private
-workspace archive. Immutable source copies are deduplicated under
-the policy profiles and audit sources inside `../../source_archives/`
-(locate expanded paths with `python -m dream_sim.sources`);
-the original protocol records bind their hashes. Absolute paths inside original
-JSON are historical provenance, not runnable installation instructions. Use
-the portable commands in `../../../docs/reproduction.md` to create fresh full records.
+| Cases | Evaluation notes |
+| --- | --- |
+| 02, 06 | The initial wrapper selected older record reviewers and reported a rediscovery failure. Rechecking the same episodes with the reviewer hashes recorded in the gallery passed. Both sets of reports are retained. |
+| 05 | The original false score and the previously declared evaluator-v4 reassessment are retained. The correction covers held transport while lowering an object and wall-derived room assignment. |
+| 07 | Uses its documented v4 physical-contact accounting and retains its original successful score. |
+| 07, 10 | Additional spectator-camera renders reuse the saved control sequence. |
 
-These are selected development demonstrations, not a 100% benchmark or evidence
-of superior dynamic-memory performance. The separate 60-attempt comparison,
-including every failure, remains unchanged under `../study/`.
+The case manifest records the relevant policy, reviewer, and renderer versions. The evaluation correction for case 05 was specified before this reproduction run.
+
+## Files
+
+`manifest.json` describes the executions and their checksums. The per-case ZIPs contain controls, forces, events, memory records, scores, and evaluation reports. Controller source is deduplicated in `../../source_archives/` and linked by the source hashes in each run record.
+
+Large sensor arrays and videos are omitted from the compact ZIPs. Their hashes are listed in the manifests, and the raw data are retained in the authors' archive. Absolute paths in recorded JSON identify the original execution workspace. Use the [run guide](../../../docs/reproduction.md) to create new executions with complete local outputs.
+
+These results concern the selected gallery profiles in the reference environment. The [memory comparison](../study/README.md) contains the separate 60-attempt evaluation, including failures and uncertainty estimates. Numerical behavior may differ on other hardware.

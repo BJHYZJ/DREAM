@@ -1,4 +1,4 @@
-"""Download pinned assets/models through the unchanged original downloaders."""
+"""Download the models and scene assets required by the simulation profiles."""
 import argparse
 import subprocess
 import sys

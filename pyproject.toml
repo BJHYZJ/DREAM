@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dream-sim"
 version = "1.0.0"
-description = "Version-pinned DREAM cross-room dynamic pick-and-place reproduction"
+description = "DREAM indoor mobile manipulation with dynamic semantic memory in ManiSkill"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
 license = {file = "LICENSE"}

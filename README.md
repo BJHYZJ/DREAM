@@ -1,18 +1,29 @@
-# DREAM: indoor simulation reproduction
+# DREAM
 
-This is the **simulation** branch of [DREAM](https://github.com/BJHYZJ/DREAM).
-The ROS real-robot implementation and hardware setup remain on
-[`realtime`](https://github.com/BJHYZJ/DREAM/tree/realtime). This branch needs
-neither ROS nor the physical robot's drivers.
+**Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation**
 
-Ten selected demonstrations show observation-driven cross-room search, a target
-relocated after discovery, memory updates, rediscovery, and automatic pick/place
-in ten distinct ManiSkill indoor houses. Watch
-[Video 01–10](https://bjhyzj.github.io/dream-web/simulation/).
-These are selected qualitative demonstrations, not a held-out benchmark or a
-population success-rate estimate.
+[Project page](https://bjhyzj.github.io/dream-web/) · [Paper](https://arxiv.org/abs/2606.00576) · [Videos](https://bjhyzj.github.io/dream-web/simulation/) · [Real-robot code](https://github.com/BJHYZJ/DREAM/tree/realtime)
 
-## Get started
+DREAM is a mobile manipulation framework for previously unseen indoor environments. Starting from a language instruction, the robot explores its surroundings, builds a 3D semantic memory, finds task objects, and carries out grasping and placement. It uses new observations to update remembered locations when objects move.
+
+The full system combines dynamic spatio-semantic memory, Redundancy-Aware Memory Pruning, multi-sensor SLAM, hybrid target localization, and task-oriented navigation. The ROS implementation and hardware setup are on the [`realtime` branch](https://github.com/BJHYZJ/DREAM/tree/realtime).
+
+![DREAM system overview](https://bjhyzj.github.io/dream-web/media/figures/main.png)
+
+## Indoor simulation
+
+This branch runs cross-room pick-and-place tasks in **ManiSkill / SAPIEN** with a Fetch robot. The robot searches for an object, observes a change in its location, finds it again, and delivers it to the requested receptacle.
+
+- **Perception:** SigLIP visual-language features and OWL-V2 object detection from head-camera RGB-D observations.
+- **Memory:** semantic voxel mapping, retrieval of task-relevant observations, and depth-based updates to stale object locations.
+- **Navigation:** observed occupancy mapping, frontier exploration, and A* route planning.
+- **Manipulation:** grasp and placement poses computed from observed geometry, executed with robot feedback.
+
+The simulator supplies odometry, and task instructions use a bounded English pickup/place grammar. See the [implementation details](docs/reproduction.md#implementation-boundary) for the simulation interfaces and their relation to the real-robot system.
+
+## Getting started
+
+Use Linux with **Python 3.11**, CUDA inference, and a working Vulkan renderer. The [setup guide](docs/reproduction.md) covers dependencies, model downloads, scene assets, and resource requirements.
 
 ```bash
 git clone --branch simulation https://github.com/BJHYZJ/DREAM.git
@@ -24,52 +35,75 @@ python -m pip install --no-deps -e .
 python -m pip check
 ```
 
-Follow the [reproduction tutorial](docs/reproduction.md) to prepare the locked
-models/assets and Vulkan/CUDA runtime. After preparation:
+Prepare the models and scene assets:
 
 ```bash
+python -m dream_sim.prepare models --cache-dir .runtime/models --production
+python -m dream_sim.prepare assets \
+  --reference-lock configs/locks/instruction_asset_lock03.json \
+  --output-parent .runtime/assets/data/scene_datasets \
+  --output-manifest .runtime/assets_download.json
 python -m dream_sim.run --preflight
+```
+
+Run one case or the full gallery:
+
+```bash
 python -m dream_sim.run --case 01 --output results/my_case01
 python -m dream_sim.run --all --output results/my_ten_cases
 ```
 
-The runner makes **one fresh policy attempt per case**, followed by separate
-physics/record checks. It does not play saved actions as a policy, retry failed
-cases, change seeds, or overwrite previous attempts. Keep every new outcome.
-Recorded outcomes are reproducible in the documented same-server environment;
-identical behavior on arbitrary hardware is not guaranteed.
+Each case runs once and saves observations, actions, evaluation results, and independent replay checks. Use a new output directory for each run. Multi-GPU execution is available through `--gpus 0 1`.
 
-## Repository layout
+## Demonstrations and evaluation
 
-```text
-src/dream_sim/                   public execution, preparation and audit package
-configs/                        numbered cases, readable tasks and dependency locks
-requirements/                   exact Python runtime package versions
-tests/                          offline integrity, runner and regression checks
-docs/                           environment, execution and architecture tutorials
-reproducibility/source_archives/ byte-preserved historical Python source bundle
-reproducibility/evidence/        original records, including failed attempts
-```
+The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) contains ten selected demonstrations in ten houses, covering mugs, eggs, bread, and tomatoes placed on plates or in bowls. Video numbers match the case IDs in [`configs/cases.json`](configs/cases.json).
 
-The ten recordings used six historical controller versions; a seventh belongs
-to the separate comparison. They have not been silently replaced by one latest
-controller. The [architecture guide](docs/architecture.md) explains the source
-archive, its integrity checks and how to inspect the exact policy for each video.
-All historical source bytes are retained; archive extraction is automatic.
+The gallery uses six recorded controller versions. A separate comparison evaluates dynamic and static memory with one controller across 60 attempts. The [experiment records](reproducibility/evidence/study/README.md) describe its protocol, results, and uncertainty; the gallery itself is a qualitative selection.
+
+## Code structure
+
+| Directory | Contents |
+| --- | --- |
+| `src/dream_sim/` | Task runner, resource preparation, replay evaluation, and video tools |
+| `configs/` | Case catalog, task definitions, room maps, and dependency locks |
+| `requirements/` | Python package versions |
+| `reproducibility/source_archives/` | Versioned controller source, extracted automatically when used |
+| `reproducibility/evidence/` | Experiment records, analysis, and video metadata |
+| `tests/` | Configuration, source-integrity, and entrypoint checks |
+
+To locate the controller for a case:
 
 ```bash
 python -m dream_sim.sources --case 01
+```
+
+The returned directory contains `experiments/instruction_policy.py`, the navigation and manipulation helpers, and `src/dream/`. The [architecture guide](docs/architecture.md) maps these modules to the task pipeline.
+
+## Validation
+
+```bash
 python -m dream_sim.run --preflight --dry-run
 python -m dream_sim.verify_evidence
 python -m pytest -q
 ```
 
-These offline checks do not execute experiments. The
-[video manifest](reproducibility/evidence/gallery/manifest.json) records full
-scene IDs, seeds, source hashes and video checksums. Upstream Train/Val/Test
-names do not select a controller training/test mode.
+These commands check configuration, source integrity, and stored records without running the simulator. See the [run guide](docs/reproduction.md#4-read-results) for evaluating a new execution.
 
-The [implementation boundaries](docs/reproduction.md#implementation-boundary)
-and [original reproduction records](reproducibility/evidence/reproduction/README.md)
-distinguish observation-grounded geometric grasping, simulator odometry and
-bounded instruction parsing from the complete physical DREAM stack.
+## Citation
+
+```bibtex
+@misc{yan2026dynamicresilientspatiosemanticmemory,
+  title={Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation},
+  author={Zhijie Yan and Shufei Li and Ze Zhang and Xin Liu and Yuhang Zheng and Zuoxu Wang},
+  year={2026},
+  eprint={2606.00576},
+  archivePrefix={arXiv},
+  primaryClass={cs.RO},
+  url={https://arxiv.org/abs/2606.00576},
+}
+```
+
+## License
+
+DREAM is released under the [MIT License](LICENSE). Model weights and scene assets are downloaded from their providers and use their respective licenses.

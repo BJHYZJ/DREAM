@@ -1,4 +1,4 @@
-"""Advanced, frozen-profile launcher, including the separate comparison study."""
+"""Launch simulation profiles or the dynamic/static memory comparison."""
 import sys
 from dream_sim.sources import engine_root
 

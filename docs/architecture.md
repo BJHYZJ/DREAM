@@ -1,88 +1,76 @@
-# Code organization and source preservation
+# Architecture
 
-## Branches
+## Task pipeline
 
-- `realtime`: original ROS/hardware implementation, plus a link to simulation.
-- `simulation`: this standalone Python reproduction project. Hardware meshes,
-  drivers and ROS launch/configuration files are not part of this checkout.
-- `dream-web` / `master`: presentation only; videos and posters, without copied
-  per-case metadata. Detailed provenance belongs in this code repository.
+The simulation runner connects instruction parsing, RGB-D perception, semantic memory, navigation, and manipulation:
 
-`git switch realtime` and `git switch simulation` select the two implementations
-in a normal clone. Finish or commit local edits before switching. For
-simultaneous use, use two ordinary clones. Generated caches/results are ignored.
-These are alternative project trees, not a feature branch intended to be merged
-back wholesale into the hardware tree.
+```text
+Instruction → scene exploration → target localization → grasp
+                    ↑                    ↓
+              memory update ← fresh observation
 
-## Public Python package
-
-`src/dream_sim/run.py` coordinates locked-profile validation, one new policy
-execution and independent audits. `prepare.py` downloads upstream resources;
-`audit.py`, `render.py`, `video.py` handle explicitly separate evidence/display
-steps. `sources.py` verifies the source bundle and expands it automatically.
-`verify_evidence.py` checks retained evidence and video-number mappings.
-
-Install from a full checkout with `pip install --no-deps -e .` after installing
-the pinned requirements. This release supports editable checkout installation,
-not a standalone wheel lacking the source archives/configuration/evidence.
-
-## Why preserve source versions?
-
-The selected recordings were produced during development with six different
-controller snapshots, not one frozen benchmark controller. The separate
-comparison used a seventh version. Review-script versions are independently
-pinned, and case 05 needs an additional historical v3 reviewer snapshot.
-Replacing them with one rewritten controller would require new experiments;
-renaming a folder must not imply that such experiments have happened.
-
-`reproducibility/source_archives/selected_profiles_v1.zip` is an ordinary ZIP of
-inspectable Python, tasks, locks and original records. It contains no model
-weights or scene meshes, and is not saved actions substituted for a policy.
-The adjacent lock binds the archive and every member's bytes/SHA256 to the
-pre-refactor release. Existing evidence archives are retained separately.
-
-At first use, the source bundle is checked and expanded beneath ignored
-`.runtime/sources/<archive-sha256>/`. Extraction is locked across processes,
-rejects unsafe paths and symbolic links, verifies every member, and publishes
-the tree only when complete. Later processes verify the expanded tree again;
-modified caches are rejected, not silently repaired. Set
-`DREAM_SIM_SOURCE_CACHE=/absolute/path` for a different cache location.
-
-```bash
-python -m dream_sim.sources --case 01
+Grasp → destination search with retained memory → placement → evaluation
 ```
 
-This prints the exact controller source directory. Open its
-`experiments/instruction_policy.py`, `experiments/maniskill_crossroom_policy.py`,
-and `src/dream/` to inspect the implementation. The original `DREAM_code`
-workspace name exists only inside this historical compatibility tree and newly
-frozen run records: old code uses it to establish relative cache/source paths.
-It is not the public package name or an extra repository to install. No frozen
-Python module was renamed, reformatted or algorithmically changed in this split.
+The environment initializes the house and task objects and moves the target after visual discovery. The policy uses its observations to detect this change and update its search. Evaluator trajectories record object poses and contacts for scoring and replay checks.
 
-## Cases, configurations and evidence
+## Entry points
 
-`configs/cases.json` mirrors the ten original catalog entries exactly. Its
-historical `task`, `records` and source-run fields are relative to the archived
-catalog or identify the original recording; they are not current checkout
-download links. Readable `configs/tasks/` and `configs/locks/` are byte-identical
-copies checked against that catalog. Execute by case ID through the public
-runner; do not edit a locked task to make an integrity check pass.
+| Module | Responsibility |
+| --- | --- |
+| `dream_sim.run` | Validate the runtime, execute cases, and collect evaluation results |
+| `dream_sim.prepare` | Download the required models and scene assets |
+| `dream_sim.sources` | Verify and extract controller sources; locate a case's implementation |
+| `dream_sim.profile` | Launch versioned profiles and the 60-attempt comparison |
+| `dream_sim.audit` | Re-evaluate recorded episodes through physics replay and record checks |
+| `dream_sim.render` | Render an episode from a spectator camera using its saved controls |
+| `dream_sim.video` | Export the composite video at 4× playback |
+| `dream_sim.verify_evidence` | Check experiment archive hashes and video-to-case mappings |
 
-Controller versions, task bytes, source IDs, original videos, reviewers and the
-07/10 spectator renderers are independently bound. Case 05's original false
-scorer verdict and pre-declared correction remain visible. Prior wrapper
-reviewer-version failures and the comparison's failures have not been removed.
+## Controller modules
 
-For new algorithm development, create new configurations/source versions and
-run new trials with their own evidence. Do not label them as reproductions of
-these original videos merely because the public entrypoint is the same.
+Run `python -m dream_sim.sources --case 01` to print the source directory for a case. Paths below are relative to that directory.
 
-## Scope of this reorganization
+| Source file | Responsibility |
+| --- | --- |
+| `experiments/run_instruction_task.py` | Create the environment, run the task stages, and save observations and results |
+| `experiments/instruction_task.py` | Parse a pickup/place instruction and define the visual-discovery gate |
+| `experiments/instruction_policy.py` | Coordinate search, target verification, grasping, and destination search |
+| `experiments/dream_learned_core.py` | SigLIP/OWL-V2 perception, semantic memory, and observed occupancy |
+| `experiments/maniskill_crossroom_policy.py` | Exploration, route following, and approach behavior |
+| `experiments/dream_fetch_navigation.py` | Fetch occupancy map and A* navigation |
+| `experiments/instruction_geometry.py` | Grasp geometry and receptacle placement regions |
+| `experiments/maniskill_learned_probe.py` | Robot state, sensor observations, and simulator control interface |
+| `src/dream/dynamic_memory.py` | Shared memory-update and focused-observation logic |
+| `src/dream/semantic_retrieval.py` | Text-to-voxel feature alignment |
 
-This change moves code, adds packaging/source-integrity checks, and changes
-website links/poster locations. It does not change a robot policy, scorer,
-seed, recorded action, video frame or paper result. Previously completed
-ten-case policy reproduction is documented in `reproducibility/evidence/reproduction/`.
-New packaging tests or physics replay are identified separately and must
-not be counted as ten additional policy trials.
+The [simulation interfaces](reproduction.md#implementation-boundary) describe the policy's inputs and the components adapted from the real robot.
+
+## Source versions
+
+The ten gallery cases use six controller versions; the comparison study uses a seventh. Each case records its controller, task, seed, evaluation version, and video identity. The runtime selects these through the profile catalog.
+
+The source code is stored in `reproducibility/source_archives/selected_profiles_v1.zip`. Its lock file contains the archive hash and the size and SHA256 of every member. Model weights and house meshes are downloaded separately.
+
+On first use, `dream_sim.sources` verifies the ZIP and extracts it to:
+
+```text
+.runtime/sources/<archive-sha256>/
+```
+
+Extraction uses a process lock and a temporary directory before publishing the completed tree. Later processes verify the cached files before loading them. Modified files cause a checksum error. Set `DREAM_SIM_SOURCE_CACHE` to use another cache location.
+
+The extracted `DREAM_code` directory is the controller's workspace root. The helper scripts use this name to resolve their relative imports and resources. The project therefore uses an editable installation from a complete checkout, including `configs/` and `reproducibility/`.
+
+## Configuration and outputs
+
+`configs/cases.json` lists the case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
+
+Each run creates its own output directory with the launch plan, environment checks, saved episode, and evaluation results. The [run guide](reproduction.md#4-read-results) describes the output files.
+
+For algorithm development, copy a controller into a development workspace and record the modified source and task configuration in a new profile. Existing gallery profiles are checksum-locked to their recorded implementations. Changes to the generated source cache will be rejected by the runner.
+
+## Related repositories
+
+- [`realtime`](https://github.com/BJHYZJ/DREAM/tree/realtime): ROS implementation, hardware drivers, robot model, and calibration guides.
+- [`dream-web`](https://github.com/BJHYZJ/dream-web): project website, figures, and demonstration videos.

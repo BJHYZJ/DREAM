@@ -1,18 +1,10 @@
-# DREAM cross-room dynamic pick-and-place in ManiSkill
+# Running DREAM in ManiSkill
 
-This branch provides the task configurations, exact source versions and
-execution/audit tools corresponding to ten selected demonstrations in ten
-distinct indoor houses. It is separate from DREAM's original ROS hardware
-workflow. The real-robot source and instructions remain unchanged.
+This guide covers environment setup, case execution, evaluation, and video export. Run commands from the root of the `simulation` branch checkout.
 
-The ten cases are development-selected demonstrations, not a held-out benchmark
-or a claim of a 100% success rate. Train/Val/Test in a house name comes from the
-upstream scene split; it does not switch the controller into training mode.
-Keep every result produced by a new run, including failures.
+## 1. Install the environment
 
-## 1. Install the isolated environment
-
-From the `simulation` branch repository root (not the `docs/` directory), on Linux:
+Use Linux with Python 3.11, CUDA inference, and a Vulkan renderer:
 
 ```bash
 python3.11 -m venv .venv-simulation
@@ -22,31 +14,17 @@ python -m pip install --no-deps -e .
 python -m pip check
 ```
 
-The recorded configuration uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3,
-PyTorch 2.10.0, CPU PhysX, Mesa Vulkan rendering and CUDA learned inference.
-Exact Python package versions are in the requirements files. A working CUDA
-installation and Vulkan ICD are required; these commands do not install or
-replace system drivers. The server used NVIDIA H20 GPUs. About 10.5 GB of GPU
-memory was observed for a single task on that server, not established as a
-portable minimum. Start with one worker.
+The reference environment uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3, PyTorch 2.10.0, CPU PhysX, Mesa Vulkan rendering, and NVIDIA H20 GPUs. A single task used approximately 10.5 GB of GPU memory on that configuration. Start with one worker and check resource use before adding more.
 
-The original server used this installed software-renderer ICD:
+Install the CUDA and Vulkan runtime appropriate to your machine. For the Mesa software renderer used in the reference environment:
 
 ```bash
 export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
 ```
 
-Use the actual compatible ICD on your machine. Preflight checks the file exists;
-only actual task execution checks that rendering works. Other hardware or
-library versions can change numerical behavior and are not guaranteed to
-reproduce identical outcomes. Do not modify a frozen controller to make a
-configuration check pass.
+Set this variable to an installed, compatible ICD. Preflight checks its path; task execution also exercises the renderer. Changes in hardware or numerical libraries can affect the resulting trajectories.
 
-## 2. Download the locked models and scene assets
-
-The following commands download from the original upstream sources. No model
-weights or third-party household meshes are redistributed in this repository.
-Observe each upstream license in addition to DREAM's MIT license.
+## 2. Prepare models and scene assets
 
 ```bash
 python -m dream_sim.prepare models \
@@ -58,46 +36,31 @@ python -m dream_sim.prepare assets \
 python -m dream_sim.run --preflight
 ```
 
-The complete asset lock contains 1,339 files at upstream revision
-`1a173d5de042aaad8f1af09d4d2bc2ce4004b28a`. Both production models (large SigLIP
-and OWL-V2) and the two small compatibility models have immutable revisions in
-`repro_profiles/locks/`. The `--production` flag is necessary. A model-lock JSON
-alone is not a downloaded model; the actual weights/configuration must exist.
-Preflight compares every scene asset's bytes/hash, model revisions and installed
-Python package versions. It checks weight presence, not a separate weight-file
-checksum manifest. Execution uses the prepared model cache offline.
+The model lock pins the SigLIP and OWL-V2 production models and their smaller compatibility variants. Use `--production` to download the production weights. The asset lock covers 1,339 files at upstream revision `1a173d5de042aaad8f1af09d4d2bc2ce4004b28a`.
 
-Network access is needed only for installation/download. If an asset download is
-partial, use the downloader's `--resume-manifest` with the partial manifest,
-instead of `--reference-lock`, and choose a new output manifest. Conflicting
-existing assets are never overwritten. For existing caches elsewhere, pass
-`--asset-dir /absolute/path/to/assets --model-cache /absolute/path/to/models`
-to preflight and each run. Do not rely on a symlink to the authors' workspace.
+Preflight checks package versions, model revisions and weight presence, scene-file hashes, and CUDA availability. Model weight contents do not have a separate SHA256 manifest. Downloads require network access; task execution uses the prepared model cache offline. Models and assets retain their upstream licenses.
 
-## 3. Execute a case or all ten
+To resume a partial asset download, pass its partial manifest with `--resume-manifest` in place of `--reference-lock`, and choose a new `--output-manifest`. The downloader rejects conflicting existing files.
+
+For caches stored elsewhere, add these options to preflight and run commands:
+
+```bash
+--asset-dir /absolute/path/to/assets --model-cache /absolute/path/to/models
+```
+
+## 3. Run a task
 
 ```bash
 python -m dream_sim.run --case 01 --output results/my_case01
 python -m dream_sim.run --all --output results/my_ten_cases
 ```
 
-These are new learned-policy executions, not action replay. The default is one
-GPU worker. On a machine with sufficient resources, `--gpus 0 1` uses one worker
-per listed device. Repeating a device number allocates additional workers, so
-only do this deliberately. The ten-case acceptance run on the original server
-uses `--gpus 0 1 0 1 0 1`; it is not a required minimum.
+Each command validates the selected sources and task configuration before launching one policy attempt per case. Results go into a new directory; an existing output directory is rejected. A later rerun uses another output path and the same case configuration.
 
-The runner validates and freezes the chosen source/task before launch. Each
-profile has its recorded scene, seed, instruction, threshold and navigation
-configuration. It creates exactly one attempt per requested case. It never
-changes a seed, retries a failed task, overwrites an existing output, or replaces
-a scorer after observing a new failure. Use a new output directory for each
-intentional rerun. A 1,200-second simulation budget and a 14,400-second policy
-wall timeout are retained. Wall time is much longer than video playback because
-of perception, rendering and saved evidence.
+The default is one GPU worker. Use `--gpus 0 1` for one worker on each device. Repeated device IDs allocate additional workers to that GPU. Cases retain a 1,200-second simulation budget and a 14,400-second policy wall timeout; perception, rendering, and recording make wall time longer than video playback.
 
-| ID | Native house | Seed | Pickup → destination |
-|---|---|---:|---|
+| ID | House | Seed | Pickup → destination |
+| --- | --- | ---: | --- |
 | 01 | ProcTHOR-Train-283 | 100 | Mug → plate on wooden table |
 | 02 | ProcTHOR-Train-8361 | 100 | Mug → plate on wooden table |
 | 03 | ProcTHOR-Train-9031 | 100 | Egg → plate on wooden table |
@@ -109,157 +72,85 @@ of perception, rendering and saved evidence.
 | 09 | ProcTHOR-Val-632 | 105 | Tomato → bowl on white table |
 | 10 | ProcTHOR-Train-7819 | 104 | Bread → plate on white table |
 
-The public videos are named `01.mp4`–`10.mp4`, and the website displays
-**Video 01**–**Video 10**. These numbers are exactly the profile IDs above;
-renaming does not change the recording, task, seed, controller or evaluation.
-Full source/scene identifiers, original filenames, encoding reports and video
-checksums are centralized in [`../reproducibility/evidence/gallery/manifest.json`](../reproducibility/evidence/gallery/manifest.json).
-The [gallery guide](../reproducibility/evidence/gallery/README.md) explains the mapping and its
-provenance records. The website intentionally does not duplicate this metadata.
-The upstream split name does not select a different runtime mode and these
-selected examples are not claimed to constitute a held-out evaluation.
+Video numbers match these case IDs. Full instructions, source versions, scene identifiers, and video checksums are in the [gallery catalog](../reproducibility/evidence/gallery/manifest.json). Train/Val/Test are upstream house split names; all cases use inference at runtime.
 
-The full instruction is authoritative in the profile catalog. The unified entry
-point is new packaging around the original source versions, not a claim that
-all historical videos used one latest controller. Cases 01–08 retain their
-original heading-navigation setting; cases 09–10 retain the later heading
-adapter. Six deduplicated controller versions cover the ten demonstrations;
-the seventh snapshot belongs to the separate frozen comparison.
+Six controller versions cover the gallery. Cases 09–10 enable the later heading-navigation adapter; other cases retain their recorded navigation settings. The [architecture guide](architecture.md) explains source selection and how to locate the policy code.
 
-To check code/profile integrity without loading runtime dependencies or running
-a task:
+For configuration and integrity checks without loading the simulator:
 
 ```bash
 python -m dream_sim.run --preflight --dry-run
 python -m dream_sim.run --all --dry-run --output results/dry_plan
-python -m pytest tests -q
+python -m pytest -q
 ```
 
-These checks do not establish task success.
+## 4. Read results
 
-## 4. Read the result and audit
+The output root contains `planned.json`, `preflight.json`, `progress.json`, and a final `acceptance.json`. Each `case_XX/` contains:
 
-Each output contains `planned.json`, `preflight.json`, live `progress.json` and
-terminal `acceptance.json`. Each `case_XX/` contains:
+| Path | Contents |
+| --- | --- |
+| `execution/` | Source snapshot, configuration, observations, detections, memory updates, actions, forces, trajectory, score, and original-speed video |
+| `audit/physical/` | Physics replay of the saved controls and forces, with trajectory and contact comparisons |
+| `audit/record/` | Checks for task order, target identity, relocation, rediscovery, grasp, transport, placement, and video continuity |
+| `acceptance.json` | Per-case execution status, evaluation results, and checksums |
+| `spectator/` | Additional presentation-camera render for cases 07 and 10 |
 
-- `execution/`: immutable source/configuration, one saved episode and its original
-  score; RGB-D observations, detection identities, events, controls, external
-  forces, simulator trajectories and original 1× rendered video are retained.
-- `audit/physical/`: a new physics instance executes those saved controls and
-  forces, comparing states and measuring contact. It never assigns recorded
-  robot/target states to actors. This audit is not another learned-policy trial.
-- `audit/record/`: checks instruction order, correctly observed target identity,
-  disturbance timing, measured empty old location, subsequent rediscovery,
-  physical grasp/transport, placement and continuous recording provenance.
-- `acceptance.json`: per-case original verdict, independent checks and hashes.
+The final `all_passed` value combines execution and evaluation status for every requested case. Check `policy.log`, the case report, and the audit logs when a case fails. The runner records failed outcomes and does not retry them automatically.
 
-`all_passed` requires every requested fresh execution and its declared audits to
-pass. A simulator process exiting normally is not sufficient. Historical
-compatibility fields are preserved; do not reinterpret an absent newer endpoint
-as a new success or failure.
+The evaluators are selected by the version recorded with each case. Case 05 applies its documented evaluator-v4 correction while retaining the original score. Cases 07 and 10 render the same controls from a spectator view after passing evaluation. The [evaluation notes](../reproducibility/evidence/reproduction/README.md) describe the scoring versions and recorded results.
 
-Case 05 has a pre-declared evaluator-v4 correction: qualified held transport does
-not disappear when a grasped object is lowered, and room assignment uses
-wall-derived regions rather than only eroded room cores. Its original false
-verdict remains, alongside reassessment and independent physical evidence.
-Case 07 uses the already documented v4 physical-audit accounting without changing
-its original true verdict. Record-review scripts are independently selected by
-the SHA256 recorded with each original video: v1 for 01, v2 for 02–04 and 06–08,
-v3 for 05, and v4 for 09–10. The extra historical v3 audit snapshot is kept in
-the source archive, separately from the seven policy/comparison snapshots.
-Neither accounting nor review-version selection modifies actions or counts as
-a new policy trial.
-
-Cases 07 and 10 use display-only spectator re-renders to make placement visible.
-After passing policy/record checks, the unified runner automatically creates
-`case_XX/spectator/` for these two cases. It executes the same saved controls,
-not a second learned policy. Original head/map panels and simulation timestamps
-are preserved. To repeat only this display step, use a new output directory:
-
-```bash
-python -m dream_sim.render --execution results/my_ten_cases \
-  --case 07 --output results/my_case07_spectator
-```
-
-To independently audit already complete episodes without another policy trial:
+To re-evaluate complete recorded episodes:
 
 ```bash
 python -m dream_sim.audit --execution results/my_ten_cases \
   --output results/my_matched_audits --workers 1
 ```
 
-For display rendering from those separate audits, add
-`--audits results/my_matched_audits` to the render command.
+To render a spectator view:
 
-## 5. Export a compact 4× video
+```bash
+python -m dream_sim.render --execution results/my_ten_cases \
+  --case 07 --output results/my_case07_spectator
+```
 
-After the reviewed composite and matching `video_frames.json` exist:
+Add `--audits results/my_matched_audits` to use separately generated audit results. These two commands operate on recorded controls; a new policy attempt is launched through `dream_sim.run`.
+
+## 5. Export a video
+
+Use the composite video and its corresponding frame record:
 
 ```bash
 python -m dream_sim.video --input PATH/TO/reviewer_view.mp4 \
   --frames PATH/TO/video_frames.json --output PATH/TO/reviewer_view_4x.mp4
 ```
 
-This retains 1440×600 resolution and every frame: 5 fps at original simulation
-speed becomes 20 fps at 4× playback. There is no frame interpolation or removal
-of slow/failed stages. The header says `4x playback`; its clock remains original
-simulation time. H.264/yuv420p and faststart support ordinary browser playback.
-Only the speed header is redrawn. Published case 01 uses `--crf 18`; the other
-nine use `--crf 20`, as recorded in their encoding manifests. Encoding happens on local temporary storage
-before a checked copy to the destination, to avoid MP4 relocation problems on
-some shared filesystems. JSON records hashes, frame counts and sampled quality.
+The export keeps all frames at 1440×600. Source footage at 5 fps becomes 20 fps for 4× playback, with the simulation clock preserved and the speed label updated. Output uses H.264, yuv420p, and faststart for browser playback.
+
+The gallery encodes case 01 with `--crf 18` and the remaining cases with `--crf 20`. Encoding uses local temporary storage before copying to the destination. The accompanying JSON records input/output hashes, frame counts, and sampled quality measurements.
 
 ## Implementation boundary
 
-The policy receives a bounded-English pickup/place instruction, current head
-RGB-D observations and simulator odometry. It builds an observed map, rotates
-to scan, selects exploration frontiers, navigates using DREAM's A* logic,
-checks stale target locations with new depth, and searches again. The destination
-is a second language-grounding problem with retained memory. Hidden object
-coordinates and evaluator room geometry belong to simulator initialization and
-evaluation, not the search policy. An environment-owned force-driven target
-relocation is armed only after a verified visible discovery during approach.
+| Component | Simulation implementation |
+| --- | --- |
+| Instruction | One pickup/place command in bounded English, with optional support description |
+| Observation | Current Fetch head-camera RGB-D and robot state |
+| Perception | SigLIP features and OWL-V2 text-conditioned object detection |
+| Memory | Observed semantic voxels, visual retrieval, and depth-based stale-location updates |
+| Localization | Simulator odometry; the ROS SLAM backend is used in the real-robot implementation |
+| Navigation | Observed occupancy, frontier exploration, and DREAM A* logic |
+| Manipulation | RGB-D grasp/receptacle geometry and feedback-controlled motion templates; AnyGrasp is used in the real-robot system |
+| Language-model verification | Hosted mLLM verification is disabled in this adapter |
+| Evaluation | Environment object poses, room geometry, contacts, and recorded trajectories |
 
-Grasp/place use current RGB-D detections, support/footprint geometry and measured
-TCP feedback with fixed pregrasp/approach/close/lift/release templates. They are
-automated geometric heuristics, not per-house prerecorded full trajectories,
-not AnyGrasp and not a learned grasp model. Navigation keeps the arm folded and
-uses the head camera; there is no navigation wrist-camera sweep. Simulator
-odometry replaces physical SLAM, hosted mLLM verification is disabled, and this
-workflow does not independently validate pose-graph RMP or arbitrary language.
+The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera.
 
-The public package is `src/dream_sim/`. Exact historical helpers and adapted
-DREAM components are preserved in `reproducibility/source_archives/` and
-automatically expanded into an ignored compatibility workspace. Run
-`python -m dream_sim.sources --case 01` to inspect a specific original policy.
-See [architecture](architecture.md). Do not autoformat frozen snapshots; new
-work should use a new profile, not edit one tied to a published recording.
+## Experiment records
 
-## Evidence and interpretation
+- [Gallery](../reproducibility/evidence/gallery/README.md): ten selected demonstrations and their case/video mappings.
+- [Memory comparison](../reproducibility/evidence/study/README.md): 60 attempts using one controller, ten houses, three seeds, and two memory variants.
+- [Reproduction](../reproducibility/evidence/reproduction/README.md): repeat executions and evaluation records for the ten gallery cases.
+- [Component measurements](../reproducibility/evidence/components/README.md): memory pruning, scaling, and exploration analyses.
+- [Entrypoint validation](../reproducibility/evidence/packaging/README.md): source-integrity checks and a case-01 smoke run.
 
-The selected video gallery is qualitative evidence of executed cross-room
-dynamic tasks. A separate, completed 60-attempt comparison uses one frozen
-controller and retains every outcome; its numerical analysis and scope are
-documented with the evidence, not inferred from the ten selected videos.
-It does not establish general superiority or outdoor performance.
-
-The subsequent branch/package reorganization preserves every historical source
-byte. Its new entrypoint was additionally checked by one fresh case-01 policy
-execution and its matching physics/record audits; see
-[`packaging/`](../reproducibility/evidence/packaging/README.md). This separate
-smoke test is not ten additional trials and does not replace the gallery.
-
-The final delivery check newly executed all ten profiles once in a separate
-pinned Python environment on the same server. All ten action and evaluator
-trajectory files match their original recordings byte-for-byte. Matching-version
-physical/record audits passed for all ten; cases 07 and 10 also passed the exact
-original spectator-renderer checks. The original wrapper's reviewer-version
-errors for 02 and 06 and the pre-declared case-05 scoring correction are retained
-and explained in [`../reproducibility/evidence/reproduction/`](../reproducibility/evidence/reproduction/README.md).
-Audits/re-renders did not rerun policies, change seeds or add comparison trials.
-
-Delivery acceptance records must be read separately from the historical video
-checks. A successful execution in the documented same-server environment does
-not guarantee identical behavior on all hardware. The author must review the
-final videos and publication links before pushing the repositories or submitting
-the response. This directory does not itself publish anything.
+The gallery is a selection of demonstrations. Comparative results use the separate study protocol and include all its attempts. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays and videos are listed by hash and retained in the authors' archive.
