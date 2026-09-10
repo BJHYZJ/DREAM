@@ -1,0 +1,9 @@
+{
+  "id": "recovery",
+  "base_study_source_id": "93c90f6a9e2dd87142adeb5610debdfc1b1007e91eb44d0b51ad3055ca6ac1d9",
+  "overrides": {
+    "experiments/instruction_policy.py": "8b112ef93c2c589fb79d7a390dca95af8c5a928b7e16ccf6cea6b0a8f130a3cf",
+    "experiments/dream_fetch_footprint.py": "ffcfbba9b12f38e62418a7a51834ff7551f78a881aafe80674be0847cf9898af",
+    "experiments/instruction_geometry.py": "4490ed9ac3f8bdcf953c700ada4c6044c909cc200a784c682f91dfcf03999fc5"
+  }
+}

@@ -61,12 +61,15 @@ The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) contains ten
 
 The gallery uses six recorded controller versions. A separate comparison evaluates dynamic and static memory with one controller across 60 attempts. The [experiment records](reproducibility/evidence/study/README.md) describe its protocol, results, and uncertainty; the gallery itself is a qualitative selection.
 
+To evaluate a common controller across all ten houses, use [`dream_sim.study`](docs/reproduction.md#evaluate-a-common-controller). It supports the recorded baseline and a controller with additional receptacle views and revised navigation clearance.
+
 ## Code structure
 
 | Directory | Contents |
 | --- | --- |
 | `src/dream_sim/` | Task runner, resource preparation, replay evaluation, and video tools |
 | `configs/` | Case catalog, task definitions, room maps, and dependency locks |
+| `controllers/` | Controller revisions for common-protocol evaluation |
 | `requirements/` | Python package versions |
 | `reproducibility/source_archives/` | Versioned controller source, extracted automatically when used |
 | `reproducibility/evidence/` | Experiment records, analysis, and video metadata |

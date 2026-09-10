@@ -84,6 +84,21 @@ python -m dream_sim.run --all --dry-run --output results/dry_plan
 python -m pytest -q
 ```
 
+### Evaluate a common controller
+
+`dream_sim.study` runs one controller across the selected houses, seeds, and memory variants. The default design contains ten houses, seeds 100–102, and both dynamic and static memory, for 60 attempts:
+
+```bash
+python -m dream_sim.study --controller recovery \
+  --gpus 0 1 --output results/recovery_study
+```
+
+This command validates the inputs and prints the plan. Add `--execute` to run it. Use `--controller baseline` for the controller from the recorded memory comparison, or restrict a development run with `--cases 03 04 --seeds 100 --variants dynamic`. External caches use the same `--asset-dir` and `--model-cache` options as the task runner.
+
+The `recovery` controller uses 2.5 cm of additional footprint padding and retries an incomplete receptacle fit from higher head-camera views. When a bowl's central floor is occluded, inward-facing depth normals on its visible inner wall can establish cavity evidence. Detection, support grounding, payload clearance, release above the observed rim, and physical task scoring remain required. These changes are under evaluation; the published comparison describes the baseline controller.
+
+Each study directory contains a frozen source tree, task definitions, `protocol.json`, individual run directories, and `attempts.jsonl` with every completed outcome. The final `batch_result.json` records whether all planned attempts were accounted for. Success rates use the complete declared set, including failures. Development runs on previously inspected cases do not estimate performance on new houses.
+
 ## 4. Read results
 
 The output root contains `planned.json`, `preflight.json`, `progress.json`, and a final `acceptance.json`. Each `case_XX/` contains:
