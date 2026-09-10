@@ -1,0 +1,1411 @@
+{
+  "scope": "Descriptive stage classification from controller milestones; not a causal attribution, outcome reassessment, or additional trial.",
+  "report_sha256": "957714988e4f5e9c2a7e6c5fd01e0a19e15997baee1941771e1bc543f072f72a",
+  "counts": {
+    "dynamic": {
+      "pickup_search_or_navigation": 5,
+      "grasp_or_lift": 1,
+      "other_required_task_criterion_unmet": 1,
+      "completed": 15,
+      "destination_search_or_navigation": 5,
+      "placement_geometry_or_motion": 2,
+      "native_environment_contact": 1
+    },
+    "static": {
+      "completed": 13,
+      "grasp_or_lift": 1,
+      "pickup_search_or_navigation": 12,
+      "other_required_task_criterion_unmet": 1,
+      "destination_search_or_navigation": 3
+    }
+  },
+  "attempts": [
+    {
+      "name": "01_ProcTHOR-Train-283_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23999,
+        "event": "navigation_depth_update",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 1,
+        "heading_astar_search: circular_last_seen_anchor_unreachable": 33
+      },
+      "result_sha256": "57c1d2504700ac65e3556e61f914c6a437b5052746182b8f8c9d9adaa8bb1d21"
+    },
+    {
+      "name": "01_ProcTHOR-Train-283_seed100_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 11289,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 1,
+        "heading_astar_search: circular_docking_ring_unreachable": 4,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "627ea9ca24caf482336ffd51809680f6fd4afd108a3056b15cdba002101469ed"
+    },
+    {
+      "name": "01_ProcTHOR-Train-283_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "grasp_or_lift",
+      "error": null,
+      "last_event": {
+        "step": 13988,
+        "event": "grip_retention_proprioception",
+        "task_stage": "grasp"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 4
+      },
+      "result_sha256": "812ce3890f50ca7a02e0d4e65b4a4c181047c1bbf4d7a9fe09e129ffdc2f28ed"
+    },
+    {
+      "name": "01_ProcTHOR-Train-283_seed101_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "grasp_or_lift",
+      "error": null,
+      "last_event": {
+        "step": 13988,
+        "event": "grip_retention_proprioception",
+        "task_stage": "grasp"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 4
+      },
+      "result_sha256": "c65dafcf44f9805fd55706951507af8c2677a66e67b47f10daf936db4b70f7e5"
+    },
+    {
+      "name": "01_ProcTHOR-Train-283_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23994,
+        "event": "observation",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_last_seen_anchor_unreachable": 2,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "d085311b1cffc12fa62b74faacb9e589ce23a372671ee272410c545928b41529"
+    },
+    {
+      "name": "01_ProcTHOR-Train-283_seed102_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23997,
+        "event": "navigation_depth_update",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 61,
+        "heading_astar_search: circular_start_not_clear": 21,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 16,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 16,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 15
+      },
+      "result_sha256": "1b3e96cf75e47175c733098274f03714f094b42523540eb4a8d534d02fa2cf61"
+    },
+    {
+      "name": "02_ProcTHOR-Train-8361_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "other_required_task_criterion_unmet",
+      "error": null,
+      "last_event": {
+        "step": 11708,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [
+        "correct_discovery_before_relocation",
+        "relocation_triggered_during_translation",
+        "external_relocation_finished",
+        "external_move_preserved_payload_support",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "923ad446bbe7adb890ffbc5e247de4d977e5cc2bf205741eaa4bc21d1f7bf5f8"
+    },
+    {
+      "name": "02_ProcTHOR-Train-8361_seed100_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "other_required_task_criterion_unmet",
+      "error": null,
+      "last_event": {
+        "step": 11708,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [
+        "correct_discovery_before_relocation",
+        "relocation_triggered_during_translation",
+        "external_relocation_finished",
+        "external_move_preserved_payload_support",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "8b3faec0e43c154801f16bd58f27f24dc154c6e11860ec89dc2ba2d17929e839"
+    },
+    {
+      "name": "02_ProcTHOR-Train-8361_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 9940,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 4,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2,
+        "heading_astar_search: circular_start_not_clear": 3
+      },
+      "result_sha256": "95eb4ed6cddec14f5b4e790bbf2adaf76c98c5ba99b1bee0b1ac733bdbab19ef"
+    },
+    {
+      "name": "02_ProcTHOR-Train-8361_seed101_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 9939,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 4,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2,
+        "heading_astar_search: circular_start_not_clear": 3
+      },
+      "result_sha256": "58d9b9989e66d5532f1835503a2679df5d9d64b5278a9a0038cc8e59ee135d05"
+    },
+    {
+      "name": "02_ProcTHOR-Train-8361_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 16708,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 3
+      },
+      "result_sha256": "a9395254c0902e2fac23bc69b05c8ce47687160fb14885f21eeda2bf9c7c6480"
+    },
+    {
+      "name": "02_ProcTHOR-Train-8361_seed102_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 16779,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 4,
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 2,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1
+      },
+      "result_sha256": "d897a27efe3aa8213343b271b0ed723b7022ae7ee47150b40d4ab8c4e606e7cd"
+    },
+    {
+      "name": "03_ProcTHOR-Train-9031_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7169,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {},
+      "result_sha256": "2682e39c7dd0cc58d313f6c3c8b2163da673f67c71ee2f13f0dcc82e0b36372a"
+    },
+    {
+      "name": "03_ProcTHOR-Train-9031_seed100_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 8734,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 5,
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "4b60e6d1a91b08275caa78cae4bccf396f3a65ab717d80b143a80389a2c3ff77"
+    },
+    {
+      "name": "03_ProcTHOR-Train-9031_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 11751,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "31b528510a4dca1b5556f803058c24c3e6be661b7e5f7c9e079d9e54d9c82bee"
+    },
+    {
+      "name": "03_ProcTHOR-Train-9031_seed101_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 11414,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "e8f91d088d7e65199cdf0cd0db64775e6a32924d910ff9c0697e2b6e3f043e6c"
+    },
+    {
+      "name": "03_ProcTHOR-Train-9031_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 10745,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 1
+      },
+      "result_sha256": "d1efad4c63e9084325b52c2b27ba8f8acffda8a80489dec2f50012f8ab4182dd"
+    },
+    {
+      "name": "03_ProcTHOR-Train-9031_seed102_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 11138,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "47311d7593b5d0ce6890a44ef59dad6865783a254d31e38bdd2553efdb041819"
+    },
+    {
+      "name": "04_ProcTHOR-Train-5318_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 8632,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 4
+      },
+      "result_sha256": "4c20e92d574be1f299966decdd28c8fc6896bec4983a2f1d6f7203d038f93469"
+    },
+    {
+      "name": "04_ProcTHOR-Train-5318_seed100_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 8633,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 3,
+        "heading_astar_search: circular_start_not_clear": 4
+      },
+      "result_sha256": "69a011df02f9543ebcffd21c697081f812c10fa79b688bce01c3a5cddcb3e02b"
+    },
+    {
+      "name": "04_ProcTHOR-Train-5318_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 6225,
+        "event": "route_execution_incomplete",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 11,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_reverse_recovery_declined: await_forward_progress": 8
+      },
+      "result_sha256": "38fe5ffded1656f6f2dfa6a826e4092769329e72ae620f608d77331b15ffa2ca"
+    },
+    {
+      "name": "04_ProcTHOR-Train-5318_seed101_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 6225,
+        "event": "route_execution_incomplete",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 11,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_reverse_recovery_declined: await_forward_progress": 8
+      },
+      "result_sha256": "4dd952f9cef0714d7bba1e5bd0b29b4e0fe14e08b2dcf684feb1a64087d12325"
+    },
+    {
+      "name": "04_ProcTHOR-Train-5318_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 21619,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 2,
+        "heading_astar_search: circular_docking_ring_unreachable": 9,
+        "heading_astar_search: circular_start_not_clear": 39,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 17,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1
+      },
+      "result_sha256": "31a2df44e274c26f981a3bf32e3aa608b97ad7b5451df18a430b071dccd91330"
+    },
+    {
+      "name": "04_ProcTHOR-Train-5318_seed102_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 9914,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 2,
+        "heading_astar_search: circular_docking_ring_unreachable": 9,
+        "heading_astar_search: circular_start_not_clear": 3
+      },
+      "result_sha256": "5ac701d54e18f2c588d84677663e8a813cc0ed0a60a9762cc7c550c463294e2b"
+    },
+    {
+      "name": "05_ArchitecTHOR-Test-02_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 3965,
+        "event": "route_execution_incomplete",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 13,
+        "heading_motion_stopped: translation_controller_stall": 8,
+        "heading_route_chunk_result: translation_controller_stall": 8,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 1,
+        "heading_astar_search: circular_start_not_clear": 8,
+        "heading_reverse_recovery_declined: rear_sweep_not_observed_free": 8
+      },
+      "result_sha256": "2c1bd710c4b751f24f2751204953ef76e0e37c322c281210037820bceaf482e7"
+    },
+    {
+      "name": "05_ArchitecTHOR-Test-02_seed100_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 3965,
+        "event": "route_execution_incomplete",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 13,
+        "heading_motion_stopped: translation_controller_stall": 8,
+        "heading_route_chunk_result: translation_controller_stall": 8,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 1,
+        "heading_astar_search: circular_start_not_clear": 8,
+        "heading_reverse_recovery_declined: rear_sweep_not_observed_free": 8
+      },
+      "result_sha256": "612008a92aefd9a0905efdf44c44d55f601206e5cd1e0b5265d8e45704782f2f"
+    },
+    {
+      "name": "05_ArchitecTHOR-Test-02_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23992,
+        "event": "verified_visual_track",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 73,
+        "heading_motion_stopped: translation_controller_stall": 24,
+        "heading_route_chunk_result: translation_controller_stall": 24,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 1,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "f91e29f1d4767d0a3d889b2f806b9f2559f2846d9e384ccb9c5faf8aa94e00b0"
+    },
+    {
+      "name": "05_ArchitecTHOR-Test-02_seed101_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23992,
+        "event": "verified_visual_track",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 73,
+        "heading_motion_stopped: translation_controller_stall": 24,
+        "heading_route_chunk_result: translation_controller_stall": 24,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 1,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "097620237da4799d7ac3a114fdd623ec713f96226a6364cd7779c4b9b100cca1"
+    },
+    {
+      "name": "05_ArchitecTHOR-Test-02_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 23362,
+        "event": "route_execution_incomplete",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 67,
+        "heading_motion_stopped: translation_controller_stall": 1,
+        "heading_route_chunk_result: translation_controller_stall": 1,
+        "heading_motion_stopped: semantic_replan_requested": 1,
+        "heading_route_chunk_result: semantic_replan_requested": 1,
+        "heading_astar_search: circular_start_not_clear": 41,
+        "heading_motion_stopped: translation_sweep_not_observed_clear": 1,
+        "heading_route_chunk_result: translation_sweep_not_observed_clear": 1,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 1,
+        "heading_route_chunk_result: rotation_sweep_not_observed_clear": 1,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 1,
+        "heading_motion_stopped: fresh_depth_blocks_rotation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_rotation": 1,
+        "heading_reverse_recovery_declined: rear_sweep_not_observed_free": 7
+      },
+      "result_sha256": "a543e939edfb376853649328b07a993c5befc28e51f93991cfec4b6dad2775be"
+    },
+    {
+      "name": "05_ArchitecTHOR-Test-02_seed102_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 23362,
+        "event": "route_execution_incomplete",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 67,
+        "heading_motion_stopped: translation_controller_stall": 1,
+        "heading_route_chunk_result: translation_controller_stall": 1,
+        "heading_motion_stopped: semantic_replan_requested": 1,
+        "heading_route_chunk_result: semantic_replan_requested": 1,
+        "heading_astar_search: circular_start_not_clear": 41,
+        "heading_motion_stopped: translation_sweep_not_observed_clear": 1,
+        "heading_route_chunk_result: translation_sweep_not_observed_clear": 1,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 1,
+        "heading_route_chunk_result: rotation_sweep_not_observed_clear": 1,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_motion_stopped: fresh_depth_blocks_translation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_translation": 1,
+        "heading_motion_stopped: fresh_depth_blocks_rotation": 1,
+        "heading_route_chunk_result: fresh_depth_blocks_rotation": 1,
+        "heading_reverse_recovery_declined: rear_sweep_not_observed_free": 7
+      },
+      "result_sha256": "8ec36e676fc3dd7723c8a9fa8b9e8fc49558d9634e9aa67c971d5ae887b1bdc1"
+    },
+    {
+      "name": "06_ProcTHOR-Train-5080_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23996,
+        "event": "navigation_depth_update",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 12,
+        "heading_astar_search: circular_start_not_clear": 38,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2
+      },
+      "result_sha256": "e1c78835cd391fa7a9bd8495a426da387eefcdc98bf6957001ddabf0d91e4728"
+    },
+    {
+      "name": "06_ProcTHOR-Train-5080_seed100_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23996,
+        "event": "navigation_depth_update",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 12,
+        "heading_astar_search: circular_start_not_clear": 38,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2
+      },
+      "result_sha256": "063069d13eb1df00ec410072b9a1c38071181e01ff38ef462ff8b393aad29124"
+    },
+    {
+      "name": "06_ProcTHOR-Train-5080_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7947,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 3
+      },
+      "result_sha256": "596aaade6be674910f9b412a39242008ba5b8b57e17b2e809284d8f49aee08fa"
+    },
+    {
+      "name": "06_ProcTHOR-Train-5080_seed101_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7663,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 2
+      },
+      "result_sha256": "d0e084e3f77439bdb1ddb59cf683f93b14fc0f497ce9322e371bd21d4644ecc5"
+    },
+    {
+      "name": "06_ProcTHOR-Train-5080_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7834,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 2
+      },
+      "result_sha256": "433badf400b3db1ab51346fe647d7bf3957f6039fac7f730f20b3309feaf92f2"
+    },
+    {
+      "name": "06_ProcTHOR-Train-5080_seed102_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7834,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 2
+      },
+      "result_sha256": "3880ed72d4e31416540ccd39c4d52ff4aae7b5e892d29712529b40416ade6328"
+    },
+    {
+      "name": "07_ProcTHOR-Test-244_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 10576,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 2,
+        "heading_astar_search: circular_docking_ring_unreachable": 4,
+        "heading_astar_search: circular_start_not_clear": 2
+      },
+      "result_sha256": "87b62fe476d18012cdde0f3dad879c65d30c7556f62d424a23f2f1cbe305bfed"
+    },
+    {
+      "name": "07_ProcTHOR-Test-244_seed100_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23997,
+        "event": "memory_retrieval",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 18
+      },
+      "result_sha256": "38897efcf321c24b8729d422a1efbb9b082af612561b49bd98bf38c9b33dc018"
+    },
+    {
+      "name": "07_ProcTHOR-Test-244_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 8314,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "770ddd452e1745b6b6c6d4e3dfecbfbe6340cba0996f27bdf70ea66bd1d02105"
+    },
+    {
+      "name": "07_ProcTHOR-Test-244_seed101_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 8097,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 1
+      },
+      "result_sha256": "9a349634908feae81dcb9b7ecc561d0e5b195179c7a74220bd8ef69a73c55179"
+    },
+    {
+      "name": "07_ProcTHOR-Test-244_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 13370,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 2
+      },
+      "result_sha256": "771381f9956eba5af743b71ab8f2c014b0d390c3ecb6a9a6a317a9e18b372a7c"
+    },
+    {
+      "name": "07_ProcTHOR-Test-244_seed102_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 13263,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 1
+      },
+      "result_sha256": "af8a713292400ed29c5bb07a4ef1c8fa9a9c34d1ec5e0730d7019b371f4ca6e4"
+    },
+    {
+      "name": "08_ArchitecTHOR-Val-01_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7159,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 1
+      },
+      "result_sha256": "9bfe6b667f8b0b4ea3acbae5593ff6d2b8092b82d6d57eb9aa77f9bfa4ac1b40"
+    },
+    {
+      "name": "08_ArchitecTHOR-Val-01_seed100_static",
+      "variant": "static",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7106,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {},
+      "result_sha256": "4a7995a6159f7d1eccd72f62068425300faf364ee94499420240cc892b8f54d4"
+    },
+    {
+      "name": "08_ArchitecTHOR-Val-01_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 7030,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {},
+      "result_sha256": "18be2650690876f048df0c3b325d3d38138aeb9a08176d59f1b76a3fcc69e5c0"
+    },
+    {
+      "name": "08_ArchitecTHOR-Val-01_seed101_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23996,
+        "event": "observation",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 54
+      },
+      "result_sha256": "ebb4bd5998d48d7f3887e2f6146c2d8919a1aa1beb0b81ec9e05f0599de45b54"
+    },
+    {
+      "name": "08_ArchitecTHOR-Val-01_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": true,
+      "stage": "completed",
+      "error": null,
+      "last_event": {
+        "step": 6934,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {},
+      "result_sha256": "7777e78b4e16edb77caecce25d3ca081ca30917997c707b26bef8b1bd9858bc9"
+    },
+    {
+      "name": "08_ArchitecTHOR-Val-01_seed102_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23993,
+        "event": "observation",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 12
+      },
+      "result_sha256": "b9ad21d4278d9e7f7298a4ac560c91daee66740c8b0056ec34e20f207be25ea9"
+    },
+    {
+      "name": "09_ProcTHOR-Val-632_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "placement_geometry_or_motion",
+      "error": null,
+      "last_event": {
+        "step": 9368,
+        "event": "placement_aborted_no_valid_observed_geometry",
+        "task_stage": "place"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_last_seen_anchor_unreachable": 3,
+        "heading_astar_search: circular_route_execution_incomplete": 1,
+        "heading_astar_search: circular_docking_ring_unreachable": 1,
+        "heading_astar_search: circular_start_not_clear": 7
+      },
+      "result_sha256": "994dc139b79ce655668e80b498e5e5aa2146ef91594f9ba1993e761965068478"
+    },
+    {
+      "name": "09_ProcTHOR-Val-632_seed100_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 20943,
+        "event": "head_camera_scan_complete",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 4,
+        "heading_astar_search: circular_start_not_clear": 102
+      },
+      "result_sha256": "7aa85880f4623748dcd55bcacf173069dabb5767a6dbc4d9f218b1b9e80f10d2"
+    },
+    {
+      "name": "09_ProcTHOR-Val-632_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "placement_geometry_or_motion",
+      "error": null,
+      "last_event": {
+        "step": 17208,
+        "event": "placement_aborted_no_valid_observed_geometry",
+        "task_stage": "place"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 1,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 1,
+        "heading_astar_search: circular_docking_ring_unreachable": 2,
+        "heading_astar_search: circular_start_not_clear": 3,
+        "placement_view_rejected: no_fresh_detection": 2
+      },
+      "result_sha256": "7ed1acd3509d0ab31fc082298dcbf27cf9e71e96e679a7d43cd98c809db48c59"
+    },
+    {
+      "name": "09_ProcTHOR-Val-632_seed101_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23995,
+        "event": "navigation_depth_update",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 60
+      },
+      "result_sha256": "27ea5ede00d3a6bd00e3ad705ab805b717154654c58be8aa547097732c79c0ee"
+    },
+    {
+      "name": "09_ProcTHOR-Val-632_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23988,
+        "event": "observation",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 3,
+        "heading_astar_search: circular_docking_ring_unreachable": 1,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 12,
+        "heading_astar_search: circular_start_not_clear": 10
+      },
+      "result_sha256": "340f1c531785ea710cb4d160ac1f5e3235f2e5ddf5ace38ec41211dd889fb2f5"
+    },
+    {
+      "name": "09_ProcTHOR-Val-632_seed102_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": null,
+      "last_event": {
+        "step": 6896,
+        "event": "route_execution_incomplete",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 6,
+        "heading_astar_search: circular_start_not_clear": 16,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1,
+        "heading_reverse_recovery_declined: await_forward_progress": 8
+      },
+      "result_sha256": "f677b1afaa5fada2883bc16e3669fb65740c49fedd1d58559f6987aa7c24158f"
+    },
+    {
+      "name": "10_ProcTHOR-Train-7819_seed100_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23974,
+        "event": "astar_plan",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 2,
+        "heading_astar_search: circular_docking_ring_unreachable": 5,
+        "heading_astar_search: circular_start_not_clear": 13,
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2,
+        "heading_short_reverse_recovery: no_forward_swept_route": 1
+      },
+      "result_sha256": "f1db8532d2b9b778debc83c80943dbad0b1e3fd9e3ed82195fb63bbaf59c486c"
+    },
+    {
+      "name": "10_ProcTHOR-Train-7819_seed100_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23998,
+        "event": "observation",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "correct_discovery_before_relocation",
+        "relocation_triggered_during_translation",
+        "external_relocation_finished",
+        "external_move_preserved_payload_support",
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 3
+      },
+      "result_sha256": "d0e44df40a495df167248186ee3561cdffa8f60ea2b335cdc7d384012f20d32e"
+    },
+    {
+      "name": "10_ProcTHOR-Train-7819_seed101_dynamic",
+      "variant": "dynamic",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23993,
+        "event": "navigation_depth_update",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2,
+        "heading_astar_search: circular_route_execution_incomplete": 1
+      },
+      "result_sha256": "290d2e7ce42fee2868a75a904cf5717cffe71da909b6a1e896772abca0b66f08"
+    },
+    {
+      "name": "10_ProcTHOR-Train-7819_seed101_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "destination_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23931,
+        "event": "observation",
+        "task_stage": "placement_search"
+      },
+      "unmet_task_criteria": [
+        "stable_released_receptacle_placement",
+        "cross_room_delivery"
+      ],
+      "decision_reason_counts": {
+        "heading_motion_stopped: rotation_sweep_not_observed_clear": 2,
+        "heading_astar_search: circular_route_execution_incomplete": 1
+      },
+      "result_sha256": "ee3bb868adaeaa8bd8f6f657da4a254de1faaeadc716f5f3cf029eb268078691"
+    },
+    {
+      "name": "10_ProcTHOR-Train-7819_seed102_dynamic",
+      "variant": "dynamic",
+      "task_success": true,
+      "qualified_task_success": false,
+      "stage": "native_environment_contact",
+      "error": null,
+      "last_event": {
+        "step": 22864,
+        "event": "placement_motion_complete",
+        "task_stage": "finished"
+      },
+      "unmet_task_criteria": [],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 8,
+        "heading_motion_stopped: translation_controller_stall": 1,
+        "heading_route_chunk_result: translation_controller_stall": 1,
+        "heading_astar_search: circular_start_not_clear": 6,
+        "heading_astar_search: circular_docking_ring_unreachable": 3
+      },
+      "result_sha256": "d0db014918dc2c561550e97346d4fa8771bcdbdc5566e096d79750880d89a222"
+    },
+    {
+      "name": "10_ProcTHOR-Train-7819_seed102_static",
+      "variant": "static",
+      "task_success": false,
+      "qualified_task_success": false,
+      "stage": "pickup_search_or_navigation",
+      "error": "TimeoutError('Declared simulation-time budget exceeded')",
+      "last_event": {
+        "step": 23997,
+        "event": "navigation_depth_update",
+        "task_stage": "pickup_search"
+      },
+      "unmet_task_criteria": [
+        "correct_discovery_before_relocation",
+        "relocation_triggered_during_translation",
+        "external_relocation_finished",
+        "external_move_preserved_payload_support",
+        "sustained_physical_lift",
+        "held_base_transport",
+        "second_language_search",
+        "stable_released_receptacle_placement",
+        "cross_room_search",
+        "cross_room_delivery",
+        "correct_visual_moved_target_observation"
+      ],
+      "decision_reason_counts": {
+        "heading_astar_search: circular_route_execution_incomplete": 6,
+        "heading_motion_stopped: translation_controller_stall": 1,
+        "heading_route_chunk_result: translation_controller_stall": 1
+      },
+      "result_sha256": "4a39ae968056cfa5621e2da82160737693a2c2d67b8b5fc854ef537e51bcc8f4"
+    }
+  ]
+}

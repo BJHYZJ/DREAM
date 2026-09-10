@@ -19,7 +19,34 @@ def sha(path):
 def read(path):return json.loads(path.read_text())
 
 
-def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None):
+def contact_rejection(physical, review):
+    """Recognize a completed audit that rejects only native-environment contact."""
+    required={
+        'source_hashes_match','saved_source_matches_hashes','instruction_first',
+        'actual_control_reexecution','replay_sources_verified','replay_refers_to_this_run',
+        'no_native_contact_above_threshold','complete_aligned_traces',
+        'identity_records_consistent_with_saved_masks_and_replayed_positions',
+        'fresh_visual_discovery_at_standoff_during_translation','continuous_1x_frame_steps',
+        'all_source_videos_decode_completely','matching_5fps_playback',
+        'current_observation_panel_matches_raw_camera','external_relocation_caption_visible',
+        'annotated_video_retains_all_frames','original_task_scoring','reexecuted_task_success',
+        'correct_visual_moved_target_observation','all_logged_updates_have_observed_free_depth',
+        'logged_updates_have_variant_correct_caption'}
+    checks=review.get('primary_task_checks',{})
+    contact=physical.get('contact_audit',{})
+    rows=contact.get('native_environment_contact_rows',[])
+    steps=contact.get('native_environment_contact_control_steps')
+    return (required<=set(checks) and all(type(value) is bool for value in checks.values())
+        and {key for key,value in checks.items() if not value}=={'no_native_contact_above_threshold'}
+        and review.get('primary_task_record_review_passed') is False
+        and physical.get('evaluation',{}).get('evaluator_task_success') is True
+        and type(steps) is int and steps>0 and bool(rows)
+        and steps==len({row['control_step'] for row in rows})
+        and all(row['force_n']>=0.5 for row in rows))
+
+
+def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None,
+            include_contact_rejections: bool=False):
     root=root.resolve();audits=audits.resolve();output=output.resolve()
     if not (root/'batch_result.json').exists():
         raise RuntimeError('The 60-attempt comparison has not finished')
@@ -53,7 +80,8 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
             if read(folder/filename)!=protocol['source_sha256']:
                 raise ValueError(f'{name}: controller differs from declared source')
         row=dict(name=name,scene=job['scene'],seed=job['seed'],variant=job['variant'],
-                 task_success=success,strict_success=result.get('evaluator_protocol_success'),
+                 task_success=success,qualified_task_success=success,
+                 strict_success=result.get('evaluator_protocol_success'),
                  runner_status=record['status'],error=result.get('error'),eligible_for_summary=True,
                  result_sha256=record['result_sha256'],wall_time_s=result.get('wall_time_s'),
                  criteria=result.get('criteria',{}))
@@ -64,28 +92,44 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
             for flag in ('physical_reexecution_passed','source_recording_unchanged',
                          'replay_environment_source_matches_recording','replay_source_unchanged'):
                 if physical.get(flag) is not True:raise ValueError(f'{name}: {flag}')
-            if review.get('primary_task_record_review_passed') is not True:
-                raise ValueError(f'{name}: primary task record audit did not pass')
             if review['physical_audit_sha256']!=sha(physical_path):
                 raise ValueError(f'{name}: record audit refers to a different physics replay')
             if review['events_sha256']!=sha(folder/'events.jsonl'):
                 raise ValueError(f'{name}: event record mismatch')
-            row.update(physical_reexecution_passed=True,primary_task_record_review_passed=True,
+            passed=review.get('primary_task_record_review_passed') is True
+            if not passed:
+                if not include_contact_rejections or not contact_rejection(physical,review):
+                    raise ValueError(f'{name}: primary task record audit did not pass')
+                row.update(qualified_task_success=False,audit_qualification='native_contact_rejected')
+            else:
+                row['audit_qualification']='passed'
+            row.update(physical_reexecution_passed=True,primary_task_record_review_passed=passed,
                 physical_audit_sha256=sha(physical_path),record_review_sha256=sha(review_path),
                 native_contact_steps=physical['contact_audit']['native_environment_contact_control_steps'])
         rows.append(row)
 
     sys.path.insert(0,str(engine_root()/'experiments'))
     from instruction_study_statistics import summarize_paired_outcomes
-    statistics=summarize_paired_outcomes(rows)
+    reported_statistics=summarize_paired_outcomes(rows)
+    qualified_rows=[dict(row,task_success=row['qualified_task_success']) for row in rows]
+    statistics=summarize_paired_outcomes(qualified_rows)
+    statistics['analysis_plan']=dict(statistics['analysis_plan'],
+        primary_endpoint='Task completion with passing independent physical and primary-record audits',
+        audit_rejections='Remain in the denominator as unsuccessful qualified outcomes; raw task outcomes retained separately')
+    rejections=[dict(name=row['name'],reason=row['audit_qualification'],
+                    native_contact_steps=row['native_contact_steps'])
+                for row in rows if row.get('audit_qualification')=='native_contact_rejected']
     import numpy as np
     comparison={}
     if baseline_path is not None:
         baseline=list(csv.DictReader(baseline_path.open()))
         if len(baseline)!=60 or any(row['eligible_for_summary']!='True' or row['task_success'] not in ('True','False') for row in baseline):
             raise ValueError('The reference comparison is incomplete')
-        before={(row['scene'],int(row['seed']),row['variant']):row['task_success']=='True' for row in baseline}
-        after={(row['scene'],row['seed'],row['variant']):row['task_success'] for row in rows}
+        if any(row.get('qualified_task_success',row['task_success']) not in ('True','False') for row in baseline):
+            raise ValueError('The reference comparison has missing audit-qualified outcomes')
+        before={(row['scene'],int(row['seed']),row['variant']):
+                row.get('qualified_task_success',row['task_success'])=='True' for row in baseline}
+        after={(row['scene'],row['seed'],row['variant']):row['qualified_task_success'] for row in rows}
         if set(before)!=set(after):raise ValueError('Before/after task sets differ')
         houses=statistics['house_order'];seeds=statistics['seed_order']
         rng=np.random.default_rng(20260908)
@@ -100,14 +144,18 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
                 paired_house_interval_percentage_points=(100*np.quantile(differences[draws].mean(axis=1),[.025,.975])).tolist())
     output.mkdir(parents=True,exist_ok=True)
     report=dict(protocol_sha256=sha(root/'protocol.json'),all_60_outcomes_bound=True,
-        successful_task_physics_and_record_checks_passed=True,
-        statistics=statistics,comparison_to_baseline=comparison,
+        successful_task_physics_and_record_checks_passed=not rejections,
+        all_reported_successes_audited=True,all_counted_successes_passed_audits=True,
+        statistics_endpoint='audit-qualified task completion',audit_rejections=rejections,
+        declared_analysis_plan=protocol.get('analysis_plan'),
+        statistics=statistics,reported_task_statistics=reported_statistics,comparison_to_baseline=comparison,
         baseline_csv_sha256=sha(baseline_path) if baseline_path is not None else None,attempts=rows,
         scope='Same development-selected houses and seeds; no held-out or direct hardware comparison is implied.')
     (output/'comparison_analysis.json').write_text(json.dumps(report,indent=2)+'\n')
-    columns=['name','scene','seed','variant','task_success','strict_success','eligible_for_summary','runner_status','wall_time_s','error','native_contact_steps']
-    with (output/'attempts.csv').open('w') as stream:
-        writer=csv.DictWriter(stream,fieldnames=columns,extrasaction='ignore');writer.writeheader();writer.writerows(rows)
+    columns=['name','scene','seed','variant','task_success','qualified_task_success','audit_qualification',
+             'strict_success','eligible_for_summary','runner_status','wall_time_s','error','native_contact_steps']
+    with (output/'attempts.csv').open('w',newline='') as stream:
+        writer=csv.DictWriter(stream,fieldnames=columns,extrasaction='ignore',lineterminator='\n');writer.writeheader();writer.writerows(rows)
     return report
 
 
@@ -117,11 +165,15 @@ def main():
     parser.add_argument('--audits',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--baseline-csv',type=Path,help='Optional matched baseline attempts.csv for a before/after comparison')
+    parser.add_argument('--include-contact-rejections',action='store_true',
+        help='Report fully documented native-contact audit rejections as unsuccessful qualified outcomes, retaining raw task outcomes')
     args=parser.parse_args()
-    report=analyze(args.run,args.audits,args.output,args.baseline_csv)
+    report=analyze(args.run,args.audits,args.output,args.baseline_csv,args.include_contact_rejections)
     print(json.dumps(dict(variants=report['statistics']['variants'],
         memory_contrast=report['statistics']['contrast'],
-        comparison_to_baseline=report['comparison_to_baseline']),indent=2))
+        comparison_to_baseline=report['comparison_to_baseline'],
+        reported_task_variants=report['reported_task_statistics']['variants'],
+        audit_rejections=report['audit_rejections']),indent=2))
 
 
 if __name__=='__main__':main()

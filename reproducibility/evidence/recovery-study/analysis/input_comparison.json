@@ -1,0 +1,14 @@
+{
+  "attempt_count": 60,
+  "same_house_seed_variant_set": true,
+  "task_or_room_map_hash_mismatches": [],
+  "changed_source_files": [
+    "experiments/dream_fetch_footprint.py",
+    "experiments/instruction_geometry.py",
+    "experiments/instruction_policy.py"
+  ],
+  "same_time_budget": true,
+  "same_perception_threshold": true,
+  "same_model_lock": true,
+  "same_heading_navigation": true
+}

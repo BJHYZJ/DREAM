@@ -95,7 +95,7 @@ python -m dream_sim.study --controller recovery \
 
 This command validates the inputs and prints the plan. Add `--execute` to run it. Use `--controller baseline` for the controller from the recorded memory comparison, or restrict a development run with `--cases 03 04 --seeds 100 --variants dynamic`. External caches use the same `--asset-dir` and `--model-cache` options as the task runner.
 
-The `recovery` controller uses 2.5 cm of additional footprint padding and retries an incomplete receptacle fit from higher head-camera views. When a bowl's central floor is occluded, inward-facing depth normals on its visible inner wall can establish cavity evidence. Detection, support grounding, payload clearance, release above the observed rim, and physical task scoring remain required. These changes are under evaluation; the published comparison describes the baseline controller.
+The `recovery` controller uses 2.5 cm of additional footprint padding and retries an incomplete receptacle fit from higher head-camera views. When a bowl's central floor is occluded, inward-facing depth normals on its visible inner wall can establish cavity evidence. Detection, support grounding, payload clearance, release above the observed rim, and physical task scoring remain required. The [complete evaluation](../reproducibility/evidence/recovery-study/README.md) includes all 60 attempts and the corresponding baseline comparison.
 
 Each study directory contains a frozen source tree, task definitions, `protocol.json`, individual run directories, and `attempts.jsonl` with every completed outcome. The final `batch_result.json` records whether all planned attempts were accounted for. Success rates use the complete declared set, including failures. Development runs on previously inspected cases do not estimate performance on new houses.
 
@@ -106,10 +106,13 @@ python results/recovery_study/frozen_workspace/DREAM_code/experiments/audit_inst
   --batch results/recovery_study --output results/recovery_audits \
   --workers 2 --all-task-successes
 python -m dream_sim.study_report --run results/recovery_study \
-  --audits results/recovery_audits --output results/recovery_summary
+  --audits results/recovery_audits --output results/recovery_summary \
+  --include-contact-rejections
 ```
 
 The report checks the declared inputs, all 60 outcomes, and successful-task replay records before writing counts and paired house-level uncertainty intervals. Add `--baseline-csv reproducibility/evidence/study/analysis/attempts.csv` to compare with the recorded baseline on matching houses and seeds.
+
+`task_success` retains the original evaluator outcome; `qualified_task_success` also requires the independent checks. `--include-contact-rejections` permits a completed audit that rejects only native-environment contact to enter the qualified counts as unsuccessful, retaining its attempt in the denominator. The report shows both sets of counts and identifies each rejection. Missing audits, source changes, and other failed checks stop reporting.
 
 ## 4. Read results
 
@@ -175,7 +178,7 @@ The environment initializes the objects and applies a force-driven relocation af
 ## Experiment records
 
 - [Gallery](../reproducibility/evidence/gallery/README.md): ten selected demonstrations and their case/video mappings.
-- [Memory comparison](../reproducibility/evidence/study/README.md): 60 attempts using one controller, ten houses, three seeds, and two memory variants.
+- [Memory comparison](../reproducibility/evidence/recovery-study/README.md): 60 attempts using one controller, ten houses, three seeds, and two memory variants; includes the matched baseline comparison.
 - [Reproduction](../reproducibility/evidence/reproduction/README.md): repeat executions and evaluation records for the ten gallery cases.
 - [Component measurements](../reproducibility/evidence/components/README.md): memory pruning, scaling, and exploration analyses.
 - [Entrypoint validation](../reproducibility/evidence/packaging/README.md): source-integrity checks and a case-01 smoke run.
