@@ -99,6 +99,18 @@ The `recovery` controller uses 2.5 cm of additional footprint padding and retrie
 
 Each study directory contains a frozen source tree, task definitions, `protocol.json`, individual run directories, and `attempts.jsonl` with every completed outcome. The final `batch_result.json` records whether all planned attempts were accounted for. Success rates use the complete declared set, including failures. Development runs on previously inspected cases do not estimate performance on new houses.
 
+After the study finishes, replay successful tasks and compute the comparison:
+
+```bash
+python results/recovery_study/frozen_workspace/DREAM_code/experiments/audit_instruction_batch.py \
+  --batch results/recovery_study --output results/recovery_audits \
+  --workers 2 --all-task-successes
+python -m dream_sim.study_report --run results/recovery_study \
+  --audits results/recovery_audits --output results/recovery_summary
+```
+
+The report checks the declared inputs, all 60 outcomes, and successful-task replay records before writing counts and paired house-level uncertainty intervals. Add `--baseline-csv reproducibility/evidence/study/analysis/attempts.csv` to compare with the recorded baseline on matching houses and seeds.
+
 ## 4. Read results
 
 The output root contains `planned.json`, `preflight.json`, `progress.json`, and a final `acceptance.json`. Each `case_XX/` contains:
