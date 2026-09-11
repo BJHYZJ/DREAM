@@ -44,6 +44,20 @@ def validate_gallery_manifest(manifest, catalog):
             raise ValueError("Gallery changes original source-run provenance")
 
 
+def verify_comparison(root):
+    """Verify the complete records for a separately versioned controller study."""
+    manifest = json.loads((root / "manifest.json").read_text())
+    attempts = [name for name in manifest["files"] if name.startswith("attempts/") and name.endswith(".zip")]
+    if manifest.get("attempt_archives") != 60 or len(attempts) != 60:
+        raise ValueError("Incomplete controller comparison archive set")
+    for flag in ("all_60_outcomes_bound", "all_reported_successes_audited",
+                 "all_counted_successes_passed_audits", "all_archive_members_verified"):
+        if manifest.get(flag) is not True:
+            raise ValueError(f"Unverified controller comparison: {flag}")
+    verify_files(root, manifest["files"])
+    return len(attempts)
+
+
 def main():
     evidence = EVIDENCE
     study = json.loads((evidence / "study" / "manifest.json").read_text())
@@ -69,7 +83,12 @@ def main():
     if packaging["new_policy_attempts"] != 1 or packaging["case_ids"] != ["01"]:
         raise ValueError("Unexpected packaging smoke-test scope")
     verify_files(evidence / "packaging", packaging["files"])
+    comparisons = {}
+    for name in ("recovery-study", "recovery-v2-study"):
+        if (evidence / name).exists():
+            comparisons[name] = verify_comparison(evidence / name)
     print(json.dumps({"compact_evidence_verified": True, "attempts_retained": 60,
+                      "controller_comparison_attempts_retained": comparisons,
                       "reproduction_cases_retained": 10, "component_groups": len(components["groups"]),
                       "separate_packaging_smoke_cases_retained": 1,
                       "public_video_profile_mappings_verified": 10,

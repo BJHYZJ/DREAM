@@ -59,9 +59,9 @@ Each case runs once and saves observations, actions, evaluation results, and ind
 
 The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) contains ten selected demonstrations in ten houses, covering mugs, eggs, bread, and tomatoes placed on plates or in bowls. Video numbers match the case IDs in [`configs/cases.json`](configs/cases.json).
 
-The [memory comparison](reproducibility/evidence/recovery-study/README.md) evaluates dynamic and static memory with one controller across 60 attempts. Its records include every outcome, independent replay checks, uncertainty intervals, and a matched comparison with the [baseline controller](reproducibility/evidence/study/README.md). The gallery is a qualitative selection across six recorded controller versions.
+The [memory comparison](reproducibility/evidence/recovery-v2-study/README.md) evaluates dynamic and static memory with one controller across 60 attempts. Its records include every outcome, independent replay checks, uncertainty intervals, and a matched comparison with the [previous controller](reproducibility/evidence/recovery-study/README.md). The gallery is a qualitative selection across six recorded controller versions.
 
-To evaluate a common controller across all ten houses, use [`dream_sim.study`](docs/reproduction.md#evaluate-a-common-controller). It supports the recorded baseline and a controller with additional receptacle views and revised navigation clearance.
+To evaluate a common controller across all ten houses, use [`dream_sim.study`](docs/reproduction.md#evaluate-a-common-controller). Use the `recovery_v2` controller to reproduce the reported comparison.
 
 ## Code structure
 

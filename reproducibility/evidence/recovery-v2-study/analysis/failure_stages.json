@@ -1,0 +1,372 @@
+[
+  {
+    "name": "01_ProcTHOR-Train-283_seed101_dynamic",
+    "scene": "ProcTHOR-Train-283",
+    "seed": 101,
+    "variant": "dynamic",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "01_ProcTHOR-Train-283_seed101_static",
+    "scene": "ProcTHOR-Train-283",
+    "seed": 101,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "01_ProcTHOR-Train-283_seed102_dynamic",
+    "scene": "ProcTHOR-Train-283",
+    "seed": 102,
+    "variant": "dynamic",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "01_ProcTHOR-Train-283_seed102_static",
+    "scene": "ProcTHOR-Train-283",
+    "seed": 102,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "02_ProcTHOR-Train-8361_seed100_dynamic",
+    "scene": "ProcTHOR-Train-8361",
+    "seed": 100,
+    "variant": "dynamic",
+    "error": null,
+    "failed_task_criteria": [
+      "correct_discovery_before_relocation",
+      "relocation_triggered_during_translation",
+      "external_relocation_finished",
+      "external_move_preserved_payload_support",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "02_ProcTHOR-Train-8361_seed100_static",
+    "scene": "ProcTHOR-Train-8361",
+    "seed": 100,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "correct_discovery_before_relocation",
+      "relocation_triggered_during_translation",
+      "external_relocation_finished",
+      "external_move_preserved_payload_support",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "05_ArchitecTHOR-Test-02_seed100_static",
+    "scene": "ArchitecTHOR-Test-02",
+    "seed": 100,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "05_ArchitecTHOR-Test-02_seed101_dynamic",
+    "scene": "ArchitecTHOR-Test-02",
+    "seed": 101,
+    "variant": "dynamic",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "05_ArchitecTHOR-Test-02_seed101_static",
+    "scene": "ArchitecTHOR-Test-02",
+    "seed": 101,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "05_ArchitecTHOR-Test-02_seed102_dynamic",
+    "scene": "ArchitecTHOR-Test-02",
+    "seed": 102,
+    "variant": "dynamic",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "05_ArchitecTHOR-Test-02_seed102_static",
+    "scene": "ArchitecTHOR-Test-02",
+    "seed": 102,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "07_ProcTHOR-Test-244_seed100_static",
+    "scene": "ProcTHOR-Test-244",
+    "seed": 100,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "07_ProcTHOR-Test-244_seed102_static",
+    "scene": "ProcTHOR-Test-244",
+    "seed": 102,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "stable_released_receptacle_placement"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "08_ArchitecTHOR-Val-01_seed101_static",
+    "scene": "ArchitecTHOR-Val-01",
+    "seed": 101,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "08_ArchitecTHOR-Val-01_seed102_static",
+    "scene": "ArchitecTHOR-Val-01",
+    "seed": 102,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "09_ProcTHOR-Val-632_seed100_static",
+    "scene": "ProcTHOR-Val-632",
+    "seed": 100,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "09_ProcTHOR-Val-632_seed101_static",
+    "scene": "ProcTHOR-Val-632",
+    "seed": 101,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "09_ProcTHOR-Val-632_seed102_static",
+    "scene": "ProcTHOR-Val-632",
+    "seed": 102,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "10_ProcTHOR-Train-7819_seed100_dynamic",
+    "scene": "ProcTHOR-Train-7819",
+    "seed": 100,
+    "variant": "dynamic",
+    "error": null,
+    "failed_task_criteria": [
+      "stable_released_receptacle_placement"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "10_ProcTHOR-Train-7819_seed100_static",
+    "scene": "ProcTHOR-Train-7819",
+    "seed": 100,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "correct_discovery_before_relocation",
+      "relocation_triggered_during_translation",
+      "external_relocation_finished",
+      "external_move_preserved_payload_support",
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery",
+      "correct_visual_moved_target_observation"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "10_ProcTHOR-Train-7819_seed101_dynamic",
+    "scene": "ProcTHOR-Train-7819",
+    "seed": 101,
+    "variant": "dynamic",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "stable_released_receptacle_placement",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "10_ProcTHOR-Train-7819_seed101_static",
+    "scene": "ProcTHOR-Train-7819",
+    "seed": 101,
+    "variant": "static",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "stable_released_receptacle_placement",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "10_ProcTHOR-Train-7819_seed102_dynamic",
+    "scene": "ProcTHOR-Train-7819",
+    "seed": 102,
+    "variant": "dynamic",
+    "error": "TimeoutError('Declared simulation-time budget exceeded')",
+    "failed_task_criteria": [
+      "sustained_physical_lift",
+      "held_base_transport",
+      "second_language_search",
+      "stable_released_receptacle_placement",
+      "cross_room_search",
+      "cross_room_delivery"
+    ],
+    "audit_qualification": null
+  },
+  {
+    "name": "10_ProcTHOR-Train-7819_seed102_static",
+    "scene": "ProcTHOR-Train-7819",
+    "seed": 102,
+    "variant": "static",
+    "error": null,
+    "failed_task_criteria": [
+      "stable_released_receptacle_placement"
+    ],
+    "audit_qualification": null
+  }
+]

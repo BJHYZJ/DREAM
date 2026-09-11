@@ -1,0 +1,20 @@
+{
+  "all_60_tasks_match": true,
+  "all_room_maps_match": true,
+  "scoring_and_budgets_match": true,
+  "model_lock_matches": true,
+  "heading_navigation_matches": true,
+  "wall_timeout_matches": true,
+  "changed_controller_modules": [
+    "experiments/dream_fetch_footprint.py",
+    "experiments/dream_fetch_heading_astar.py",
+    "experiments/dream_fetch_navigation.py",
+    "experiments/dream_learned_core.py",
+    "experiments/fetch_heading_control.py",
+    "experiments/instruction_geometry.py",
+    "experiments/instruction_heading_navigation.py",
+    "experiments/instruction_policy.py",
+    "experiments/maniskill_crossroom_policy.py"
+  ],
+  "source_files": 238
+}

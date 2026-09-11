@@ -1,0 +1,62 @@
+{
+  "report_sha256": "d5439a4762252f33b3c7dfa94daee060ccabc7c58dc2c26988dcd990daf1bde1",
+  "protocol_sha256": "89a2b9558303083653081bbc91bf67be8e4fe861ca3c0c37a88c19bc80bd77b9",
+  "houses": [
+    "ProcTHOR-Train-283",
+    "ProcTHOR-Train-8361",
+    "ProcTHOR-Train-9031",
+    "ProcTHOR-Train-5318",
+    "ArchitecTHOR-Test-02",
+    "ProcTHOR-Train-5080",
+    "ProcTHOR-Test-244",
+    "ArchitecTHOR-Val-01",
+    "ProcTHOR-Val-632",
+    "ProcTHOR-Train-7819"
+  ],
+  "counts": {
+    "dynamic": [
+      1,
+      2,
+      3,
+      3,
+      1,
+      3,
+      3,
+      3,
+      3,
+      0
+    ],
+    "static": [
+      1,
+      2,
+      3,
+      3,
+      0,
+      3,
+      1,
+      1,
+      0,
+      0
+    ]
+  },
+  "variants": {
+    "dynamic": {
+      "successes": 22,
+      "attempts": 30,
+      "completion_percent": 73.33333333333333,
+      "house_bootstrap_interval_percent": [
+        50.0,
+        93.33333333333333
+      ]
+    },
+    "static": {
+      "successes": 14,
+      "attempts": 30,
+      "completion_percent": 46.666666666666664,
+      "house_bootstrap_interval_percent": [
+        23.333333333333332,
+        70.0
+      ]
+    }
+  }
+}

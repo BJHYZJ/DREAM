@@ -1,0 +1,16 @@
+{
+  "id": "recovery_v2",
+  "base_study_source_id": "93c90f6a9e2dd87142adeb5610debdfc1b1007e91eb44d0b51ad3055ca6ac1d9",
+  "overrides": {
+    "experiments/dream_fetch_footprint.py": "eff1cab0c69f8b15cbe2b2cb182c00f3490fc64b30f3d742f9b66fd2b0b753d1",
+    "experiments/dream_fetch_heading_astar.py": "cfed16d38d5b0ea3d6c16451294e39bbbb23c3c1dffb6a6a7215dd4a3313dd49",
+    "experiments/dream_fetch_navigation.py": "5e7348004fc4916e2163a5be0d36b0b4f36ada972bd851de90f9ab040f0096ff",
+    "experiments/dream_learned_core.py": "d456ca878e1c4081ee5554f0fdb4138c98045544329883a6100e55e10b6def00",
+    "experiments/fetch_heading_control.py": "144fd34b9ce10f17cfec38aa4edb143fd09cbf40c2f9ae8a1fe133777bde82f0",
+    "experiments/instruction_geometry.py": "e709c8b23fe79d54385965d4f72d7c8e55df449b3365cdaa01802fbb8031c3bf",
+    "experiments/instruction_heading_navigation.py": "bbf1ffbf4660aa72961c23cdb5ba71bde2b3b1d9968cbd6215a28b94db593dd5",
+    "experiments/instruction_policy.py": "168e92ede1afc2d7ffca47ee96242897ecd3fcca941626d020e3d94a938cc097",
+    "experiments/maniskill_crossroom_policy.py": "9b06393838624e5a7e45593f02586d2f3f7190b9a733a18bc44fa48266755507"
+  },
+  "evaluation_protocol_sha256": "89a2b9558303083653081bbc91bf67be8e4fe861ca3c0c37a88c19bc80bd77b9"
+}

@@ -97,6 +97,24 @@ This command validates the inputs and prints the plan. Add `--execute` to run it
 
 The `recovery` controller uses 2.5 cm of additional footprint padding and retries an incomplete receptacle fit from higher head-camera views. When a bowl's central floor is occluded, inward-facing depth normals on its visible inner wall can establish cavity evidence. Detection, support grounding, payload clearance, release above the observed rim, and physical task scoring remain required. The [complete evaluation](../reproducibility/evidence/recovery-study/README.md) includes all 60 attempts and the corresponding baseline comparison.
 
+The `recovery_v2` controller extends this pipeline:
+
+- Height-aware collision checks and object-surface segmentation improve clearance and grasp geometry.
+- Navigation preserves unfinished detours and limits repeat searches around stale observations.
+- Observed grasp templates guide release alignment, and Cartesian feedback holds the tool steady during opening.
+- Bounded arm extension and calibrated image crops expose nearby receptacles hidden by the payload.
+- Release requires stable tool motion and positional clearance within a two-second settling window.
+- A memory view that fails support verification is rejected individually, preserving other verified views nearby.
+- Repeated delivery searches can expand through observed narrow passages using swept collision checks for the measured robot pose.
+- A short base approach after receptacle verification improves reach for broad payloads before the arm unfolds.
+
+Its [evaluation](../reproducibility/evidence/recovery-v2-study/README.md) covers dynamic and static memory across all 60 attempts.
+
+```bash
+python -m dream_sim.study --controller recovery_v2 \
+  --gpus 0 1 --output results/recovery_v2_study
+```
+
 Each study directory contains a frozen source tree, task definitions, `protocol.json`, individual run directories, and `attempts.jsonl` with every completed outcome. The final `batch_result.json` records whether all planned attempts were accounted for. Success rates use the complete declared set, including failures. Development runs on previously inspected cases do not estimate performance on new houses.
 
 After the study finishes, replay successful tasks and compute the comparison:
@@ -178,7 +196,7 @@ The environment initializes the objects and applies a force-driven relocation af
 ## Experiment records
 
 - [Gallery](../reproducibility/evidence/gallery/README.md): ten selected demonstrations and their case/video mappings.
-- [Memory comparison](../reproducibility/evidence/recovery-study/README.md): 60 attempts using one controller, ten houses, three seeds, and two memory variants; includes the matched baseline comparison.
+- [Memory comparison](../reproducibility/evidence/recovery-v2-study/README.md): 60 attempts using one controller, ten houses, three seeds, and two memory variants; includes the matched baseline comparison.
 - [Reproduction](../reproducibility/evidence/reproduction/README.md): repeat executions and evaluation records for the ten gallery cases.
 - [Component measurements](../reproducibility/evidence/components/README.md): memory pruning, scaling, and exploration analyses.
 - [Entrypoint validation](../reproducibility/evidence/packaging/README.md): source-integrity checks and a case-01 smoke run.

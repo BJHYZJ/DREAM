@@ -1,0 +1,61 @@
+name,scene,seed,variant,task_success,qualified_task_success,audit_qualification,strict_success,eligible_for_summary,runner_status,wall_time_s,error,native_contact_steps
+01_ProcTHOR-Train-283_seed100_dynamic,ProcTHOR-Train-283,100,dynamic,True,True,passed,True,True,completed,2076.628266841173,,0
+01_ProcTHOR-Train-283_seed100_static,ProcTHOR-Train-283,100,static,True,True,passed,True,True,completed,1964.624544300139,,0
+01_ProcTHOR-Train-283_seed101_dynamic,ProcTHOR-Train-283,101,dynamic,False,False,,False,True,completed,2450.4118506088853,,
+01_ProcTHOR-Train-283_seed101_static,ProcTHOR-Train-283,101,static,False,False,,False,True,completed,2904.175174124539,,
+01_ProcTHOR-Train-283_seed102_dynamic,ProcTHOR-Train-283,102,dynamic,False,False,,False,True,completed,4151.943036876619,TimeoutError('Declared simulation-time budget exceeded'),
+01_ProcTHOR-Train-283_seed102_static,ProcTHOR-Train-283,102,static,False,False,,False,True,completed,4693.8773058876395,TimeoutError('Declared simulation-time budget exceeded'),
+02_ProcTHOR-Train-8361_seed100_dynamic,ProcTHOR-Train-8361,100,dynamic,False,False,,False,True,completed,1673.9583138152957,,
+02_ProcTHOR-Train-8361_seed100_static,ProcTHOR-Train-8361,100,static,False,False,,False,True,completed,1641.1741722300649,,
+02_ProcTHOR-Train-8361_seed101_dynamic,ProcTHOR-Train-8361,101,dynamic,True,True,passed,True,True,completed,2047.5448056533933,,0
+02_ProcTHOR-Train-8361_seed101_static,ProcTHOR-Train-8361,101,static,True,True,passed,True,True,completed,2073.109236046672,,0
+02_ProcTHOR-Train-8361_seed102_dynamic,ProcTHOR-Train-8361,102,dynamic,True,True,passed,True,True,completed,2371.638419367373,,0
+02_ProcTHOR-Train-8361_seed102_static,ProcTHOR-Train-8361,102,static,True,True,passed,True,True,completed,3289.2962817400694,,0
+03_ProcTHOR-Train-9031_seed100_dynamic,ProcTHOR-Train-9031,100,dynamic,True,True,passed,False,True,completed,1201.4309468343854,,0
+03_ProcTHOR-Train-9031_seed100_static,ProcTHOR-Train-9031,100,static,True,True,passed,True,True,completed,1200.1855955719948,,0
+03_ProcTHOR-Train-9031_seed101_dynamic,ProcTHOR-Train-9031,101,dynamic,True,True,passed,False,True,completed,1141.3476502746344,,0
+03_ProcTHOR-Train-9031_seed101_static,ProcTHOR-Train-9031,101,static,True,True,passed,False,True,completed,1255.57011911273,,0
+03_ProcTHOR-Train-9031_seed102_dynamic,ProcTHOR-Train-9031,102,dynamic,True,True,passed,False,True,completed,1139.5625749528408,,0
+03_ProcTHOR-Train-9031_seed102_static,ProcTHOR-Train-9031,102,static,True,True,passed,False,True,completed,1205.4972458705306,,0
+04_ProcTHOR-Train-5318_seed100_dynamic,ProcTHOR-Train-5318,100,dynamic,True,True,passed,True,True,completed,1017.7164094522595,,0
+04_ProcTHOR-Train-5318_seed100_static,ProcTHOR-Train-5318,100,static,True,True,passed,True,True,completed,1037.0381199792027,,0
+04_ProcTHOR-Train-5318_seed101_dynamic,ProcTHOR-Train-5318,101,dynamic,True,True,passed,True,True,completed,981.213310547173,,0
+04_ProcTHOR-Train-5318_seed101_static,ProcTHOR-Train-5318,101,static,True,True,passed,True,True,completed,979.6580204516649,,0
+04_ProcTHOR-Train-5318_seed102_dynamic,ProcTHOR-Train-5318,102,dynamic,True,True,passed,True,True,completed,1056.9013554900885,,0
+04_ProcTHOR-Train-5318_seed102_static,ProcTHOR-Train-5318,102,static,True,True,passed,True,True,completed,1044.3324014991522,,0
+05_ArchitecTHOR-Test-02_seed100_dynamic,ArchitecTHOR-Test-02,100,dynamic,True,True,passed,False,True,completed,4013.4858240559697,,0
+05_ArchitecTHOR-Test-02_seed100_static,ArchitecTHOR-Test-02,100,static,False,False,,False,True,completed,4545.998845651746,,
+05_ArchitecTHOR-Test-02_seed101_dynamic,ArchitecTHOR-Test-02,101,dynamic,False,False,,False,True,completed,3929.4827957972884,,
+05_ArchitecTHOR-Test-02_seed101_static,ArchitecTHOR-Test-02,101,static,False,False,,False,True,completed,4101.550377354026,,
+05_ArchitecTHOR-Test-02_seed102_dynamic,ArchitecTHOR-Test-02,102,dynamic,False,False,,False,True,completed,2065.9127557724714,,
+05_ArchitecTHOR-Test-02_seed102_static,ArchitecTHOR-Test-02,102,static,False,False,,False,True,completed,2131.260210417211,,
+06_ProcTHOR-Train-5080_seed100_dynamic,ProcTHOR-Train-5080,100,dynamic,True,True,passed,False,True,completed,944.6686471402645,,0
+06_ProcTHOR-Train-5080_seed100_static,ProcTHOR-Train-5080,100,static,True,True,passed,False,True,completed,943.5451397076249,,0
+06_ProcTHOR-Train-5080_seed101_dynamic,ProcTHOR-Train-5080,101,dynamic,True,True,passed,False,True,completed,958.8379672840238,,0
+06_ProcTHOR-Train-5080_seed101_static,ProcTHOR-Train-5080,101,static,True,True,passed,False,True,completed,951.5840951800346,,0
+06_ProcTHOR-Train-5080_seed102_dynamic,ProcTHOR-Train-5080,102,dynamic,True,True,passed,False,True,completed,978.4898235201836,,0
+06_ProcTHOR-Train-5080_seed102_static,ProcTHOR-Train-5080,102,static,True,True,passed,False,True,completed,1002.7335681989789,,0
+07_ProcTHOR-Test-244_seed100_dynamic,ProcTHOR-Test-244,100,dynamic,True,True,passed,True,True,completed,1662.621581427753,,0
+07_ProcTHOR-Test-244_seed100_static,ProcTHOR-Test-244,100,static,False,False,,False,True,completed,3915.5709966793656,TimeoutError('Declared simulation-time budget exceeded'),
+07_ProcTHOR-Test-244_seed101_dynamic,ProcTHOR-Test-244,101,dynamic,True,True,passed,True,True,completed,1137.6752447783947,,0
+07_ProcTHOR-Test-244_seed101_static,ProcTHOR-Test-244,101,static,True,True,passed,True,True,completed,1210.1333111971617,,0
+07_ProcTHOR-Test-244_seed102_dynamic,ProcTHOR-Test-244,102,dynamic,True,True,passed,True,True,completed,2625.374594718218,,0
+07_ProcTHOR-Test-244_seed102_static,ProcTHOR-Test-244,102,static,False,False,,False,True,completed,2572.3699299246073,,
+08_ArchitecTHOR-Val-01_seed100_dynamic,ArchitecTHOR-Val-01,100,dynamic,True,True,passed,True,True,completed,887.9741825088859,,0
+08_ArchitecTHOR-Val-01_seed100_static,ArchitecTHOR-Val-01,100,static,True,True,passed,True,True,completed,924.5507530793548,,0
+08_ArchitecTHOR-Val-01_seed101_dynamic,ArchitecTHOR-Val-01,101,dynamic,True,True,passed,True,True,completed,805.2735268250108,,0
+08_ArchitecTHOR-Val-01_seed101_static,ArchitecTHOR-Val-01,101,static,False,False,,False,True,completed,3562.1777134388685,TimeoutError('Declared simulation-time budget exceeded'),
+08_ArchitecTHOR-Val-01_seed102_dynamic,ArchitecTHOR-Val-01,102,dynamic,True,True,passed,True,True,completed,864.5416522100568,,0
+08_ArchitecTHOR-Val-01_seed102_static,ArchitecTHOR-Val-01,102,static,False,False,,False,True,completed,3317.2264578789473,TimeoutError('Declared simulation-time budget exceeded'),
+09_ProcTHOR-Val-632_seed100_dynamic,ProcTHOR-Val-632,100,dynamic,True,True,passed,True,True,completed,1932.3986526280642,,0
+09_ProcTHOR-Val-632_seed100_static,ProcTHOR-Val-632,100,static,False,False,,False,True,completed,4168.079834498465,,
+09_ProcTHOR-Val-632_seed101_dynamic,ProcTHOR-Val-632,101,dynamic,True,True,passed,True,True,completed,1444.3383088484406,,0
+09_ProcTHOR-Val-632_seed101_static,ProcTHOR-Val-632,101,static,False,False,,False,True,completed,4426.624158158898,TimeoutError('Declared simulation-time budget exceeded'),
+09_ProcTHOR-Val-632_seed102_dynamic,ProcTHOR-Val-632,102,dynamic,True,True,passed,True,True,completed,1421.2119851112366,,0
+09_ProcTHOR-Val-632_seed102_static,ProcTHOR-Val-632,102,static,False,False,,False,True,completed,927.0950181931257,,
+10_ProcTHOR-Train-7819_seed100_dynamic,ProcTHOR-Train-7819,100,dynamic,False,False,,False,True,completed,3569.9672911167145,,
+10_ProcTHOR-Train-7819_seed100_static,ProcTHOR-Train-7819,100,static,False,False,,False,True,completed,4238.401558063924,TimeoutError('Declared simulation-time budget exceeded'),
+10_ProcTHOR-Train-7819_seed101_dynamic,ProcTHOR-Train-7819,101,dynamic,False,False,,False,True,completed,3377.5634058490396,TimeoutError('Declared simulation-time budget exceeded'),
+10_ProcTHOR-Train-7819_seed101_static,ProcTHOR-Train-7819,101,static,False,False,,False,True,completed,3519.802432820201,TimeoutError('Declared simulation-time budget exceeded'),
+10_ProcTHOR-Train-7819_seed102_dynamic,ProcTHOR-Train-7819,102,dynamic,False,False,,False,True,completed,4081.505650050938,TimeoutError('Declared simulation-time budget exceeded'),
+10_ProcTHOR-Train-7819_seed102_static,ProcTHOR-Train-7819,102,static,False,False,,False,True,completed,3596.496709756553,,

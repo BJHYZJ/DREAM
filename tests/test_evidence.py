@@ -1,10 +1,11 @@
 """Checksums and path validation for experiment records."""
 import hashlib
+import json
 import zipfile
 
 import pytest
 
-from dream_sim.verify_evidence import verify_files
+from dream_sim.verify_evidence import verify_files, verify_comparison
 
 
 def metadata(payload):
@@ -38,3 +39,18 @@ def test_rejects_symlink(tmp_path):
     (tmp_path / "link.json").symlink_to(target)
     with pytest.raises(ValueError, match="Unsafe"):
         verify_files(tmp_path, {"link.json": metadata(b"{}")})
+
+
+def test_controller_comparison_requires_all_declared_attempt_archives(tmp_path):
+    (tmp_path / "manifest.json").write_text(json.dumps({"attempt_archives": 60, "files": {}}))
+    with pytest.raises(ValueError, match="Incomplete controller comparison"):
+        verify_comparison(tmp_path)
+
+
+def test_controller_comparison_rejects_unqualified_reported_successes(tmp_path):
+    manifest = dict(attempt_archives=60, all_60_outcomes_bound=True,
+                    all_reported_successes_audited=True, all_counted_successes_passed_audits=False,
+                    files={f"attempts/{index}.zip": {} for index in range(60)})
+    (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="all_counted_successes_passed_audits"):
+        verify_comparison(tmp_path)

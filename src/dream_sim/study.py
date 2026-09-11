@@ -57,7 +57,7 @@ def materialize_controller(source: Path, destination: Path, overrides: dict[str,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--controller", choices=["baseline", "recovery"], default="recovery")
+    parser.add_argument("--controller", choices=["baseline", "recovery", "recovery_v2"], default="recovery")
     parser.add_argument("--cases", nargs="+", choices=[f"{i:02d}" for i in range(1, 11)],
                         default=[f"{i:02d}" for i in range(1, 11)])
     parser.add_argument("--seeds", nargs="+", type=int, default=[100, 101, 102])
@@ -87,8 +87,11 @@ def main() -> None:
     source = verify_source(root, catalog["sources"][source_id])
     by_id = {case["id"]: case for case in catalog["cases"]}
     tasks = [verify_case(root, by_id[key]) for key in args.cases]
-    overrides = (controller_overrides(PROJECT / "controllers/recovery", source_id)
-                 if args.controller == "recovery" else {})
+    directory = PROJECT / "controllers" / args.controller
+    if args.controller != "baseline" and not (directory / "controller.json").is_file():
+        parser.error(f"Controller revision is not installed: {args.controller}")
+    overrides = (controller_overrides(directory, source_id)
+                 if args.controller != "baseline" else {})
     full_comparison = len(tasks) == 10 and len(args.seeds) == 3 and set(args.variants) == {"dynamic", "static"}
     print(json.dumps({"controller": args.controller, "base_source_id": source_id,
                       "source_overrides": {key: sha(value) for key, value in overrides.items()},

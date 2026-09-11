@@ -1,0 +1,212 @@
+{
+  "tasks": [
+    "04_ProcTHOR-Train-5318_seed101",
+    "06_ProcTHOR-Train-5080_seed100",
+    "09_ProcTHOR-Val-632_seed100",
+    "02_ProcTHOR-Train-8361_seed101",
+    "03_ProcTHOR-Train-9031_seed100",
+    "01_ProcTHOR-Train-283_seed100",
+    "05_ArchitecTHOR-Test-02_seed100",
+    "09_ProcTHOR-Val-632_seed101",
+    "10_ProcTHOR-Train-7819_seed101"
+  ],
+  "selected_candidate": "placement_recenter",
+  "selection_rule": [
+    "qualified successes on the complete common development set",
+    "retained reference successes",
+    "shorter total wall time",
+    "earlier registered candidate"
+  ],
+  "candidates": [
+    {
+      "name": "layered_foreground",
+      "score": {
+        "qualified": 5,
+        "retained": 2,
+        "wall_time_s": 18938.030276350677,
+        "attempts": 9
+      },
+      "protocol_sha256": "7c50220d1d39a25de767a62d8ab74565707ace65a2c927246221ca30ed2395b1",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "search_progress",
+      "score": {
+        "qualified": 4,
+        "retained": 2,
+        "wall_time_s": 20280.06316907704,
+        "attempts": 9
+      },
+      "protocol_sha256": "5271057445a6206c992801bf0c68c0d02ab0b18f93bb3ec5c38a7f3f3a7df095",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "release_alignment",
+      "score": {
+        "qualified": 6,
+        "retained": 2,
+        "wall_time_s": 20117.798150599003,
+        "attempts": 9
+      },
+      "protocol_sha256": "d6034db942c7ed6c5267daa311c1256d3dcf1121f268c7e1e0fe1adb9f815e71",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "view_recovery",
+      "score": {
+        "qualified": 6,
+        "retained": 2,
+        "wall_time_s": 20184.889339081943,
+        "attempts": 9
+      },
+      "protocol_sha256": "dc7c84dc7da541c9aae16a878044e5a73fd89afd6502c0234907104d6756b582",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "release_convergence",
+      "score": {
+        "qualified": 6,
+        "retained": 2,
+        "wall_time_s": 20285.727306999266,
+        "attempts": 9
+      },
+      "protocol_sha256": "8ea1ba716baa257851f544a839c8caa8446a96273774974840318f5b758a6f5b",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "supported_memory",
+      "score": {
+        "qualified": 7,
+        "retained": 2,
+        "wall_time_s": 17674.53237080574,
+        "attempts": 9
+      },
+      "protocol_sha256": "7204d3b0ec9e270fd27b51497d988b41bdf27fb57b015ad60d358314eaa96339",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "payload_docking",
+      "score": {
+        "qualified": 7,
+        "retained": 2,
+        "wall_time_s": 17873.340288445354,
+        "attempts": 9
+      },
+      "protocol_sha256": "757a0a3acaa9462e3fc5a829cf9c38f395ad43cbe08c19d8480d2fba71c35772",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "component_exploration",
+      "score": {
+        "qualified": 7,
+        "retained": 2,
+        "wall_time_s": 18359.000903487206,
+        "attempts": 9
+      },
+      "protocol_sha256": "1004f1800816dc0ebf3fbcc704037ac852c99e5602ed5b6c5a12fbd00fbb2e3c",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    },
+    {
+      "name": "placement_recenter",
+      "score": {
+        "qualified": 8,
+        "retained": 2,
+        "wall_time_s": 18148.09067070484,
+        "attempts": 9
+      },
+      "protocol_sha256": "7eff98dbdaeb03c007a8940abb19a6dd754f6e6239fb5b085e4f3824a25c39e1",
+      "attempts": [
+        "01_ProcTHOR-Train-5318_seed101_dynamic",
+        "02_ProcTHOR-Train-5080_seed100_dynamic",
+        "03_ProcTHOR-Val-632_seed100_dynamic",
+        "04_ProcTHOR-Train-8361_seed101_dynamic",
+        "05_ProcTHOR-Train-9031_seed100_dynamic",
+        "06_ProcTHOR-Train-283_seed100_dynamic",
+        "07_ArchitecTHOR-Test-02_seed100_dynamic",
+        "08_ProcTHOR-Val-632_seed101_dynamic",
+        "09_ProcTHOR-Train-7819_seed101_dynamic"
+      ]
+    }
+  ],
+  "scope": "Controller development on a common nine-task subset; these outcomes are not added to the 60-attempt comparison."
+}
