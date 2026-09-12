@@ -40,28 +40,35 @@ Prepare the models and scene assets:
 ```bash
 python -m dream_sim.prepare models --cache-dir .runtime/models --production
 python -m dream_sim.prepare assets \
-  --reference-lock configs/locks/instruction_asset_lock03.json \
+  --reference-lock configs/residential50/assets.lock.json \
   --output-parent .runtime/assets/data/scene_datasets \
   --output-manifest .runtime/assets_download.json
-python -m dream_sim.run --preflight
+python -m dream_sim.render_assets \
+  --source-dir .runtime/assets --output-dir .runtime/render_assets \
+  --reference-lock configs/residential50/assets.lock.json \
+  --output-lock .runtime/render_assets.lock.json
+python -m dream_sim.run --preflight --asset-dir .runtime/render_assets \
+  --asset-lock configs/residential50/render_assets.lock.json
 ```
 
-Run one case or the full gallery:
+Run the residential study:
 
 ```bash
-python -m dream_sim.run --case 01 --output results/my_case01
-python -m dream_sim.run --all --output results/my_ten_cases
+python -m dream_sim.study --controller recovery_v6 \
+  --task-manifest configs/residential50/task_manifest.json \
+  --asset-dir .runtime/render_assets \
+  --gpus 0 --output results/residential50 --execute
 ```
 
-Each case runs once and saves observations, actions, evaluation results, and independent replay checks. Use a new output directory for each run. Multi-GPU execution is available through `--gpus 0 1`.
+The study runs one cross-room task in each of **50 distinct residential scenes**, with **seed 42 throughout**. Each of five object/receptacle combinations appears in ten houses. All tasks use dynamic memory and the same controller. Add GPU IDs to run tasks concurrently, for example `--gpus 0 1 2 3`.
+
+Each attempt saves observations, applied controls, physical trajectories, and its outcome. The [run guide](docs/reproduction.md) explains independent replay checks and complete-cohort analysis.
 
 ## Demonstrations and evaluation
 
-The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) contains ten selected demonstrations in ten houses, covering mugs, eggs, bread, and tomatoes placed on plates or in bowls. Video numbers match the case IDs in [`configs/cases.json`](configs/cases.json).
+The [simulation gallery](https://bjhyzj.github.io/dream-web/simulation/) shows complete cross-room task recordings with synchronized scene, robot-camera, semantic-memory, and navigation views. Videos play at 4× speed while retaining every recorded frame.
 
-The [memory comparison](reproducibility/evidence/recovery-v2-study/README.md) evaluates dynamic and static memory with one controller across 60 attempts. Its records include every outcome, independent replay checks, uncertainty intervals, and a matched comparison with the [previous controller](reproducibility/evidence/recovery-study/README.md). The gallery is a qualitative selection across six recorded controller versions.
-
-To evaluate a common controller across all ten houses, use [`dream_sim.study`](docs/reproduction.md#evaluate-a-common-controller). Use the `recovery_v2` controller to reproduce the reported comparison.
+The [task manifest](configs/residential50/task_manifest.json) fixes the 50-house evaluation. Every outcome contributes to the reported completion rate. Earlier experiments and their source versions remain available in [`reproducibility/evidence/`](reproducibility/evidence/).
 
 ## Code structure
 
@@ -109,4 +116,4 @@ These commands check configuration, source integrity, and stored records without
 
 ## License
 
-DREAM is released under the [MIT License](LICENSE). Model weights and scene assets are downloaded from their providers and use their respective licenses.
+The DREAM code is released under the [MIT License](LICENSE). SigLIP and OWL-V2 weights, and AI2-THOR scene assets, are obtained separately under the licenses of those projects. Versions and checksums are listed in the [model and asset records](configs/locks/).

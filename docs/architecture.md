@@ -20,8 +20,12 @@ The environment initializes the house and task objects and moves the target afte
 | --- | --- |
 | `dream_sim.run` | Validate the runtime, execute cases, and collect evaluation results |
 | `dream_sim.prepare` | Download the required models and scene assets |
+| `dream_sim.render_assets` | Prepare scene files for rendering while preserving upstream assets |
+| `dream_sim.check_scenes` | Check all task environments and camera views before policy execution |
 | `dream_sim.sources` | Verify and extract controller sources; locate a case's implementation |
-| `dream_sim.profile` | Launch versioned profiles and the 60-attempt comparison |
+| `dream_sim.study` | Execute a fixed task manifest with a common controller |
+| `dream_sim.study_report` | Verify complete outcomes and summarize independently audited task completion |
+| `dream_sim.profile` | Launch earlier versioned experiment profiles |
 | `dream_sim.audit` | Re-evaluate recorded episodes through physics replay and record checks |
 | `dream_sim.render` | Render an episode from a spectator camera using its saved controls |
 | `dream_sim.video` | Export the composite video at 4× playback |
@@ -48,9 +52,11 @@ The [simulation interfaces](reproduction.md#implementation-boundary) describe th
 
 ## Source versions
 
-The ten gallery cases use six controller versions; the comparison study uses a seventh. Each case records its controller, task, seed, evaluation version, and video identity. The runtime selects these through the profile catalog.
+The 50-house study uses `recovery_v6` for every task. `dream_sim.study` combines its checked module overrides with the fixed base source, then freezes the complete controller and task inputs before execution. Its torso controller shares a smooth reference across arm modes, with coordinated arm feedback during carried-object height changes.
 
-The source code is stored in `reproducibility/source_archives/selected_profiles_v1.zip`. Its lock file contains the archive hash and the size and SHA256 of every member. Model weights and house meshes are downloaded separately.
+Earlier demonstration profiles retain their recorded source versions. Each case records its controller, task, seed, evaluation version, and video identity. These are selected through the profile catalog.
+
+The original profiles and baseline controller are stored in `reproducibility/source_archives/selected_profiles_v1.zip`. Its lock file contains the archive hash and the size and SHA256 of every member. The `controllers/` directory contains the module overrides for each recorded controller revision. Model weights and house meshes are downloaded separately.
 
 On first use, `dream_sim.sources` verifies the ZIP and extracts it to:
 
@@ -64,7 +70,7 @@ The extracted `DREAM_code` directory is the controller's workspace root. The hel
 
 ## Configuration and outputs
 
-`configs/cases.json` lists the case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
+`configs/residential50/task_manifest.json` defines the 50-house cohort and binds each task and room map to its checksum. `configs/cases.json` lists the earlier case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
 
 Each run creates its own output directory with the launch plan, environment checks, saved episode, and evaluation results. The [run guide](reproduction.md#4-read-results) describes the output files.
 

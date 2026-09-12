@@ -33,7 +33,7 @@ def digest(path: Path) -> str:
     return checksum.hexdigest()
 
 
-def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True) -> dict:
+def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True, asset_lock: Path | None = None) -> dict:
     """Verify source/task locks; optionally check installed runtime and assets."""
     root, catalog = load_catalog(CATALOG)
     for entry in catalog["sources"].values():
@@ -49,6 +49,11 @@ def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True) -> di
         "runtime_checked": runtime, "policy_executed": False,
         **verify_public_configs(),
     }
+    lock_path = asset_lock.resolve() if asset_lock else child(root, catalog["asset_lock"]["file"])
+    lock = json.loads(lock_path.read_text())
+    if lock.get("complete") is not True or lock.get("failures"):
+        raise ValueError("Asset lock is incomplete")
+    report["asset_lock_sha256"] = digest(lock_path)
     if not runtime:
         return report
     if sys.version_info[:2] != (3, 11):
@@ -72,15 +77,14 @@ def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True) -> di
         required = [snapshot / "config.json", *snapshot.glob("*.safetensors")]
         if len(required) < 2 or any(not p.is_file() or p.stat().st_size == 0 for p in required):
             raise FileNotFoundError(f"Incomplete model snapshot: {model}@{revision}")
-    lock = json.loads(child(root, catalog["asset_lock"]["file"]).read_text())
     for relative, expected in lock["artifacts"].items():
-        path = asset_dir / "data" / "scene_datasets" / relative
+        path = child(asset_dir / "data" / "scene_datasets", relative)
         if not path.is_file() or path.stat().st_size != expected["bytes"] or digest(path) != expected["sha256"]:
             raise ValueError(f"Missing or mismatched locked asset: {relative}")
     import torch
     if not torch.cuda.is_available():
         raise RuntimeError("This supported configuration requires CUDA inference.")
-    icd = os.environ.get("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/lvp_icd.x86_64.json")
+    icd = os.environ.get("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/lvp_icd.json")
     if not all(Path(path).is_file() for path in icd.split(":")):
         raise FileNotFoundError("Set VK_ICD_FILENAMES to an installed Vulkan ICD.")
     report.update(
@@ -158,7 +162,7 @@ def run_case(case: dict, output: Path, gpu: str, asset_dir: Path, model_cache: P
     env = os.environ.copy()
     env.update(MS_ASSET_DIR=str(asset_dir), HF_HUB_CACHE=str(model_cache), HF_HUB_OFFLINE="1",
                OMP_NUM_THREADS="2", MKL_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", PYTHONDONTWRITEBYTECODE="1")
-    env.setdefault("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/lvp_icd.x86_64.json")
+    env.setdefault("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/lvp_icd.json")
     try:
         command, validated = build_command(
             CATALOG, case_id=case["id"], output=directory / "execution", gpus=[gpu],
@@ -212,9 +216,12 @@ def main() -> None:
     parser.add_argument("--model-cache", type=Path, default=SIMULATION / ".runtime" / "models")
     parser.add_argument("--gpus", nargs="+", default=["0"], help="One entry per worker; default: one worker")
     parser.add_argument("--dry-run", action="store_true", help="Validate profiles without importing the simulator")
+    parser.add_argument("--asset-lock", type=Path, help="Asset manifest to check with --preflight")
     args = parser.parse_args()
+    if args.asset_lock and not args.preflight:
+        parser.error("--asset-lock is only valid with --preflight")
     assets, models = args.asset_dir.resolve(), args.model_cache.resolve()
-    checked = preflight(assets, models, runtime=not args.dry_run)
+    checked = preflight(assets, models, runtime=not args.dry_run, asset_lock=args.asset_lock)
     print(json.dumps(checked, indent=2), flush=True)
     if args.preflight:
         return

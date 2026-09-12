@@ -1,0 +1,120 @@
+{
+  "protocol": "residential50_seed42_dynamic_v1",
+  "status": "constructed_not_executed",
+  "scene": "ProcTHOR-Train-8921",
+  "instruction": "Please pick up the egg and put it in the bowl on the white table.",
+  "recipe": {
+    "id": "egg_bowl_white_table",
+    "instruction": "Please pick up the egg and put it in the bowl on the white table.",
+    "environment_assets": {
+      "pickup": "Egg_1",
+      "placement": "Bowl_2",
+      "support": "Dining_Table_27_1"
+    },
+    "placement_relation": "in"
+  },
+  "seed": 42,
+  "initial_room": 3,
+  "target_xy": [
+    -2.2489999923706065,
+    -4.938000000447035
+  ],
+  "endpoint": [
+    -3.0889999923706064,
+    -2.5380000004470347
+  ],
+  "disturbance_waypoints": [
+    [
+      -2.2489999923706065,
+      -4.698000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -4.458000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -4.218000000447034
+    ],
+    [
+      -2.2489999923706065,
+      -3.978000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -3.738000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -3.4980000004470346
+    ],
+    [
+      -2.3689999923706067,
+      -3.258000000447035
+    ],
+    [
+      -2.608999992370607,
+      -3.018000000447035
+    ],
+    [
+      -2.848999992370606,
+      -2.778000000447035
+    ],
+    [
+      -3.0889999923706064,
+      -2.5380000004470347
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -2.009844083547593,
+    -7.397223635047674
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -2.336036329573769,
+    -7.128675958044431
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 401,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02,
+  "initial_sample_preview": {
+    "spawn_xy": [
+      -3.0889999923706064,
+      -6.7980000004470345
+    ],
+    "yaw_rad": 1.721316619099806,
+    "seed": 42,
+    "valid_candidate_count": 1,
+    "sampling": "uniform over valid room-core grid cells",
+    "footprint_radius_m": 0.4,
+    "initial_room": 3,
+    "minimum_pickup_distance_m": 2.0
+  }
+}

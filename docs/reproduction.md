@@ -19,7 +19,7 @@ The reference environment uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3, Py
 Install the CUDA and Vulkan runtime appropriate to your machine. For the Mesa software renderer used in the reference environment:
 
 ```bash
-export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
 ```
 
 Set this variable to an installed, compatible ICD. Preflight checks its path; task execution also exercises the renderer. Changes in hardware or numerical libraries can affect the resulting trajectories.
@@ -30,15 +30,31 @@ Set this variable to an installed, compatible ICD. Preflight checks its path; ta
 python -m dream_sim.prepare models \
   --cache-dir .runtime/models --production
 python -m dream_sim.prepare assets \
-  --reference-lock configs/locks/instruction_asset_lock03.json \
+  --reference-lock configs/residential50/assets.lock.json \
   --output-parent .runtime/assets/data/scene_datasets \
   --output-manifest .runtime/assets_download.json
-python -m dream_sim.run --preflight
+python -m dream_sim.render_assets \
+  --source-dir .runtime/assets --output-dir .runtime/render_assets \
+  --reference-lock configs/residential50/assets.lock.json \
+  --output-lock .runtime/render_assets.lock.json
+python -m dream_sim.run --preflight --asset-dir .runtime/render_assets \
+  --asset-lock configs/residential50/render_assets.lock.json
 ```
 
-The model lock pins the SigLIP and OWL-V2 production models and their smaller compatibility variants. Use `--production` to download the production weights. The asset lock covers 1,339 files at upstream revision `1a173d5de042aaad8f1af09d4d2bc2ce4004b28a`.
+The rendering cache supplies the missing UV0 index in `Desk_Lamp_11.glb` using its existing UV1 coordinates. It preserves the original files, materials, vertex positions, and binary buffers. The [recorded rendering lock](../configs/residential50/render_assets.lock.json) contains both source and derived hashes.
 
-Preflight checks package versions, model revisions and weight presence, scene-file hashes, and CUDA availability. Model weight contents do not have a separate SHA256 manifest. Downloads require network access; task execution uses the prepared model cache offline. Models and assets retain their upstream licenses.
+Before launching the study, check task initialization and both camera views:
+
+```bash
+python -m dream_sim.check_scenes --controller recovery_v6 --asset-dir .runtime/render_assets \
+  --output results/scene_check --workers 4
+```
+
+This checks all 50 fixed scenes without running the policy or taking control steps. `scene_checks.json` records every result. Add `--save-previews` to save the initial camera images. Choose a new output directory for a later check.
+
+The model lock pins the SigLIP and OWL-V2 production models and their smaller compatibility variants. Use `--production` to download the production weights. The residential asset lock covers 2,415 files at upstream revision `1a173d5de042aaad8f1af09d4d2bc2ce4004b28a`.
+
+Preflight checks package versions, model revisions and weight presence, scene-file hashes, and CUDA availability. Model weight contents do not have a separate SHA256 manifest. Downloads require network access; task execution uses the prepared model cache offline. SigLIP and OWL-V2 weights, and AI2-THOR scene assets, are distributed under the licenses specified by their original publishers.
 
 To resume a partial asset download, pass its partial manifest with `--resume-manifest` in place of `--reference-lock`, and choose a new `--output-manifest`. The downloader rejects conflicting existing files.
 
@@ -48,121 +64,57 @@ For caches stored elsewhere, add these options to preflight and run commands:
 --asset-dir /absolute/path/to/assets --model-cache /absolute/path/to/models
 ```
 
-## 3. Run a task
+## 3. Run the residential study
+
+The residential study contains **50 distinct houses**, one cross-room pickup/place task per house, and **seed 42 for every task**. Five object/receptacle combinations occur ten times each. All tasks use dynamic memory and the same `recovery_v6` controller. The task manifest fixes the houses, instructions, object layouts, initial-state seed, and file checksums.
 
 ```bash
-python -m dream_sim.run --case 01 --output results/my_case01
-python -m dream_sim.run --all --output results/my_ten_cases
+python -m dream_sim.study --controller recovery_v6 \
+  --task-manifest configs/residential50/task_manifest.json \
+  --asset-dir .runtime/render_assets \
+  --gpus 0 1 --output results/residential50
 ```
 
-Each command validates the selected sources and task configuration before launching one policy attempt per case. Results go into a new directory; an existing output directory is rejected. A later rerun uses another output path and the same case configuration.
+This validates the inputs and prints the execution plan. Add `--execute` to run the study. Use one GPU ID for a single worker, or `--gpus 0 1 2 3 4 5 6 7` for eight workers. Use a new output directory for each study. The manifest cannot be combined with overrides of cases, seeds, or memory variants.
 
-The default is one GPU worker. Use `--gpus 0 1` for one worker on each device. Repeated device IDs allocate additional workers to that GPU. Cases retain a 1,200-second simulation budget and a 14,400-second policy wall timeout; perception, rendering, and recording make wall time longer than video playback.
+Each task has a 1,800-second simulation budget and a 14,400-second policy wall timeout. RGB-D perception, rendering, and recording add wall time. The runner records each outcome once and does not retry failed tasks automatically.
 
-| ID | House | Seed | Pickup → destination |
-| --- | --- | ---: | --- |
-| 01 | ProcTHOR-Train-283 | 100 | Mug → plate on wooden table |
-| 02 | ProcTHOR-Train-8361 | 100 | Mug → plate on wooden table |
-| 03 | ProcTHOR-Train-9031 | 100 | Egg → plate on wooden table |
-| 04 | ProcTHOR-Train-5318 | 101 | Mug → plate on wooden table |
-| 05 | ArchitecTHOR-Test-02 | 103 | Bread → plate on white table |
-| 06 | ProcTHOR-Train-5080 | 102 | Egg → plate on wooden table |
-| 07 | ProcTHOR-Test-244 | 102 | Egg → bowl on white table |
-| 08 | ArchitecTHOR-Val-01 | 104 | Egg → bowl on white table |
-| 09 | ProcTHOR-Val-632 | 105 | Tomato → bowl on white table |
-| 10 | ProcTHOR-Train-7819 | 104 | Bread → plate on white table |
+For external caches, add `--asset-dir /absolute/path/to/assets --model-cache /absolute/path/to/models`.
 
-Video numbers match these case IDs. Full instructions, source versions, scene identifiers, and video checksums are in the [gallery catalog](../reproducibility/evidence/gallery/manifest.json). Train/Val/Test are upstream house split names; all cases use inference at runtime.
+### Robot control
 
-Six controller versions cover the gallery. Cases 09–10 enable the later heading-navigation adapter; other cases retain their recorded navigation settings. The [architecture guide](architecture.md) explains source selection and how to locate the policy code.
+The controller plans through observed free space, verifies the requested receptacle from RGB-D geometry, and uses feedback during grasping and release. The torso follows a smooth position reference shared across arm control modes. Its reference speed and acceleration are limited to 0.04 m/s and 0.10 m/s². Physical joint motion is measured separately. During carried-object height changes, arm feedback holds the measured tool pose while the torso moves. Before grasping, the robot raises the folded arm, aligns the open gripper above the observed target, and approaches vertically. It checks position and orientation before closing the gripper.
 
-For configuration and integrity checks without loading the simulator:
+### Evaluate the recordings
+
+After execution finishes:
 
 ```bash
-python -m dream_sim.run --preflight --dry-run
-python -m dream_sim.run --all --dry-run --output results/dry_plan
-python -m pytest -q
-```
-
-### Evaluate a common controller
-
-`dream_sim.study` runs one controller across the selected houses, seeds, and memory variants. The default design contains ten houses, seeds 100–102, and both dynamic and static memory, for 60 attempts:
-
-```bash
-python -m dream_sim.study --controller recovery \
-  --gpus 0 1 --output results/recovery_study
-```
-
-This command validates the inputs and prints the plan. Add `--execute` to run it. Use `--controller baseline` for the controller from the recorded memory comparison, or restrict a development run with `--cases 03 04 --seeds 100 --variants dynamic`. External caches use the same `--asset-dir` and `--model-cache` options as the task runner.
-
-The `recovery` controller uses 2.5 cm of additional footprint padding and retries an incomplete receptacle fit from higher head-camera views. When a bowl's central floor is occluded, inward-facing depth normals on its visible inner wall can establish cavity evidence. Detection, support grounding, payload clearance, release above the observed rim, and physical task scoring remain required. The [complete evaluation](../reproducibility/evidence/recovery-study/README.md) includes all 60 attempts and the corresponding baseline comparison.
-
-The `recovery_v2` controller extends this pipeline:
-
-- Height-aware collision checks and object-surface segmentation improve clearance and grasp geometry.
-- Navigation preserves unfinished detours and limits repeat searches around stale observations.
-- Observed grasp templates guide release alignment, and Cartesian feedback holds the tool steady during opening.
-- Bounded arm extension and calibrated image crops expose nearby receptacles hidden by the payload.
-- Release requires stable tool motion and positional clearance within a two-second settling window.
-- A memory view that fails support verification is rejected individually, preserving other verified views nearby.
-- Repeated delivery searches can expand through observed narrow passages using swept collision checks for the measured robot pose.
-- A short base approach after receptacle verification improves reach for broad payloads before the arm unfolds.
-
-Its [evaluation](../reproducibility/evidence/recovery-v2-study/README.md) covers dynamic and static memory across all 60 attempts.
-
-```bash
-python -m dream_sim.study --controller recovery_v2 \
-  --gpus 0 1 --output results/recovery_v2_study
-```
-
-Each study directory contains a frozen source tree, task definitions, `protocol.json`, individual run directories, and `attempts.jsonl` with every completed outcome. The final `batch_result.json` records whether all planned attempts were accounted for. Success rates use the complete declared set, including failures. Development runs on previously inspected cases do not estimate performance on new houses.
-
-After the study finishes, replay successful tasks and compute the comparison:
-
-```bash
-python results/recovery_study/frozen_workspace/DREAM_code/experiments/audit_instruction_batch.py \
-  --batch results/recovery_study --output results/recovery_audits \
+python results/residential50/frozen_workspace/DREAM_code/experiments/audit_instruction_batch.py \
+  --batch results/residential50 --output results/residential50_audits \
   --workers 2 --all-task-successes
-python -m dream_sim.study_report --run results/recovery_study \
-  --audits results/recovery_audits --output results/recovery_summary \
+python -m dream_sim.study_report --run results/residential50 \
+  --audits results/residential50_audits --output results/residential50_summary \
   --include-contact-rejections
 ```
 
-The report checks the declared inputs, all 60 outcomes, and successful-task replay records before writing counts and paired house-level uncertainty intervals. Add `--baseline-csv reproducibility/evidence/study/analysis/attempts.csv` to compare with the recorded baseline on matching houses and seeds.
+The report verifies all 50 outcomes against their fixed inputs and checks independent physical replays of successful tasks. It writes `study_analysis.json` and `attempts.csv`. Task completion requires correct visual observation of the moved object, sustained physical grasp and lift, cross-room transport, and stable release in the requested receptacle. Continuous correct tracking is permitted; losing and rediscovering the object is recorded as a separate behavior.
 
-`task_success` retains the original evaluator outcome; `qualified_task_success` also requires the independent checks. `--include-contact-rejections` permits a completed audit that rejects only native-environment contact to enter the qualified counts as unsuccessful, retaining its attempt in the denominator. The report shows both sets of counts and identifies each rejection. Missing audits, source changes, and other failed checks stop reporting.
+`task_success` is the evaluator outcome. `qualified_task_success` additionally requires the independent physics and recording checks. The completion rate uses all 50 tasks, including failures. `--include-contact-rejections` counts tasks rejected solely for native-environment contact as unsuccessful qualified outcomes while preserving their original scores. Missing audits, changed sources, or other failed checks stop reporting.
 
 ## 4. Read results
 
-The output root contains `planned.json`, `preflight.json`, `progress.json`, and a final `acceptance.json`. Each `case_XX/` contains:
-
-| Path | Contents |
+| Path within the study | Contents |
 | --- | --- |
-| `execution/` | Source snapshot, configuration, observations, detections, memory updates, actions, forces, trajectory, score, and original-speed video |
-| `audit/physical/` | Physics replay of the saved controls and forces, with trajectory and contact comparisons |
-| `audit/record/` | Checks for task order, target identity, relocation, rediscovery, grasp, transport, placement, and video continuity |
-| `acceptance.json` | Per-case execution status, evaluation results, and checksums |
-| `spectator/` | Additional presentation-camera render for cases 07 and 10 |
+| `protocol.json` | Fixed tasks, seeds, controller sources, and checksums |
+| `frozen_workspace/`, `frozen_tasks/` | Source snapshot and task inputs |
+| `<attempt>/result.json` | Outcome, criteria, duration, and any execution error |
+| `<attempt>/events.jsonl` | Perception, memory, navigation, and manipulation events |
+| `<attempt>/actions.json` | Applied controls and measured torso state |
+| `<attempt>/evaluator_trajectory.jsonl` | Physical task trajectory |
+| `attempts.jsonl`, `batch_result.json` | Every completed outcome and study completion status |
 
-The final `all_passed` value combines execution and evaluation status for every requested case. Check `policy.log`, the case report, and the audit logs when a case fails. The runner records failed outcomes and does not retry them automatically.
-
-The evaluators are selected by the version recorded with each case. Case 05 applies its documented evaluator-v4 correction while retaining the original score. Cases 07 and 10 render the same controls from a spectator view after passing evaluation. The [evaluation notes](../reproducibility/evidence/reproduction/README.md) describe the scoring versions and recorded results.
-
-To re-evaluate complete recorded episodes:
-
-```bash
-python -m dream_sim.audit --execution results/my_ten_cases \
-  --output results/my_matched_audits --workers 1
-```
-
-To render a spectator view:
-
-```bash
-python -m dream_sim.render --execution results/my_ten_cases \
-  --case 07 --output results/my_case07_spectator
-```
-
-Add `--audits results/my_matched_audits` to use separately generated audit results. These two commands operate on recorded controls; a new policy attempt is launched through `dream_sim.run`.
+The audit directory contains a physical replay, video/source checks, and a status report for each successful task. Inspect the attempt's policy log and audit logs when a check fails. Replaying saved controls does not launch another policy attempt.
 
 ## 5. Export a video
 
@@ -173,9 +125,11 @@ python -m dream_sim.video --input PATH/TO/reviewer_view.mp4 \
   --frames PATH/TO/video_frames.json --output PATH/TO/reviewer_view_4x.mp4
 ```
 
-The export keeps all frames at 1440×600. Source footage at 5 fps becomes 20 fps for 4× playback, with the simulation clock preserved and the speed label updated. Output uses H.264, yuv420p, and faststart for browser playback.
+The export retains all frames at 1440×600. Source footage at 5 fps becomes 20 fps for 4× playback, with the simulation clock preserved and the speed label updated. Output uses H.264, yuv420p, and faststart for browser playback. The gallery's [video metadata](https://github.com/BJHYZJ/dream-web/blob/master/simulation/results.json) records source hashes and encoding settings.
 
-The gallery encodes case 01 with `--crf 18` and the remaining cases with `--crf 20`. Encoding uses local temporary storage before copying to the destination. The accompanying JSON records input/output hashes, frame counts, and sampled quality measurements.
+### Earlier experiments
+
+The original ten demonstrations remain reproducible through `python -m dream_sim.run --case 01 --output results/original_case01`. Their configurations and source versions are in [`configs/cases.json`](../configs/cases.json). The earlier common-controller studies are stored under [`reproducibility/evidence/`](../reproducibility/evidence/). They use their own task manifests and are separate from the 50-house study.
 
 ## Implementation boundary
 
@@ -195,10 +149,6 @@ The environment initializes the objects and applies a force-driven relocation af
 
 ## Experiment records
 
-- [Gallery](../reproducibility/evidence/gallery/README.md): ten selected demonstrations and their case/video mappings.
-- [Memory comparison](../reproducibility/evidence/recovery-v2-study/README.md): 60 attempts using one controller, ten houses, three seeds, and two memory variants; includes the matched baseline comparison.
-- [Reproduction](../reproducibility/evidence/reproduction/README.md): repeat executions and evaluation records for the ten gallery cases.
-- [Component measurements](../reproducibility/evidence/components/README.md): memory pruning, scaling, and exploration analyses.
-- [Entrypoint validation](../reproducibility/evidence/packaging/README.md): source-integrity checks and a case-01 smoke run.
+The [residential task manifest](../configs/residential50/task_manifest.json) contains the complete 50-house design. Experiment records include every task outcome, controller and asset hashes, and independent replay checks. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays are retained in the authors' archive.
 
-The gallery is a selection of demonstrations. Comparative results use the separate study protocol and include all its attempts. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays and videos are listed by hash and retained in the authors' archive.
+The [component measurements](../reproducibility/evidence/components/README.md) cover memory pruning, scaling, and exploration. The [architecture guide](architecture.md) maps the implementation to the perception, memory, navigation, and manipulation pipeline.

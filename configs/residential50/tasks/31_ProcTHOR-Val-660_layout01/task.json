@@ -1,0 +1,149 @@
+{
+  "protocol": "residential50_seed42_dynamic_v1",
+  "status": "constructed_not_executed",
+  "scene": "ProcTHOR-Val-660",
+  "instruction": "Please pick up the mug and place it on the plate on the wooden table.",
+  "recipe": {
+    "id": "mug_plate_wooden_table",
+    "instruction": "Please pick up the mug and place it on the plate on the wooden table.",
+    "environment_assets": {
+      "pickup": "Mug_1",
+      "placement": "Plate_9",
+      "support": "Dining_Table_208_1"
+    },
+    "pickup_scale": 0.7,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 1,
+  "target_xy": [
+    -3.8629999656677256,
+    -5.920000000447035
+  ],
+  "endpoint": [
+    -6.862999965667726,
+    -5.920000000447035
+  ],
+  "disturbance_waypoints": [
+    [
+      -4.102999965667726,
+      -5.920000000447035
+    ],
+    [
+      -4.342999965667726,
+      -5.920000000447035
+    ],
+    [
+      -4.582999965667725,
+      -5.920000000447035
+    ],
+    [
+      -4.822999965667726,
+      -5.920000000447035
+    ],
+    [
+      -5.062999965667726,
+      -5.920000000447035
+    ],
+    [
+      -5.302999965667726,
+      -5.920000000447035
+    ],
+    [
+      -5.542999965667725,
+      -5.920000000447035
+    ],
+    [
+      -5.782999965667726,
+      -5.920000000447035
+    ],
+    [
+      -6.022999965667726,
+      -5.920000000447035
+    ],
+    [
+      -6.262999965667726,
+      -5.920000000447035
+    ],
+    [
+      -6.502999965667725,
+      -5.920000000447035
+    ],
+    [
+      -6.7429999656677255,
+      -5.920000000447035
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_208_1",
+  "placement_table_xy": [
+    -4.522979223251344,
+    -4.240000000447035
+  ],
+  "placement_table_collision_radius_m": 1.0319234919733395,
+  "placement_xy": [
+    -3.805876838589195,
+    -4.338913535216487
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 35,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        -0.8863134384155273,
+        -0.48829954862594604
+      ],
+      [
+        -0.8805273175239563,
+        -0.4940844476222992
+      ],
+      [
+        0.8805230259895325,
+        -0.494086891412735
+      ],
+      [
+        0.8805291652679443,
+        -0.494086891412735
+      ],
+      [
+        0.8863122463226318,
+        -0.48829954862594604
+      ],
+      [
+        0.8863134384155273,
+        0.48830077052116394
+      ],
+      [
+        0.8805291652679443,
+        0.494086891412735
+      ],
+      [
+        -0.8805273175239563,
+        0.4940844476222992
+      ],
+      [
+        -0.886311948299408,
+        0.48830077052116394
+      ]
+    ],
+    "source_asset_sha256": "2edb421a4d0a601c971fd8806eddd788210aee159aace4ddf015de22c8d4b381",
+    "conservative_radius_m": 1.0319234919733395,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02,
+  "initial_sample_preview": {
+    "spawn_xy": [
+      -2.962999965667726,
+      -4.060000000447035
+    ],
+    "yaw_rad": -0.38403808930179695,
+    "seed": 42,
+    "valid_candidate_count": 17,
+    "sampling": "uniform over valid room-core grid cells",
+    "footprint_radius_m": 0.4,
+    "initial_room": 1,
+    "minimum_pickup_distance_m": 2.0
+  }
+}

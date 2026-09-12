@@ -1,0 +1,520 @@
+{
+  "schema_version": 1,
+  "id": "residential50_seed42_dynamic_v1",
+  "seed": 42,
+  "variants": [
+    "dynamic"
+  ],
+  "planned_attempts": 50,
+  "tasks": [
+    {
+      "id": "01",
+      "scene": "ProcTHOR-Test-722",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/01_ProcTHOR-Test-722_layout01/task.json",
+      "sha256": "b9c6c74f60c5b11c492235debc046d405e807d21527e7f9c7ce9f57d5ceea57d",
+      "room_map_sha256": "cd5bce8910426406a8d5623a1e2a88a61112157903c750bff6573784ead6d1a8"
+    },
+    {
+      "id": "02",
+      "scene": "ProcTHOR-Train-8471",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/02_ProcTHOR-Train-8471_layout01/task.json",
+      "sha256": "73d3334444b092357645800012802fe4d403bc21d2b9169de431e3965d5cb5e1",
+      "room_map_sha256": "1ff859992d906590a43a2f94f375b1a2270805fd2525731e5c21261b17a22c83"
+    },
+    {
+      "id": "03",
+      "scene": "ProcTHOR-Train-6452",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/03_ProcTHOR-Train-6452_layout01/task.json",
+      "sha256": "413604db2a3558ddad0d04dceb37f687f7eb47f417f934edc6306563fd722b69",
+      "room_map_sha256": "1b215e45afa755680925c79e3d88e8d858618f32fe81063a9e753bbb42da04ea"
+    },
+    {
+      "id": "04",
+      "scene": "ProcTHOR-Train-2043",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/04_ProcTHOR-Train-2043_layout01/task.json",
+      "sha256": "15e0e7b43cf5f4f35240783e304de8a73748b006309bca268383d5aece06838f",
+      "room_map_sha256": "b112b2c764060f05220fc6e6f9c52356273f01d12ffebdbb18f52b09e091b774"
+    },
+    {
+      "id": "05",
+      "scene": "ProcTHOR-Test-288",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/05_ProcTHOR-Test-288_layout01/task.json",
+      "sha256": "07abe1d587b37847bf60b457b87d7707c5da9b78f151205bc42d58a91369d1d6",
+      "room_map_sha256": "3e4cded776cf038ac6622f7c460ede5729cf26bf1256a17a76f1b53494ff1fda"
+    },
+    {
+      "id": "06",
+      "scene": "ProcTHOR-Train-4300",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/06_ProcTHOR-Train-4300_layout01/task.json",
+      "sha256": "12e947f5f2b9688bc39c03f86181a1d42a54437aa715ab96c3bebce2502b5c77",
+      "room_map_sha256": "6f3f6d7689e37f578c7ee00e189110dfc6d48d6f9a469004ffb4005771f55bea"
+    },
+    {
+      "id": "07",
+      "scene": "ProcTHOR-Train-1402",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/07_ProcTHOR-Train-1402_layout01/task.json",
+      "sha256": "5dabf715c95d148301011e29dd71d72d7bf1b959d5081324b46bb5f8fa17d6f4",
+      "room_map_sha256": "605909ebaa3f4c401fde2c205422e86141ed6a9b1dc8f8474a6503eed50eb0fc"
+    },
+    {
+      "id": "08",
+      "scene": "ProcTHOR-Train-7473",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/08_ProcTHOR-Train-7473_layout01/task.json",
+      "sha256": "3ae61a82541d46de81263276c7232dc4b9760fb05edb73956205ac1ccdf54faa",
+      "room_map_sha256": "bb82d7ae95d3549ad9d97526447395ab9628137c8a1224038f4cfa813c8ac7b8"
+    },
+    {
+      "id": "09",
+      "scene": "ProcTHOR-Test-166",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/09_ProcTHOR-Test-166_layout01/task.json",
+      "sha256": "a622e86ca1c33a1d5a572613b56aa2825e9c770c4e21af87e2611a63db2a2979",
+      "room_map_sha256": "302d935c5c6d45c7ebddb9f94f185ddd815909ff201acc359cab8d7c490f5e6e"
+    },
+    {
+      "id": "10",
+      "scene": "ProcTHOR-Test-459",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/10_ProcTHOR-Test-459_layout01/task.json",
+      "sha256": "05b2fdc96b3e382544048c09fd99c18e2f1bf548e85893c63d652656e22b9c15",
+      "room_map_sha256": "4b9e8efbfab749b8df858eda593ce445d105f8434353a3b8021338a249641c7b"
+    },
+    {
+      "id": "11",
+      "scene": "ProcTHOR-Train-3859",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/11_ProcTHOR-Train-3859_layout01/task.json",
+      "sha256": "d84dacad2c3b72f540b9d0cbd3084e572f6247dfe2f1eb969b89cd942b1177df",
+      "room_map_sha256": "e81e8639c00d26517f7d170e94b4c313f48bfb4fce2770f27aaf27e22d8cb776"
+    },
+    {
+      "id": "12",
+      "scene": "ProcTHOR-Train-4108",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/12_ProcTHOR-Train-4108_layout01/task.json",
+      "sha256": "792b944de41cb15f11e04224fad8266f49e6cda9e2c4d5ff5e56b1d0c784e941",
+      "room_map_sha256": "01874edca37b0cb20c5a2cede0301531386a3dc825383198fc5f1c48ea025968"
+    },
+    {
+      "id": "13",
+      "scene": "ProcTHOR-Train-7780",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/13_ProcTHOR-Train-7780_layout01/task.json",
+      "sha256": "5bbc7fdb0e0cd9981c6cb0a8c1adf4d48b36db5314b8ed3b9ba48ea6a10f9e28",
+      "room_map_sha256": "b300de48e828c8deee968f04de3798b19643478b7b5cff1bac20f654d5a31d79"
+    },
+    {
+      "id": "14",
+      "scene": "ProcTHOR-Train-8921",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/14_ProcTHOR-Train-8921_layout01/task.json",
+      "sha256": "d5ec2521e5e837c235b6db0b17ee478d106a090ae13d85492b1ae1e40e3ee182",
+      "room_map_sha256": "d87af34d2f0322ba29eed909028f68b42146f9eb10173d04d9bcf839258bbf56"
+    },
+    {
+      "id": "15",
+      "scene": "ProcTHOR-Train-2769",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/15_ProcTHOR-Train-2769_layout01/task.json",
+      "sha256": "3d5fc1f05bfcc58f35f12f1574bf0d1310d0dd0ef7c9795574a29849ef4d2230",
+      "room_map_sha256": "20cb87f655d442d7bba6fc64ef30a7d735b0b5a4b6880fd9c11c19d83ba5598c"
+    },
+    {
+      "id": "16",
+      "scene": "ProcTHOR-Train-507",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/16_ProcTHOR-Train-507_layout01/task.json",
+      "sha256": "d70e72c187958fd4b24a83199cc563a3a24fe6ad7a4515ab3a3401194ab3cb94",
+      "room_map_sha256": "dd73ae86c7ffc57c0728098c33a2c1e5d9dcb7ec0be3c703468b700f2ec9f205"
+    },
+    {
+      "id": "17",
+      "scene": "ProcTHOR-Train-9926",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/17_ProcTHOR-Train-9926_layout01/task.json",
+      "sha256": "4ec4af54d6bd959efabd327bf930be8fe58ed77ce27b91df13cf33ed8c837070",
+      "room_map_sha256": "f493ddbeb88216bc618d82b70d5bbc8cbe1428d0862a917e109f3f87e821e613"
+    },
+    {
+      "id": "18",
+      "scene": "ProcTHOR-Train-3208",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/18_ProcTHOR-Train-3208_layout01/task.json",
+      "sha256": "027c36d29d7e0328301a651dea6f4979d7cc23074660337f22df08458304a816",
+      "room_map_sha256": "9de0d5cf52181b8d0c3080245382843eb9fa66bfbe1dc884728d8541c40b4002"
+    },
+    {
+      "id": "19",
+      "scene": "ProcTHOR-Train-4204",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/19_ProcTHOR-Train-4204_layout01/task.json",
+      "sha256": "e86149fbc3b76e25f25e08b6c1b51cbd9996a305584345eb471f2136f79f73e8",
+      "room_map_sha256": "715b8317c3a22c1cee25e1eb719604738c593bd7f225992dade556566b290ec9"
+    },
+    {
+      "id": "20",
+      "scene": "ProcTHOR-Train-8432",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/20_ProcTHOR-Train-8432_layout01/task.json",
+      "sha256": "f6de12663ca242dd8c3249717b139d5110531bed23f224d2ce43eb814da65988",
+      "room_map_sha256": "47b829ea078157eea4cf20d147a680fa4eebeec350c640741277616ab851edcf"
+    },
+    {
+      "id": "21",
+      "scene": "ProcTHOR-Test-308",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/21_ProcTHOR-Test-308_layout01/task.json",
+      "sha256": "5b09b68420cdd7d5969cf3aa315a506d727674e5d95772f82008e95531a2bbd2",
+      "room_map_sha256": "d40474d271126fb519994d53661c4c855cb5089772e4ef209dfdc6607a1cba1d"
+    },
+    {
+      "id": "22",
+      "scene": "ProcTHOR-Train-3170",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/22_ProcTHOR-Train-3170_layout01/task.json",
+      "sha256": "5c0df48d2cfef789ac7f5b543c50c66afa0d59272b834842ceb52db628314a7c",
+      "room_map_sha256": "eb58673f1205befa0ceabf19d8031ef575a1f3bf3b4bcb170bc92c8b7efbdf02"
+    },
+    {
+      "id": "23",
+      "scene": "ProcTHOR-Val-265",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/23_ProcTHOR-Val-265_layout01/task.json",
+      "sha256": "0540469ebf57c190e5837074a9eba3fdf7a242aa0bea0c2e384d521c8f9210b5",
+      "room_map_sha256": "1638f1da86b3e012136dca1527c724ee9be11a872f9254b309ee90f9f3936cef"
+    },
+    {
+      "id": "24",
+      "scene": "ProcTHOR-Train-9699",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/24_ProcTHOR-Train-9699_layout01/task.json",
+      "sha256": "9123be7078af788b678b2149c0ce5c6f9aef14b597ef8b3e6fa7cabeb9103000",
+      "room_map_sha256": "75b5ec87f7837654f8c7056335bbdca3d8ff3fbcd2d3ad6de1245cef63b87a0b"
+    },
+    {
+      "id": "25",
+      "scene": "ProcTHOR-Val-605",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/25_ProcTHOR-Val-605_layout01/task.json",
+      "sha256": "a75917180f4951d382c7e5eb01b24b2021f5bb8a6f16567ebae0704779ca2a15",
+      "room_map_sha256": "fb14bd8d2d9a93f7c47da182268f194ec1533169f6e54d81ad8e582ee041c261"
+    },
+    {
+      "id": "26",
+      "scene": "ProcTHOR-Train-2451",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/26_ProcTHOR-Train-2451_layout01/task.json",
+      "sha256": "2bdcf7a7fde2b87eb9365de94cbfffb07a74433c37b8a2b7d632d2c220075ac8",
+      "room_map_sha256": "d696da9ba56e5b32e4d8f29d68c2911c70d5db4282b21ff96f35d5ae03ba643f"
+    },
+    {
+      "id": "27",
+      "scene": "ProcTHOR-Val-576",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/27_ProcTHOR-Val-576_layout01/task.json",
+      "sha256": "7cb0db39a84baff7c1ac6d7e962ddf5937ed2bf53df9a4947c138f34da8a922d",
+      "room_map_sha256": "c3d9bc497bda12e217d3e26dcc957368a5b85954d459426daed54773fb0883f0"
+    },
+    {
+      "id": "28",
+      "scene": "ProcTHOR-Train-4956",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/28_ProcTHOR-Train-4956_layout01/task.json",
+      "sha256": "540ff213122b5a04bd17d78a281acc0607afea7c290a9f736bb5d7eb6371a6f0",
+      "room_map_sha256": "fb5ef21ba5a1de8814f544cbe9af0801f862e3a98c8b502d0eb594ff272489db"
+    },
+    {
+      "id": "29",
+      "scene": "ProcTHOR-Train-5013",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/29_ProcTHOR-Train-5013_layout01/task.json",
+      "sha256": "929719b57b3ba2087ee7832be81b00c53e73fffdaa3b3d931c1ceee0c2c72d17",
+      "room_map_sha256": "b39f81ea3f7e3435b725835068718266c8727a56a806c880bf0cc91e80fa8710"
+    },
+    {
+      "id": "30",
+      "scene": "ProcTHOR-Train-4732",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/30_ProcTHOR-Train-4732_layout01/task.json",
+      "sha256": "a867bfd14d5dd4f5a27b19efe1ad2cf93c2cb357482b025b1c23459731d059e1",
+      "room_map_sha256": "b3919de6450e4ad63bdb77da34898a22533b6bd8c41a659c87efba635107a440"
+    },
+    {
+      "id": "31",
+      "scene": "ProcTHOR-Val-660",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/31_ProcTHOR-Val-660_layout01/task.json",
+      "sha256": "6e7343d5446a7e87d77ef29a55d56a890679d9849516ed8982e6012d873cf096",
+      "room_map_sha256": "4ea154ef6b6bc11a4ccd8319550d025e44aef6b1943f497cfa6430f6cddf9c93"
+    },
+    {
+      "id": "32",
+      "scene": "ProcTHOR-Train-7199",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/32_ProcTHOR-Train-7199_layout02/task.json",
+      "sha256": "7dba3d5215e78e36b352d93030b3c050b15021ec906be19f3378e8556d326e4c",
+      "room_map_sha256": "78802e79d9d9b31022307d51eb34ad3b4734611a1e4fab43a79fb95310c00615"
+    },
+    {
+      "id": "33",
+      "scene": "ProcTHOR-Train-5942",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/33_ProcTHOR-Train-5942_layout02/task.json",
+      "sha256": "5de57b168362f1cb58928eaec8452556cbed30910fcef198e0fe5157a475e53f",
+      "room_map_sha256": "0f644e3a24e82e2153c49bcc5ad70c26365f4789b5da737b4b79a78e40d09339"
+    },
+    {
+      "id": "34",
+      "scene": "ProcTHOR-Train-9419",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/34_ProcTHOR-Train-9419_layout01/task.json",
+      "sha256": "ada5e9aadcfbe81a773c5419aaa6963a42bd8c4e9e4c4d3c492b0a8b2692e087",
+      "room_map_sha256": "2cb22f6c789283c3ba1a14f42a47ac8b723392e54135ed5f4de801255a01975a"
+    },
+    {
+      "id": "35",
+      "scene": "ProcTHOR-Train-6673",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/35_ProcTHOR-Train-6673_layout01/task.json",
+      "sha256": "1b7962984d4965c71f0265b5b3f951724549418a9a8da41e604b82785a7c05f2",
+      "room_map_sha256": "70f22897c462fe6f84fbaab9aa5213357aa22c34f12e3e4105403557039fe57e"
+    },
+    {
+      "id": "36",
+      "scene": "ProcTHOR-Test-959",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/36_ProcTHOR-Test-959_layout01/task.json",
+      "sha256": "e3318fb4ec7b1d41b898c1a90b69af96ae34e1bd8cd90c190095d761feca2b2a",
+      "room_map_sha256": "248613f8a2cdd625d9492db0c7dd2bebaed74d20e5c602e9f1f0b0f1a79e5067"
+    },
+    {
+      "id": "37",
+      "scene": "ProcTHOR-Train-2063",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/37_ProcTHOR-Train-2063_layout01/task.json",
+      "sha256": "1f30618a159c56d692cabede08ca079e0739f7c26d449fe9227083308a0d1628",
+      "room_map_sha256": "3a70dbdfdff7f605731475c096469b75087b186864a9798531af7f7e9222df05"
+    },
+    {
+      "id": "38",
+      "scene": "ProcTHOR-Train-2809",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/38_ProcTHOR-Train-2809_layout01/task.json",
+      "sha256": "99c4dc506939954d6d70e6b5f4804c752b4680eae6b20aa1347312326691132f",
+      "room_map_sha256": "6d199995b18a4d69da8526a5220a90ee7723718deb92b4240b19ca4b5328add9"
+    },
+    {
+      "id": "39",
+      "scene": "ProcTHOR-Train-406",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/39_ProcTHOR-Train-406_layout01/task.json",
+      "sha256": "d5323842b5a4222f6783712d7d771ff7937cc2fda45e960be46ac50629e2cba3",
+      "room_map_sha256": "a16ee4e1e035748d7296ad81a6666da48803414fd246589e5e4b0e7d6d58b778"
+    },
+    {
+      "id": "40",
+      "scene": "ProcTHOR-Train-4574",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/40_ProcTHOR-Train-4574_layout01/task.json",
+      "sha256": "d22e65188afadd6f5a3a47f378336373683664967327ca16b35d830f5f9c73dd",
+      "room_map_sha256": "01c7d8e80708c93a7c9ff167797b3ad14788066745932a2eefee142207606e74"
+    },
+    {
+      "id": "41",
+      "scene": "ProcTHOR-Train-1182",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/41_ProcTHOR-Train-1182_layout01/task.json",
+      "sha256": "83bc95cf40ba1a5aa925d041f0121c2a3128186a52133ff9dec44306e4af1d30",
+      "room_map_sha256": "486b063300db93eeca62120b7f2882a96a1cc481305beaa0cbf6713a43c35e60"
+    },
+    {
+      "id": "42",
+      "scene": "ProcTHOR-Train-9100",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/42_ProcTHOR-Train-9100_layout01/task.json",
+      "sha256": "ad1063757eaf820b4c07f5e5dd4bac2e98a3ca39bbccb91da5cd7f610c62a6a3",
+      "room_map_sha256": "6637e536c555716b4c90441e28b21296041e3c4ca60e7d6a3b65a17824a9d8d8"
+    },
+    {
+      "id": "43",
+      "scene": "ProcTHOR-Train-5361",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/43_ProcTHOR-Train-5361_layout01/task.json",
+      "sha256": "7741c9bc579d6c02f0374a6fce70ccc23fd0d79db6915ceb4b9bc4b570e45b10",
+      "room_map_sha256": "cf60c7a7ca838f385ae1505dae456b8f70c5968dcb71590f3eb5eef175d2b606"
+    },
+    {
+      "id": "44",
+      "scene": "ProcTHOR-Train-2898",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/44_ProcTHOR-Train-2898_layout01/task.json",
+      "sha256": "766976f4a2c7b78bed2957ff4ff638112bfb12016f6a99420776a59c0cede8a5",
+      "room_map_sha256": "cb557802299fa356c4e1c1f5efbd2cceb68bd830bc0c503ba383b270403f60ee"
+    },
+    {
+      "id": "45",
+      "scene": "ProcTHOR-Train-6968",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/45_ProcTHOR-Train-6968_layout01/task.json",
+      "sha256": "70ef05e1d44d7f40e5bd49e2cac57a67571ddebe3d670799257c92669cafbbd8",
+      "room_map_sha256": "ad56a70fe9776664d1923056c61b197891a0103f5c486e9d8e31694d5bdce022"
+    },
+    {
+      "id": "46",
+      "scene": "ProcTHOR-Train-4899",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "mug_plate_wooden_table",
+      "file": "tasks/46_ProcTHOR-Train-4899_layout01/task.json",
+      "sha256": "f66c2ddc399b671959a97e2945c99518b0aa3cd4d99c3164104542af848e7dac",
+      "room_map_sha256": "70d76315fece3fd261d4475d5dd1541e48a8134012b02dff12d8b06a91cb0c2c"
+    },
+    {
+      "id": "47",
+      "scene": "ProcTHOR-Val-46",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_plate_wooden_table",
+      "file": "tasks/47_ProcTHOR-Val-46_layout01/task.json",
+      "sha256": "827bef44839fe2a4b4b504bfa0d979cd1db0769597cc41dddff99eaafff147e8",
+      "room_map_sha256": "c1b7f7995fffd8b644657205b570e18d31c387a2474cedb4e952e0404a5b4bd5"
+    },
+    {
+      "id": "48",
+      "scene": "ProcTHOR-Train-6322",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "bread_plate_white_table",
+      "file": "tasks/48_ProcTHOR-Train-6322_layout01/task.json",
+      "sha256": "06a39c84a5f7bd8124353354f3c960e93400266979011bf3d7c3520234df50de",
+      "room_map_sha256": "03489dd434323c894413b157d78d5d754534150e792de72648d834229bf9cdb2"
+    },
+    {
+      "id": "49",
+      "scene": "ProcTHOR-Train-7428",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "egg_bowl_white_table",
+      "file": "tasks/49_ProcTHOR-Train-7428_layout01/task.json",
+      "sha256": "83e53dcf2e82487a03a36d167284eed839cdaf73f275bdf3967dd0109a4bc240",
+      "room_map_sha256": "b4960d0ebc67266d03b53634051d25b1e1565c23c0258b7b3cbedc830c7f7433"
+    },
+    {
+      "id": "50",
+      "scene": "ProcTHOR-Val-902",
+      "seed": 42,
+      "variant": "dynamic",
+      "recipe": "tomato_bowl_white_table",
+      "file": "tasks/50_ProcTHOR-Val-902_layout01/task.json",
+      "sha256": "3d0ec1b4ed634aca00327bdac45c8538c203f27bb7175f6cdaa4c3e36a891cc9",
+      "room_map_sha256": "43f8db55393b53774237301f4c899dd0b030891383f49a0ecd9b9237cf57df27"
+    }
+  ],
+  "selection": "First 50 geometry-valid houses in candidate_order.json; one task per house; no policy outcomes used",
+  "frozen_at_unix_s": 1789165424.1873448,
+  "execution_budget": {
+    "maximum_sim_seconds": 1800,
+    "previous_maximum_sim_seconds": 1200,
+    "reason": "Allow additional search time after prototype timeouts; no house, placement, recipe, or seed changed.",
+    "revised_utc": "2026-09-11T22:21:07.685374+00:00"
+  },
+  "initial_house_selection_frozen_at_unix_s": 1789145760.405665
+}

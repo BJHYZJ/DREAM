@@ -1,12 +1,13 @@
 # Task configuration
 
-`cases.json` maps Video 01–10 to their task profiles. Each entry specifies the house, seed, instruction, controller version, task inputs, and evaluation settings.
+[`residential50/task_manifest.json`](residential50/task_manifest.json) defines the 50-house study: one cross-room task per house, seed 42 throughout, and dynamic memory. Each task and room map is bound to a SHA256 checksum. The accompanying asset lock records the required scene files.
 
-- `tasks/`: task definitions and evaluator room maps.
-- `locks/`: model revisions and scene-asset checksums.
+| Directory | Contents |
+| --- | --- |
+| `residential50/` | Fifty-house task manifest, configurations, room maps, and scene-asset lock |
+| `tasks/` | Earlier demonstration task definitions and evaluator room maps |
+| `locks/` | Model revisions and earlier scene-asset records |
 
-The runner validates these files against the catalog in the source archive. Paths in the catalog's `records` and source fields are relative to the extracted catalog. Run `python -m dream_sim.sources --case 01` to locate that source tree.
+`cases.json` maps the original ten demonstrations to their recorded profiles. Those profiles retain their controller, task, seed, and evaluation version. Their outcomes are stored separately in the [experiment records](../reproducibility/evidence/).
 
-Task files record the configuration at creation time. Their `constructed_not_executed` field describes that stage; execution outcomes are stored separately in the [experiment records](../reproducibility/evidence/).
-
-Existing profiles are checksum-locked to their recorded controller and inputs. Create a new profile for a different seed, task, or controller version.
+The runner verifies task and source checksums before execution. See the [run guide](../docs/reproduction.md) for the residential study command and output files.
