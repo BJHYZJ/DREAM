@@ -42,7 +42,10 @@ Run `python -m dream_sim.sources --case 01` to print the source directory for a 
 | `experiments/instruction_policy.py` | Coordinate search, target verification, grasping, and destination search |
 | `experiments/dream_learned_core.py` | SigLIP/OWL-V2 perception, semantic memory, and observed occupancy |
 | `experiments/maniskill_crossroom_policy.py` | Exploration, route following, and approach behavior |
-| `experiments/dream_fetch_navigation.py` | Fetch occupancy map and A* navigation |
+| `experiments/dream_fetch_navigation.py` | RGB-D navigation map |
+| `experiments/dream_fetch_heading_astar.py` | Heading-state reachability and A* routes |
+| `experiments/dream_fetch_footprint.py` | Measured robot geometry and grasp-oriented observed payload bounds |
+| `experiments/maniskill_learned_dynamic.py` | Grasp feedback and the observed object frame at the gripper |
 | `experiments/instruction_geometry.py` | Grasp geometry and receptacle placement regions |
 | `experiments/maniskill_learned_probe.py` | Robot state, sensor observations, and simulator control interface |
 | `src/dream/dynamic_memory.py` | Shared memory-update and focused-observation logic |
@@ -52,7 +55,7 @@ The [simulation interfaces](reproduction.md#implementation-boundary) describe th
 
 ## Source versions
 
-The 50-house study uses `recovery_v6` for every task. `dream_sim.study` combines its checked module overrides with the fixed base source, then freezes the complete controller and task inputs before execution. Its torso controller shares a smooth reference across arm modes, with coordinated arm feedback during carried-object height changes.
+The diverse-object, 50-house study uses `compact_v1` for every task. `dream_sim.study` combines its checked module overrides with the fixed base source, then freezes the complete controller and task inputs before execution. Its torso controller shares a smooth reference across arm modes. The arm returns to the compact initial posture after pickup and release. Exploration candidates must be reachable through the robot’s heading-dependent swept motion edges before A* selects a route.
 
 Earlier demonstration profiles retain their recorded source versions. Each case records its controller, task, seed, evaluation version, and video identity. These are selected through the profile catalog.
 
@@ -70,7 +73,7 @@ The extracted `DREAM_code` directory is the controller's workspace root. The hel
 
 ## Configuration and outputs
 
-`configs/residential50/task_manifest.json` defines the 50-house cohort and binds each task and room map to its checksum. `configs/cases.json` lists the earlier case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
+`configs/residential50-diverse/task_manifest.json` defines the 50-house cohort and binds each task and room map to its checksum. `configs/cases.json` lists the earlier case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
 
 Each run creates its own output directory with the launch plan, environment checks, saved episode, and evaluation results. The [run guide](reproduction.md#4-read-results) describes the output files.
 

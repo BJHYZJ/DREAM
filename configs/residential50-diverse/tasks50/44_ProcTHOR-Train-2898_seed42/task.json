@@ -1,0 +1,116 @@
+{
+  "protocol": "residential50_seed42_diverse_v2",
+  "status": "frozen_configuration",
+  "scene": "ProcTHOR-Train-2898",
+  "instruction": "Please pick up the spray bottle and place it on the plate on the table.",
+  "recipe": {
+    "id": "spray_bottle_6_plate",
+    "instruction": "Please pick up the spray bottle and place it on the plate on the table.",
+    "environment_assets": {
+      "pickup": "Spray_Bottle_6",
+      "placement": "Plate_9",
+      "support": "Dining_Table_27_1"
+    },
+    "pickup_scale": 1.0,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 2,
+  "target_xy": [
+    -4.872000095367432,
+    -4.360000000447035
+  ],
+  "endpoint": [
+    -7.872000095367432,
+    -4.360000000447035
+  ],
+  "disturbance_waypoints": [
+    [
+      -5.112000095367432,
+      -4.360000000447035
+    ],
+    [
+      -5.3520000953674325,
+      -4.360000000447035
+    ],
+    [
+      -5.592000095367432,
+      -4.360000000447035
+    ],
+    [
+      -5.832000095367432,
+      -4.360000000447035
+    ],
+    [
+      -6.072000095367432,
+      -4.360000000447035
+    ],
+    [
+      -6.3120000953674325,
+      -4.360000000447035
+    ],
+    [
+      -6.552000095367433,
+      -4.360000000447035
+    ],
+    [
+      -6.792000095367432,
+      -4.360000000447035
+    ],
+    [
+      -7.032000095367432,
+      -4.360000000447035
+    ],
+    [
+      -7.272000095367432,
+      -4.360000000447035
+    ],
+    [
+      -7.512000095367432,
+      -4.360000000447035
+    ],
+    [
+      -7.752000095367432,
+      -4.360000000447035
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -4.092844186544419,
+    -6.939223635047674
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -4.318078042071757,
+    -6.713922053742711
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 382,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02
+}

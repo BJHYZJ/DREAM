@@ -78,7 +78,7 @@ def check_task(index, task_path, asset_dir, image_dir):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--controller',choices=('recovery_v3','recovery_v4','recovery_v5','recovery_v6'),default='recovery_v3')
+    parser.add_argument('--controller',choices=('recovery_v3','recovery_v4','recovery_v5','recovery_v6','compact_v1'),default='recovery_v3')
     parser.add_argument('--task-manifest',type=Path,default=PROJECT/'configs/residential50/task_manifest.json')
     parser.add_argument('--asset-lock',type=Path,default=PROJECT/'configs/residential50/render_assets.lock.json')
     parser.add_argument('--asset-dir',type=Path,default=PROJECT/'.runtime/render_assets')

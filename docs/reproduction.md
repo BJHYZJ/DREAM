@@ -46,7 +46,8 @@ The rendering cache supplies the missing UV0 index in `Desk_Lamp_11.glb` using i
 Before launching the study, check task initialization and both camera views:
 
 ```bash
-python -m dream_sim.check_scenes --controller recovery_v6 --asset-dir .runtime/render_assets \
+python -m dream_sim.check_scenes --controller compact_v1 --asset-dir .runtime/render_assets \
+  --task-manifest configs/residential50-diverse/task_manifest.json \
   --output results/scene_check --workers 4
 ```
 
@@ -66,16 +67,16 @@ For caches stored elsewhere, add these options to preflight and run commands:
 
 ## 3. Run the residential study
 
-The residential study contains **50 distinct houses**, one cross-room pickup/place task per house, and **seed 42 for every task**. Five object/receptacle combinations occur ten times each. All tasks use dynamic memory and the same `recovery_v6` controller. The task manifest fixes the houses, instructions, object layouts, initial-state seed, and file checksums.
+The residential study contains **50 distinct houses**, one cross-room pickup/place task per house, and **seed 42 for every task**. Each house uses a different pickup model: **50 native-scale models across 20 categories**, including one mug. Every instruction requests placement on a plate. All tasks use dynamic memory and the same `compact_v1` controller. The task manifest fixes the houses, instructions, object layouts, initial-state seed, and file checksums.
 
 ```bash
-python -m dream_sim.study --controller recovery_v6 \
-  --task-manifest configs/residential50/task_manifest.json \
+python -m dream_sim.study --controller compact_v1 \
+  --task-manifest configs/residential50-diverse/task_manifest.json \
   --asset-dir .runtime/render_assets \
   --gpus 0 1 --output results/residential50
 ```
 
-This validates the inputs and prints the execution plan. Add `--execute` to run the study. Use one GPU ID for a single worker, or `--gpus 0 1 2 3 4 5 6 7` for eight workers. Use a new output directory for each study. The manifest cannot be combined with overrides of cases, seeds, or memory variants.
+This validates the inputs and prints the execution plan. Add `--execute` to run the study. Use one GPU ID for a single worker, or `--gpus 0 1 2 3 4 5 6 7` for eight workers. Repeat an ID to assign multiple workers to a GPU, for example `--gpus 0 0 1 1`, when memory permits. Use a new output directory for each study. The manifest cannot be combined with overrides of cases, seeds, or memory variants.
 
 Each task has a 1,800-second simulation budget and a 14,400-second policy wall timeout. RGB-D perception, rendering, and recording add wall time. The runner records each outcome once and does not retry failed tasks automatically.
 
@@ -83,7 +84,7 @@ For external caches, add `--asset-dir /absolute/path/to/assets --model-cache /ab
 
 ### Robot control
 
-The controller plans through observed free space, verifies the requested receptacle from RGB-D geometry, and uses feedback during grasping and release. The torso follows a smooth position reference shared across arm control modes. Its reference speed and acceleration are limited to 0.04 m/s and 0.10 m/s². Physical joint motion is measured separately. During carried-object height changes, arm feedback holds the measured tool pose while the torso moves. Before grasping, the robot raises the folded arm, aligns the open gripper above the observed target, and approaches vertically. It checks position and orientation before closing the gripper.
+The controller selects exploration candidates reachable through heading-dependent, swept-footprint motion edges, plans through observed free space, verifies the requested receptacle from RGB-D geometry, and uses feedback during grasping and release. The torso follows a smooth position reference shared across arm control modes. Its reference speed and acceleration are limited to 0.04 m/s and 0.10 m/s². Physical joint motion is measured separately. After grasping, the robot retracts from the support and folds its arm into the same compact posture used at initialization. A smooth two-stage joint trajectory folds the arm laterally before lowering it; its reference speed is bounded by 0.18 rad/s. Camera-height adjustments preserve the folded arm joint targets. After release, the robot withdraws its hand, checks a short reverse motion with the measured robot footprint, and returns to the compact posture. Before grasping, the robot raises the folded arm, aligns the open gripper above the observed target, and approaches vertically. It checks position and orientation before closing the gripper. Placement uses the observed object-center offset relative to the gripper, so the commanded tool pose and release-height check remain consistent for grasps above the object center.
 
 ### Evaluate the recordings
 
@@ -100,7 +101,7 @@ python -m dream_sim.study_report --run results/residential50 \
 
 The report verifies all 50 outcomes against their fixed inputs and checks independent physical replays of successful tasks. It writes `study_analysis.json` and `attempts.csv`. Task completion requires correct visual observation of the moved object, sustained physical grasp and lift, cross-room transport, and stable release in the requested receptacle. Continuous correct tracking is permitted; losing and rediscovering the object is recorded as a separate behavior.
 
-`task_success` is the evaluator outcome. `qualified_task_success` additionally requires the independent physics and recording checks. The completion rate uses all 50 tasks, including failures. `--include-contact-rejections` counts tasks rejected solely for native-environment contact as unsuccessful qualified outcomes while preserving their original scores. Missing audits, changed sources, or other failed checks stop reporting.
+`task_success` is the evaluator outcome. `qualified_task_success` additionally requires independent physics and recording checks, recorded compact-arm returns after grasp and release, and collision checks for those motions. Robot self contacts are recorded at every native physics substep. A one-second joint-position window verifies that the returned arm has settled; native joint velocities are retained separately. The completion rate uses all 50 tasks, including failures. `--include-contact-rejections` counts tasks rejected solely for native-environment contact as unsuccessful qualified outcomes while preserving their original scores. Missing audits, changed sources, or other failed checks stop reporting.
 
 ## 4. Read results
 
@@ -110,7 +111,7 @@ The report verifies all 50 outcomes against their fixed inputs and checks indepe
 | `frozen_workspace/`, `frozen_tasks/` | Source snapshot and task inputs |
 | `<attempt>/result.json` | Outcome, criteria, duration, and any execution error |
 | `<attempt>/events.jsonl` | Perception, memory, navigation, and manipulation events |
-| `<attempt>/actions.json` | Applied controls and measured torso state |
+| `<attempt>/actions.json` | Applied controls and measured arm/torso state |
 | `<attempt>/evaluator_trajectory.jsonl` | Physical task trajectory |
 | `attempts.jsonl`, `batch_result.json` | Every completed outcome and study completion status |
 
@@ -129,7 +130,7 @@ The export retains all frames at 1440×600. Source footage at 5 fps becomes 20 f
 
 ### Earlier experiments
 
-The original ten demonstrations remain reproducible through `python -m dream_sim.run --case 01 --output results/original_case01`. Their configurations and source versions are in [`configs/cases.json`](../configs/cases.json). The earlier common-controller studies are stored under [`reproducibility/evidence/`](../reproducibility/evidence/). They use their own task manifests and are separate from the 50-house study.
+The original ten demonstrations remain reproducible through `python -m dream_sim.run --case 01 --output results/original_case01`. Their configurations and source versions are in [`configs/cases.json`](../configs/cases.json). The earlier common-controller studies are stored under [`reproducibility/evidence/`](../reproducibility/evidence/). They use their own task manifests and remain separate from the diverse-object study. The earlier five-recipe, 50-house configuration remains in `configs/residential50/`.
 
 ## Implementation boundary
 
@@ -145,10 +146,10 @@ The original ten demonstrations remain reproducible through `python -m dream_sim
 | Language-model verification | Hosted mLLM verification is disabled in this adapter |
 | Evaluation | Environment object poses, room geometry, contacts, and recorded trajectories |
 
-The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera.
+The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera. The video’s left panel is a simulator overview; the lower-right panel is a depth-derived navigation map with semantic coloring. Robot self-filtering applies to that navigation map using joint poses and robot geometry. The held-object bound is reconstructed from observed dimensions and the recorded grasp frame, then transformed with the measured gripper pose. It includes a 2 cm uncertainty margin. The navigation self-filter also accounts for this held geometry. These filters do not mask the raw camera images. The semantic-memory integrator receives the RGB-D observations without this navigation self-filter.
 
 ## Experiment records
 
-The [residential task manifest](../configs/residential50/task_manifest.json) contains the complete 50-house design. Experiment records include every task outcome, controller and asset hashes, and independent replay checks. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays are retained in the authors' archive.
+The [residential task manifest](../configs/residential50-diverse/task_manifest.json) contains the complete 50-house design. Experiment records include every task outcome, controller and asset hashes, and independent replay checks. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays are retained in the authors' archive.
 
 The [component measurements](../reproducibility/evidence/components/README.md) cover memory pruning, scaling, and exploration. The [architecture guide](architecture.md) maps the implementation to the perception, memory, navigation, and manipulation pipeline.

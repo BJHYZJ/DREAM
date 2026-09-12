@@ -1,0 +1,20 @@
+{
+  "id": "compact_v1",
+  "base_study_source_id": "93c90f6a9e2dd87142adeb5610debdfc1b1007e91eb44d0b51ad3055ca6ac1d9",
+  "overrides": {
+    "experiments/audit_instruction_batch.py": "cf0decd04feeccfbf772284438e763dd09bba7662f5ff634f11744c15acdfbd5",
+    "experiments/dream_fetch_footprint.py": "f952360d27061de0d35b0d2e0022fb4a6e358d83f748c96f1a73d5d77b71391f",
+    "experiments/dream_fetch_heading_astar.py": "b5095ec31aaf00b874bbacfc25de1858244f75b838e6a95aceb9ac8e586b26f1",
+    "experiments/dream_fetch_navigation.py": "5e7348004fc4916e2163a5be0d36b0b4f36ada972bd851de90f9ab040f0096ff",
+    "experiments/dream_learned_core.py": "d456ca878e1c4081ee5554f0fdb4138c98045544329883a6100e55e10b6def00",
+    "experiments/fetch_heading_control.py": "144fd34b9ce10f17cfec38aa4edb143fd09cbf40c2f9ae8a1fe133777bde82f0",
+    "experiments/instruction_geometry.py": "41d2eb85bdb398a80ab6efd960d52d6889b49bb62d3dad4ee895b2a397662414",
+    "experiments/instruction_heading_navigation.py": "478a22650c2ca2f1dc2f6e90873abd86342b2c912f87493c7e1ac01b2f8932c7",
+    "experiments/instruction_policy.py": "0f98c54de4db08336be1b237d9957108851403ad4cf6fd0d2a45aa6a6a708617",
+    "experiments/maniskill_crossroom_policy.py": "7d90b8d6877e2adf89417db9978ca86751ec106f295e47448dcb17b5948d2fef",
+    "experiments/maniskill_learned_dynamic.py": "7157739b22674c3bd9002cababef93fb52f00b5d111ce6a73e7803480af1a5a3",
+    "experiments/maniskill_learned_probe.py": "17733845120343d4753f4bd33114d735ff4895b796808fc71bc2ebb968df62e3",
+    "experiments/physics_contact_audit.py": "920135715b99a17645110257dcb09e52af251f6a6614b0780d70fc111c13166e",
+    "experiments/run_instruction_frozen_batch.py": "6fb9e7225e4d767548f7cd6ccfa10376aaf0046670fbf96ae3bd4af725175a72"
+  }
+}

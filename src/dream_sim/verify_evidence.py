@@ -78,6 +78,10 @@ def verify_residential(root):
             or report.get("all_planned_outcomes_bound") is not True
             or report.get("all_counted_successes_passed_audits") is not True):
         raise ValueError("Incomplete residential cohort")
+    diverse=any('pickup_model' in row for row in rows)
+    if diverse and (any(not row.get('pickup_model') for row in rows)
+                    or len({row['pickup_model'] for row in rows})!=50):
+        raise ValueError("Diverse residential cohort requires 50 distinct pickup models")
     successes = 0
     for row in rows:
         path = root / "attempts" / (safe_member(row["name"]).as_posix() + ".zip")
@@ -92,7 +96,18 @@ def verify_residential(root):
             result = json.loads(data)
             if result["evaluator_task_success"] != row["task_success"]:
                 raise ValueError("Inconsistent residential task score")
+            if diverse:
+                task=json.loads(archive.read('environment_task.json'))
+                if task['recipe']['environment_assets']['pickup']!=row['pickup_model']:
+                    raise ValueError("Pickup model differs from archived task")
             if row["qualified_task_success"]:
+                if diverse:
+                    from dream_sim.fold_review import review_fold
+                    physical=json.loads(archive.read('audit/physical/audit.json'))
+                    events=[json.loads(line) for line in archive.read('events.jsonl').decode().splitlines()]
+                    fold=review_fold(events,json.loads(archive.read('actions.json')),physical.get('contact_audit',{}))
+                    if not fold['passed']:
+                        raise ValueError("Counted residential success lacks verified compact-arm returns")
                 review = json.loads(archive.read("audit/record/record_review.json"))
                 if not row["task_success"] or review.get("primary_task_record_review_passed") is not True:
                     raise ValueError("Counted residential success lacks a passing audit")
@@ -133,7 +148,9 @@ def main():
             comparisons[name] = verify_comparison(evidence / name)
     residential_root = evidence / "residential50-seed42"
     residential = verify_residential(residential_root) if residential_root.exists() else None
-    print(json.dumps({"residential_study": residential, "compact_evidence_verified": True, "attempts_retained": 60,
+    diverse_root=evidence / "residential50-diverse-seed42"
+    diverse=verify_residential(diverse_root) if diverse_root.exists() else None
+    print(json.dumps({"diverse_residential_study": diverse, "residential_study": residential, "compact_evidence_verified": True, "attempts_retained": 60,
                       "controller_comparison_attempts_retained": comparisons,
                       "reproduction_cases_retained": 10, "component_groups": len(components["groups"]),
                       "separate_packaging_smoke_cases_retained": 1,

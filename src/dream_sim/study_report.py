@@ -67,7 +67,8 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
     if not (root/'batch_result.json').exists():
         raise RuntimeError('The declared experiment has not finished')
     protocol=read(root/'protocol.json');batch=read(root/'batch_result.json')
-    residential = protocol.get('mode') == 'residential50_seed42_dynamic_v1'
+    diverse = protocol.get('mode') == 'residential50_seed42_diverse_v2'
+    residential = diverse or protocol.get('mode') == 'residential50_seed42_dynamic_v1'
     expected_count = 50 if residential else 60
     if residential and baseline_path is not None:
         raise ValueError('Residential cohort has no matched baseline comparison')
@@ -77,7 +78,7 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
         jobs=protocol['attempts']
         if (len({j['scene'] for j in jobs}) != 50
                 or any(j['seed'] != 42 or j['variant'] != 'dynamic' for j in jobs)
-                or sorted(Counter(j['recipe'] for j in jobs).values()) != [10]*5):
+                or (not diverse and sorted(Counter(j['recipe'] for j in jobs).values()) != [10]*5)):
             raise ValueError('Invalid residential cohort design')
     if len(expected)!=expected_count or protocol.get('planned_attempts')!=expected_count or batch.get('all_planned_attempts_recorded') is not True:
         raise ValueError('Incomplete declared study')
@@ -97,6 +98,7 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
             raise ValueError(f'{name}: task input changed')
         if sha(folder/'result.json')!=record['result_sha256']:
             raise ValueError(f'{name}: result checksum mismatch')
+        task_data=read(task)
         result=read(folder/'result.json')
         success=result.get('evaluator_task_success')
         if type(success) is not bool or record.get('task_success') is not success:
@@ -112,6 +114,10 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
                  runner_status=record['status'],error=result.get('error'),eligible_for_summary=True,
                  result_sha256=record['result_sha256'],wall_time_s=result.get('wall_time_s'),
                  criteria=result.get('criteria',{}),task_criteria=result.get('task_criteria',{}))
+        if diverse:
+            model=task_data['recipe']['environment_assets']['pickup']
+            query=task_data['instruction'].split('pick up the ',1)[1].split(' and ',1)[0]
+            row.update(pickup_model=model,pickup_category=model.rsplit('_',1)[0].replace('_',' '),pickup_query=query)
         if success:
             physical_path=audits/name/'physical/audit.json'
             review_path=audits/name/'record/record_review.json'
@@ -133,8 +139,17 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
             row.update(physical_reexecution_passed=True,primary_task_record_review_passed=passed,
                 physical_audit_sha256=sha(physical_path),record_review_sha256=sha(review_path),
                 native_contact_steps=physical['contact_audit']['native_environment_contact_control_steps'])
+        if diverse and success:
+            from dream_sim.fold_review import review_fold
+            events=[json.loads(line) for line in (folder/'events.jsonl').read_text().splitlines()]
+            fold=review_fold(events,read(folder/'actions.json'),physical['contact_audit'])
+            row['arm_return_review']=fold
+            if not fold['passed']:
+                row.update(qualified_task_success=False,audit_qualification='arm_return_rejected')
         rows.append(row)
 
+    if diverse and len({r['pickup_model'] for r in rows})!=50:
+        raise ValueError('Diverse cohort requires 50 distinct pickup models')
     sys.path.insert(0,str(engine_root()/'experiments'))
     from instruction_study_statistics import summarize_paired_outcomes
     summarize = summarize_residential_outcomes if residential else summarize_paired_outcomes
@@ -146,7 +161,7 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
         audit_rejections='Remain in the denominator as unsuccessful qualified outcomes; raw task outcomes retained separately')
     rejections=[dict(name=row['name'],reason=row['audit_qualification'],
                     native_contact_steps=row['native_contact_steps'])
-                for row in rows if row.get('audit_qualification')=='native_contact_rejected']
+                for row in rows if row.get('audit_qualification') in {'native_contact_rejected','arm_return_rejected'}]
     import numpy as np
     comparison={}
     if baseline_path is not None:
@@ -183,6 +198,7 @@ def analyze(root: Path,audits: Path,output: Path,baseline_path: Path | None=None
     (output/('study_analysis.json' if residential else 'comparison_analysis.json')).write_text(json.dumps(report,indent=2)+'\n')
     columns=['name','scene','seed','variant','task_success','qualified_task_success','audit_qualification',
              'strict_success','eligible_for_summary','runner_status','wall_time_s','error','native_contact_steps']
+    if diverse:columns+=['pickup_model','pickup_category','pickup_query']
     with (output/'attempts.csv').open('w',newline='') as stream:
         writer=csv.DictWriter(stream,fieldnames=columns,extrasaction='ignore',lineterminator='\n');writer.writeheader();writer.writerows(rows)
     return report

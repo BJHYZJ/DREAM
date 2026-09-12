@@ -1,10 +1,11 @@
 # Task configuration
 
-[`residential50/task_manifest.json`](residential50/task_manifest.json) defines the 50-house study: one cross-room task per house, seed 42 throughout, and dynamic memory. Each task and room map is bound to a SHA256 checksum. The accompanying asset lock records the required scene files.
+[`residential50-diverse/task_manifest.json`](residential50-diverse/task_manifest.json) defines the 50-house study: one cross-room task per house, 50 different native-scale pickup models across 20 categories, seed 42 throughout, and dynamic memory. Each task and room map is bound to a SHA256 checksum. The accompanying asset lock records the required scene files.
 
 | Directory | Contents |
 | --- | --- |
-| `residential50/` | Fifty-house task manifest, configurations, room maps, and scene-asset lock |
+| `residential50-diverse/` | Fifty houses with distinct pickup models, room maps, and rendering asset lock |
+| `residential50/` | Earlier five-recipe, fifty-house study and source asset lock |
 | `tasks/` | Earlier demonstration task definitions and evaluator room maps |
 | `locks/` | Model revisions and earlier scene-asset records |
 

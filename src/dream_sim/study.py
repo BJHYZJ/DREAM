@@ -90,7 +90,7 @@ def load_task_manifest(path: Path) -> tuple[dict, list[Path]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--controller", choices=["baseline", "recovery", "recovery_v2", "recovery_v3", "recovery_v4", "recovery_v5", "recovery_v6"], default="recovery")
+    parser.add_argument("--controller", choices=["baseline", "recovery", "recovery_v2", "recovery_v3", "recovery_v4", "recovery_v5", "recovery_v6", "compact_v1"], default="recovery")
     parser.add_argument("--cases", nargs="+", choices=[f"{i:02d}" for i in range(1, 11)],
                         default=[f"{i:02d}" for i in range(1, 11)])
     parser.add_argument("--seeds", nargs="+", type=int, default=[100, 101, 102])
@@ -127,7 +127,7 @@ def main() -> None:
         manifest, tasks = load_task_manifest(args.task_manifest)
         args.seeds = [manifest["seed"]]
         args.variants = manifest["variants"]
-        args.cases = [row["id"] for row in manifest["tasks"]]
+        args.cases = [row.get("id", row["scene"]) for row in manifest["tasks"]]
     else:
         tasks = [verify_case(root, by_id[key]) for key in args.cases]
     directory = PROJECT / "controllers" / args.controller
@@ -158,8 +158,8 @@ def main() -> None:
                    "--variants", *args.variants, "--gpus", *args.gpus, "--wall-timeout", "14400",
                    "--asset-dir", str(args.asset_dir.resolve()), "--model-cache", str(cache)]
         if manifest is not None:
-            if args.controller not in ("recovery_v3", "recovery_v4", "recovery_v5", "recovery_v6"):
-                raise ValueError("Explicit residential cohort requires recovery_v3, recovery_v4, recovery_v5, or recovery_v6")
+            if args.controller not in ("recovery_v3", "recovery_v4", "recovery_v5", "recovery_v6", "compact_v1"):
+                raise ValueError("Explicit residential cohort requires a supported residential controller")
             command.extend(["--cohort-id", manifest["id"]])
         if full_comparison:
             command.append("--benchmark")

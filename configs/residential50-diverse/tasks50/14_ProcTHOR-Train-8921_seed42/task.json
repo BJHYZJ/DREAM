@@ -1,0 +1,108 @@
+{
+  "protocol": "residential50_seed42_diverse_v2",
+  "status": "frozen_configuration",
+  "scene": "ProcTHOR-Train-8921",
+  "instruction": "Please pick up the pepper shaker and place it on the plate on the table.",
+  "recipe": {
+    "id": "pepper_shaker_2_plate",
+    "instruction": "Please pick up the pepper shaker and place it on the plate on the table.",
+    "environment_assets": {
+      "pickup": "Pepper_Shaker_2",
+      "placement": "Plate_9",
+      "support": "Dining_Table_27_1"
+    },
+    "pickup_scale": 1.0,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 3,
+  "target_xy": [
+    -2.2489999923706065,
+    -4.938000000447035
+  ],
+  "endpoint": [
+    -3.0889999923706064,
+    -2.5380000004470347
+  ],
+  "disturbance_waypoints": [
+    [
+      -2.2489999923706065,
+      -4.698000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -4.458000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -4.218000000447034
+    ],
+    [
+      -2.2489999923706065,
+      -3.978000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -3.738000000447035
+    ],
+    [
+      -2.2489999923706065,
+      -3.4980000004470346
+    ],
+    [
+      -2.3689999923706067,
+      -3.258000000447035
+    ],
+    [
+      -2.608999992370607,
+      -3.018000000447035
+    ],
+    [
+      -2.848999992370606,
+      -2.778000000447035
+    ],
+    [
+      -3.0889999923706064,
+      -2.5380000004470347
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -2.009844083547593,
+    -7.397223635047674
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -2.2983307296247752,
+    -7.159727628590661
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 401,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02
+}

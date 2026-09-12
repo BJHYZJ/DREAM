@@ -1,0 +1,108 @@
+{
+  "protocol": "residential50_seed42_diverse_v2",
+  "status": "frozen_configuration",
+  "scene": "ProcTHOR-Train-2043",
+  "instruction": "Please pick up the candle and place it on the plate on the table.",
+  "recipe": {
+    "id": "candle_6_plate",
+    "instruction": "Please pick up the candle and place it on the plate on the table.",
+    "environment_assets": {
+      "pickup": "Candle_6",
+      "placement": "Plate_9",
+      "support": "Dining_Table_27_1"
+    },
+    "pickup_scale": 1.0,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 2,
+  "target_xy": [
+    -4.835000125885012,
+    -6.340000000447035
+  ],
+  "endpoint": [
+    -6.275000125885011,
+    -3.9400000004470352
+  ],
+  "disturbance_waypoints": [
+    [
+      -4.835000125885012,
+      -6.100000000447035
+    ],
+    [
+      -4.835000125885012,
+      -5.860000000447035
+    ],
+    [
+      -4.835000125885012,
+      -5.6200000004470345
+    ],
+    [
+      -4.835000125885012,
+      -5.380000000447035
+    ],
+    [
+      -5.075000125885011,
+      -5.140000000447035
+    ],
+    [
+      -5.315000125885011,
+      -4.900000000447035
+    ],
+    [
+      -5.5550001258850115,
+      -4.6600000004470346
+    ],
+    [
+      -5.795000125885011,
+      -4.420000000447035
+    ],
+    [
+      -6.035000125885011,
+      -4.180000000447035
+    ],
+    [
+      -6.275000125885011,
+      -3.9400000004470352
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -2.2558442170619983,
+    -4.119223635047674
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -2.318374795079458,
+    -4.305249033476955
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 92,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02
+}

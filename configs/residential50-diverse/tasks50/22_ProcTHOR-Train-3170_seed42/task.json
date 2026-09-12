@@ -1,0 +1,128 @@
+{
+  "protocol": "residential50_seed42_diverse_v2",
+  "status": "frozen_configuration",
+  "scene": "ProcTHOR-Train-3170",
+  "instruction": "Please pick up the pepper shaker and place it on the plate on the table.",
+  "recipe": {
+    "id": "pepper_shaker_1_plate",
+    "instruction": "Please pick up the pepper shaker and place it on the plate on the table.",
+    "environment_assets": {
+      "pickup": "Pepper_Shaker_1",
+      "placement": "Plate_9",
+      "support": "Dining_Table_208_1"
+    },
+    "pickup_scale": 1.0,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 3,
+  "target_xy": [
+    -7.310000070571901,
+    -1.4800000004470348
+  ],
+  "endpoint": [
+    -8.9900000705719,
+    -3.640000000447035
+  ],
+  "disturbance_waypoints": [
+    [
+      -7.310000070571901,
+      -1.720000000447035
+    ],
+    [
+      -7.310000070571901,
+      -1.9600000004470348
+    ],
+    [
+      -7.310000070571901,
+      -2.200000000447035
+    ],
+    [
+      -7.550000070571901,
+      -2.440000000447035
+    ],
+    [
+      -7.7900000705719,
+      -2.680000000447035
+    ],
+    [
+      -8.030000070571901,
+      -2.8600000004470347
+    ],
+    [
+      -8.2700000705719,
+      -2.920000000447035
+    ],
+    [
+      -8.5100000705719,
+      -3.160000000447035
+    ],
+    [
+      -8.7500000705719,
+      -3.4000000004470348
+    ],
+    [
+      -8.9900000705719,
+      -3.640000000447035
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_208_1",
+  "placement_table_xy": [
+    -4.549979328155519,
+    -3.8200000004470347
+  ],
+  "placement_table_collision_radius_m": 1.0319234919733395,
+  "placement_xy": [
+    -4.94406997307625,
+    -3.4438423662383384
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 259,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        -0.8863134384155273,
+        -0.48829954862594604
+      ],
+      [
+        -0.8805273175239563,
+        -0.4940844476222992
+      ],
+      [
+        0.8805230259895325,
+        -0.494086891412735
+      ],
+      [
+        0.8805291652679443,
+        -0.494086891412735
+      ],
+      [
+        0.8863122463226318,
+        -0.48829954862594604
+      ],
+      [
+        0.8863134384155273,
+        0.48830077052116394
+      ],
+      [
+        0.8805291652679443,
+        0.494086891412735
+      ],
+      [
+        -0.8805273175239563,
+        0.4940844476222992
+      ],
+      [
+        -0.886311948299408,
+        0.48830077052116394
+      ]
+    ],
+    "source_asset_sha256": "2edb421a4d0a601c971fd8806eddd788210aee159aace4ddf015de22c8d4b381",
+    "conservative_radius_m": 1.0319234919733395,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02
+}

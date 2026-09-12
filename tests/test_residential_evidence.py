@@ -49,3 +49,33 @@ def test_residential_evidence_rejects_rehashed_inflated_summary(tmp_path):
     (tmp_path / 'checksums.json').write_text(json.dumps(checksums))
     with pytest.raises(ValueError,match='counts differ'):
         verify_residential(tmp_path)
+
+
+def rehash(root, report):
+    (root/'analysis/study_analysis.json').write_text(json.dumps(report))
+    checksums={p.relative_to(root).as_posix():hashlib.sha256(p.read_bytes()).hexdigest()
+               for p in root.rglob('*') if p.is_file() and p.name!='checksums.json'}
+    (root/'checksums.json').write_text(json.dumps(checksums))
+
+
+def test_diverse_evidence_rejects_repeated_models_even_with_fifty_houses(tmp_path):
+    report,_=evidence(tmp_path)
+    for row in report['attempts']:row['pickup_model']='Mug_1'
+    rehash(tmp_path,report)
+    with pytest.raises(ValueError,match='50 distinct pickup models'):
+        verify_residential(tmp_path)
+
+
+def test_diverse_primary_success_still_requires_recorded_arm_returns(tmp_path):
+    report,_=evidence(tmp_path)
+    for i,row in enumerate(report['attempts']):
+        row['pickup_model']=f'Object_{i}'
+        with zipfile.ZipFile(tmp_path/'attempts'/f'run{i}.zip','a') as archive:
+            archive.writestr('environment_task.json',json.dumps(dict(recipe=dict(environment_assets=dict(pickup=row['pickup_model'])))))
+            if i==0:
+                archive.writestr('audit/physical/audit.json',json.dumps(dict(contact_audit=dict(robot_self_contact_rows=[]))))
+                archive.writestr('events.jsonl','')
+                archive.writestr('actions.json','[]')
+    rehash(tmp_path,report)
+    with pytest.raises(ValueError,match='verified compact-arm returns'):
+        verify_residential(tmp_path)

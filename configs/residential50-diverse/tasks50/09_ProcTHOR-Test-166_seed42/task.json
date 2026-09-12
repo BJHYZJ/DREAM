@@ -1,0 +1,116 @@
+{
+  "protocol": "residential50_seed42_diverse_v2",
+  "status": "frozen_configuration",
+  "scene": "ProcTHOR-Test-166",
+  "instruction": "Please pick up the potato and place it on the plate on the table.",
+  "recipe": {
+    "id": "potato_22_plate",
+    "instruction": "Please pick up the potato and place it on the plate on the table.",
+    "environment_assets": {
+      "pickup": "Potato_22",
+      "placement": "Plate_9",
+      "support": "Dining_Table_27_1"
+    },
+    "pickup_scale": 1.0,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 2,
+  "target_xy": [
+    -8.949000091552737,
+    -3.940000000447035
+  ],
+  "endpoint": [
+    -8.949000091552737,
+    -0.9400000004470348
+  ],
+  "disturbance_waypoints": [
+    [
+      -8.949000091552737,
+      -3.7000000004470346
+    ],
+    [
+      -8.949000091552737,
+      -3.460000000447035
+    ],
+    [
+      -8.949000091552737,
+      -3.220000000447035
+    ],
+    [
+      -8.949000091552737,
+      -2.980000000447035
+    ],
+    [
+      -8.949000091552737,
+      -2.740000000447035
+    ],
+    [
+      -8.949000091552737,
+      -2.500000000447035
+    ],
+    [
+      -8.949000091552737,
+      -2.260000000447035
+    ],
+    [
+      -8.949000091552737,
+      -2.020000000447035
+    ],
+    [
+      -8.949000091552737,
+      -1.7800000004470349
+    ],
+    [
+      -8.949000091552737,
+      -1.5400000004470347
+    ],
+    [
+      -8.949000091552737,
+      -1.3000000004470347
+    ],
+    [
+      -8.949000091552737,
+      -1.0600000004470347
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -8.169844182729722,
+    -6.879223635047674
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -8.13927040728811,
+    -6.7016218948592785
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 3427,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02
+}
