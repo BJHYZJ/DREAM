@@ -1,0 +1,352 @@
+[
+  {
+    "name": "01_ProcTHOR-Test-722_seed42_dynamic",
+    "archive": "raw/01_ProcTHOR-Test-722_seed42_dynamic.tar",
+    "archive_bytes": 667361280,
+    "archive_sha256": "ac4db6b77e28d69d80448002eed9066fc171d28133a7ae74b6d6d3b4e7865f79",
+    "all_members_verified": true
+  },
+  {
+    "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+    "archive": "raw/02_ProcTHOR-Train-8471_seed42_dynamic.tar",
+    "archive_bytes": 114155520,
+    "archive_sha256": "4c41abc2739e8698c92218475b396b86609640f7f18fc4ab8fa6fb5e71c5d749",
+    "all_members_verified": true
+  },
+  {
+    "name": "03_ProcTHOR-Train-6452_seed42_dynamic",
+    "archive": "raw/03_ProcTHOR-Train-6452_seed42_dynamic.tar",
+    "archive_bytes": 2178498560,
+    "archive_sha256": "9c74f83a0690da8c804f4a0e5640d6f82d095df78dfc924198da93479e64a942",
+    "all_members_verified": true
+  },
+  {
+    "name": "04_ProcTHOR-Train-2043_seed42_dynamic",
+    "archive": "raw/04_ProcTHOR-Train-2043_seed42_dynamic.tar",
+    "archive_bytes": 262072320,
+    "archive_sha256": "604d12aeca0e081a1fe6c60a2e0974b5be549c0e0779808ff9793c2975e862d1",
+    "all_members_verified": true
+  },
+  {
+    "name": "05_ProcTHOR-Test-288_seed42_dynamic",
+    "archive": "raw/05_ProcTHOR-Test-288_seed42_dynamic.tar",
+    "archive_bytes": 470824960,
+    "archive_sha256": "9b46f4ecd00adc93a272700c205f6d2d99d1e32e3329bb72db41e0aeefe627ad",
+    "all_members_verified": true
+  },
+  {
+    "name": "06_ProcTHOR-Train-4300_seed42_dynamic",
+    "archive": "raw/06_ProcTHOR-Train-4300_seed42_dynamic.tar",
+    "archive_bytes": 641269760,
+    "archive_sha256": "479525f3e61ad1841d86ce460d270a5b79ea1c7c93df26570abb7817ce05e1a1",
+    "all_members_verified": true
+  },
+  {
+    "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
+    "archive": "raw/07_ProcTHOR-Train-1402_seed42_dynamic.tar",
+    "archive_bytes": 810147840,
+    "archive_sha256": "08fe571a216de25ad11fa9e48e2506966980a5d7c853ee2e810d28451f27da55",
+    "all_members_verified": true
+  },
+  {
+    "name": "08_ProcTHOR-Train-7473_seed42_dynamic",
+    "archive": "raw/08_ProcTHOR-Train-7473_seed42_dynamic.tar",
+    "archive_bytes": 2383697920,
+    "archive_sha256": "23f5a017055767eb81b03f520ab7cb6052f4f193ba6837ec1f88627868c97beb",
+    "all_members_verified": true
+  },
+  {
+    "name": "09_ProcTHOR-Test-166_seed42_dynamic",
+    "archive": "raw/09_ProcTHOR-Test-166_seed42_dynamic.tar",
+    "archive_bytes": 568709120,
+    "archive_sha256": "be97dfd2cf3d4f2f8f935a10cda8f290bbe38bb070c9f461cf85accec285eed4",
+    "all_members_verified": true
+  },
+  {
+    "name": "10_ProcTHOR-Test-459_seed42_dynamic",
+    "archive": "raw/10_ProcTHOR-Test-459_seed42_dynamic.tar",
+    "archive_bytes": 433971200,
+    "archive_sha256": "7dfd48529d4b256cb8da26e1b180530b38d125ba5374a848b46ec3e467efe3cd",
+    "all_members_verified": true
+  },
+  {
+    "name": "11_ProcTHOR-Train-3859_seed42_dynamic",
+    "archive": "raw/11_ProcTHOR-Train-3859_seed42_dynamic.tar",
+    "archive_bytes": 558868480,
+    "archive_sha256": "3a41b3d12ff7f6fd83b497bfe7152448e57552d300cf80373caf417a498eaab0",
+    "all_members_verified": true
+  },
+  {
+    "name": "12_ProcTHOR-Train-4108_seed42_dynamic",
+    "archive": "raw/12_ProcTHOR-Train-4108_seed42_dynamic.tar",
+    "archive_bytes": 3002132480,
+    "archive_sha256": "09f04e2ee9f5a878dad9a66764e79e7abe24aa3c4f32c83cdc8bde2441cffed7",
+    "all_members_verified": true
+  },
+  {
+    "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+    "archive": "raw/13_ProcTHOR-Train-7780_seed42_dynamic.tar",
+    "archive_bytes": 220098560,
+    "archive_sha256": "37162255635f0b5fcc29894d440cdda22e9a4d9df4ae5ce56d54d02049dce126",
+    "all_members_verified": true
+  },
+  {
+    "name": "14_ProcTHOR-Train-8921_seed42_dynamic",
+    "archive": "raw/14_ProcTHOR-Train-8921_seed42_dynamic.tar",
+    "archive_bytes": 351569920,
+    "archive_sha256": "d85e204948bf80442cb15a5ffc44f517a5004d7f40ab5e72d5f525d9746c8f47",
+    "all_members_verified": true
+  },
+  {
+    "name": "15_ProcTHOR-Train-2769_seed42_dynamic",
+    "archive": "raw/15_ProcTHOR-Train-2769_seed42_dynamic.tar",
+    "archive_bytes": 1738076160,
+    "archive_sha256": "885964324be549c88bd482e3e3021e5a68d744ae51d77a7f97b15b92cdafe627",
+    "all_members_verified": true
+  },
+  {
+    "name": "16_ProcTHOR-Train-507_seed42_dynamic",
+    "archive": "raw/16_ProcTHOR-Train-507_seed42_dynamic.tar",
+    "archive_bytes": 612741120,
+    "archive_sha256": "d517703cac3da7d54e3a91cf5eaaf24ea440c8afd0baefdff3936e703630c1fb",
+    "all_members_verified": true
+  },
+  {
+    "name": "17_ProcTHOR-Train-9926_seed42_dynamic",
+    "archive": "raw/17_ProcTHOR-Train-9926_seed42_dynamic.tar",
+    "archive_bytes": 706867200,
+    "archive_sha256": "61e9f5fe9ddae0b401ec1da6943c23056cd7842b9cb4039ad7d4249f6e7faa89",
+    "all_members_verified": true
+  },
+  {
+    "name": "18_ProcTHOR-Train-3208_seed42_dynamic",
+    "archive": "raw/18_ProcTHOR-Train-3208_seed42_dynamic.tar",
+    "archive_bytes": 2060513280,
+    "archive_sha256": "dfb2190476618264f1997902db535b41af124ada7c420219f6dc40789a4f4c81",
+    "all_members_verified": true
+  },
+  {
+    "name": "19_ProcTHOR-Train-4204_seed42_dynamic",
+    "archive": "raw/19_ProcTHOR-Train-4204_seed42_dynamic.tar",
+    "archive_bytes": 1019074560,
+    "archive_sha256": "f46d39d71248e503357f73f1c1acd769c67fdc226dc2ff46422cc9c8a5f3791f",
+    "all_members_verified": true
+  },
+  {
+    "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+    "archive": "raw/20_ProcTHOR-Train-8432_seed42_dynamic.tar",
+    "archive_bytes": 347904000,
+    "archive_sha256": "03d706b8d33a06f5c4e27d5542ed5ae97eeaf7ab3952b0aef9bacee15118162b",
+    "all_members_verified": true
+  },
+  {
+    "name": "21_ProcTHOR-Test-308_seed42_dynamic",
+    "archive": "raw/21_ProcTHOR-Test-308_seed42_dynamic.tar",
+    "archive_bytes": 107438080,
+    "archive_sha256": "1fc2dd49543a1e99aef495c73ad24095d7bdaf4dfc4e8d9534bd279942309742",
+    "all_members_verified": true
+  },
+  {
+    "name": "22_ProcTHOR-Train-3170_seed42_dynamic",
+    "archive": "raw/22_ProcTHOR-Train-3170_seed42_dynamic.tar",
+    "archive_bytes": 416184320,
+    "archive_sha256": "34c97d55b1af6d1780dae7b90df2b6b88e443c6f0cc3cafcca084a1575851d06",
+    "all_members_verified": true
+  },
+  {
+    "name": "23_ProcTHOR-Val-265_seed42_dynamic",
+    "archive": "raw/23_ProcTHOR-Val-265_seed42_dynamic.tar",
+    "archive_bytes": 363540480,
+    "archive_sha256": "3a3cd7eb0d9d68ecec39c903c01ec49769a9f87d4fde0f3ecdaecb6a708b4103",
+    "all_members_verified": true
+  },
+  {
+    "name": "24_ProcTHOR-Train-9699_seed42_dynamic",
+    "archive": "raw/24_ProcTHOR-Train-9699_seed42_dynamic.tar",
+    "archive_bytes": 374906880,
+    "archive_sha256": "5855478b2802417910d4e0fb4ea44f5d8b0bb52061c6e6a2f37912819feb2c1f",
+    "all_members_verified": true
+  },
+  {
+    "name": "25_ProcTHOR-Val-605_seed42_dynamic",
+    "archive": "raw/25_ProcTHOR-Val-605_seed42_dynamic.tar",
+    "archive_bytes": 458465280,
+    "archive_sha256": "eb6f2bce897c8c2d4b002f0e5fb1e9130cb4d379097718f2bc63d945e1d20a29",
+    "all_members_verified": true
+  },
+  {
+    "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
+    "archive": "raw/26_ProcTHOR-Train-2451_seed42_dynamic.tar",
+    "archive_bytes": 740894720,
+    "archive_sha256": "a0287cbd3b96d7269486b691760a782e2a4899c91599bdb34965dfc051acf2c2",
+    "all_members_verified": true
+  },
+  {
+    "name": "27_ProcTHOR-Val-576_seed42_dynamic",
+    "archive": "raw/27_ProcTHOR-Val-576_seed42_dynamic.tar",
+    "archive_bytes": 1701857280,
+    "archive_sha256": "5bbe4520aa9b058a5b26abac85dffc183338e677129267c65a97635edfe192bf",
+    "all_members_verified": true
+  },
+  {
+    "name": "28_ProcTHOR-Train-4956_seed42_dynamic",
+    "archive": "raw/28_ProcTHOR-Train-4956_seed42_dynamic.tar",
+    "archive_bytes": 1068083200,
+    "archive_sha256": "89efe52644e00ce2a71ca242ebe5b7cfe2066010a0cfd1e8fc714ca7ec7ca587",
+    "all_members_verified": true
+  },
+  {
+    "name": "29_ProcTHOR-Train-5013_seed42_dynamic",
+    "archive": "raw/29_ProcTHOR-Train-5013_seed42_dynamic.tar",
+    "archive_bytes": 2683760640,
+    "archive_sha256": "a5cdde6df7979a64c07f5a31469195780a17eb3db4bc5970466f636d22d7ef13",
+    "all_members_verified": true
+  },
+  {
+    "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
+    "archive": "raw/30_ProcTHOR-Train-4732_seed42_dynamic.tar",
+    "archive_bytes": 322723840,
+    "archive_sha256": "6ee5766e99d209246b4cff6f5de6425ce6e6deea639f72d887d853642e7158b3",
+    "all_members_verified": true
+  },
+  {
+    "name": "31_ProcTHOR-Val-660_seed42_dynamic",
+    "archive": "raw/31_ProcTHOR-Val-660_seed42_dynamic.tar",
+    "archive_bytes": 925276160,
+    "archive_sha256": "59c08becf563dd3a69611f1bc094f992965855beddabe6b50bac3ea34f097bda",
+    "all_members_verified": true
+  },
+  {
+    "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
+    "archive": "raw/32_ProcTHOR-Train-7199_seed42_dynamic.tar",
+    "archive_bytes": 1310679040,
+    "archive_sha256": "0c04fdb770292ea301ae2f2e242fc239aaa9d4ec10120db4cbf40420bb8b8ca8",
+    "all_members_verified": true
+  },
+  {
+    "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
+    "archive": "raw/33_ProcTHOR-Train-5942_seed42_dynamic.tar",
+    "archive_bytes": 2392586240,
+    "archive_sha256": "3d09a5adbd3f1ce08108217ba39743acdc00d06e9104cd857dfef9767a517711",
+    "all_members_verified": true
+  },
+  {
+    "name": "34_ProcTHOR-Train-9419_seed42_dynamic",
+    "archive": "raw/34_ProcTHOR-Train-9419_seed42_dynamic.tar",
+    "archive_bytes": 481075200,
+    "archive_sha256": "17e8980a151ca1377de46d9a845fd7b68b5de1d02029f87fbe421a2cd8c07c5d",
+    "all_members_verified": true
+  },
+  {
+    "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
+    "archive": "raw/35_ProcTHOR-Train-6673_seed42_dynamic.tar",
+    "archive_bytes": 733440000,
+    "archive_sha256": "0114a3784a05d83a43acf66d1ca036188b3bf9e3f5ac1f602d445ba20588de03",
+    "all_members_verified": true
+  },
+  {
+    "name": "36_ProcTHOR-Test-959_seed42_dynamic",
+    "archive": "raw/36_ProcTHOR-Test-959_seed42_dynamic.tar",
+    "archive_bytes": 458752000,
+    "archive_sha256": "4170b2b8d13a46a7e9090b78629fe9b1d9a069962227a9b08f1ebd1c0cc8dc62",
+    "all_members_verified": true
+  },
+  {
+    "name": "37_ProcTHOR-Train-2063_seed42_dynamic",
+    "archive": "raw/37_ProcTHOR-Train-2063_seed42_dynamic.tar",
+    "archive_bytes": 388290560,
+    "archive_sha256": "905e20dec348db5a6ebc9f5a8cce69891df677513a44f546a68be6b62181c268",
+    "all_members_verified": true
+  },
+  {
+    "name": "38_ProcTHOR-Train-2809_seed42_dynamic",
+    "archive": "raw/38_ProcTHOR-Train-2809_seed42_dynamic.tar",
+    "archive_bytes": 372643840,
+    "archive_sha256": "776aaf4c1e70c42b60b48a19798bf76c6e0951f4cf524f368e8ef3c59b99a81f",
+    "all_members_verified": true
+  },
+  {
+    "name": "39_ProcTHOR-Train-406_seed42_dynamic",
+    "archive": "raw/39_ProcTHOR-Train-406_seed42_dynamic.tar",
+    "archive_bytes": 1802250240,
+    "archive_sha256": "0745abed45505db7301cbacec391dea65b08ed75d11ea82f5db110d959ad31b7",
+    "all_members_verified": true
+  },
+  {
+    "name": "40_ProcTHOR-Train-4574_seed42_dynamic",
+    "archive": "raw/40_ProcTHOR-Train-4574_seed42_dynamic.tar",
+    "archive_bytes": 698839040,
+    "archive_sha256": "f09aa862df95a86f9ec7796dcf0fb2fa48c42d0b77601783b164af2f0a61270e",
+    "all_members_verified": true
+  },
+  {
+    "name": "41_ProcTHOR-Train-1182_seed42_dynamic",
+    "archive": "raw/41_ProcTHOR-Train-1182_seed42_dynamic.tar",
+    "archive_bytes": 741888000,
+    "archive_sha256": "73a64dc51e193cc9a826bb237595bef96972d8e684e770aa555cb9a545687ea8",
+    "all_members_verified": true
+  },
+  {
+    "name": "42_ProcTHOR-Train-9100_seed42_dynamic",
+    "archive": "raw/42_ProcTHOR-Train-9100_seed42_dynamic.tar",
+    "archive_bytes": 495472640,
+    "archive_sha256": "f40699aa25621c0e64c3bd4d87edd7a6171119762b27f648862d2b871719d49c",
+    "all_members_verified": true
+  },
+  {
+    "name": "43_ProcTHOR-Train-5361_seed42_dynamic",
+    "archive": "raw/43_ProcTHOR-Train-5361_seed42_dynamic.tar",
+    "archive_bytes": 141148160,
+    "archive_sha256": "75d176307befc8a53a8bdafc232467ab0ddb189e29883ffc517a94758f0766fe",
+    "all_members_verified": true
+  },
+  {
+    "name": "44_ProcTHOR-Train-2898_seed42_dynamic",
+    "archive": "raw/44_ProcTHOR-Train-2898_seed42_dynamic.tar",
+    "archive_bytes": 398991360,
+    "archive_sha256": "67c14b3c73243ab95942e6b4f0d9e31ef7077e349f4c5d89abc9ed260db982f0",
+    "all_members_verified": true
+  },
+  {
+    "name": "45_ProcTHOR-Train-6968_seed42_dynamic",
+    "archive": "raw/45_ProcTHOR-Train-6968_seed42_dynamic.tar",
+    "archive_bytes": 666808320,
+    "archive_sha256": "1baadb572000c8d9f1951dbb13b9fbd714583ece2bd23412301dd52c7c989f49",
+    "all_members_verified": true
+  },
+  {
+    "name": "46_ProcTHOR-Train-4899_seed42_dynamic",
+    "archive": "raw/46_ProcTHOR-Train-4899_seed42_dynamic.tar",
+    "archive_bytes": 1175930880,
+    "archive_sha256": "27032317a7ea99decd5480d8ee9fa4d677e910aaaedf2b0fead32d095e2a7cd6",
+    "all_members_verified": true
+  },
+  {
+    "name": "47_ProcTHOR-Val-46_seed42_dynamic",
+    "archive": "raw/47_ProcTHOR-Val-46_seed42_dynamic.tar",
+    "archive_bytes": 193146880,
+    "archive_sha256": "f190deebdd4627276768bd71c6f0f226d23b87545730bb4d1a716dc9685191ee",
+    "all_members_verified": true
+  },
+  {
+    "name": "48_ProcTHOR-Train-6322_seed42_dynamic",
+    "archive": "raw/48_ProcTHOR-Train-6322_seed42_dynamic.tar",
+    "archive_bytes": 446310400,
+    "archive_sha256": "e4615646e6ed9c37dc0868626ba42ee1b7c4984f228094c457a721f8b941d9b4",
+    "all_members_verified": true
+  },
+  {
+    "name": "49_ProcTHOR-Train-7428_seed42_dynamic",
+    "archive": "raw/49_ProcTHOR-Train-7428_seed42_dynamic.tar",
+    "archive_bytes": 733450240,
+    "archive_sha256": "0d928057d8d67c3a68a08287c56bdc4699ba213746a377a259898e6952f6178d",
+    "all_members_verified": true
+  },
+  {
+    "name": "50_ProcTHOR-Val-902_seed42_dynamic",
+    "archive": "raw/50_ProcTHOR-Val-902_seed42_dynamic.tar",
+    "archive_bytes": 2812436480,
+    "archive_sha256": "fbfa4d0bb768ec377a9617092324bd5d59726a384491315b21ca6cc437bb7566",
+    "all_members_verified": true
+  }
+]

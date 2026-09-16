@@ -1,0 +1,7 @@
+{
+  "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+  "previous_observation": "Tomato is grasped and carried. Final view faces a circular bin lid rather than the requested bowl; observed geometry check rejects placement and task stops with tomato still held. No release or successful placement. Grasp/place peak .03998m/s, reference error .00912m, no abrupt torso drop.",
+  "corrected_observation": "Tomato is grasped and carried, but placement view2 has no fresh receptacle detection and the geometry check aborts release. The gray cylindrical support is configured Dining_Table_9_1, a draped table; earlier bin-lid interpretation was incorrect. Grasp/place peak .03998m/s/reference error .00912m; no abrupt torso drop. Failure retained.",
+  "basis": "Dining_Table_9_1 source node/materials and locked checksum, plus placement_view_rejected reason no_fresh_detection at step7400",
+  "task_outcome_changed": false
+}

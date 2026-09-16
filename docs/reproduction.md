@@ -14,7 +14,7 @@ python -m pip install --no-deps -e .
 python -m pip check
 ```
 
-The reference environment uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3, PyTorch 2.10.0, CPU PhysX, Mesa Vulkan rendering, and NVIDIA H20 GPUs. A single task used approximately 10.5 GB of GPU memory on that configuration. Start with one worker and check resource use before adding more.
+The reference environment uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3, PyTorch 2.10.0, CPU PhysX, Mesa Vulkan rendering, and NVIDIA H20 GPUs. A single task used approximately 10.5 GB of GPU memory on that configuration. Start with one worker and check resource use before adding more. A snapshot of 18 concurrent tasks showed about 5–8.2 GiB of resident host memory per task; this is not a peak-memory bound. Saved RGB-D frames, controls, and videos require additional storage. Use a disk-backed output directory for routine runs: placing recordings in `/dev/shm` charges their full size to host memory until they are archived and removed.
 
 Install the CUDA and Vulkan runtime appropriate to your machine. For the Mesa software renderer used in the reference environment:
 
@@ -43,19 +43,9 @@ python -m dream_sim.run --preflight --asset-dir .runtime/render_assets \
 
 The rendering cache supplies the missing UV0 index in `Desk_Lamp_11.glb` using its existing UV1 coordinates. It preserves the original files, materials, vertex positions, and binary buffers. The [recorded rendering lock](../configs/residential50/render_assets.lock.json) contains both source and derived hashes.
 
-Before launching the study, check task initialization and both camera views:
-
-```bash
-python -m dream_sim.check_scenes --controller compact_v1 --asset-dir .runtime/render_assets \
-  --task-manifest configs/residential50-diverse/task_manifest.json \
-  --output results/scene_check --workers 4
-```
-
-This checks all 50 fixed scenes without running the policy or taking control steps. `scene_checks.json` records every result. Add `--save-previews` to save the initial camera images. Choose a new output directory for a later check.
-
 The model lock pins the SigLIP and OWL-V2 production models and their smaller compatibility variants. Use `--production` to download the production weights. The residential asset lock covers 2,415 files at upstream revision `1a173d5de042aaad8f1af09d4d2bc2ce4004b28a`.
 
-Preflight checks package versions, model revisions and weight presence, scene-file hashes, and CUDA availability. Model weight contents do not have a separate SHA256 manifest. Downloads require network access; task execution uses the prepared model cache offline. SigLIP and OWL-V2 weights, and AI2-THOR scene assets, are distributed under the licenses specified by their original publishers.
+Preflight checks package versions, model revisions and weight presence, scene-file hashes, and CUDA availability. Model weight contents do not have a separate SHA256 manifest. Downloads require network access; task execution uses the prepared model cache offline. DREAM source code uses the MIT License. SigLIP and OWL-V2 model weights and AI2-THOR scene assets retain the licenses published with those resources.
 
 To resume a partial asset download, pass its partial manifest with `--resume-manifest` in place of `--reference-lock`, and choose a new `--output-manifest`. The downloader rejects conflicting existing files.
 
@@ -67,7 +57,29 @@ For caches stored elsewhere, add these options to preflight and run commands:
 
 ## 3. Run the residential study
 
-The residential study contains **50 distinct houses**, one cross-room pickup/place task per house, and **seed 42 for every task**. Each house uses a different pickup model: **50 native-scale models across 20 categories**, including one mug. Every instruction requests placement on a plate. All tasks use dynamic memory and the same `compact_v1` controller. The task manifest fixes the houses, instructions, object layouts, initial-state seed, and file checksums.
+### Easy-grasp protocol
+
+The DREAM Fetch controller completes **36/50 easy-grasp tasks (72%)**. All 36 successes pass independent physics and observation checks, including arm returns. All 50 scenes use the original fixed tasks and maps, seed 42, dynamic memory, and native object scale. The cohort contains 21 models across 6 categories; see the [task definition](../configs/residential50-easy-grasp/README.md).
+
+```bash
+DREAM_PYTHON="$(command -v python)" \
+DREAM_ASSET_DIR="$PWD/.runtime/render_assets" \
+DREAM_MODEL_CACHE="$PWD/.runtime/models" \
+./scripts/run_residential.sh \
+  --gpus 0 1 --workers-per-gpu 4 --raster-threads 4 \
+  --output results/residential50
+```
+
+This prints the plan; add `--execute` to run it. Each task receives **900 seconds of robot actions** and a separate **2700-second execution watchdog**. The example selects GPUs 0 and 1 with four workers per GPU. The deployment resource profile must assign the corresponding worker slots, CPU cores, and memory limits. Queue time is separate from execution time. Use a new output directory for every run. The three environment variables above select your installed Python and prepared caches; omitting them uses `python3.11` and the repository-local `.runtime/render_assets` and `.runtime/models` caches.
+
+The [sealed all-50 report](../reproducibility/evidence/residential-evaluation/results.json) retains every failure and records source and per-attempt evidence hashes. The offline evaluation command checks that the official loader reconstructs the evaluated Python source from its recorded base and override modules. Video qualification is separate; the existing gallery belongs to the historical diverse-object experiment.
+
+The [experiment directory](../reproducibility/evidence/residential-evaluation/README.md) contains all task outcomes and independent review records; full sensor arrays remain in local experiment storage. To check its 36/50 result and confirm that the installed controller matches the frozen evaluated source, run `python -m dream_sim.evaluate`. This checks the recorded results and reconstructs the controller from the checksum-locked source archive.
+
+### Diverse-object protocol
+
+
+The earlier diverse-object configuration contains **50 distinct houses**, one cross-room pickup/place task per house, and **seed 42 for every task**. Each house uses a different pickup model: **50 native-scale models across 20 categories**, including one mug. Every instruction requests placement on a plate. All tasks use dynamic memory and the same `compact_v1` controller. The task manifest fixes the houses, instructions, object layouts, initial-state seed, and file checksums. Using the current controller starts a new experiment with that configuration.
 
 ```bash
 python -m dream_sim.study --controller compact_v1 \
@@ -76,7 +88,7 @@ python -m dream_sim.study --controller compact_v1 \
   --gpus 0 1 --output results/residential50
 ```
 
-This validates the inputs and prints the execution plan. Add `--execute` to run the study. Use one GPU ID for a single worker, or `--gpus 0 1 2 3 4 5 6 7` for eight workers. Repeat an ID to assign multiple workers to a GPU, for example `--gpus 0 0 1 1`, when memory permits. Use a new output directory for each study. The manifest cannot be combined with overrides of cases, seeds, or memory variants.
+This validates the inputs and prints the execution plan. Add `--execute` to run the study. Use `--gpus 0` for one standard worker or `--gpus 0 1` for two. This deployment accepts GPU IDs 0 and 1; repeated IDs are rejected. The parallel batch wrapper above sets multiple workers per GPU explicitly. Use a new output directory for each study. The manifest cannot be combined with overrides of cases, seeds, or memory variants.
 
 Each task has a 1,800-second simulation budget and a 14,400-second policy wall timeout. RGB-D perception, rendering, and recording add wall time. The runner records each outcome once and does not retry failed tasks automatically.
 
@@ -84,7 +96,13 @@ For external caches, add `--asset-dir /absolute/path/to/assets --model-cache /ab
 
 ### Robot control
 
-The controller selects exploration candidates reachable through heading-dependent, swept-footprint motion edges, plans through observed free space, verifies the requested receptacle from RGB-D geometry, and uses feedback during grasping and release. The torso follows a smooth position reference shared across arm control modes. Its reference speed and acceleration are limited to 0.04 m/s and 0.10 m/s². Physical joint motion is measured separately. After grasping, the robot retracts from the support and folds its arm into the same compact posture used at initialization. A smooth two-stage joint trajectory folds the arm laterally before lowering it; its reference speed is bounded by 0.18 rad/s. Camera-height adjustments preserve the folded arm joint targets. After release, the robot withdraws its hand, checks a short reverse motion with the measured robot footprint, and returns to the compact posture. Before grasping, the robot raises the folded arm, aligns the open gripper above the observed target, and approaches vertically. It checks position and orientation before closing the gripper. Placement uses the observed object-center offset relative to the gripper, so the commanded tool pose and release-height check remain consistent for grasps above the object center.
+The controller selects exploration candidates reachable through heading-dependent, swept-footprint motion edges, plans through observed free space, verifies the requested receptacle from RGB-D geometry, and uses feedback during grasping and release. The torso follows a smooth position reference shared across arm control modes. Its reference speed and acceleration are limited to 0.04 m/s and 0.10 m/s². Physical joint motion is measured separately.
+
+Initialization and arm returns use a compact, torso-facing arm posture. The joint target is `[-1.253857, 1.35, 0.4, 1.9, -0.013637, 1.200051, 0.000009]`, ordered as the seven Fetch arm joints. Shoulder/elbow flexion and upper-arm roll draw the arm inward while maintaining torso clearance. After grasping or release, the robot lifts clear of the support, folds with the base stationary, and checks measured tracking and settling. Fold/unfold joint references are limited to 0.9 rad/s; physical tracking is checked separately. Before extending again, the robot partly turns the shoulder forward and lifts, then extends forward. Camera-height adjustments preserve folded arm targets. Independent replay checks evaluate the measured arm motion and clearance.
+
+The controller disables optional held-arm extensions for receptacle visibility and uses head and base views during that search. The optional extension method remains available and retraces its measured joint path before navigation resumes, checking payload retention, joint tracking, and base displacement. Search progress also accounts for the remaining length of a route ending near the observed target, so a necessary detour is not abandoned solely because straight-line distance increases. Replanning without measured base movement and routes to unrelated exploration frontiers do not reset the stalled-search budget.
+
+Before grasping, the robot aligns the open gripper above the observed target and approaches vertically. It checks position and orientation before closing the gripper. Placement uses the observed object-center offset relative to the gripper, so the commanded tool pose and release-height check remain consistent for grasps above the object center. If release alignment stalls, the controller makes one bounded torso-height adjustment and rechecks the observed object center before opening the gripper.
 
 ### Evaluate the recordings
 
@@ -146,10 +164,18 @@ The original ten demonstrations remain reproducible through `python -m dream_sim
 | Language-model verification | Hosted mLLM verification is disabled in this adapter |
 | Evaluation | Environment object poses, room geometry, contacts, and recorded trajectories |
 
-The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera. The video’s left panel is a simulator overview; the lower-right panel is a depth-derived navigation map with semantic coloring. Robot self-filtering applies to that navigation map using joint poses and robot geometry. The held-object bound is reconstructed from observed dimensions and the recorded grasp frame, then transformed with the measured gripper pose. It includes a 2 cm uncertainty margin. The navigation self-filter also accounts for this held geometry. These filters do not mask the raw camera images. The semantic-memory integrator receives the RGB-D observations without this navigation self-filter.
+Small-object search also uses overlapping calibrated RGB-D crops. Memory retrieval verifies up to four semantically ranked observations and caches inference for each saved image and query. Cached detections remain subject to current stale-location rejection rules.
+
+The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera. The video’s left panel is a simulator overview; the lower-right panel is a depth-derived navigation map with semantic coloring. Robot self-filtering applies to that navigation map using joint poses and robot geometry. The held-object bound is reconstructed from observed dimensions and the recorded grasp frame, then transformed with the measured gripper pose. It includes a 2 cm uncertainty margin. The navigation self-filter accounts for the held geometry with a uniform 2.5 cm margin. These filters do not mask the raw camera images. The semantic-memory integrator receives the RGB-D observations without this navigation self-filter.
 
 ## Experiment records
 
 The [residential task manifest](../configs/residential50-diverse/task_manifest.json) contains the complete 50-house design. Experiment records include every task outcome, controller and asset hashes, and independent replay checks. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays are retained in the authors' archive.
 
 The [component measurements](../reproducibility/evidence/components/README.md) cover memory pruning, scaling, and exploration. The [architecture guide](architecture.md) maps the implementation to the perception, memory, navigation, and manipulation pipeline.
+
+## Worker resources
+
+Parallel execution reads `.runtime/worker_resource_limits.json`, a machine-specific deployment profile. It must agree with `--gpus`, `--workers-per-gpu`, and the available CPU and memory allocation. This local file is excluded from Git because its CPU IDs, cgroup paths, and GPU assignment belong to the host machine. The batch runner and `worker_limits.py` validate that configuration before task execution. Keep your deployment's existing allocation when using this repository on a shared server.
+
+To inspect the task list without launching workers, omit `--execute`. The standard `study` mode uses one worker per requested GPU; `--parallel` selects the bounded 900-second residential batch with explicit worker slots.

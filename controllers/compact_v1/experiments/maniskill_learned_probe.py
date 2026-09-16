@@ -16,7 +16,7 @@ from pathlib import Path
 import time
 
 ROOT = Path(__file__).resolve().parents[2]
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "4")
 os.environ.setdefault("MS_ASSET_DIR", str(ROOT / ".maniskill_assets"))
 os.environ.setdefault("VK_ICD_FILENAMES", next((str(p) for p in (
     Path("/usr/share/vulkan/icd.d/lvp_icd.json"),
@@ -45,10 +45,15 @@ def array(value):
 
 
 def initialize_compact_arm(base):
-    """Initial condition only. Replay uses the identical pre-step posture."""
+    """Tighter belly fold following the user-approved reference orientation.
+
+    Shoulder and elbow flexion draw the arm inward; upper-arm roll preserves
+    forearm/torso clearance during body turns. Physical transition checks
+    remain required independently of this reset pose.
+    """
     q = base.agent.robot.get_qpos().clone()
     q[:, [5, 7, 8, 9, 10, 11, 12]] = torch.tensor(
-        [-1.4, 1.3, .7, 1.8, 0., 1.2, 0.], device=q.device, dtype=q.dtype)
+        [-1.253857, 1.35, 0.4, 1.9, -0.013637, 1.200051, 9e-06], device=q.device, dtype=q.dtype)
     base.agent.robot.set_qpos(q)
     base.agent.controller.reset()
 
@@ -97,6 +102,8 @@ class SimulatorIO:
         self.overview_heading = float(self.pose()[2])
         self.stabilize_stationary_base = False
         self._stationary_anchor = None
+        self.carry_motion_limited = False
+        self._carry_previous_twist = (0.,0.)
         configure_torso_drives(self.robot)
 
     def pose(self):
@@ -115,7 +122,8 @@ class SimulatorIO:
         self._torso_reference += .5 * (self._torso_reference_velocity + velocity) * dt
         self._torso_reference_velocity = velocity
         target = self.body.copy()
-        target[2] = self._torso_reference
+        target[2] = np.clip(self._torso_reference+getattr(self,"_torso_drive_bias",0.),
+                            limits[0]+.01,limits[1]-.01)
         return target
 
     def torso_trace(self):
@@ -125,12 +133,31 @@ class SimulatorIO:
                     torso_velocity_m_s=float(array(self.robot.robot.get_qvel())[0, 3]),
                     torso_reference_m=self._torso_reference,
                     torso_reference_velocity_m_s=self._torso_reference_velocity,
+                    torso_drive_bias_m=getattr(self,"_torso_drive_bias",0.),
                     torso_goal_m=float(self.body[2]))
 
     def settle_torso(self, max_steps=260, check=None, hold_tcp=False):
         limits = array(self.robot.robot.get_qlimits())[0, 3]
         goal = float(np.clip(self.body[2], limits[0] + .01, limits[1] - .01))
         original_mode = self.robot.control_mode
+        if (hold_tcp and original_mode=="pd_joint_pos"
+                and abs(self._torso_reference-goal)<.001
+                and abs(self._torso_reference_velocity)<.001):
+            # At an already settled torso height, retain the measured joint
+            # hold. Switching to Cartesian IK here can displace a high loaded
+            # arm even though no torso motion was requested.
+            settled=True
+            for step in range(20):
+                if check is not None and step%8==0:check()
+                measured=self.torso_trace()
+                if (abs(measured['torso_position_m']-goal)>=.01
+                        or abs(measured['torso_velocity_m_s'])>=.015):
+                    settled=False
+                    break
+                self.command()
+            if settled:
+                if check is not None:check()
+                return
         if hold_tcp:
             from scipy.spatial.transform import Rotation
             target_pose = array(self.robot.tcp_pose.to_transformation_matrix())[0].copy()
@@ -155,6 +182,17 @@ class SimulatorIO:
                     self.command()
                     pose_settled = True
                 measured = self.torso_trace()
+                if (step>=80 and abs(self._torso_reference-goal)<.001
+                        and abs(self._torso_reference_velocity)<.001
+                        and abs(measured['torso_velocity_m_s'])<.003):
+                    error=goal-measured['torso_position_m']
+                    if abs(error)>.008:
+                        # Correct a measured steady load bias through ordinary
+                        # bounded actuator commands; preserve the requested
+                        # goal and the existing physical settling tolerance.
+                        delta=float(np.clip(.2*error,-.002,.002))*self._torso_dt
+                        self._torso_drive_bias=float(np.clip(
+                            getattr(self,"_torso_drive_bias",0.)+delta,-.02,.02))
                 if (step >= 19 and abs(self._torso_reference - goal) < .001
                         and abs(self._torso_reference_velocity) < .001
                         and abs(measured['torso_position_m'] - goal) < .01
@@ -169,9 +207,19 @@ class SimulatorIO:
                 if original_mode == "pd_joint_pos":
                     self.hold_measured_arm()
 
+    def carry_base_command(self,forward,yaw_rate):
+        if not self.carry_motion_limited or self.grip>=0:
+            self._carry_previous_twist=(0.,0.)
+            return forward,yaw_rate
+        from instruction_carry_motion import bounded_carry_twist
+        command=bounded_carry_twist(self._carry_previous_twist,(forward,yaw_rate),self._torso_dt)
+        self._carry_previous_twist=command
+        return command
+
     def command(self, forward=0., yaw_rate=0., grip=None):
         if self.robot.control_mode == "pd_ee_delta_pose":
             return self.command_ee(grip=grip,forward=forward,yaw_rate=yaw_rate)
+        forward,yaw_rate=self.carry_base_command(forward,yaw_rate)
         forward,yaw_rate=self.stationary_feedback(forward,yaw_rate)
         if grip is not None:
             self.grip = grip
@@ -191,6 +239,7 @@ class SimulatorIO:
             self.after_step()
 
     def command_ee(self, delta=None, grip=None, forward=0.,yaw_rate=0.):
+        forward,yaw_rate=self.carry_base_command(forward,yaw_rate)
         forward,yaw_rate=self.stationary_feedback(forward,yaw_rate)
         if grip is not None:
             self.grip = grip
@@ -252,22 +301,37 @@ class SimulatorIO:
             self.command_ee(np.r_[np.clip(local*3.,-.08,.08),rotation_action])
         return float(np.linalg.norm(np.asarray(goal)-array(self.robot.tcp_pose.p)[0]))
 
-    def restore_grasp_seed(self, grip=1.):
+    def restore_grasp_seed(self, grip=1., raise_first=False):
         if self.robot.control_mode != "pd_joint_pos":
             self.robot.set_control_mode("pd_joint_pos")
             self.robot.controller.reset()
         initial=array(self.robot.robot.get_qpos())[0,[5,7,8,9,10,11,12]]
-        # Raise the folded arm before extending it over the observed support.
-        # Keep the requested gripper state throughout the joint-space motion.
-        raised=initial.copy()
-        raised[1]=min(initial[1],-.55)
-        for alpha in np.linspace(0,1,160):
-            self.arm=initial*(1-alpha)+raised*alpha
-            self.command(grip=grip)
-        initial=array(self.robot.robot.get_qpos())[0,[5,7,8,9,10,11,12]]
-        for alpha in np.linspace(0,1,220 if grip<0 else 100):
-            self.arm=initial*(1-alpha)+self.grasp_seed_arm*alpha
-            self.command(grip=grip)
+        # Raise with a partial forward shoulder turn before extending.
+        # Keep the compact wrist and elbow shape during the upward motion.
+        lifted=initial.copy();lifted[1]=min(initial[1],-.55)
+        open_elbow=(lifted if raise_first else initial).copy();open_elbow[3]-=.15
+        half=open_elbow.copy();half[0]=.5*(initial[0]+self.grasp_seed_arm[0])
+        half[1]=min(initial[1],-.55 if raise_first else .8)
+        raised=half.copy();raised[1]=min(initial[1],-.55)
+        forward=raised.copy();forward[0]=self.grasp_seed_arm[0]
+        waypoints=(open_elbow,half,raised,forward,self.grasp_seed_arm)
+        if raise_first:waypoints=(lifted,*waypoints)
+        for waypoint in waypoints:
+            initial=array(self.robot.robot.get_qpos())[0,[5,7,8,9,10,11,12]].copy()
+            target=np.asarray(waypoint).copy()
+            for index in (2,4,6):
+                target[index]=initial[index]+math.atan2(math.sin(target[index]-initial[index]),
+                                                      math.cos(target[index]-initial[index]))
+            duration=max(1.,1.875*float(np.max(np.abs(target-initial)))/.9)
+            steps=int(math.ceil(duration*self.base.control_freq))
+            for i in range(1,steps+1):
+                t=i/steps;blend=10*t**3-15*t**4+6*t**5
+                self.arm=initial+(target-initial)*blend
+                self.command(grip=grip)
+                measured=array(self.robot.robot.get_qpos())[0,[5,7,8,9,10,11,12]]
+                if np.max(np.abs(measured-self.arm))>.25:
+                    self.hold_measured_arm()
+                    raise RuntimeError("Arm extension joint tracking exceeded 0.25 rad")
 
     def hold_measured_arm(self):
         self.arm=array(self.robot.robot.get_qpos())[0,[5,7,8,9,10,11,12]].copy()
@@ -293,71 +357,89 @@ class SimulatorIO:
         raise RuntimeError("Physical yaw control timed out")
 
     def fold_default_arm(self, check=None):
-        """Return to the episode's compact rest posture through smooth joint PD."""
-        indices=[5,7,8,9,10,11,12]
-        initial=array(self.robot.robot.get_qpos())[0,indices].copy()
-        target=np.array([-1.4,1.3,.7,1.8,0.,1.2,0.])
-        # Continuous roll joints may reach the same rest orientation modulo 2pi.
-        for index in (2,4,6):
-            target[index]=initial[index]+math.atan2(math.sin(target[index]-initial[index]),
-                                                  math.cos(target[index]-initial[index]))
-        self.robot.set_control_mode("pd_joint_pos")
+        """Reach the compact transport posture through smooth joint PD."""
+        indices = [5, 7, 8, 9, 10, 11, 12]
+        initial = array(self.robot.robot.get_qpos())[0, indices].copy()
+        target = np.array([-1.253857, 1.35, 0.4, 1.9, -0.013637, 1.200051, 9e-06])
+        for index in (2, 4, 6):
+            target[index] = initial[index] + math.atan2(math.sin(target[index] - initial[index]), math.cos(target[index] - initial[index]))
+        self.robot.set_control_mode('pd_joint_pos')
         self.robot.controller.reset()
-        self.arm=initial.copy()
-        raised=target.copy()
-        raised[1]=min(float(initial[1]),-.2)
-        waypoints=([raised,target] if np.max(np.abs(initial-target))>.035 else [target])
-        maximum_error=0.
-        total_steps=0
+        self.arm = initial.copy()
+        outside = target.copy()
+        outside[0] -= 0.25
+        outside[3] -= 0.15
+        forward = outside.copy()
+        forward[0] = target[0]
+        raised = outside.copy()
+        raised[0] = self.grasp_seed_arm[0]
+        raised[0] = 0.5 * (raised[0] + outside[0])
+        lateral = initial.copy()
+        lateral[0] = raised[0]
+        raised[1] = min(float(initial[1]), -0.55)
+        raised[3] = target[3] + 0.15
+        raised[5] = 0.8
+        half = outside.copy()
+        half[1] = 0.8
+        half[0] = raised[0]
+        half[3] = raised[3]
+        half[5] = raised[5]
+        if self.grip > 0:
+            lateral[0] = 0.5 * (initial[0] + raised[0])
+            compact_entry = raised.copy()
+            compact_entry[0] = lateral[0]
+            entry = [lateral, compact_entry]
+        else:
+            entry = [lateral]
+        waypoints = entry + [raised, half, outside, forward, target] if np.max(np.abs(initial - target)) > 0.035 else [target]
+        maximum_error = 0.0
+        total_steps = 0
         for waypoint in waypoints:
-            initial=array(self.robot.robot.get_qpos())[0,indices].copy()
-            duration=max(2.,1.875*float(np.max(np.abs(waypoint-initial)))/.18)
-            steps=int(math.ceil(duration*self.base.control_freq))
-            total_steps+=steps
-            for i in range(1,steps+1):
-                if check is not None and i%8==1:check()
-                t=i/steps;blend=10*t**3-15*t**4+6*t**5
-                self.arm=initial+(waypoint-initial)*blend
+            initial = array(self.robot.robot.get_qpos())[0, indices].copy()
+            duration = max(1.0, 1.875 * float(np.max(np.abs(waypoint - initial))) / 0.9)
+            steps = int(math.ceil(duration * self.base.control_freq))
+            total_steps += steps
+            for i in range(1, steps + 1):
+                if check is not None and i % 8 == 1:
+                    check()
+                t = i / steps
+                blend = 10 * t ** 3 - 15 * t ** 4 + 6 * t ** 5
+                self.arm = initial + (waypoint - initial) * blend
                 self.command()
-                measured=array(self.robot.robot.get_qpos())[0,indices]
-                error=float(np.max(np.abs(measured-self.arm)))
-                maximum_error=max(maximum_error,error)
-                if error>.25:
-                    requested=self.arm.copy()
+                measured = array(self.robot.robot.get_qpos())[0, indices]
+                error = float(np.max(np.abs(measured - self.arm)))
+                maximum_error = max(maximum_error, error)
+                if error > 0.25:
+                    requested = self.arm.copy()
                     self.hold_measured_arm()
-                    raise RuntimeError(f"Arm fold joint tracking exceeded 0.25 rad: measured={measured.tolist()}, target={requested.tolist()}")
-        settled=False
-        settle_window=[]
-        for i in range(int(8*self.base.control_freq)):
-            if check is not None and i%8==0:check()
-            measured=array(self.robot.robot.get_qpos())[0,indices]
-            velocity=array(self.robot.robot.get_qvel())[0,indices]
+                    raise RuntimeError(f'Arm fold joint tracking exceeded 0.25 rad: measured={measured.tolist()}, target={requested.tolist()}')
+        settled = False
+        settle_window = []
+        for i in range(int(8 * self.base.control_freq)):
+            if check is not None and i % 8 == 0:
+                check()
+            measured = array(self.robot.robot.get_qpos())[0, indices]
+            velocity = array(self.robot.robot.get_qvel())[0, indices]
             settle_window.append(measured.copy())
-            settle_window=settle_window[-int(self.base.control_freq):]
-            if (len(settle_window)==int(self.base.control_freq)
-                    and np.max(np.abs(measured-target))<.035
-                    and np.max(np.ptp(np.asarray(settle_window),axis=0))<.002):
-                settled=True
+            settle_window = settle_window[-int(self.base.control_freq):]
+            if len(settle_window) == int(self.base.control_freq) and np.max(np.abs(measured - target)) < 0.035 and (np.max(np.ptp(np.asarray(settle_window), axis=0)) < 0.002):
+                settled = True
                 break
             self.command()
         self.hold_measured_arm()
-        if not settled:raise RuntimeError(f"Default folded arm posture did not settle: error={float(np.max(np.abs(measured-target))):.6f}, speed={float(np.max(np.abs(velocity))):.6f}")
-        if check is not None:check()
-        return dict(target_joint_positions_rad=target.tolist(),
-                    measured_joint_positions_rad=measured.tolist(),
-                    maximum_tracking_error_rad=maximum_error,
-                    planned_duration_s=total_steps/self.base.control_freq,
-                    maximum_reference_speed_rad_s=.18,
-                    settled_joint_range_rad=float(np.max(np.ptp(np.asarray(settle_window),axis=0))),
-                    settle_window_s=1.,native_endpoint_velocity_rad_s=velocity.tolist(),settled=True)
+        if not settled:
+            raise RuntimeError(f'Default folded arm posture did not settle: error={float(np.max(np.abs(measured - target))):.6f}, speed={float(np.max(np.abs(velocity))):.6f}')
+        if check is not None:
+            check()
+        return dict(posture_id='recovery_v2_tighter_belly_v1', target_joint_positions_rad=target.tolist(), measured_joint_positions_rad=measured.tolist(), maximum_tracking_error_rad=maximum_error, planned_duration_s=total_steps / self.base.control_freq, maximum_reference_speed_rad_s=0.9, settled_joint_range_rad=float(np.max(np.ptp(np.asarray(settle_window), axis=0))), settle_window_s=1.0, native_endpoint_velocity_rad_s=velocity.tolist(), settled=True)
 
     def prepare_scan(self):
         self.fold_default_arm()
 
     def capture(self, sensor_name="fetch_head", *, keyframe=True):
         self.base.scene.update_render(update_sensors=True, update_human_render_cameras=False)
-        self.base.capture_sensor_data()
         sensor = self.base._sensors[sensor_name]
+        sensor.capture()
         # Crucially, neither segmentation nor ground-truth world-position
         # images are requested or transmitted to the learned agent.
         data = sensor.get_obs(rgb=True, depth=True, position=False, segmentation=False)
@@ -376,6 +458,14 @@ class SimulatorIO:
             self.frame_id, self.step_id, sensor_name, rgb, depth,
             array(params["intrinsic_cv"])[0], np.linalg.inv(homogeneous), self.pose(),
         )
+
+    def camera_pose_cv(self, sensor_name="fetch_head"):
+        """Read measured camera calibration without rendering an image."""
+        self.base.scene.update_render(update_sensors=True, update_human_render_cameras=False)
+        extrinsic=array(self.base._sensors[sensor_name].get_params()["extrinsic_cv"])[0]
+        homogeneous=np.eye(4,dtype=np.float32)
+        homogeneous[:3,:4]=extrinsic[:3,:4]
+        return np.linalg.inv(homogeneous)
 
     def overview(self):
         # Keep the world viewing direction fixed as the robot turns, instead

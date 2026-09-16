@@ -7,3 +7,10 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+
+# Full sensor recordings remain in local experiment storage.
+reports/
+reproducibility/evidence/residential50-easy-v55/
+.DS_Store
+
+.ruff_cache/

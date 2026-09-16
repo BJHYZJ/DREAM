@@ -1,0 +1,1261 @@
+{
+  "planned": 50,
+  "checked": 50,
+  "all_rendered": true,
+  "policy_executed": false,
+  "task_manifest_sha256": "ff32f3d704652dec76ae448eb2670cab228ef78d019054d5bbdaa7d605862a78",
+  "asset_lock_sha256": "231aa063b957d76d2167031094d9f8e0e757a5c474049de3d98745fccf58f2fc",
+  "controller_manifest_sha256": "f91f4a95be986b5ed20efbf65a1242cbde9d68ba645f7343d23049cbb1eb0b6c",
+  "results": [
+    {
+      "index": 1,
+      "scene": "ProcTHOR-Test-722",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/01.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 10.99323058128357
+    },
+    {
+      "index": 2,
+      "scene": "ProcTHOR-Train-8471",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/02.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 12.319392442703247
+    },
+    {
+      "index": 3,
+      "scene": "ProcTHOR-Train-6452",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/03.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 12.427706003189087
+    },
+    {
+      "index": 4,
+      "scene": "ProcTHOR-Train-2043",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/04.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 12.041320562362671
+    },
+    {
+      "index": 5,
+      "scene": "ProcTHOR-Test-288",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/05.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.518553733825684
+    },
+    {
+      "index": 6,
+      "scene": "ProcTHOR-Train-4300",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/06.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 11.199190616607666
+    },
+    {
+      "index": 7,
+      "scene": "ProcTHOR-Train-1402",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/07.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 10.072062969207764
+    },
+    {
+      "index": 8,
+      "scene": "ProcTHOR-Train-7473",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/08.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.441195487976074
+    },
+    {
+      "index": 9,
+      "scene": "ProcTHOR-Test-166",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/09.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.408568620681763
+    },
+    {
+      "index": 10,
+      "scene": "ProcTHOR-Test-459",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/10.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.136785984039307
+    },
+    {
+      "index": 11,
+      "scene": "ProcTHOR-Train-3859",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/11.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.589761734008789
+    },
+    {
+      "index": 12,
+      "scene": "ProcTHOR-Train-4108",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/12.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.331499338150024
+    },
+    {
+      "index": 13,
+      "scene": "ProcTHOR-Train-7780",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/13.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.3240790367126465
+    },
+    {
+      "index": 14,
+      "scene": "ProcTHOR-Train-8921",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/14.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.6014628410339355
+    },
+    {
+      "index": 15,
+      "scene": "ProcTHOR-Train-2769",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/15.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.368946075439453
+    },
+    {
+      "index": 16,
+      "scene": "ProcTHOR-Train-507",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/16.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.50918459892273
+    },
+    {
+      "index": 17,
+      "scene": "ProcTHOR-Train-9926",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/17.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.9929070472717285
+    },
+    {
+      "index": 18,
+      "scene": "ProcTHOR-Train-3208",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/18.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.67629337310791
+    },
+    {
+      "index": 19,
+      "scene": "ProcTHOR-Train-4204",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/19.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.90640902519226
+    },
+    {
+      "index": 20,
+      "scene": "ProcTHOR-Train-8432",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/20.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.179131507873535
+    },
+    {
+      "index": 21,
+      "scene": "ProcTHOR-Test-308",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/21.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.3491127490997314
+    },
+    {
+      "index": 22,
+      "scene": "ProcTHOR-Train-3170",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/22.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.680161237716675
+    },
+    {
+      "index": 23,
+      "scene": "ProcTHOR-Val-265",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/23.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.608184576034546
+    },
+    {
+      "index": 24,
+      "scene": "ProcTHOR-Train-9699",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/24.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.174006700515747
+    },
+    {
+      "index": 25,
+      "scene": "ProcTHOR-Val-605",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/25.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.731080532073975
+    },
+    {
+      "index": 26,
+      "scene": "ProcTHOR-Train-2451",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/26.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.817193269729614
+    },
+    {
+      "index": 27,
+      "scene": "ProcTHOR-Val-576",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/27.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.416119575500488
+    },
+    {
+      "index": 28,
+      "scene": "ProcTHOR-Train-4956",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/28.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.24547815322876
+    },
+    {
+      "index": 29,
+      "scene": "ProcTHOR-Train-5013",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/29.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.585853338241577
+    },
+    {
+      "index": 30,
+      "scene": "ProcTHOR-Train-4732",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/30.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.580073118209839
+    },
+    {
+      "index": 31,
+      "scene": "ProcTHOR-Val-660",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/31.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.948500156402588
+    },
+    {
+      "index": 32,
+      "scene": "ProcTHOR-Train-7199",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/32.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.051618099212646
+    },
+    {
+      "index": 33,
+      "scene": "ProcTHOR-Train-5942",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/33.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.007621765136719
+    },
+    {
+      "index": 34,
+      "scene": "ProcTHOR-Train-9419",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/34.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.978903532028198
+    },
+    {
+      "index": 35,
+      "scene": "ProcTHOR-Train-6673",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/35.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.234644174575806
+    },
+    {
+      "index": 36,
+      "scene": "ProcTHOR-Test-959",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/36.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 10.332011222839355
+    },
+    {
+      "index": 37,
+      "scene": "ProcTHOR-Train-2063",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/37.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.560426473617554
+    },
+    {
+      "index": 38,
+      "scene": "ProcTHOR-Train-2809",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/38.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.1264166831970215
+    },
+    {
+      "index": 39,
+      "scene": "ProcTHOR-Train-406",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/39.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.348524808883667
+    },
+    {
+      "index": 40,
+      "scene": "ProcTHOR-Train-4574",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/40.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.646825313568115
+    },
+    {
+      "index": 41,
+      "scene": "ProcTHOR-Train-1182",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/41.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.695199251174927
+    },
+    {
+      "index": 42,
+      "scene": "ProcTHOR-Train-9100",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/42.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.157824516296387
+    },
+    {
+      "index": 43,
+      "scene": "ProcTHOR-Train-5361",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/43.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.786803722381592
+    },
+    {
+      "index": 44,
+      "scene": "ProcTHOR-Train-2898",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/44.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.1748738288879395
+    },
+    {
+      "index": 45,
+      "scene": "ProcTHOR-Train-6968",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/45.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 6.904618263244629
+    },
+    {
+      "index": 46,
+      "scene": "ProcTHOR-Train-4899",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/46.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 9.324168920516968
+    },
+    {
+      "index": 47,
+      "scene": "ProcTHOR-Val-46",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/47.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.534025430679321
+    },
+    {
+      "index": 48,
+      "scene": "ProcTHOR-Train-6322",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/48.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.583368301391602
+    },
+    {
+      "index": 49,
+      "scene": "ProcTHOR-Train-7428",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/49.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 7.98934006690979
+    },
+    {
+      "index": 50,
+      "scene": "ProcTHOR-Val-902",
+      "seed": 42,
+      "initialized": true,
+      "rendered": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "preview": "previews/50.jpg",
+      "rgb_shape": [
+        480,
+        640,
+        3
+      ],
+      "depth_shape": [
+        480,
+        640
+      ],
+      "overview_shape": [
+        540,
+        960,
+        3
+      ],
+      "wall_time_s": 8.152102708816528
+    }
+  ]
+}

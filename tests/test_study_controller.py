@@ -10,8 +10,9 @@ def revision(root: Path, name="experiments/policy.py", content=b"candidate\n"):
     file = root / name
     file.parent.mkdir(parents=True)
     file.write_bytes(content)
-    (root / "controller.json").write_text(json.dumps({
-        "base_study_source_id": "base", "overrides": {name: sha(content)}}))
+    (root / "controller.json").write_text(
+        json.dumps({"base_study_source_id": "base", "overrides": {name: sha(content)}})
+    )
 
 
 def test_revision_applies_only_to_a_copy_and_preserves_other_modules(tmp_path):
@@ -52,3 +53,22 @@ def test_materialization_does_not_overwrite_an_existing_workspace(tmp_path):
     with pytest.raises(FileExistsError):
         materialize_controller(tmp_path / "source", existing, {})
     assert (existing / "keep.txt").read_text() == "keep"
+
+
+def test_revision_can_include_a_new_experiment_module(tmp_path):
+    source = tmp_path / "baseline"
+    (source / "experiments").mkdir(parents=True)
+    (source / "experiments/policy.py").write_bytes(b"import visual_search\n")
+    directory = tmp_path / "revision"
+    revision(directory, "experiments/visual_search.py", b"TILE_SIZE = 384\n")
+    destination = tmp_path / "materialized"
+    materialize_controller(source, destination, controller_overrides(directory, "base"))
+    assert (destination / "experiments/visual_search.py").read_bytes() == b"TILE_SIZE = 384\n"
+    assert not (source / "experiments/visual_search.py").exists()
+
+
+def test_materialization_rejects_modules_outside_experiments(tmp_path):
+    with pytest.raises(ValueError, match="experiment Python modules"):
+        materialize_controller(
+            tmp_path / "source", tmp_path / "copy", {"src/dream/new.py": b"unexpected\n"}
+        )

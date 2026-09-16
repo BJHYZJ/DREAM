@@ -1,0 +1,69 @@
+[
+  {
+    "name": "17_ProcTHOR-Train-9926_seed42_dynamic",
+    "panels": [
+      {
+        "step": 1720,
+        "label": "Target observation"
+      },
+      {
+        "step": 2128,
+        "label": "Object relocation"
+      },
+      {
+        "step": 3280,
+        "label": "Updated target observation"
+      },
+      {
+        "step": 3992,
+        "label": "Grasp established"
+      },
+      {
+        "step": 4068,
+        "label": "Lift"
+      },
+      {
+        "step": 6244,
+        "label": "Cross-room transport"
+      },
+      {
+        "step": 7748,
+        "label": "Receptacle observation"
+      },
+      {
+        "step": 9032,
+        "label": "Released placement"
+      }
+    ],
+    "caption": "Egg-to-plate task in ProcTHOR-Train-9926: target observation, externally induced relocation, updated observation, physical pickup, cross-room transport, and released placement.",
+    "review": {
+      "sheet_sha256": "27a15056e0d28f93fc0a2a52455a1b214951434dfa3d8d937fdd57b4bb5163ab",
+      "sampled_panels_viewed": true,
+      "note": "Target is small in initial observation and relocation panels; final plate placement visible. Label target observation does not claim this is the first discovery. Grasp panel follows gripper closure; lift panel follows completed lift."
+    }
+  },
+  {
+    "name": "01_ProcTHOR-Test-722_seed42_dynamic",
+    "panels": [
+      {
+        "step": 3688,
+        "label": "Physical lift"
+      },
+      {
+        "step": 10940,
+        "label": "Release pose"
+      },
+      {
+        "step": 11356,
+        "label": "Released placement"
+      }
+    ],
+    "caption": "Mug-to-plate manipulation in ProcTHOR-Test-722: physical lift, controlled release pose, and released placement.",
+    "review": {
+      "sampled_panels_viewed": true,
+      "suitable_for_paper": true,
+      "sheet_sha256": "d836cffb4cba497331d6b4e7bdc4a33669cc965b753fbde1449b3d0b47e6e746",
+      "note": "Overhead release and final frames show mug and destination plate. Head-camera target remains near right edge and lift is partly arm-occluded; retain all panels without synthetic edits. Acceptable alternate candidate, final selection pending."
+    }
+  }
+]

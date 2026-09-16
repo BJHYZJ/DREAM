@@ -11,6 +11,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt
 
 from dream_learned_core import ObservedOccupancy
+from instruction_observation_efficiency import free_ray_pixels
 from dream.motion.algo.a_star import AStar
 
 
@@ -50,12 +51,7 @@ class FetchObservedMap(ObservedOccupancy):
         if len(xyz):
             # Vectorized depth rays; column free evidence cannot overwrite the
             # occupied 3-D store used below.
-            ray_samples=max(52,int(np.ceil(4./self.resolution))+1)
-            rays = camera + np.linspace(0, 1, ray_samples)[:, None, None]*(ray_end-camera)
-            slab = (rays[:, :, 2] >= .10) & (rays[:, :, 2] <= 1.65)
-            cells = self.cells(rays[:, :, :2][slab])
-            cells = cells[self.inside(cells)]
-            free[cells[:, 0], cells[:, 1]] = 1
+            free = free_ray_pixels(camera,ray_end,self.origin,self.resolution,self.known.shape)
             hit = (xyz[:, 2] >= .12) & (xyz[:, 2] <= 1.65) & (depth<=4.)
             hit &= np.linalg.norm(xyz[:, :2]-obs.base_xyyaw[:2], axis=1) > .34
             for center, radius in self_spheres:

@@ -1,16 +1,18 @@
 """Source extraction and integrity regression checks."""
+
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import sys
 
 import pytest
 
-from dream_sim.sources import LOCK, safe_member, source_root, verify_tree, verify_public_configs
+from dream_sim.sources import LOCK, safe_member, source_root, verify_public_configs, verify_tree
 
 
-@pytest.mark.parametrize("name", ["../escape", "/absolute", "a/../escape", "a\\b", "", "a//b", "./a"])
+@pytest.mark.parametrize(
+    "name", ["../escape", "/absolute", "a/../escape", "a\\b", "", "a//b", "./a"]
+)
 def test_unsafe_archive_paths_rejected(name):
     with pytest.raises(ValueError):
         safe_member(name)
@@ -41,9 +43,15 @@ def test_modified_source_cache_is_rejected(tmp_path, mutation):
         verify_tree(tmp_path, members)
 
 
-@pytest.mark.parametrize("module", ["run", "audit", "render", "video", "prepare", "profile", "sources"])
+@pytest.mark.parametrize(
+    "module", ["run", "audit", "render", "video", "prepare", "profile", "sources"]
+)
 def test_public_module_help(module):
-    result = subprocess.run([sys.executable, "-m", "dream_sim." + module, "--help"],
-                            capture_output=True, text=True, timeout=60)
+    result = subprocess.run(
+        [sys.executable, "-m", "dream_sim." + module, "--help"],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
     assert result.returncode == 0, result.stderr
     assert "usage:" in result.stdout

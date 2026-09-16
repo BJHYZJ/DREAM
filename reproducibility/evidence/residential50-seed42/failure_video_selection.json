@@ -1,0 +1,15 @@
+{
+  "selection_basis": "Two already reviewed failures illustrate detection verification and route execution; selecting display videos does not alter the full 50-task outcome table.",
+  "cases": [
+    {
+      "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+      "description": "Fresh visual verification fails before grasping; the robot stops without picking up the target.",
+      "reviewed_sheet_sha256": "e13a6f844433f8bf2b705ce089ddf74db85c0c95716a3bca5088c2c31719b7d2"
+    },
+    {
+      "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+      "description": "Navigation does not complete the route to the target; the task ends before grasping.",
+      "reviewed_sheet_sha256": "c9333abe52802fa314837717bd37dd8b1463213470217652a363f3d5a7c71854"
+    }
+  ]
+}

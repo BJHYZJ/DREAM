@@ -1,0 +1,7 @@
+{
+  "final50_accepted": true,
+  "wrong_seed_rejected": true,
+  "mixed_budget_rejected": true,
+  "duplicate_house_rejected": true,
+  "policy_unchanged": true
+}

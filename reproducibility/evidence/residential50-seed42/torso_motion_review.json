@@ -1,0 +1,1449 @@
+{
+  "flagged_manipulation_motion": [],
+  "all_fifty_recorded": true,
+  "completed": 50,
+  "control_period_s": 0.05,
+  "scope": "Measured joint motion; includes initialization transients and does not replace video review.",
+  "attempts": [
+    {
+      "name": "01_ProcTHOR-Test-722_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 2.2119820641819388e-06,
+          "max_abs_reference_error_m": 2.2351741787995927e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1709,
+          "max_abs_velocity_m_s": 0.017442611977458,
+          "max_abs_reference_error_m": 0.005308130979537862,
+          "max_downward_step_m": 0.000817716121673584
+        },
+        "pickup_search": {
+          "samples": 2898,
+          "max_abs_velocity_m_s": 0.15287096798419952,
+          "max_abs_reference_error_m": 0.011626005802440664,
+          "max_downward_step_m": 0.005664259195327759
+        },
+        "place": {
+          "samples": 1354,
+          "max_abs_velocity_m_s": 0.04036588966846466,
+          "max_abs_reference_error_m": 0.002834215879440216,
+          "max_downward_step_m": 0.002090960741043091
+        },
+        "placement_search": {
+          "samples": 5358,
+          "max_abs_velocity_m_s": 0.004309720825403929,
+          "max_abs_reference_error_m": 0.0010687613487244674,
+          "max_downward_step_m": 0.0001449882984161377
+        }
+      }
+    },
+    {
+      "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 54,
+          "max_abs_velocity_m_s": 0.007378970272839069,
+          "max_abs_reference_error_m": 0.000991722345352275,
+          "max_downward_step_m": 2.086162567138672e-07
+        },
+        "pickup_search": {
+          "samples": 1447,
+          "max_abs_velocity_m_s": 0.3352733254432678,
+          "max_abs_reference_error_m": 0.022420177731514,
+          "max_downward_step_m": 0.012040942907333374
+        }
+      }
+    },
+    {
+      "name": "03_ProcTHOR-Train-6452_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 25846,
+          "max_abs_velocity_m_s": 0.15363582968711853,
+          "max_abs_reference_error_m": 0.011703462038326284,
+          "max_downward_step_m": 0.005744844675064087
+        }
+      }
+    },
+    {
+      "name": "04_ProcTHOR-Train-2043_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 7.375712357315933e-06,
+          "max_abs_reference_error_m": 7.45058059747894e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1775,
+          "max_abs_velocity_m_s": 0.046835556626319885,
+          "max_abs_reference_error_m": 0.009020915031433208,
+          "max_downward_step_m": 0.0014245808124542236
+        },
+        "pickup_search": {
+          "samples": 1906,
+          "max_abs_velocity_m_s": 0.15284031629562378,
+          "max_abs_reference_error_m": 0.011617929373073599,
+          "max_downward_step_m": 0.005657017230987549
+        },
+        "place": {
+          "samples": 1137,
+          "max_abs_velocity_m_s": 0.040393516421318054,
+          "max_abs_reference_error_m": 0.0031343848705290833,
+          "max_downward_step_m": 0.0020905137062072754
+        },
+        "placement_search": {
+          "samples": 2974,
+          "max_abs_velocity_m_s": 0.004805300384759903,
+          "max_abs_reference_error_m": 0.0006046199798585006,
+          "max_downward_step_m": 0.00021880865097045898
+        }
+      }
+    },
+    {
+      "name": "05_ProcTHOR-Test-288_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 5.807684333447583e-10,
+          "max_abs_reference_error_m": 5.551115123125783e-17,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1369,
+          "max_abs_velocity_m_s": 0.0410957857966423,
+          "max_abs_reference_error_m": 0.008946379423141582,
+          "max_downward_step_m": 0.0014808475971221924
+        },
+        "pickup_search": {
+          "samples": 9934,
+          "max_abs_velocity_m_s": 0.15285053849220276,
+          "max_abs_reference_error_m": 0.01162153545408251,
+          "max_downward_step_m": 0.0056600868701934814
+        },
+        "place": {
+          "samples": 1734,
+          "max_abs_velocity_m_s": 0.03950200974941254,
+          "max_abs_reference_error_m": 0.002810075998306183,
+          "max_downward_step_m": 0.002088308334350586
+        },
+        "placement_search": {
+          "samples": 3017,
+          "max_abs_velocity_m_s": 0.0037543256767094135,
+          "max_abs_reference_error_m": 0.0007071995735169478,
+          "max_downward_step_m": 0.00015842914581298828
+        }
+      }
+    },
+    {
+      "name": "06_ProcTHOR-Train-4300_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 2.433143436064711e-06,
+          "max_abs_reference_error_m": 2.4586915967073075e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1709,
+          "max_abs_velocity_m_s": 0.017384661361575127,
+          "max_abs_reference_error_m": 0.005382457971572774,
+          "max_downward_step_m": 0.0008270442485809326
+        },
+        "pickup_search": {
+          "samples": 3378,
+          "max_abs_velocity_m_s": 0.1528545469045639,
+          "max_abs_reference_error_m": 0.011622995767879507,
+          "max_downward_step_m": 0.005659550428390503
+        },
+        "place": {
+          "samples": 1353,
+          "max_abs_velocity_m_s": 0.04035966470837593,
+          "max_abs_reference_error_m": 0.002834513902664093,
+          "max_downward_step_m": 0.002091139554977417
+        },
+        "placement_search": {
+          "samples": 3336,
+          "max_abs_velocity_m_s": 0.004858243279159069,
+          "max_abs_reference_error_m": 0.0010775232315064498,
+          "max_downward_step_m": 0.0001519918441772461
+        }
+      }
+    },
+    {
+      "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 2.693091118999291e-06,
+          "max_abs_reference_error_m": 2.719461918015975e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1733,
+          "max_abs_velocity_m_s": 0.044638700783252716,
+          "max_abs_reference_error_m": 0.008645733594894511,
+          "max_downward_step_m": 0.0015629827976226807
+        },
+        "pickup_search": {
+          "samples": 2317,
+          "max_abs_velocity_m_s": 0.3356168866157532,
+          "max_abs_reference_error_m": 0.022459725413322473,
+          "max_downward_step_m": 0.012057721614837646
+        },
+        "place": {
+          "samples": 998,
+          "max_abs_velocity_m_s": 0.040425363928079605,
+          "max_abs_reference_error_m": 0.0031362326145171204,
+          "max_downward_step_m": 0.002091348171234131
+        },
+        "placement_search": {
+          "samples": 4792,
+          "max_abs_velocity_m_s": 0.014313001185655594,
+          "max_abs_reference_error_m": 0.0007752978801728316,
+          "max_downward_step_m": 0.00034949183464050293
+        }
+      }
+    },
+    {
+      "name": "08_ProcTHOR-Train-7473_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1382,
+          "max_abs_velocity_m_s": 0.02090330235660076,
+          "max_abs_reference_error_m": 0.005760649442672627,
+          "max_downward_step_m": 0.000984877347946167
+        },
+        "pickup_search": {
+          "samples": 4034,
+          "max_abs_velocity_m_s": 0.15359711647033691,
+          "max_abs_reference_error_m": 0.01170468393354418,
+          "max_downward_step_m": 0.005746513605117798
+        },
+        "placement_search": {
+          "samples": 30584,
+          "max_abs_velocity_m_s": 0.039011865854263306,
+          "max_abs_reference_error_m": 0.0026070678234101363,
+          "max_downward_step_m": 0.0020945072174072266
+        }
+      }
+    },
+    {
+      "name": "09_ProcTHOR-Test-166_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 3.3934238672372885e-06,
+          "max_abs_reference_error_m": 3.4272670740298494e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1625,
+          "max_abs_velocity_m_s": 0.026806151494383812,
+          "max_abs_reference_error_m": 0.008076796531677144,
+          "max_downward_step_m": 0.001280069351196289
+        },
+        "pickup_search": {
+          "samples": 6356,
+          "max_abs_velocity_m_s": 0.15290206670761108,
+          "max_abs_reference_error_m": 0.011620850000667593,
+          "max_downward_step_m": 0.005660325288772583
+        },
+        "place": {
+          "samples": 1315,
+          "max_abs_velocity_m_s": 0.04037906602025032,
+          "max_abs_reference_error_m": 0.0031343848705290833,
+          "max_downward_step_m": 0.0020900964736938477
+        },
+        "placement_search": {
+          "samples": 1760,
+          "max_abs_velocity_m_s": 0.004236297681927681,
+          "max_abs_reference_error_m": 0.0006995701789856978,
+          "max_downward_step_m": 0.00014904141426086426
+        }
+      }
+    },
+    {
+      "name": "10_ProcTHOR-Test-459_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 9.14631164050661e-06,
+          "max_abs_reference_error_m": 9.238719939630435e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1359,
+          "max_abs_velocity_m_s": 0.05102388560771942,
+          "max_abs_reference_error_m": 0.009501507282257182,
+          "max_downward_step_m": 0.0015517473220825195
+        },
+        "pickup_search": {
+          "samples": 3820,
+          "max_abs_velocity_m_s": 0.15282443165779114,
+          "max_abs_reference_error_m": 0.011623234186458609,
+          "max_downward_step_m": 0.0056611597537994385
+        },
+        "place": {
+          "samples": 949,
+          "max_abs_velocity_m_s": 0.040399014949798584,
+          "max_abs_reference_error_m": 0.002899065732955841,
+          "max_downward_step_m": 0.002091437578201294
+        },
+        "placement_search": {
+          "samples": 2562,
+          "max_abs_velocity_m_s": 0.0015151622937992215,
+          "max_abs_reference_error_m": 0.0004980766773224898,
+          "max_downward_step_m": 6.133317947387695e-05
+        }
+      }
+    },
+    {
+      "name": "11_ProcTHOR-Train-3859_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.2550100336738979e-06,
+          "max_abs_reference_error_m": 1.2665987017546065e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1617,
+          "max_abs_velocity_m_s": 0.01750744879245758,
+          "max_abs_reference_error_m": 0.005492458343505757,
+          "max_downward_step_m": 0.0008299350738525391
+        },
+        "pickup_search": {
+          "samples": 5433,
+          "max_abs_velocity_m_s": 0.15277963876724243,
+          "max_abs_reference_error_m": 0.011609852943706533,
+          "max_downward_step_m": 0.005648404359817505
+        },
+        "place": {
+          "samples": 1351,
+          "max_abs_velocity_m_s": 0.04035477340221405,
+          "max_abs_reference_error_m": 0.002835705995559601,
+          "max_downward_step_m": 0.002090662717819214
+        },
+        "placement_search": {
+          "samples": 2247,
+          "max_abs_velocity_m_s": 0.0028111182618886232,
+          "max_abs_reference_error_m": 0.0009528601169587203,
+          "max_downward_step_m": 0.00015661120414733887
+        }
+      }
+    },
+    {
+      "name": "12_ProcTHOR-Train-4108_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 26295,
+          "max_abs_velocity_m_s": 0.15359261631965637,
+          "max_abs_reference_error_m": 0.011703193817424795,
+          "max_downward_step_m": 0.005744606256484985
+        }
+      }
+    },
+    {
+      "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 7234,
+          "max_abs_velocity_m_s": 0.15286341309547424,
+          "max_abs_reference_error_m": 0.011620551977443716,
+          "max_downward_step_m": 0.005659818649291992
+        }
+      }
+    },
+    {
+      "name": "14_ProcTHOR-Train-8921_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 9.883848179015331e-06,
+          "max_abs_reference_error_m": 9.983777999322818e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1958,
+          "max_abs_velocity_m_s": 0.027541106566786766,
+          "max_abs_reference_error_m": 0.008557537794113057,
+          "max_downward_step_m": 0.0013407766819000244
+        },
+        "pickup_search": {
+          "samples": 2102,
+          "max_abs_velocity_m_s": 0.33532586693763733,
+          "max_abs_reference_error_m": 0.022424528870582605,
+          "max_downward_step_m": 0.012041687965393066
+        },
+        "place": {
+          "samples": 941,
+          "max_abs_velocity_m_s": 0.04044303670525551,
+          "max_abs_reference_error_m": 0.003135010719299225,
+          "max_downward_step_m": 0.002090930938720703
+        },
+        "placement_search": {
+          "samples": 2476,
+          "max_abs_velocity_m_s": 0.006210748106241226,
+          "max_abs_reference_error_m": 0.00045021414756785116,
+          "max_downward_step_m": 0.0002035200595855713
+        }
+      }
+    },
+    {
+      "name": "15_ProcTHOR-Train-2769_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 25491,
+          "max_abs_velocity_m_s": 0.1528913676738739,
+          "max_abs_reference_error_m": 0.011620224151897451,
+          "max_downward_step_m": 0.00565946102142334
+        }
+      }
+    },
+    {
+      "name": "16_ProcTHOR-Train-507_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 11918,
+          "max_abs_velocity_m_s": 0.15280483663082123,
+          "max_abs_reference_error_m": 0.011615306768703482,
+          "max_downward_step_m": 0.005654036998748779
+        }
+      }
+    },
+    {
+      "name": "17_ProcTHOR-Train-9926_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.1803629149653716e-06,
+          "max_abs_reference_error_m": 1.1920928956465904e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1565,
+          "max_abs_velocity_m_s": 0.02988693304359913,
+          "max_abs_reference_error_m": 0.009258071184158223,
+          "max_downward_step_m": 0.0013752877712249756
+        },
+        "pickup_search": {
+          "samples": 3282,
+          "max_abs_velocity_m_s": 0.15285488963127136,
+          "max_abs_reference_error_m": 0.011623055372524282,
+          "max_downward_step_m": 0.005660533905029297
+        },
+        "place": {
+          "samples": 1394,
+          "max_abs_velocity_m_s": 0.04041270539164543,
+          "max_abs_reference_error_m": 0.0031336696147917786,
+          "max_downward_step_m": 0.00209006667137146
+        },
+        "placement_search": {
+          "samples": 2792,
+          "max_abs_velocity_m_s": 0.002931261667981744,
+          "max_abs_reference_error_m": 0.0007074379920960494,
+          "max_downward_step_m": 0.00015109777450561523
+        }
+      }
+    },
+    {
+      "name": "18_ProcTHOR-Train-3208_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1819,
+          "max_abs_velocity_m_s": 0.01928597502410412,
+          "max_abs_reference_error_m": 0.00538832902908315,
+          "max_downward_step_m": 0.0009600818157196045
+        },
+        "pickup_search": {
+          "samples": 2221,
+          "max_abs_velocity_m_s": 0.1536371111869812,
+          "max_abs_reference_error_m": 0.011709482107448599,
+          "max_downward_step_m": 0.005751162767410278
+        },
+        "placement_search": {
+          "samples": 27745,
+          "max_abs_velocity_m_s": 0.005664484575390816,
+          "max_abs_reference_error_m": 0.002439072132110698,
+          "max_downward_step_m": 0.00022178888320922852
+        }
+      }
+    },
+    {
+      "name": "19_ProcTHOR-Train-4204_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 4.869258191320114e-06,
+          "max_abs_reference_error_m": 4.917383194524838e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1780,
+          "max_abs_velocity_m_s": 0.013320316560566425,
+          "max_abs_reference_error_m": 0.00097245931625356,
+          "max_downward_step_m": 0.0004672408103942871
+        },
+        "pickup_search": {
+          "samples": 7160,
+          "max_abs_velocity_m_s": 0.15359847247600555,
+          "max_abs_reference_error_m": 0.011703611049938223,
+          "max_downward_step_m": 0.005747795104980469
+        },
+        "place": {
+          "samples": 1326,
+          "max_abs_velocity_m_s": 0.040427301079034805,
+          "max_abs_reference_error_m": 0.003137037277221588,
+          "max_downward_step_m": 0.002091348171234131
+        },
+        "placement_search": {
+          "samples": 3486,
+          "max_abs_velocity_m_s": 0.004405646119266748,
+          "max_abs_reference_error_m": 0.0003496611118317672,
+          "max_downward_step_m": 0.0001093447208404541
+        }
+      }
+    },
+    {
+      "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1929,
+          "max_abs_velocity_m_s": 0.027078835293650627,
+          "max_abs_reference_error_m": 0.009120295047759908,
+          "max_downward_step_m": 0.0013312101364135742
+        },
+        "pickup_search": {
+          "samples": 2470,
+          "max_abs_velocity_m_s": 0.1528620421886444,
+          "max_abs_reference_error_m": 0.011620313558864614,
+          "max_downward_step_m": 0.0056590735912323
+        },
+        "place": {
+          "samples": 212,
+          "max_abs_velocity_m_s": 0.03998224809765816,
+          "max_abs_reference_error_m": 0.003741985082626298,
+          "max_downward_step_m": 3.606081008911133e-06
+        },
+        "placement_search": {
+          "samples": 2829,
+          "max_abs_velocity_m_s": 0.0397736094892025,
+          "max_abs_reference_error_m": 0.0028306694030760804,
+          "max_downward_step_m": 0.0020898282527923584
+        }
+      }
+    },
+    {
+      "name": "21_ProcTHOR-Test-308_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 3763,
+          "max_abs_velocity_m_s": 0.15278400480747223,
+          "max_abs_reference_error_m": 0.01160964432744982,
+          "max_downward_step_m": 0.005648434162139893
+        }
+      }
+    },
+    {
+      "name": "22_ProcTHOR-Train-3170_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.733959720695566e-06,
+          "max_abs_reference_error_m": 1.7508864404158775e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1824,
+          "max_abs_velocity_m_s": 0.04612620919942856,
+          "max_abs_reference_error_m": 0.0084437632560731,
+          "max_downward_step_m": 0.0015375018119812012
+        },
+        "pickup_search": {
+          "samples": 2695,
+          "max_abs_velocity_m_s": 0.15285053849220276,
+          "max_abs_reference_error_m": 0.01162153545408251,
+          "max_downward_step_m": 0.0056600868701934814
+        },
+        "place": {
+          "samples": 1370,
+          "max_abs_velocity_m_s": 0.040414754301309586,
+          "max_abs_reference_error_m": 0.0031363220214842835,
+          "max_downward_step_m": 0.0020911991596221924
+        },
+        "placement_search": {
+          "samples": 3120,
+          "max_abs_velocity_m_s": 0.0009910123189911246,
+          "max_abs_reference_error_m": 0.0002459788322449752,
+          "max_downward_step_m": 5.4210424423217773e-05
+        }
+      }
+    },
+    {
+      "name": "23_ProcTHOR-Val-265_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.328887378804211e-06,
+          "max_abs_reference_error_m": 1.3411045077238448e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 2045,
+          "max_abs_velocity_m_s": 0.019695064052939415,
+          "max_abs_reference_error_m": 0.004341224431991475,
+          "max_downward_step_m": 0.0009171366691589355
+        },
+        "pickup_search": {
+          "samples": 3279,
+          "max_abs_velocity_m_s": 0.15357369184494019,
+          "max_abs_reference_error_m": 0.011701554689693472,
+          "max_downward_step_m": 0.005744248628616333
+        },
+        "place": {
+          "samples": 1592,
+          "max_abs_velocity_m_s": 0.04011525586247444,
+          "max_abs_reference_error_m": 0.0028701946139335355,
+          "max_downward_step_m": 0.0020964443683624268
+        },
+        "placement_search": {
+          "samples": 2809,
+          "max_abs_velocity_m_s": 0.00828604493290186,
+          "max_abs_reference_error_m": 0.0030266845226288863,
+          "max_downward_step_m": 0.0004182755947113037
+        }
+      }
+    },
+    {
+      "name": "24_ProcTHOR-Train-9699_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 8.999174497148488e-06,
+          "max_abs_reference_error_m": 9.089708327691959e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1365,
+          "max_abs_velocity_m_s": 0.03696238622069359,
+          "max_abs_reference_error_m": 0.006726911067962749,
+          "max_downward_step_m": 0.0013325512409210205
+        },
+        "pickup_search": {
+          "samples": 2694,
+          "max_abs_velocity_m_s": 0.15285488963127136,
+          "max_abs_reference_error_m": 0.011623055372524282,
+          "max_downward_step_m": 0.005660533905029297
+        },
+        "place": {
+          "samples": 1332,
+          "max_abs_velocity_m_s": 0.0403825119137764,
+          "max_abs_reference_error_m": 0.003133937835693268,
+          "max_downward_step_m": 0.002090245485305786
+        },
+        "placement_search": {
+          "samples": 2457,
+          "max_abs_velocity_m_s": 0.006351473741233349,
+          "max_abs_reference_error_m": 0.0007301175594330855,
+          "max_downward_step_m": 0.00012990832328796387
+        }
+      }
+    },
+    {
+      "name": "25_ProcTHOR-Val-605_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 7.228509275591932e-06,
+          "max_abs_reference_error_m": 7.30156898443024e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 2006,
+          "max_abs_velocity_m_s": 0.024990512058138847,
+          "max_abs_reference_error_m": 0.007455596923828023,
+          "max_downward_step_m": 0.0011833608150482178
+        },
+        "pickup_search": {
+          "samples": 4030,
+          "max_abs_velocity_m_s": 0.153570756316185,
+          "max_abs_reference_error_m": 0.011705935631084463,
+          "max_downward_step_m": 0.005746036767959595
+        },
+        "place": {
+          "samples": 815,
+          "max_abs_velocity_m_s": 0.03278623893857002,
+          "max_abs_reference_error_m": 0.0023593673661508885,
+          "max_downward_step_m": 0.0016839057207107544
+        },
+        "placement_search": {
+          "samples": 3230,
+          "max_abs_velocity_m_s": 0.039931055158376694,
+          "max_abs_reference_error_m": 0.002844795703887848,
+          "max_downward_step_m": 0.002091050148010254
+        }
+      }
+    },
+    {
+      "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.9906251509382855e-06,
+          "max_abs_reference_error_m": 2.0116567608918778e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1425,
+          "max_abs_velocity_m_s": 0.039715759456157684,
+          "max_abs_reference_error_m": 0.009270151853561504,
+          "max_downward_step_m": 0.0015842020511627197
+        },
+        "pickup_search": {
+          "samples": 8480,
+          "max_abs_velocity_m_s": 0.3354303240776062,
+          "max_abs_reference_error_m": 0.022438386950492883,
+          "max_downward_step_m": 0.012049287557601929
+        },
+        "place": {
+          "samples": 1352,
+          "max_abs_velocity_m_s": 0.04043703153729439,
+          "max_abs_reference_error_m": 0.0028344542980193177,
+          "max_downward_step_m": 0.002091437578201294
+        },
+        "placement_search": {
+          "samples": 3283,
+          "max_abs_velocity_m_s": 0.009522471576929092,
+          "max_abs_reference_error_m": 0.0009743475914002486,
+          "max_downward_step_m": 0.00018358230590820312
+        }
+      }
+    },
+    {
+      "name": "27_ProcTHOR-Val-576_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 5.170293206901988e-07,
+          "max_abs_reference_error_m": 5.2154064192344585e-08,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1317,
+          "max_abs_velocity_m_s": 0.039117537438869476,
+          "max_abs_reference_error_m": 0.0067673230171204635,
+          "max_downward_step_m": 0.0014470219612121582
+        },
+        "pickup_search": {
+          "samples": 23496,
+          "max_abs_velocity_m_s": 0.15360337495803833,
+          "max_abs_reference_error_m": 0.011709273491191885,
+          "max_downward_step_m": 0.005750119686126709
+        },
+        "place": {
+          "samples": 1370,
+          "max_abs_velocity_m_s": 0.04041525349020958,
+          "max_abs_reference_error_m": 0.0031337590217589417,
+          "max_downward_step_m": 0.0020902156829833984
+        },
+        "placement_search": {
+          "samples": 3538,
+          "max_abs_velocity_m_s": 0.0028924134094268084,
+          "max_abs_reference_error_m": 0.0004925036430359908,
+          "max_downward_step_m": 0.0001302957534790039
+        }
+      }
+    },
+    {
+      "name": "28_ProcTHOR-Train-4956_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 8.843193768370838e-07,
+          "max_abs_reference_error_m": 8.940696713533036e-08,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1361,
+          "max_abs_velocity_m_s": 0.020106500014662743,
+          "max_abs_reference_error_m": 0.005693624019622701,
+          "max_downward_step_m": 0.0010078251361846924
+        },
+        "pickup_search": {
+          "samples": 12044,
+          "max_abs_velocity_m_s": 0.1535789668560028,
+          "max_abs_reference_error_m": 0.011709660921382925,
+          "max_downward_step_m": 0.005750387907028198
+        },
+        "place": {
+          "samples": 1392,
+          "max_abs_velocity_m_s": 0.040095943957567215,
+          "max_abs_reference_error_m": 0.0031652748584747037,
+          "max_downward_step_m": 0.0020959079265594482
+        },
+        "placement_search": {
+          "samples": 2201,
+          "max_abs_velocity_m_s": 0.0025732622016221285,
+          "max_abs_reference_error_m": 0.002255460023880107,
+          "max_downward_step_m": 7.173418998718262e-05
+        }
+      }
+    },
+    {
+      "name": "29_ProcTHOR-Train-5013_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1675,
+          "max_abs_velocity_m_s": 0.028792008757591248,
+          "max_abs_reference_error_m": 0.009044924974441426,
+          "max_downward_step_m": 0.001375049352645874
+        },
+        "pickup_search": {
+          "samples": 3033,
+          "max_abs_velocity_m_s": 0.15283994376659393,
+          "max_abs_reference_error_m": 0.011623114977169058,
+          "max_downward_step_m": 0.005661517381668091
+        },
+        "placement_search": {
+          "samples": 31292,
+          "max_abs_velocity_m_s": 0.03978363424539566,
+          "max_abs_reference_error_m": 0.003054484844207672,
+          "max_downward_step_m": 0.002087891101837158
+        }
+      }
+    },
+    {
+      "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.0326961273676716e-05,
+          "max_abs_reference_error_m": 1.0430812835138248e-06,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1639,
+          "max_abs_velocity_m_s": 0.02619585208594799,
+          "max_abs_reference_error_m": 0.008191565275192159,
+          "max_downward_step_m": 0.001262068748474121
+        },
+        "pickup_search": {
+          "samples": 2750,
+          "max_abs_velocity_m_s": 0.1535998284816742,
+          "max_abs_reference_error_m": 0.011704594526577017,
+          "max_downward_step_m": 0.005746364593505859
+        },
+        "place": {
+          "samples": 1229,
+          "max_abs_velocity_m_s": 0.027759656310081482,
+          "max_abs_reference_error_m": 0.0019651157488823068,
+          "max_downward_step_m": 0.0014307498931884766
+        },
+        "placement_search": {
+          "samples": 4100,
+          "max_abs_velocity_m_s": 0.03966093435883522,
+          "max_abs_reference_error_m": 0.002820059776306061,
+          "max_downward_step_m": 0.0020897984504699707
+        }
+      }
+    },
+    {
+      "name": "31_ProcTHOR-Val-660_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 26406,
+          "max_abs_velocity_m_s": 0.15288472175598145,
+          "max_abs_reference_error_m": 0.011620611582088491,
+          "max_downward_step_m": 0.005659997463226318
+        }
+      }
+    },
+    {
+      "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 7.742142997813062e-07,
+          "max_abs_reference_error_m": 7.823109628157798e-08,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1766,
+          "max_abs_velocity_m_s": 0.013309954665601254,
+          "max_abs_reference_error_m": 0.0009720122814177445,
+          "max_downward_step_m": 0.00047206878662109375
+        },
+        "pickup_search": {
+          "samples": 8454,
+          "max_abs_velocity_m_s": 0.1528845876455307,
+          "max_abs_reference_error_m": 0.011624485883998892,
+          "max_downward_step_m": 0.005663812160491943
+        },
+        "place": {
+          "samples": 1371,
+          "max_abs_velocity_m_s": 0.04042024910449982,
+          "max_abs_reference_error_m": 0.003136947870254425,
+          "max_downward_step_m": 0.002091318368911743
+        },
+        "placement_search": {
+          "samples": 3262,
+          "max_abs_velocity_m_s": 0.0041918144561350346,
+          "max_abs_reference_error_m": 0.0003850066661835738,
+          "max_downward_step_m": 0.00019180774688720703
+        }
+      }
+    },
+    {
+      "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 21695,
+          "max_abs_velocity_m_s": 0.15282779932022095,
+          "max_abs_reference_error_m": 0.011617303524303457,
+          "max_downward_step_m": 0.005655914545059204
+        }
+      }
+    },
+    {
+      "name": "34_ProcTHOR-Train-9419_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.0031804777099751e-05,
+          "max_abs_reference_error_m": 1.0132789611261295e-06,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1826,
+          "max_abs_velocity_m_s": 0.04876742139458656,
+          "max_abs_reference_error_m": 0.00851552724838267,
+          "max_downward_step_m": 0.001471102237701416
+        },
+        "pickup_search": {
+          "samples": 2479,
+          "max_abs_velocity_m_s": 0.15280483663082123,
+          "max_abs_reference_error_m": 0.011615306768703482,
+          "max_downward_step_m": 0.005654036998748779
+        },
+        "place": {
+          "samples": 946,
+          "max_abs_velocity_m_s": 0.040391698479652405,
+          "max_abs_reference_error_m": 0.0031365008354186097,
+          "max_downward_step_m": 0.002091318368911743
+        },
+        "placement_search": {
+          "samples": 2896,
+          "max_abs_velocity_m_s": 0.001035991939716041,
+          "max_abs_reference_error_m": 0.00024675369262705527,
+          "max_downward_step_m": 5.501508712768555e-05
+        }
+      }
+    },
+    {
+      "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1643,
+          "max_abs_velocity_m_s": 0.02637351304292679,
+          "max_abs_reference_error_m": 0.008250484466552632,
+          "max_downward_step_m": 0.0012722611427307129
+        },
+        "pickup_search": {
+          "samples": 3852,
+          "max_abs_velocity_m_s": 0.15363074839115143,
+          "max_abs_reference_error_m": 0.011709452305126211,
+          "max_downward_step_m": 0.005751132965087891
+        },
+        "place": {
+          "samples": 208,
+          "max_abs_velocity_m_s": 0.039838939905166626,
+          "max_abs_reference_error_m": 0.0037363971471785495,
+          "max_downward_step_m": 1.6540288925170898e-06
+        },
+        "placement_search": {
+          "samples": 2272,
+          "max_abs_velocity_m_s": 0.03962720185518265,
+          "max_abs_reference_error_m": 0.002818986892700104,
+          "max_downward_step_m": 0.0020892322063446045
+        }
+      }
+    },
+    {
+      "name": "36_ProcTHOR-Test-959_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 3.1711758765595732e-06,
+          "max_abs_reference_error_m": 3.203749656954802e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1807,
+          "max_abs_velocity_m_s": 0.02974184975028038,
+          "max_abs_reference_error_m": 0.003499736785888774,
+          "max_downward_step_m": 0.0010891258716583252
+        },
+        "pickup_search": {
+          "samples": 2020,
+          "max_abs_velocity_m_s": 0.15360727906227112,
+          "max_abs_reference_error_m": 0.011707306537914297,
+          "max_downward_step_m": 0.005748927593231201
+        },
+        "place": {
+          "samples": 1354,
+          "max_abs_velocity_m_s": 0.04040452092885971,
+          "max_abs_reference_error_m": 0.0028367490768431702,
+          "max_downward_step_m": 0.002092033624649048
+        },
+        "placement_search": {
+          "samples": 2306,
+          "max_abs_velocity_m_s": 0.013213646598160267,
+          "max_abs_reference_error_m": 0.001043757200241191,
+          "max_downward_step_m": 0.0003522634506225586
+        }
+      }
+    },
+    {
+      "name": "37_ProcTHOR-Train-2063_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.3652783081852249e-06,
+          "max_abs_reference_error_m": 1.378357410569686e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1393,
+          "max_abs_velocity_m_s": 0.023697910830378532,
+          "max_abs_reference_error_m": 0.0039788687229157516,
+          "max_downward_step_m": 0.0012776851654052734
+        },
+        "pickup_search": {
+          "samples": 5422,
+          "max_abs_velocity_m_s": 0.15290206670761108,
+          "max_abs_reference_error_m": 0.011620850000667593,
+          "max_downward_step_m": 0.005660325288772583
+        },
+        "place": {
+          "samples": 1369,
+          "max_abs_velocity_m_s": 0.04042309895157814,
+          "max_abs_reference_error_m": 0.0031331033706664124,
+          "max_downward_step_m": 0.0020900070667266846
+        },
+        "placement_search": {
+          "samples": 1810,
+          "max_abs_velocity_m_s": 0.004783967509865761,
+          "max_abs_reference_error_m": 0.0006962025165558883,
+          "max_downward_step_m": 0.00014290213584899902
+        }
+      }
+    },
+    {
+      "name": "38_ProcTHOR-Train-2809_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1414,
+          "max_abs_velocity_m_s": 0.0191638320684433,
+          "max_abs_reference_error_m": 0.004434565305709737,
+          "max_downward_step_m": 0.0008535683155059814
+        },
+        "pickup_search": {
+          "samples": 3298,
+          "max_abs_velocity_m_s": 0.15359067916870117,
+          "max_abs_reference_error_m": 0.011708915863323233,
+          "max_downward_step_m": 0.005750477313995361
+        },
+        "placement_search": {
+          "samples": 3021,
+          "max_abs_velocity_m_s": 0.004019012674689293,
+          "max_abs_reference_error_m": 0.0024519169330597945,
+          "max_downward_step_m": 0.00020107626914978027
+        }
+      }
+    },
+    {
+      "name": "39_ProcTHOR-Train-406_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 20906,
+          "max_abs_velocity_m_s": 0.15284456312656403,
+          "max_abs_reference_error_m": 0.011616528663921377,
+          "max_downward_step_m": 0.0056549012660980225
+        }
+      }
+    },
+    {
+      "name": "40_ProcTHOR-Train-4574_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1956,
+          "max_abs_velocity_m_s": 0.024597899988293648,
+          "max_abs_reference_error_m": 0.007675061225891011,
+          "max_downward_step_m": 0.0012052357196807861
+        },
+        "pickup_search": {
+          "samples": 3312,
+          "max_abs_velocity_m_s": 0.15361635386943817,
+          "max_abs_reference_error_m": 0.011708737049388906,
+          "max_downward_step_m": 0.00575023889541626
+        },
+        "placement_search": {
+          "samples": 6678,
+          "max_abs_velocity_m_s": 0.039771296083927155,
+          "max_abs_reference_error_m": 0.002829924345016388,
+          "max_downward_step_m": 0.002089768648147583
+        }
+      }
+    },
+    {
+      "name": "41_ProcTHOR-Train-1182_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 2.5814624677877873e-06,
+          "max_abs_reference_error_m": 2.607703208645784e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1815,
+          "max_abs_velocity_m_s": 0.04194052889943123,
+          "max_abs_reference_error_m": 0.009475519657135112,
+          "max_downward_step_m": 0.0015638470649719238
+        },
+        "pickup_search": {
+          "samples": 6021,
+          "max_abs_velocity_m_s": 0.15349309146404266,
+          "max_abs_reference_error_m": 0.0116944617369652,
+          "max_downward_step_m": 0.005735933780670166
+        },
+        "place": {
+          "samples": 1354,
+          "max_abs_velocity_m_s": 0.04039335250854492,
+          "max_abs_reference_error_m": 0.0028363318443297425,
+          "max_downward_step_m": 0.0020919442176818848
+        },
+        "placement_search": {
+          "samples": 2661,
+          "max_abs_velocity_m_s": 0.00094987713964656,
+          "max_abs_reference_error_m": 0.0005529427528382369,
+          "max_downward_step_m": 5.453824996948242e-05
+        }
+      }
+    },
+    {
+      "name": "42_ProcTHOR-Train-9100_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 1.8813215092450264e-06,
+          "max_abs_reference_error_m": 1.899898052354354e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1563,
+          "max_abs_velocity_m_s": 0.013309231959283352,
+          "max_abs_reference_error_m": 0.0009718036651610307,
+          "max_downward_step_m": 0.00048357248306274414
+        },
+        "pickup_search": {
+          "samples": 2721,
+          "max_abs_velocity_m_s": 0.15355184674263,
+          "max_abs_reference_error_m": 0.011705369386959097,
+          "max_downward_step_m": 0.005746304988861084
+        },
+        "place": {
+          "samples": 1373,
+          "max_abs_velocity_m_s": 0.04044025018811226,
+          "max_abs_reference_error_m": 0.0031341762542723695,
+          "max_downward_step_m": 0.0020902156829833984
+        },
+        "placement_search": {
+          "samples": 2168,
+          "max_abs_velocity_m_s": 0.005265546962618828,
+          "max_abs_reference_error_m": 0.0008697414398194381,
+          "max_downward_step_m": 0.0001747608184814453
+        }
+      }
+    },
+    {
+      "name": "43_ProcTHOR-Train-5361_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1034,
+          "max_abs_velocity_m_s": 0.013301912695169449,
+          "max_abs_reference_error_m": 0.0009545779228209428,
+          "max_downward_step_m": 0.0004986226558685303
+        },
+        "pickup_search": {
+          "samples": 1263,
+          "max_abs_velocity_m_s": 0.15287096798419952,
+          "max_abs_reference_error_m": 0.011626005802440664,
+          "max_downward_step_m": 0.005664259195327759
+        }
+      }
+    },
+    {
+      "name": "44_ProcTHOR-Train-2898_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 5.606119430012768e-06,
+          "max_abs_reference_error_m": 5.662441253106998e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1340,
+          "max_abs_velocity_m_s": 0.04226161539554596,
+          "max_abs_reference_error_m": 0.00906847953796397,
+          "max_downward_step_m": 0.0014694929122924805
+        },
+        "pickup_search": {
+          "samples": 2037,
+          "max_abs_velocity_m_s": 0.31309059262275696,
+          "max_abs_reference_error_m": 0.019549290213584924,
+          "max_downward_step_m": 0.010574281215667725
+        },
+        "place": {
+          "samples": 1141,
+          "max_abs_velocity_m_s": 0.040421050041913986,
+          "max_abs_reference_error_m": 0.003135398149490265,
+          "max_downward_step_m": 0.0020908117294311523
+        },
+        "placement_search": {
+          "samples": 3718,
+          "max_abs_velocity_m_s": 0.0022291741333901882,
+          "max_abs_reference_error_m": 0.00029521226882944784,
+          "max_downward_step_m": 6.118416786193848e-05
+        }
+      }
+    },
+    {
+      "name": "45_ProcTHOR-Train-6968_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 5.163203695701668e-06,
+          "max_abs_reference_error_m": 5.215406417291568e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1977,
+          "max_abs_velocity_m_s": 0.025982096791267395,
+          "max_abs_reference_error_m": 0.008139709234237569,
+          "max_downward_step_m": 0.0012620985507965088
+        },
+        "pickup_search": {
+          "samples": 2223,
+          "max_abs_velocity_m_s": 0.1528620421886444,
+          "max_abs_reference_error_m": 0.011620313558864614,
+          "max_downward_step_m": 0.0056590735912323
+        },
+        "place": {
+          "samples": 853,
+          "max_abs_velocity_m_s": 0.03814278915524483,
+          "max_abs_reference_error_m": 0.002787325027180737,
+          "max_downward_step_m": 0.0019597113132476807
+        },
+        "placement_search": {
+          "samples": 6823,
+          "max_abs_velocity_m_s": 0.0397895947098732,
+          "max_abs_reference_error_m": 0.0028322489261626282,
+          "max_downward_step_m": 0.002089977264404297
+        }
+      }
+    },
+    {
+      "name": "46_ProcTHOR-Train-4899_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 2.0643824427679647e-06,
+          "max_abs_reference_error_m": 2.086162566861116e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1473,
+          "max_abs_velocity_m_s": 0.013313733041286469,
+          "max_abs_reference_error_m": 0.0009781622886658736,
+          "max_downward_step_m": 0.0005561113357543945
+        },
+        "pickup_search": {
+          "samples": 9601,
+          "max_abs_velocity_m_s": 0.1528620421886444,
+          "max_abs_reference_error_m": 0.011620313558864614,
+          "max_downward_step_m": 0.0056590735912323
+        },
+        "place": {
+          "samples": 1354,
+          "max_abs_velocity_m_s": 0.0403425395488739,
+          "max_abs_reference_error_m": 0.0028359444141387025,
+          "max_downward_step_m": 0.002090930938720703
+        },
+        "placement_search": {
+          "samples": 2409,
+          "max_abs_velocity_m_s": 0.003343272488564253,
+          "max_abs_reference_error_m": 0.0008939707279206344,
+          "max_downward_step_m": 0.0001761317253112793
+        }
+      }
+    },
+    {
+      "name": "47_ProcTHOR-Val-46_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "pickup_search": {
+          "samples": 2075,
+          "max_abs_velocity_m_s": 0.15282443165779114,
+          "max_abs_reference_error_m": 0.011623234186458609,
+          "max_downward_step_m": 0.0056611597537994385
+        }
+      }
+    },
+    {
+      "name": "48_ProcTHOR-Train-6322_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 2.954724322989932e-07,
+          "max_abs_reference_error_m": 2.980232241545089e-08,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1462,
+          "max_abs_velocity_m_s": 0.023583436384797096,
+          "max_abs_reference_error_m": 0.005347738265991109,
+          "max_downward_step_m": 0.0010481178760528564
+        },
+        "pickup_search": {
+          "samples": 2690,
+          "max_abs_velocity_m_s": 0.15280728042125702,
+          "max_abs_reference_error_m": 0.011610568199443838,
+          "max_downward_step_m": 0.005649834871292114
+        },
+        "place": {
+          "samples": 1407,
+          "max_abs_velocity_m_s": 0.040102798491716385,
+          "max_abs_reference_error_m": 0.0030679628252982816,
+          "max_downward_step_m": 0.0020959079265594482
+        },
+        "placement_search": {
+          "samples": 2254,
+          "max_abs_velocity_m_s": 0.0021623324137181044,
+          "max_abs_reference_error_m": 0.00223951578140269,
+          "max_downward_step_m": 6.589293479919434e-05
+        }
+      }
+    },
+    {
+      "name": "49_ProcTHOR-Train-7428_seed42_dynamic",
+      "task_success": true,
+      "stages": {
+        "finished": {
+          "samples": 40,
+          "max_abs_velocity_m_s": 5.900931228097761e-06,
+          "max_abs_reference_error_m": 5.960464476983951e-07,
+          "max_downward_step_m": 0.0
+        },
+        "grasp": {
+          "samples": 1945,
+          "max_abs_velocity_m_s": 0.029444938525557518,
+          "max_abs_reference_error_m": 0.009589473009109395,
+          "max_downward_step_m": 0.0014199018478393555
+        },
+        "pickup_search": {
+          "samples": 2216,
+          "max_abs_velocity_m_s": 0.15364181995391846,
+          "max_abs_reference_error_m": 0.0117058462241173,
+          "max_downward_step_m": 0.005748242139816284
+        },
+        "place": {
+          "samples": 940,
+          "max_abs_velocity_m_s": 0.040434177964925766,
+          "max_abs_reference_error_m": 0.003136471033096222,
+          "max_downward_step_m": 0.002091318368911743
+        },
+        "placement_search": {
+          "samples": 14529,
+          "max_abs_velocity_m_s": 0.014359157532453537,
+          "max_abs_reference_error_m": 0.0009542310237885543,
+          "max_downward_step_m": 0.0004305243492126465
+        }
+      }
+    },
+    {
+      "name": "50_ProcTHOR-Val-902_seed42_dynamic",
+      "task_success": false,
+      "stages": {
+        "grasp": {
+          "samples": 1883,
+          "max_abs_velocity_m_s": 0.026763448491692543,
+          "max_abs_reference_error_m": 0.008647153377532857,
+          "max_downward_step_m": 0.0012973546981811523
+        },
+        "pickup_search": {
+          "samples": 2167,
+          "max_abs_velocity_m_s": 0.1535588800907135,
+          "max_abs_reference_error_m": 0.011707097921657583,
+          "max_downward_step_m": 0.005747348070144653
+        },
+        "placement_search": {
+          "samples": 31950,
+          "max_abs_velocity_m_s": 0.03958724066615105,
+          "max_abs_reference_error_m": 0.00281839084625235,
+          "max_downward_step_m": 0.0020895004272460938
+        }
+      }
+    }
+  ]
+}

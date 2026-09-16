@@ -21,11 +21,10 @@ The environment initializes the house and task objects and moves the target afte
 | `dream_sim.run` | Validate the runtime, execute cases, and collect evaluation results |
 | `dream_sim.prepare` | Download the required models and scene assets |
 | `dream_sim.render_assets` | Prepare scene files for rendering while preserving upstream assets |
-| `dream_sim.check_scenes` | Check all task environments and camera views before policy execution |
 | `dream_sim.sources` | Verify and extract controller sources; locate a case's implementation |
 | `dream_sim.study` | Execute a fixed task manifest with a common controller |
 | `dream_sim.study_report` | Verify complete outcomes and summarize independently audited task completion |
-| `dream_sim.profile` | Launch earlier versioned experiment profiles |
+| `dream_sim.profile` | Load recorded experiment profiles |
 | `dream_sim.audit` | Re-evaluate recorded episodes through physics replay and record checks |
 | `dream_sim.render` | Render an episode from a spectator camera using its saved controls |
 | `dream_sim.video` | Export the composite video at 4× playback |
@@ -33,7 +32,7 @@ The environment initializes the house and task objects and moves the target afte
 
 ## Controller modules
 
-Run `python -m dream_sim.sources --case 01` to print the source directory for a case. Paths below are relative to that directory.
+The controller modules are in `controllers/compact_v1/`. The official loader combines them with the checksum-locked base archive; paths below are relative to the resulting `DREAM_code/` workspace. `python -m dream_sim.evaluate` reconstructs and checks that workspace. Use `python -m dream_sim.sources --case 01` to locate the recorded demonstration implementation.
 
 | Source file | Responsibility |
 | --- | --- |
@@ -48,14 +47,20 @@ Run `python -m dream_sim.sources --case 01` to print the source directory for a 
 | `experiments/maniskill_learned_dynamic.py` | Grasp feedback and the observed object frame at the gripper |
 | `experiments/instruction_geometry.py` | Grasp geometry and receptacle placement regions |
 | `experiments/maniskill_learned_probe.py` | Robot state, sensor observations, and simulator control interface |
+| `experiments/instruction_egg_detail_search.py` | Bounded calibrated-crop search for small eggs during initial discovery |
+| `experiments/instruction_open_jaw_axis.py` | Observed grasp-axis selection within the open-gripper geometry |
+| `experiments/instruction_contact_band_grasp.py` | Finger contact-band positioning for tall grasp targets |
+| `experiments/instruction_placement_dock.py` | Observed alternative approach poses around placement obstacles |
 | `src/dream/dynamic_memory.py` | Shared memory-update and focused-observation logic |
 | `src/dream/semantic_retrieval.py` | Text-to-voxel feature alignment |
 
 The [simulation interfaces](reproduction.md#implementation-boundary) describe the policy's inputs and the components adapted from the real robot.
 
-## Source versions
+## Source loading
 
-The diverse-object, 50-house study uses `compact_v1` for every task. `dream_sim.study` combines its checked module overrides with the fixed base source, then freezes the complete controller and task inputs before execution. Its torso controller shares a smooth reference across arm modes. The arm returns to the compact initial posture after pickup and release. Exploration candidates must be reachable through the robot’s heading-dependent swept motion edges before A* selects a route.
+The `compact_v1` controller contains 41 override modules that reconstruct the 264 Python files evaluated in the complete easy-grasp study (36/50 strict successes). `dream_sim.study` combines these checked overrides with the fixed base source, then freezes the complete controller and task inputs before execution. Its torso controller shares a smooth reference across arm modes. The arm returns to the compact initial posture after pickup and release. Exploration candidates must be reachable through the robot’s heading-dependent swept motion edges before A* selects a route.
+
+The [experiment records](../reproducibility/evidence/residential-evaluation/README.md) contain the exact evaluated source, every task outcome, and independent reviews. Run `python -m dream_sim.evaluate` to verify the public source and recorded result.
 
 Earlier demonstration profiles retain their recorded source versions. Each case records its controller, task, seed, evaluation version, and video identity. These are selected through the profile catalog.
 
@@ -73,7 +78,7 @@ The extracted `DREAM_code` directory is the controller's workspace root. The hel
 
 ## Configuration and outputs
 
-`configs/residential50-diverse/task_manifest.json` defines the 50-house cohort and binds each task and room map to its checksum. `configs/cases.json` lists the earlier case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
+`configs/residential50-easy-grasp/task_manifest.json` defines the 50-house cohort and binds each task and room map to its checksum. `configs/residential50-diverse/task_manifest.json` retains the separate diverse-object configuration. `configs/cases.json` lists the earlier case profiles. `configs/tasks/` and `configs/locks/` contain the corresponding task inputs and dependency locks. The runner checks these files against the source catalog before execution. Record paths inside the catalog resolve relative to that catalog in the extracted source tree.
 
 Each run creates its own output directory with the launch plan, environment checks, saved episode, and evaluation results. The [run guide](reproduction.md#4-read-results) describes the output files.
 
@@ -83,3 +88,14 @@ For algorithm development, copy a controller into a development workspace and re
 
 - [`realtime`](https://github.com/BJHYZJ/DREAM/tree/realtime): ROS implementation, hardware drivers, robot model, and calibration guides.
 - [`dream-web`](https://github.com/BJHYZJ/dream-web): project website, figures, and demonstration videos.
+
+## Execution modules
+
+- `study.py` validates the cohort and reconstructs the recorded controller.
+- `batch.py` schedules one execution per task and records all terminal outcomes.
+- `limited_worker.py` and `worker_limits.py` apply the deployment resource allocation.
+- `io.py` supplies atomic JSON writes and file hashes to the schedulers and reviewers.
+- `evaluate.py` checks the published 50-house records against their source and outcome hashes.
+- `audit_recording.py` and `fold_review.py` support independent evaluation of new saved executions.
+
+The controller modules are kept byte-identical to the evaluated implementation. Recorded source identities are retained so that a changed implementation cannot inherit an earlier result.

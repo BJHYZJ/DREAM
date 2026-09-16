@@ -1,0 +1,804 @@
+{
+  "accepted": [
+    {
+      "category": "Apple",
+      "asset": "Apple_29",
+      "native_dimensions_xyz_m": [
+        0.0628573540598154,
+        0.06166785769164562,
+        0.07487607188522816
+      ],
+      "physical_scale": 1.0,
+      "sha256": "42664ea2aa98d0a2be653b9fb8b44895964cea8797a1d3b3d4e9790157905a66",
+      "narrow_horizontal_extent_m": 0.06166785769164562,
+      "largest_extent_m": 0.07487607188522816,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "apple",
+      "preflight_sha256": "0070d859dbc2bb9bb2bc76e681a9ff533680768fe51a42885f5b7bb6c43416fc"
+    },
+    {
+      "category": "Apple",
+      "asset": "Apple_10",
+      "native_dimensions_xyz_m": [
+        0.08686403557658195,
+        0.08429510146379471,
+        0.11526460573077202
+      ],
+      "physical_scale": 1.0,
+      "sha256": "8b21192c919298ae9245c742cc60c224e61bf07f5c49aa88033a8a827370ab61",
+      "narrow_horizontal_extent_m": 0.08429510146379471,
+      "largest_extent_m": 0.11526460573077202,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "apple",
+      "preflight_sha256": "8ee8d96e93ab566506db2a8e1e6c88add8c5cf684adbcdcaba345cf8f25d4f73"
+    },
+    {
+      "category": "Apple",
+      "asset": "Apple_21",
+      "native_dimensions_xyz_m": [
+        0.08552727848291397,
+        0.08498657867312431,
+        0.08843994140625
+      ],
+      "physical_scale": 1.0,
+      "sha256": "9d2bd848cf08e59448a9dc8d504121edc58eb7b362682df982238f7a1b0d2cd2",
+      "narrow_horizontal_extent_m": 0.08498657867312431,
+      "largest_extent_m": 0.08843994140625,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "apple",
+      "preflight_sha256": "ebee96f50055883b79b387b2f12d99a13b10786f51a8b009925ba561b577fca3"
+    },
+    {
+      "category": "Apple",
+      "asset": "Apple_22",
+      "native_dimensions_xyz_m": [
+        0.08953610807657242,
+        0.08807757496833801,
+        0.07830292545258999
+      ],
+      "physical_scale": 1.0,
+      "sha256": "0c0a88b268ee9f10883631f857a544412c9d36cbc73b165131c444176b57f441",
+      "narrow_horizontal_extent_m": 0.08807757496833801,
+      "largest_extent_m": 0.08953610807657242,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "apple",
+      "preflight_sha256": "a12200691f6e3374f696c052da6d22b0a41b851412ccb5c350fbc03b3d822e60"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_1",
+      "native_dimensions_xyz_m": [
+        0.05762137658894062,
+        0.0576186329126358,
+        0.07610652223229408
+      ],
+      "physical_scale": 1.0,
+      "sha256": "396c0569221ae88d90a9c1d7dafe5fab731cba00e5ed0b6733f531244a5716b7",
+      "narrow_horizontal_extent_m": 0.0576186329126358,
+      "largest_extent_m": 0.07610652223229408,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "4b172bf56632598d9514bbeec8bd36fe406ba89d3d963c194eb7d0261b07b015"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_6",
+      "native_dimensions_xyz_m": [
+        0.05417638458311558,
+        0.05417380854487419,
+        0.07013281434774399
+      ],
+      "physical_scale": 1.0,
+      "sha256": "f034398f7421a330fb874543158bdd4511162c4ee74ac1d03a3617856e685634",
+      "narrow_horizontal_extent_m": 0.05417380854487419,
+      "largest_extent_m": 0.07013281434774399,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "bf511c5b651244dec5c7172fb82462e750b85d06a66ee82ecbe4438918d94ffb"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_7",
+      "native_dimensions_xyz_m": [
+        0.05085202679038048,
+        0.05084953084588051,
+        0.05895635113120079
+      ],
+      "physical_scale": 1.0,
+      "sha256": "1f70942466ca062d77355b536564338e3ed3b97cb77aafd9617b06ffd53fd341",
+      "narrow_horizontal_extent_m": 0.05084953084588051,
+      "largest_extent_m": 0.05895635113120079,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "3007b83477be4d63b6e9b653887603be4551e64fe05d03ff117c92c327f659be"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_8",
+      "native_dimensions_xyz_m": [
+        0.048324229195714,
+        0.048321910202503204,
+        0.06680461019277573
+      ],
+      "physical_scale": 1.0,
+      "sha256": "0bafb94a6d6023c135a43c3b7e1e32c0170105e50a7eaa110eff76bd23feb85c",
+      "narrow_horizontal_extent_m": 0.048321910202503204,
+      "largest_extent_m": 0.06680461019277573,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "b66a262c33299b5568e660d9766e3dea25f5ddb464469579277acea788806ae1"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_12",
+      "native_dimensions_xyz_m": [
+        0.051747869700193405,
+        0.051745373755693436,
+        0.07921498268842697
+      ],
+      "physical_scale": 1.0,
+      "sha256": "d37fb472e7fd0eb1c9f54f8e83d8a1fdad3cd70f259788fd84aef959e09ed9a0",
+      "narrow_horizontal_extent_m": 0.051745373755693436,
+      "largest_extent_m": 0.07921498268842697,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "68a642b5dd03ba3b58dbfefae9ae1a031c59a31130d0b07fda248dabd8982f89"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_22",
+      "native_dimensions_xyz_m": [
+        0.053150761872529984,
+        0.05314811319112778,
+        0.0735696330666542
+      ],
+      "physical_scale": 1.0,
+      "sha256": "5b93db3a1fa0d6b0e97a5d6cbe5d7875bad885b4e37067f8fcd731dd1e90e25c",
+      "narrow_horizontal_extent_m": 0.05314811319112778,
+      "largest_extent_m": 0.0735696330666542,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "b29d14663439234ca8492dc89166381029f1030f32edaba9efe191213d179746"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_25",
+      "native_dimensions_xyz_m": [
+        0.044448768720030785,
+        0.044446635991334915,
+        0.05675133690237999
+      ],
+      "physical_scale": 1.0,
+      "sha256": "c31660c58e9a661d9d0833d59c7294e5686cc065c731473e01fdca42df6cdebf",
+      "narrow_horizontal_extent_m": 0.044446635991334915,
+      "largest_extent_m": 0.05675133690237999,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "3123ab551028d6d7b692a1c1de54e363647b3cd7792a2fa9a47fa7f0b0e85db2"
+    },
+    {
+      "category": "Egg",
+      "asset": "Egg_27",
+      "native_dimensions_xyz_m": [
+        0.06632138416171074,
+        0.06631828099489212,
+        0.09132782742381096
+      ],
+      "physical_scale": 1.0,
+      "sha256": "4484d83baec30d6c1bc272702022a3a001a0bd4371b60d00e0f9340753bbf6d0",
+      "narrow_horizontal_extent_m": 0.06631828099489212,
+      "largest_extent_m": 0.09132782742381096,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "egg",
+      "preflight_sha256": "9de9b8e5a2ede43dc6ddb4dc4866056fa0df9988f0a95fbe0b284194f36ab468"
+    },
+    {
+      "category": "Mug",
+      "asset": "Mug_2",
+      "native_dimensions_xyz_m": [
+        0.10995934158563614,
+        0.08930834382772446,
+        0.10305068388581251
+      ],
+      "physical_scale": 1.0,
+      "sha256": "9167c84bd5f727e6c8a374e7dc74f55ad339d63f97c0637e9a09e49a3e436d38",
+      "narrow_horizontal_extent_m": 0.08930834382772446,
+      "largest_extent_m": 0.10995934158563614,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "mug",
+      "preflight_sha256": "97034c4729b1deaf990647006a96d764578841440a313347f3824e33a4baf4e5"
+    },
+    {
+      "category": "Mug",
+      "asset": "Mug_3",
+      "native_dimensions_xyz_m": [
+        0.10926681384444237,
+        0.08876669406890869,
+        0.10290051907300946
+      ],
+      "physical_scale": 1.0,
+      "sha256": "61aa109d7ce53024ebc856df1e0fe729b401f5319444bff6eebc565faaa79e42",
+      "narrow_horizontal_extent_m": 0.08876669406890869,
+      "largest_extent_m": 0.10926681384444237,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "mug",
+      "preflight_sha256": "bb9539a709020adf36de357176eb72cbce878aafd93cd7426a16a2cd4a31aa7a"
+    },
+    {
+      "category": "Tomato",
+      "asset": "Tomato_3",
+      "native_dimensions_xyz_m": [
+        0.09359834343194962,
+        0.08892171829938889,
+        0.07503451406955719
+      ],
+      "physical_scale": 1.0,
+      "sha256": "3041416cd011421e734c3c5f6d4f48dca6bc8f4584468440721c1dc94bb0814c",
+      "narrow_horizontal_extent_m": 0.08892171829938889,
+      "largest_extent_m": 0.09359834343194962,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "tomato",
+      "preflight_sha256": "2e0a5abb590780146be716eec38d005b17f05fac149fcedeedb8604c88769704"
+    },
+    {
+      "category": "Candle",
+      "asset": "Candle_1",
+      "native_dimensions_xyz_m": [
+        0.050042488146573305,
+        0.05000000679810156,
+        0.08208449591062818
+      ],
+      "physical_scale": 1.0,
+      "sha256": "0a5ecb2a3c976406e3f6dceedf076e697652d7ab300a7b7b0fc6619c938cdb2d",
+      "narrow_horizontal_extent_m": 0.05000000679810156,
+      "largest_extent_m": 0.08208449591062818,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "candle",
+      "preflight_sha256": "4effc36916ce9301b3d208c894cbfbcac8e04958bf2eb6b876492f25dd17cc6f"
+    },
+    {
+      "category": "Candle",
+      "asset": "Candle_4",
+      "native_dimensions_xyz_m": [
+        0.052161558414809406,
+        0.05216151601097001,
+        0.15567682072277533
+      ],
+      "physical_scale": 1.0,
+      "sha256": "f434689d362fd20ab88d47913d69e8183ada2090bd63bd693df6ba0d0f30c6cb",
+      "narrow_horizontal_extent_m": 0.05216151601097001,
+      "largest_extent_m": 0.15567682072277533,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "candle",
+      "preflight_sha256": "adde26af4693abbf17f3a409840fd32649f5d7ac603e6dd9cf646993b958fbe3"
+    },
+    {
+      "category": "Candle",
+      "asset": "Candle_5",
+      "native_dimensions_xyz_m": [
+        0.052161558414809406,
+        0.05216154730789839,
+        0.10393907138782102
+      ],
+      "physical_scale": 1.0,
+      "sha256": "ae9a3ea2a1dd6d82c749395a211e8f2b8e04bc1d54c9832329301674cf04b0ea",
+      "narrow_horizontal_extent_m": 0.05216154730789839,
+      "largest_extent_m": 0.10393907138782102,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "candle",
+      "preflight_sha256": "3954c78d663d6cb39727004ee7c028d329a78e4b7d3ed15db1d21fed9b5af745"
+    },
+    {
+      "category": "Soap_Bottle",
+      "asset": "Soap_Bottle_1",
+      "native_dimensions_xyz_m": [
+        0.06886284202337264,
+        0.06976161673665046,
+        0.17933136028532815
+      ],
+      "physical_scale": 1.0,
+      "sha256": "343ea1e618e5f3e182c229062f3d4d6b0679fe2fdf7036ddcab6857a6af570f2",
+      "narrow_horizontal_extent_m": 0.06886284202337264,
+      "largest_extent_m": 0.17933136028532815,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "soap bottle",
+      "preflight_sha256": "174e485ba3e300978d61be4d1c382197aaf3f35f6d015d6e89617dae5e8391d8"
+    },
+    {
+      "category": "Soap_Bottle",
+      "asset": "Soap_Bottle_11",
+      "native_dimensions_xyz_m": [
+        0.08611312881112099,
+        0.08789914473891258,
+        0.19083210706710751
+      ],
+      "physical_scale": 1.0,
+      "sha256": "ee9dfc8c8671901b273a50fc807f6986e7b7d83c580c4db4e2bf0bb5730a8333",
+      "narrow_horizontal_extent_m": 0.08611312881112099,
+      "largest_extent_m": 0.19083210706710751,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "soap bottle",
+      "preflight_sha256": "6eb8589becc1d474b351db2f027ebc95ffd7101112312a17888bb255372689bc"
+    },
+    {
+      "category": "Soap_Bottle",
+      "asset": "Soap_Bottle_14",
+      "native_dimensions_xyz_m": [
+        0.13233596086502075,
+        0.08218749612569809,
+        0.20299920976161978
+      ],
+      "physical_scale": 1.0,
+      "sha256": "84bd244cae9dfd3424596d327e4b80cc2ac2f6ddc258b70e0efeedeacb5a689f",
+      "narrow_horizontal_extent_m": 0.08218749612569809,
+      "largest_extent_m": 0.20299920976161978,
+      "whole_object_parallel_jaw_candidate": true,
+      "query": "soap bottle",
+      "preflight_sha256": "7c026c6210b805c277a4eeefd8643a4d7f6920862407a7bec54cbd0e471e1c14"
+    }
+  ],
+  "rejected": [
+    {
+      "asset": "Apple_19",
+      "checks": [
+        {
+          "check": "initial_cart_support",
+          "passed": true,
+          "minimum_support_force_n": 1.5561927556991577,
+          "maximum_linear_speed_m_s": 0.0,
+          "horizontal_drift_m": 0.0,
+          "final_origin_xyz": [
+            -7.6695380210876465,
+            -4.606065273284912,
+            0.9623611569404602
+          ]
+        },
+        {
+          "check": "plate_drop_offset_+0.00m",
+          "passed": true,
+          "minimum_support_force_n": 1.5853947401046753,
+          "maximum_linear_speed_m_s": 0.0,
+          "horizontal_drift_m": 0.0,
+          "final_origin_xyz": [
+            -8.092793464660645,
+            -6.2827677726745605,
+            0.8363184332847595
+          ]
+        },
+        {
+          "check": "plate_drop_offset_-0.02m",
+          "passed": false,
+          "minimum_support_force_n": 1.4414255619049072,
+          "maximum_linear_speed_m_s": 0.07543877512216568,
+          "horizontal_drift_m": 0.003846570383757353,
+          "final_origin_xyz": [
+            -8.112014770507812,
+            -6.282128810882568,
+            0.8363531231880188
+          ]
+        },
+        {
+          "check": "plate_drop_offset_+0.02m",
+          "passed": true,
+          "minimum_support_force_n": 1.515243649482727,
+          "maximum_linear_speed_m_s": 0.0,
+          "horizontal_drift_m": 0.0,
+          "final_origin_xyz": [
+            -8.073199272155762,
+            -6.283138751983643,
+            0.8364241123199463
+          ]
+        }
+      ],
+      "error": null,
+      "receipt": {
+        "asset": "Apple_19",
+        "returncode": 1,
+        "wall_timeout": false,
+        "execution_seconds": 43.4383339881897
+      }
+    }
+  ],
+  "changes": [
+    {
+      "index": 1,
+      "scene": "ProcTHOR-Test-722",
+      "previous_pickup": "Fork_1",
+      "pickup": "Mug_2",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 2,
+      "scene": "ProcTHOR-Train-8471",
+      "previous_pickup": "Remote_1",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 3,
+      "scene": "ProcTHOR-Train-6452",
+      "previous_pickup": "Apple_19",
+      "pickup": "Mug_2",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 4,
+      "scene": "ProcTHOR-Train-2043",
+      "previous_pickup": "Candle_6",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 5,
+      "scene": "ProcTHOR-Test-288",
+      "previous_pickup": "Egg_6",
+      "pickup": "Egg_6",
+      "category": "Egg",
+      "replaced": false
+    },
+    {
+      "index": 6,
+      "scene": "ProcTHOR-Train-4300",
+      "previous_pickup": "Soap_Bottle_11",
+      "pickup": "Soap_Bottle_11",
+      "category": "Soap_Bottle",
+      "replaced": false
+    },
+    {
+      "index": 7,
+      "scene": "ProcTHOR-Train-1402",
+      "previous_pickup": "Soap_Bottle_22",
+      "pickup": "Candle_1",
+      "category": "Candle",
+      "replaced": true
+    },
+    {
+      "index": 8,
+      "scene": "ProcTHOR-Train-7473",
+      "previous_pickup": "Egg_22",
+      "pickup": "Egg_22",
+      "category": "Egg",
+      "replaced": false
+    },
+    {
+      "index": 9,
+      "scene": "ProcTHOR-Test-166",
+      "previous_pickup": "Potato_22",
+      "pickup": "Mug_3",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 10,
+      "scene": "ProcTHOR-Test-459",
+      "previous_pickup": "Tomato_3",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": false
+    },
+    {
+      "index": 11,
+      "scene": "ProcTHOR-Train-3859",
+      "previous_pickup": "Apple_22",
+      "pickup": "Apple_22",
+      "category": "Apple",
+      "replaced": false
+    },
+    {
+      "index": 12,
+      "scene": "ProcTHOR-Train-4108",
+      "previous_pickup": "Candle_3",
+      "pickup": "Soap_Bottle_1",
+      "category": "Soap_Bottle",
+      "replaced": true
+    },
+    {
+      "index": 13,
+      "scene": "ProcTHOR-Train-7780",
+      "previous_pickup": "Potato_28",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 14,
+      "scene": "ProcTHOR-Train-8921",
+      "previous_pickup": "Pepper_Shaker_2",
+      "pickup": "Apple_10",
+      "category": "Apple",
+      "replaced": true
+    },
+    {
+      "index": 15,
+      "scene": "ProcTHOR-Train-2769",
+      "previous_pickup": "Watch_2",
+      "pickup": "Candle_4",
+      "category": "Candle",
+      "replaced": true
+    },
+    {
+      "index": 16,
+      "scene": "ProcTHOR-Train-507",
+      "previous_pickup": "Newspaper_2",
+      "pickup": "Mug_2",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 17,
+      "scene": "ProcTHOR-Train-9926",
+      "previous_pickup": "Egg_25",
+      "pickup": "Egg_25",
+      "category": "Egg",
+      "replaced": false
+    },
+    {
+      "index": 18,
+      "scene": "ProcTHOR-Train-3208",
+      "previous_pickup": "Candle_4",
+      "pickup": "Candle_4",
+      "category": "Candle",
+      "replaced": false
+    },
+    {
+      "index": 19,
+      "scene": "ProcTHOR-Train-4204",
+      "previous_pickup": "Watch_1",
+      "pickup": "Soap_Bottle_11",
+      "category": "Soap_Bottle",
+      "replaced": true
+    },
+    {
+      "index": 20,
+      "scene": "ProcTHOR-Train-8432",
+      "previous_pickup": "Potato_30",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 21,
+      "scene": "ProcTHOR-Test-308",
+      "previous_pickup": "Remote_3",
+      "pickup": "Apple_21",
+      "category": "Apple",
+      "replaced": true
+    },
+    {
+      "index": 22,
+      "scene": "ProcTHOR-Train-3170",
+      "previous_pickup": "Pepper_Shaker_1",
+      "pickup": "Candle_5",
+      "category": "Candle",
+      "replaced": true
+    },
+    {
+      "index": 23,
+      "scene": "ProcTHOR-Val-265",
+      "previous_pickup": "Spray_Bottle_3",
+      "pickup": "Egg_1",
+      "category": "Egg",
+      "replaced": true
+    },
+    {
+      "index": 24,
+      "scene": "ProcTHOR-Train-9699",
+      "previous_pickup": "Candle_5",
+      "pickup": "Candle_5",
+      "category": "Candle",
+      "replaced": false
+    },
+    {
+      "index": 25,
+      "scene": "ProcTHOR-Val-605",
+      "previous_pickup": "Salt_Shaker_2",
+      "pickup": "Mug_3",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 26,
+      "scene": "ProcTHOR-Train-2451",
+      "previous_pickup": "Soap_Bottle_14",
+      "pickup": "Soap_Bottle_14",
+      "category": "Soap_Bottle",
+      "replaced": false
+    },
+    {
+      "index": 27,
+      "scene": "ProcTHOR-Val-576",
+      "previous_pickup": "Spray_Bottle_1",
+      "pickup": "Soap_Bottle_14",
+      "category": "Soap_Bottle",
+      "replaced": true
+    },
+    {
+      "index": 28,
+      "scene": "ProcTHOR-Train-4956",
+      "previous_pickup": "Spray_Bottle_7",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 29,
+      "scene": "ProcTHOR-Train-5013",
+      "previous_pickup": "Egg_8",
+      "pickup": "Egg_8",
+      "category": "Egg",
+      "replaced": false
+    },
+    {
+      "index": 30,
+      "scene": "ProcTHOR-Train-4732",
+      "previous_pickup": "Spoon_1",
+      "pickup": "Apple_22",
+      "category": "Apple",
+      "replaced": true
+    },
+    {
+      "index": 31,
+      "scene": "ProcTHOR-Val-660",
+      "previous_pickup": "Dish_Sponge_1",
+      "pickup": "Candle_1",
+      "category": "Candle",
+      "replaced": true
+    },
+    {
+      "index": 32,
+      "scene": "ProcTHOR-Train-7199",
+      "previous_pickup": "Candle_2",
+      "pickup": "Egg_12",
+      "category": "Egg",
+      "replaced": true
+    },
+    {
+      "index": 33,
+      "scene": "ProcTHOR-Train-5942",
+      "previous_pickup": "Apple_21",
+      "pickup": "Apple_21",
+      "category": "Apple",
+      "replaced": false
+    },
+    {
+      "index": 34,
+      "scene": "ProcTHOR-Train-9419",
+      "previous_pickup": "Potato_21",
+      "pickup": "Mug_2",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 35,
+      "scene": "ProcTHOR-Train-6673",
+      "previous_pickup": "Apple_10",
+      "pickup": "Apple_10",
+      "category": "Apple",
+      "replaced": false
+    },
+    {
+      "index": 36,
+      "scene": "ProcTHOR-Test-959",
+      "previous_pickup": "Mug_3",
+      "pickup": "Mug_3",
+      "category": "Mug",
+      "replaced": false
+    },
+    {
+      "index": 37,
+      "scene": "ProcTHOR-Train-2063",
+      "previous_pickup": "Remote_2",
+      "pickup": "Soap_Bottle_1",
+      "category": "Soap_Bottle",
+      "replaced": true
+    },
+    {
+      "index": 38,
+      "scene": "ProcTHOR-Train-2809",
+      "previous_pickup": "Egg_7",
+      "pickup": "Egg_7",
+      "category": "Egg",
+      "replaced": false
+    },
+    {
+      "index": 39,
+      "scene": "ProcTHOR-Train-406",
+      "previous_pickup": "Wine_Bottle_1",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 40,
+      "scene": "ProcTHOR-Train-4574",
+      "previous_pickup": "Soap_Bottle_24",
+      "pickup": "Apple_29",
+      "category": "Apple",
+      "replaced": true
+    },
+    {
+      "index": 41,
+      "scene": "ProcTHOR-Train-1182",
+      "previous_pickup": "Apple_29",
+      "pickup": "Apple_29",
+      "category": "Apple",
+      "replaced": false
+    },
+    {
+      "index": 42,
+      "scene": "ProcTHOR-Train-9100",
+      "previous_pickup": "Salt_Shaker_1",
+      "pickup": "Candle_4",
+      "category": "Candle",
+      "replaced": true
+    },
+    {
+      "index": 43,
+      "scene": "ProcTHOR-Train-5361",
+      "previous_pickup": "Soap_Bottle_1",
+      "pickup": "Soap_Bottle_1",
+      "category": "Soap_Bottle",
+      "replaced": false
+    },
+    {
+      "index": 44,
+      "scene": "ProcTHOR-Train-2898",
+      "previous_pickup": "Spray_Bottle_6",
+      "pickup": "Egg_27",
+      "category": "Egg",
+      "replaced": true
+    },
+    {
+      "index": 45,
+      "scene": "ProcTHOR-Train-6968",
+      "previous_pickup": "Cup_24",
+      "pickup": "Mug_3",
+      "category": "Mug",
+      "replaced": true
+    },
+    {
+      "index": 46,
+      "scene": "ProcTHOR-Train-4899",
+      "previous_pickup": "Spray_Bottle_5",
+      "pickup": "Soap_Bottle_11",
+      "category": "Soap_Bottle",
+      "replaced": true
+    },
+    {
+      "index": 47,
+      "scene": "ProcTHOR-Val-46",
+      "previous_pickup": "Potato_26",
+      "pickup": "Tomato_3",
+      "category": "Tomato",
+      "replaced": true
+    },
+    {
+      "index": 48,
+      "scene": "ProcTHOR-Train-6322",
+      "previous_pickup": "Candle_1",
+      "pickup": "Candle_1",
+      "category": "Candle",
+      "replaced": false
+    },
+    {
+      "index": 49,
+      "scene": "ProcTHOR-Train-7428",
+      "previous_pickup": "Soap_Bar_1",
+      "pickup": "Apple_10",
+      "category": "Apple",
+      "replaced": true
+    },
+    {
+      "index": 50,
+      "scene": "ProcTHOR-Val-902",
+      "previous_pickup": "Paper_Towel_1",
+      "pickup": "Candle_5",
+      "category": "Candle",
+      "replaced": true
+    }
+  ]
+}

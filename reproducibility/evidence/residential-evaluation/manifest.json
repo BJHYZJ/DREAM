@@ -1,0 +1,19 @@
+{
+  "files": {
+    "records.zip": {
+      "bytes": 457006,
+      "sha256": "69a9a0b922571f1dc536767b7469d62054736e2a9d2e822ba20fba16ec6edb2f"
+    },
+    "results.json": {
+      "bytes": 33012,
+      "sha256": "83c6c1b1b9822135d4bfc1935db3c5195ae3c0a63d570d408c16afbfcfff6b87"
+    },
+    "recording_checksums.json": {
+      "bytes": 8904618,
+      "sha256": "e5059d28a038681f427bf5ca60decb27429ea7a6c601d0a179863ba853f11f1b"
+    }
+  },
+  "attempts": 50,
+  "strict_successes": 36,
+  "source_validation_member": "validation/source_validation.json"
+}

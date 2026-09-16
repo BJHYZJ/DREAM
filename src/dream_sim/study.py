@@ -1,14 +1,16 @@
 """Run a common controller over a declared set of houses, seeds, and memory variants."""
+
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 
+from dream_sim.limited_worker import ALLOWED_GPUS
 from dream_sim.sources import PROJECT, engine_root, safe_member, verify_public_configs
 
 
@@ -41,8 +43,10 @@ def materialize_controller(source: Path, destination: Path, overrides: dict[str,
     destination.mkdir(parents=True, exist_ok=False)
     paths = [*(source / "experiments").glob("*.py"), *(source / "src/dream").rglob("*.py")]
     names = {path.relative_to(source).as_posix() for path in paths}
-    if not set(overrides) <= names:
-        raise ValueError("Controller override does not match an existing module")
+    for name in overrides:
+        relative = safe_member(name)
+        if relative.parts[0] != "experiments" or relative.suffix != ".py":
+            raise ValueError("Controller overrides must be experiment Python modules")
     for path in paths:
         name = path.relative_to(source).as_posix()
         content = overrides.get(name)
@@ -52,6 +56,12 @@ def materialize_controller(source: Path, destination: Path, overrides: dict[str,
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(content)
         if sha(output.read_bytes()) != sha(content):
+            raise OSError(f"Controller copy verification failed: {name}")
+    for name in sorted(set(overrides) - names):
+        output = destination / name
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(overrides[name])
+        if sha(output.read_bytes()) != sha(overrides[name]):
             raise OSError(f"Controller copy verification failed: {name}")
 
 
@@ -90,22 +100,79 @@ def load_task_manifest(path: Path) -> tuple[dict, list[Path]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--controller", choices=["baseline", "recovery", "recovery_v2", "recovery_v3", "recovery_v4", "recovery_v5", "recovery_v6", "compact_v1"], default="recovery")
-    parser.add_argument("--cases", nargs="+", choices=[f"{i:02d}" for i in range(1, 11)],
-                        default=[f"{i:02d}" for i in range(1, 11)])
+    parser.add_argument(
+        "--controller",
+        choices=[
+            "baseline",
+            "recovery",
+            "recovery_v2",
+            "recovery_v3",
+            "recovery_v4",
+            "recovery_v5",
+            "recovery_v6",
+            "compact_v1",
+        ],
+        default="recovery",
+    )
+    parser.add_argument(
+        "--cases",
+        nargs="+",
+        choices=[f"{i:02d}" for i in range(1, 11)],
+        default=[f"{i:02d}" for i in range(1, 11)],
+    )
     parser.add_argument("--seeds", nargs="+", type=int, default=[100, 101, 102])
-    parser.add_argument("--variants", nargs="+", choices=["dynamic", "static"],
-                        default=["dynamic", "static"])
-    parser.add_argument("--task-manifest", type=Path, help="Checksum-locked cohort; supplies tasks, seed and memory variant")
-    parser.add_argument("--gpus", nargs="+", default=["0"])
+    parser.add_argument(
+        "--variants", nargs="+", choices=["dynamic", "static"], default=["dynamic", "static"]
+    )
+    parser.add_argument(
+        "--task-manifest",
+        type=Path,
+        help="Checksum-locked cohort; supplies tasks, seed and memory variant",
+    )
+    parser.add_argument("--gpus", nargs="+", choices=ALLOWED_GPUS, default=list(ALLOWED_GPUS[:1]))
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--asset-dir", type=Path, default=PROJECT / ".runtime/assets")
     parser.add_argument("--model-cache", type=Path, default=PROJECT / ".runtime/models")
+    parser.add_argument(
+        "--parallel",
+        action="store_true",
+        help="Run the locked cohort with a 900-second robot action limit and a separate server watchdog",
+    )
+    parser.add_argument(
+        "--raster-threads",
+        type=int,
+        choices=(2, 4),
+        default=2,
+        help="CPU rendering threads per parallel batch worker; match the deployment CPU affinity",
+    )
+    parser.add_argument(
+        "--workers-per-gpu",
+        type=int,
+        choices=(2, 4),
+        help="Parallel batch concurrency; match the verified deployment resource profile",
+    )
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
-    if args.task_manifest and any(option.split("=")[0] in {"--cases", "--seeds", "--variants"} for option in sys.argv[1:]):
+    if args.workers_per_gpu is None:
+        profile = PROJECT / ".runtime/worker_resource_limits.json"
+        args.workers_per_gpu = (
+            json.loads(profile.read_text()).get("workers_per_gpu", 2)
+            if args.parallel and profile.exists()
+            else 2
+        )
+        if args.workers_per_gpu not in (2, 4):
+            parser.error("Parallel batch requires a two- or four-worker GPU deployment profile")
+    if args.parallel and not args.task_manifest:
+        parser.error("--parallel requires a checksum-locked --task-manifest")
+    if args.raster_threads != 2 and not args.parallel:
+        parser.error("--raster-threads is a parallel batch setting")
+    if args.workers_per_gpu != 2 and not args.parallel:
+        parser.error("--workers-per-gpu is a parallel batch setting")
+    if args.task_manifest and any(
+        option.split("=")[0] in {"--cases", "--seeds", "--variants"} for option in sys.argv[1:]
+    ):
         parser.error("--task-manifest supplies cases, seeds and variants; do not override them")
-    for name in ("cases", "seeds", "variants"):
+    for name in ("cases", "seeds", "variants", "gpus"):
         values = getattr(args, name)
         if len(values) != len(set(values)):
             parser.error(f"Duplicate {name}")
@@ -133,15 +200,38 @@ def main() -> None:
     directory = PROJECT / "controllers" / args.controller
     if args.controller != "baseline" and not (directory / "controller.json").is_file():
         parser.error(f"Controller revision is not installed: {args.controller}")
-    overrides = (controller_overrides(directory, source_id)
-                 if args.controller != "baseline" else {})
-    full_comparison = manifest is None and len(tasks) == 10 and len(args.seeds) == 3 and set(args.variants) == {"dynamic", "static"}
-    print(json.dumps({"controller": args.controller, "base_source_id": source_id,
-                      "source_overrides": {key: sha(value) for key, value in overrides.items()},
-                      "task_manifest_sha256": sha(args.task_manifest.read_bytes()) if args.task_manifest else None,
-                      "cases": args.cases, "seeds": args.seeds, "variants": args.variants,
-                      "planned_attempts": len(tasks) * len(args.seeds) * len(args.variants),
-                      "execute": args.execute, "output": str(output)}, indent=2), flush=True)
+    overrides = controller_overrides(directory, source_id) if args.controller != "baseline" else {}
+    full_comparison = (
+        manifest is None
+        and len(tasks) == 10
+        and len(args.seeds) == 3
+        and set(args.variants) == {"dynamic", "static"}
+    )
+    print(
+        json.dumps(
+            {
+                "controller": args.controller,
+                "base_source_id": source_id,
+                "source_overrides": {key: sha(value) for key, value in overrides.items()},
+                "task_manifest_sha256": sha(args.task_manifest.read_bytes())
+                if args.task_manifest
+                else None,
+                "cases": args.cases,
+                "seeds": args.seeds,
+                "variants": args.variants,
+                "planned_attempts": len(tasks) * len(args.seeds) * len(args.variants),
+                "parallel": args.parallel,
+                "workers_per_gpu": args.workers_per_gpu if args.parallel else 1,
+                "parallel_tasks": len(args.gpus) * (args.workers_per_gpu if args.parallel else 1),
+                "whole_task_wall_timeout_s": 2700 if args.parallel else 14400,
+                "robot_action_limit_seconds": 900 if args.parallel else None,
+                "execute": args.execute,
+                "output": str(output),
+            },
+            indent=2,
+        ),
+        flush=True,
+    )
     if not args.execute:
         return
     cache = args.model_cache.resolve()
@@ -152,18 +242,69 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="dream-controller-", dir=output.parent) as temporary:
         revised = Path(temporary) / "DREAM_code"
         materialize_controller(source, revised, overrides)
-        command = [sys.executable, str(revised / "experiments/run_instruction_frozen_batch.py"),
-                   "--source-repo", str(revised), "--tasks", *map(str, tasks),
-                   "--output", str(output), "--heading-navigation", "--seeds", *map(str, args.seeds),
-                   "--variants", *args.variants, "--gpus", *args.gpus, "--wall-timeout", "14400",
-                   "--asset-dir", str(args.asset_dir.resolve()), "--model-cache", str(cache)]
+        command = [
+            sys.executable,
+            str(revised / "experiments/run_instruction_frozen_batch.py"),
+            "--source-repo",
+            str(revised),
+            "--tasks",
+            *map(str, tasks),
+            "--output",
+            str(output),
+            "--heading-navigation",
+            "--seeds",
+            *map(str, args.seeds),
+            "--variants",
+            *args.variants,
+            "--gpus",
+            *args.gpus,
+            "--wall-timeout",
+            "2700" if args.parallel else "14400",
+            "--asset-dir",
+            str(args.asset_dir.resolve()),
+            "--model-cache",
+            str(cache),
+        ]
         if manifest is not None:
-            if args.controller not in ("recovery_v3", "recovery_v4", "recovery_v5", "recovery_v6", "compact_v1"):
-                raise ValueError("Explicit residential cohort requires a supported residential controller")
+            if args.controller not in (
+                "recovery_v3",
+                "recovery_v4",
+                "recovery_v5",
+                "recovery_v6",
+                "compact_v1",
+            ):
+                raise ValueError(
+                    "Explicit residential cohort requires a supported residential controller"
+                )
             command.extend(["--cohort-id", manifest["id"]])
         if full_comparison:
             command.append("--benchmark")
+        if args.parallel:
+            command.extend(["--prepare-only", "--simulation-time-limit-seconds", "900"])
         subprocess.run(command, cwd=engine, check=True)
+        if args.parallel:
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "dream_sim.batch",
+                    "--run",
+                    str(output),
+                    "--gpus",
+                    *args.gpus,
+                    "--workers-per-gpu",
+                    str(args.workers_per_gpu),
+                    "--raster-threads",
+                    str(args.raster_threads),
+                    "--time-limit-seconds",
+                    "2700",
+                    "--robot-time-limit-seconds",
+                    "900",
+                    "--execute",
+                ],
+                cwd=PROJECT,
+                check=True,
+            )
 
 
 if __name__ == "__main__":

@@ -73,24 +73,33 @@ class LearnedSearchPilot:
     """Policy receives only the robot interface and observation-owned memories."""
     def __init__(self, io, perception, output, query, dynamic):
         self.io, self.perception, self.output, self.query = io, perception, output, query
-        self.memory = SemanticMemory(perception, dynamic=dynamic)
+        self.memory = SemanticMemory(perception, dynamic=dynamic, observation_directory=output)
         self.occupancy = ObservedOccupancy()
         self.phase = "Build memory"
         self.cached = None
         self.cached_detection=None
         self.events = []
+        self._event_stream = None
         self.current_detection = None
         self.last_obs = None
         self.grasp_motion_attempted = False
+        self.grasp_closure_attempted = False
         self.placement_motion_attempted = False
 
     def event(self, name, **kwargs):
         row = dict(step=self.io.step_id,event=name,**kwargs)
         self.events.append(row)
         print(json.dumps(row),flush=True)
-        # Flush incrementally, including failures interrupted during long runs.
-        with (self.output / "events.jsonl").open("a") as stream:
-            stream.write(json.dumps(row)+"\n")
+        # Keep each complete event immediately readable, including failures,
+        # without reopening the network file for every event.
+        if self._event_stream is None:
+            self._event_stream = (self.output / "events.jsonl").open("a", buffering=1)
+        self._event_stream.write(json.dumps(row)+"\n")
+
+    def close_event_log(self):
+        if self._event_stream is not None:
+            self._event_stream.close()
+            self._event_stream = None
 
     def observe(self, sensor_name="fetch_head"):
         self.io.display_sensor=sensor_name
@@ -107,6 +116,7 @@ class LearnedSearchPilot:
             spheres.extend(self.robot_filter_spheres())
         self.occupancy.integrate(obs,self_spheres=spheres)
         detections = self.perception.detect(obs,self.query)
+        self.last_detections = detections
         self.current_detection = detections[0] if detections else None
         self.last_obs = obs
         self.event("observation",frame_id=obs.frame_id,memory=update,
@@ -188,15 +198,21 @@ class LearnedSearchPilot:
         base = self.io.pose()
         delta = old[:2]-base[:2]
         bearing=math.atan2(delta[1],delta[0])
-        turned=self.turn_to(bearing)
-        # Pitch from measured camera height and retrieved point, not actor pose.
-        self.io.body[0] = float(np.clip(math.atan2(math.sin(bearing-self.io.pose()[2]),
-            math.cos(bearing-self.io.pose()[2])),-1.3,1.3)) if turned is False else 0.
-        self.io.body[1] = float(np.clip(math.atan2(self.focus_camera_height()-old[2],np.linalg.norm(delta)), -.3,.9))
+        if (getattr(self,"task_stage",None) in ("pickup_search","placement_search")
+                and hasattr(self,"aim_search_view")):
+            self.aim_search_view(old)
+        else:
+            turned=self.turn_to(bearing)
+            # Manipulation alignment retains its existing base-facing pose.
+            self.io.body[0] = float(np.clip(math.atan2(math.sin(bearing-self.io.pose()[2]),
+                math.cos(bearing-self.io.pose()[2])),-1.3,1.3)) if turned is False else 0.
+            self.io.body[1] = float(np.clip(math.atan2(self.focus_camera_height()-old[2],np.linalg.norm(delta)), -.3,.9))
         for _ in range(12):
             self.io.command()
         current = self.observe()
-        displaced = current is not None and np.linalg.norm(np.asarray(current.point_world)[:2]-old[:2]) > .5
+        displaced = (current is not None
+                     and np.linalg.norm(np.asarray(current.point_world)[:2]-old[:2]) > .5
+                     and self.missing_location_observed(old,self.last_obs))
         missing = current is None and self.missing_location_observed(old,self.last_obs)
         if missing or displaced:
             self.memory.reject(old[:2],self.last_obs.frame_id if missing else old_max_id,
@@ -216,18 +232,24 @@ class LearnedSearchPilot:
         found=[]
         # Restore a room-search view after close-range target verification.
         self.io.body[1]=.22
-        carrying=getattr(self,"task_stage",None) in ("placement_search","place")
-        pans=(-.45,0.,.45) if carrying else (-1.15,-.55,0.,.55,1.15)
-        for pan in pans:
+        # Inspect the current forward view before looking away; the head can
+        # cover both sides while the accepted folded arm/base remain fixed.
+        # Three overlapping views span the same head range. The calibrated
+        # horizontal field of view covers the intervals between these pans.
+        pans=(0.,-1.15,1.15)
+        for index,pan in enumerate(pans):
             self.io.body[0]=pan
             for _ in range(12):
                 self.io.command()
             result=self.observe()
             if result is not None:
-                found.append(result)
-        self.io.body[0]=0.
-        for _ in range(12):
-            self.io.command()
+                # Keep the camera and last_obs on the actual positive view.
+                self.current_detection=result
+                self.event("head_camera_scan_complete",views=index+1,sensor="fetch_head",
+                           stopped_on_detection=True)
+                return result
+        # Leave the head at its last observed pan so the lower sweep can
+        # continue from this side without an intermediate return to center.
         # The selected detection is fresh within this stationary sweep, not an
         # evaluator answer or a remembered pre-relocation coordinate.
         self.current_detection=max(found,key=lambda d:d.score) if found else None
@@ -396,7 +418,14 @@ class LearnedSearchPilot:
         This executes an attempt; bilateral contact and lift success are scored
         independently by the evaluator. No grasp attachment or actor setter.
         """
-        self.focus()
+        self.grasp_closure_attempted = False
+        latest=getattr(self,"last_obs",None)
+        detection=self.current_detection
+        fresh=(detection is not None and latest is not None
+               and detection.observation_id==latest.frame_id
+               and latest.sim_step==self.io.step_id)
+        if not fresh:
+            self.focus()
         detection=self.current_detection
         if detection is None:
             self.event("grasp_aborted_no_fresh_detection")
@@ -434,7 +463,7 @@ class LearnedSearchPilot:
         self.phase="Align grasp above support"
         hover=array(self.io.robot.tcp_pose.p)[0].copy()
         hover[:2]=goal[:2]
-        clearance_height=(fit["support_height_m"]+fit["height_m"]+.12
+        clearance_height=(fit["support_height_m"]+fit["height_m"]+.06
                           if fit.get("height_m",0)>.12 else goal[2]+.30)
         hover[2]=max(hover[2],clearance_height)
         hover_residual=self.io.move_tcp(hover,target_rotation=vertical,steps=720)
@@ -442,17 +471,41 @@ class LearnedSearchPilot:
         self.event("high_grasp_alignment",hover_world=hover.tolist(),
             residual_m=hover_residual,rotation_error_rad=hover_rotation,
             torso_position_m=self.io.torso_trace()["torso_position_m"])
+        if ((hover_residual>.03 or hover_rotation>.08)
+                and fit.get("height_m",0)>.12
+                and hover[2]>clearance_height+.02):
+            # The unfolded seed can start unnecessarily high. Only after its
+            # alignment fails, retry above the observed top with the same
+            # 6 cm clearance and original position/orientation criteria.
+            hover[2]=clearance_height
+            hover_residual=self.io.move_tcp(hover,target_rotation=vertical,steps=360)
+            hover_rotation=orientation_error()
+            self.event("observed_clearance_alignment_retry",hover_world=hover.tolist(),
+                residual_m=hover_residual,rotation_error_rad=hover_rotation,
+                observed_object_top_m=fit["support_height_m"]+fit["height_m"],
+                clearance_m=.06)
         if hover_residual>.03 or hover_rotation>.08:
             self.event("grasp_aborted_alignment_unreachable")
             return False
         self.phase="Grasp"
-        pre=self.io.move_tcp(goal+[0,0,.14],target_rotation=vertical,steps=720)
+        pre_clearance=.08 if fit.get("height_m",0)>.12 else .14
+        pre=self.io.move_tcp(goal+[0,0,pre_clearance],target_rotation=vertical,steps=720)
         if pre>.03 or orientation_error()>.08:
             self.event("grasp_aborted_pregrasp_unreachable",residual_m=pre,
                 rotation_error_rad=orientation_error())
             return False
+        clearance=fit.get("grasp_clearance")
+        if clearance is not None:
+            opening=clearance["opening_m"]
+            config=self.io.robot.controller.controllers["gripper"].config
+            command=2*(opening/2-float(config.lower))/(float(config.upper)-float(config.lower))-1
+            self.event("observed_width_gripper_preshape",opening_m=opening,command=command,
+                observed_width_m=fit["closing_width_m"],per_side_clearance_m=.006)
+            for grip in np.linspace(self.io.grip,command,40):
+                self.io.command_ee(grip=float(grip))
+            self.io.move_tcp(goal+[0,0,pre_clearance],target_rotation=vertical,steps=160)
         contact=self.io.move_tcp(goal,tolerance=.007,target_rotation=vertical)
-        if contact>.03 or orientation_error()>.12:
+        if contact>.03 or orientation_error()>.30:
             self.event("grasp_aborted_contact_pose_unreachable",residual_m=contact,
                 rotation_error_rad=orientation_error())
             return False
@@ -464,18 +517,31 @@ class LearnedSearchPilot:
         if "support_height_m" in fit and "height_m" in fit:
             matrix=array(self.io.robot.tcp_pose.to_transformation_matrix())[0]
             center=target.copy();center[2]=fit["support_height_m"]+.5*fit["height_m"]
+            if "object_center_world" in fit:
+                center=np.asarray(fit["object_center_world"],dtype=float)
             self.perceived_payload_frame=dict(center_tcp_m=((center-matrix[:3,3])@matrix[:3,:3]).tolist(),
                 axis_tcp=(np.array([0.,0.,1.])@matrix[:3,:3]).tolist(),
                 observation_id=fit["observation_id"])
             self.event("observed_payload_grasp_frame",**self.perceived_payload_frame)
-        for grip in np.linspace(1.,-1.,40):
+        self.grasp_closure_attempted = True
+        for grip in np.linspace(self.io.grip,-1.,40):
             self.io.command_ee(grip=float(grip))
         for _ in range(40):
             self.io.command_ee()
         self.event("gripper_closed",finger_positions=array(self.io.robot.robot.get_qpos())[0,-2:].tolist())
         self.phase="Lift"
-        lift_goal=array(self.io.robot.tcp_pose.p)[0]+[0,0,.12]
-        residual=self.io.move_tcp(lift_goal)
+        lift_start=array(self.io.robot.tcp_pose.p)[0].copy()
+        if lift_start[2]>1.15 and fit.get("grasp_column_extended",False):
+            # Clear the support before retracting a tall grasp into the arm's
+            # reachable workspace; a straight high lift can tilt at its limit.
+            self.io.move_tcp(lift_start+[0,0,.05],target_rotation=vertical)
+            inward=self.io.pose()[:2]-lift_start[:2]
+            inward/=max(np.linalg.norm(inward),1e-9)
+            lift_goal=lift_start+np.r_[.12*inward,.14]
+            residual=self.io.move_tcp(lift_goal,target_rotation=vertical)
+        else:
+            lift_goal=lift_start+[0,0,.12]
+            residual=self.io.move_tcp(lift_goal)
         for _ in range(20):
             self.io.command_ee()
         self.io.hold_measured_arm()

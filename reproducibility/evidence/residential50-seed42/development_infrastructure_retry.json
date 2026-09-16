@@ -1,0 +1,15 @@
+{
+  "original_batch": "development_16",
+  "retry_batch": "development_17",
+  "reason": "CUDA allocation failed during model loading, before robot controls",
+  "task_identity": {
+    "scene": "ProcTHOR-Train-9031",
+    "seed": 42,
+    "recipe": "egg_plate_wooden_table",
+    "variant": "dynamic",
+    "task_sha256": "92780e913eea05b32d0a376f28b58cd9fcf7ca3addce4fe41c2b6d623858c098",
+    "room_map_sha256": "e40a045eb07709830f724ad74c7aac87bf56e3488e631fab1c469e3a1dc578a9"
+  },
+  "same_source_hashes": true,
+  "original_error_retained": true
+}

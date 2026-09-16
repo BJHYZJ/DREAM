@@ -54,33 +54,37 @@ python -m dream_sim.run --preflight --asset-dir .runtime/render_assets \
 Run the residential study:
 
 ```bash
-python -m dream_sim.study --controller recovery_v6 \
-  --task-manifest configs/residential50/task_manifest.json \
-  --asset-dir .runtime/render_assets \
-  --gpus 0 --output results/residential50 --execute
+DREAM_PYTHON="$(command -v python)" \
+DREAM_ASSET_DIR="$PWD/.runtime/render_assets" \
+DREAM_MODEL_CACHE="$PWD/.runtime/models" \
+./scripts/run_residential.sh \
+  --gpus 0 1 --workers-per-gpu 4 --raster-threads 4 \
+  --output results/residential50 --execute
 ```
 
-The study runs one cross-room task in each of **50 distinct residential scenes**, with **seed 42 throughout**. Each of five object/receptacle combinations appears in ten houses. All tasks use dynamic memory and the same controller. Add GPU IDs to run tasks concurrently, for example `--gpus 0 1 2 3`.
+The DREAM Fetch controller passes task completion and independent physics/observation checks in **36/50 scenes (72%)**. All 50 tasks ran with seed 42, dynamic memory, native object scale, a **900-second robot-action budget**, and a separate **2700-second execution watchdog**. The easy-grasp cohort uses 21 pickup models across 6 categories. These houses were used for controller development, so the rate describes this fixed cohort. See the [complete results](reproducibility/evidence/residential-evaluation/results.json). The videos below belong to a separate recorded cohort.
+
+The command uses GPUs 0 and 1 with four workers per GPU; the deployment resource profile must support this allocation. Omit `--execute` to inspect the plan. See the [run guide](docs/reproduction.md#3-run-the-residential-study) for cache paths and the distinct study protocols.
 
 Each attempt saves observations, applied controls, physical trajectories, and its outcome. The [run guide](docs/reproduction.md) explains independent replay checks and complete-cohort analysis.
 
 ## Demonstrations and evaluation
 
-The [simulation gallery](https://bjhyzj.github.io/dream-web/simulation/) shows complete cross-room task recordings with synchronized scene, robot-camera, semantic-memory, and navigation views. Videos play at 4× speed while retaining every recorded frame.
+In the historical diverse-object residential study, DREAM completed **27/50 tasks (54%)**. The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) includes **all 27 successful runs** and **2 failure cases**, with synchronized scene, robot-camera, semantic-memory, and navigation views. Videos retain the complete recorded sequence at 4× speed.
 
-The [task manifest](configs/residential50/task_manifest.json) fixes the 50-house evaluation. Every outcome contributes to the reported completion rate. Earlier experiments and their source versions remain available in [`reproducibility/evidence/`](reproducibility/evidence/).
+The [experiment records](reproducibility/evidence/residential50-seed42/README.md) contain all 50 outcomes, task configurations, and independent physics and recording checks. Every attempt contributes to the completion rate. Earlier experiments retain their own records in [`reproducibility/evidence/`](reproducibility/evidence/).
 
 ## Code structure
 
 | Directory | Contents |
 | --- | --- |
-| `src/dream_sim/` | Task runner, resource preparation, replay evaluation, and video tools |
+| `src/dream_sim/` | Task and batch execution, resource preparation, result evaluation, and video tools |
 | `configs/` | Case catalog, task definitions, room maps, and dependency locks |
-| `controllers/` | Controller revisions for common-protocol evaluation |
+| `controllers/` | Controller modules for residential evaluation |
 | `requirements/` | Python package versions |
-| `reproducibility/source_archives/` | Versioned controller source, extracted automatically when used |
+| `reproducibility/source_archives/` | Checksum-locked controller source, extracted automatically when used |
 | `reproducibility/evidence/` | Experiment records, analysis, and video metadata |
-| `tests/` | Configuration, source-integrity, and entrypoint checks |
+| `tests/` | Runner, configuration, resource-allocation, and result-integrity tests |
 
 To locate the controller for a case:
 
@@ -95,6 +99,7 @@ The returned directory contains `experiments/instruction_policy.py`, the navigat
 ```bash
 python -m dream_sim.run --preflight --dry-run
 python -m dream_sim.verify_evidence
+python -m dream_sim.evaluate
 python -m pytest -q
 ```
 

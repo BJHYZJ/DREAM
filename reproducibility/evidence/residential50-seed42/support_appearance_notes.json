@@ -1,0 +1,18 @@
+{
+  "status": "source_asset_identity_checked_color_mismatch_retained",
+  "observed_runs": [
+    "23_ProcTHOR-Val-265_seed42_dynamic",
+    "25_ProcTHOR-Val-605_seed42_dynamic",
+    "30_ProcTHOR-Train-4732_seed42_dynamic"
+  ],
+  "observation": "Designated support appears gray and cylindrical while instruction refers to white table. Receptacle position matches configured task; do not infer wrong receptacle from support appearance alone.",
+  "policy_support_description": "Parsed and passed to perception; _support_for requires support_relation_matches with detected support.",
+  "publication_constraint": "Do not claim support color or unrestricted language grounding has been independently verified.",
+  "asset": "Dining_Table_9_1.glb",
+  "locked_sha256_matches": true,
+  "source_materials": [
+    "DarkWoodSmooth",
+    "TableCloth_DefaultMaterial_AlbedoTransparency"
+  ],
+  "finding": "Locked provider asset is explicitly Dining_Table_9_1 with wood and tablecloth materials. Cylindrical draped appearance is consistent with source table asset, not evidence of loading a garbage-can asset. White-table color wording remains visually inaccurate."
+}

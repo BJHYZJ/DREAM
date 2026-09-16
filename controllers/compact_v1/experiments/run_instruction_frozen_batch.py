@@ -15,6 +15,7 @@ import queue
 import shutil
 import signal
 import subprocess
+from dream_sim.limited_worker import ALLOWED_GPUS
 import sys
 import threading
 import time
@@ -67,14 +68,24 @@ def main():
     p.add_argument("--seeds",type=int,nargs="+")
     p.add_argument("--variants",nargs="+",choices=("dynamic","static"),default=["dynamic"])
     p.add_argument("--benchmark",action="store_true")
-    p.add_argument("--cohort-id", choices=["residential50_seed42_dynamic_v1", "residential50_seed42_diverse_v2"])
+    p.add_argument("--cohort-id", choices=["residential50_seed42_dynamic_v1", "residential50_seed42_diverse_v2", "residential50_easy_grasp_seed42_v1"])
     p.add_argument("--heading-navigation",action="store_true")
-    p.add_argument("--gpus",nargs="+",default=["0","1"],help="One entry per worker; repeats allow multiple workers per GPU")
+    p.add_argument("--gpus",nargs="+",choices=ALLOWED_GPUS,default=list(ALLOWED_GPUS[:2]),
+                   help="Physical inference GPUs; at most one worker per GPU")
     p.add_argument("--wall-timeout",type=float,default=7200.)
+    p.add_argument("--simulation-time-limit-seconds",type=float,
+                   help="Optional tighter robot action-time limit; independent of wall watchdog")
     p.add_argument("--asset-dir",type=Path,help="ManiSkill asset root; allows independently downloaded assets")
     p.add_argument("--model-cache",type=Path,help="Directory containing the immutable DREAM model lock and snapshots")
     p.add_argument("--source-repo",type=Path,help="Reproduce an existing successful run's exact source snapshot instead of the current checkout")
+    p.add_argument("--prepare-only",action="store_true",help="Freeze the complete manifest without starting inference")
     args=p.parse_args()
+    if args.simulation_time_limit_seconds is not None and not 0<args.simulation_time_limit_seconds<=1800:
+        p.error("Robot action time limit must be positive and at most 1800 seconds")
+    if len(set(args.gpus))!=len(args.gpus):
+        p.error("At most one inference worker per physical GPU")
+    if len(args.gpus)>2:
+        p.error("The current memory budget allows at most two concurrent workers")
     launcher_repo=Path(__file__).resolve().parents[1];root=launcher_repo.parent
     repo=(args.source_repo or launcher_repo).resolve()
     if not (repo/"experiments/run_instruction_task.py").is_file() or not (repo/"src/dream").is_dir():
@@ -94,6 +105,12 @@ def main():
         if args.cohort_id=="residential50_seed42_dynamic_v1":
             if sorted(Counter(t["recipe"]["id"] for t in task_data).values()) != [10]*5:
                 raise ValueError("The original residential cohort requires ten tasks per recipe")
+        elif args.cohort_id=="residential50_easy_grasp_seed42_v1":
+            if any(t.get("protocol") != args.cohort_id
+                   or t["recipe"].get("pickup_scale", 1.) != 1.
+                   or t["recipe"]["environment_assets"]["placement"] != "Plate_9"
+                   or t["recipe"].get("placement_relation") != "on" for t in task_data):
+                raise ValueError("Easy-object cohort requires its own protocol, native-scale pickups and on-plate placement")
         else:
             pickups=[t["recipe"]["environment_assets"]["pickup"] for t in task_data]
             if len(set(pickups))!=50:
@@ -129,6 +146,8 @@ def main():
                     task=str(task_path.relative_to(output)),task_sha256=digest(task_path),
                     room_map_sha256=digest(room)))
     simulation_budgets={float(task.get("maximum_sim_seconds",1200)) for task in task_data}
+    if args.simulation_time_limit_seconds is not None:
+        simulation_budgets={min(value,args.simulation_time_limit_seconds) for value in simulation_budgets}
     protocol=dict(schema_version=1,mode=args.cohort_id or ("prespecified_60_attempt_paired_study" if args.benchmark else "development"),
         created_unix_s=time.time(),planned_attempts=len(jobs),attempts=jobs,source_sha256=source_hashes,
         seeds=args.seeds,variants=args.variants,gpu_workers=args.gpus,wall_timeout_s=args.wall_timeout,
@@ -142,6 +161,12 @@ def main():
         boundary="All planned outcomes retained. Curated videos have a separate denominator. Physical replay is not another policy trial. No inferential claim follows from this manifest alone.")
     manifest=output/"protocol.json";manifest.write_text(json.dumps(protocol,indent=2)+"\n");manifest.chmod(0o444)
     (output/"protocol.sha256").write_text(digest(manifest)+"\n")
+    if args.prepare_only:
+        (output/"attempts.jsonl").write_text("")
+        (output/"progress.json").write_text(json.dumps(dict(planned=len(jobs),completed=0,
+            protocol_successes=0,task_successes=0,release_ready=False),indent=2)+"\n")
+        print(json.dumps(dict(event="prepared",output=str(output),planned=len(jobs))),flush=True)
+        return
     pending=queue.Queue()
     for job in jobs:pending.put(job)
     records=[];lock=threading.Lock()
@@ -163,9 +188,12 @@ def main():
                 command=[sys.executable,str(frozen/"experiments/run_instruction_task.py"),"--task-json",str(task),
                     "--output",str(run),"--variant",job["variant"],"--video"]
                 if args.heading_navigation:command.append("--heading-navigation")
-                env=os.environ.copy();env.update(CUDA_VISIBLE_DEVICES=gpu,
+                env=os.environ.copy();env.update(CUDA_VISIBLE_DEVICES=gpu,CUDA_DEVICE_ORDER="PCI_BUS_ID",
                     MS_ASSET_DIR=str(asset_dir),HF_HUB_CACHE=str(model_cache),
-                    HF_HUB_OFFLINE="1",OMP_NUM_THREADS="2",MKL_NUM_THREADS="2",OPENBLAS_NUM_THREADS="2")
+                    HF_HUB_OFFLINE="1",OMP_NUM_THREADS="2",MKL_NUM_THREADS="2",OPENBLAS_NUM_THREADS="2",
+                    NUMEXPR_NUM_THREADS="2",LP_NUM_THREADS="8")
+                if args.simulation_time_limit_seconds is not None:
+                    command.extend(["--simulation-time-limit-seconds",str(args.simulation_time_limit_seconds)])
                 record["command"]=command
                 print(json.dumps(dict(event="started",**record)),flush=True)
                 with (output/(job["name"]+".log")).open("x") as stream:

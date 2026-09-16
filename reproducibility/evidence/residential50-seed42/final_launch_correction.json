@@ -1,0 +1,16 @@
+{
+  "phase": "batch configuration validation",
+  "policy_attempts_executed": 0,
+  "reason": "Batch guard still required1200s and rejected fixed1800s task configurations.",
+  "corrected_check": "Uniform1800s required; houses,seeds,recipe balance unchanged.",
+  "failed_execution": {
+    "batch_returncode": 1,
+    "audit_returncode": null,
+    "all_planned_attempts_recorded": false,
+    "all_recordings_archived": false,
+    "archive_errors": [],
+    "completed_unix_s": 1789170165.6615207
+  },
+  "failed_log_sha256": "e58544ef6b64af1a30659ea74adcffcb399b98fe112172a0c979dbabbbaf12a4",
+  "control_policy_changed": false
+}

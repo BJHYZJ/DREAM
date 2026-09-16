@@ -1,4 +1,5 @@
 """Video catalog and case mapping checks."""
+
 import copy
 import json
 from pathlib import Path

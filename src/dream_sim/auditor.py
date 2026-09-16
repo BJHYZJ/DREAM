@@ -4,11 +4,13 @@ Policy and record-review versions are independently pinned. Selecting the
 policy snapshot's older reviewer can incorrectly classify a valid later
 rediscovery using the first moving-target detection instead.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 from pathlib import Path
+
 from dream_sim.sources import audit_root
 
 
@@ -19,9 +21,12 @@ def sha(path: Path) -> str:
 def record_reviewer(case: dict, catalog_root: Path) -> Path:
     original = json.loads((catalog_root / case["records"]["record_review.json"]).read_text())
     expected = original["review_script_sha256"]
-    candidates = sorted(catalog_root.glob("sources/*/DREAM_code/experiments/review_instruction_record.py"))
-    candidates.append(audit_root() / "record_v3" / "DREAM_code" /
-                      "experiments" / "review_instruction_record.py")
+    candidates = sorted(
+        catalog_root.glob("sources/*/DREAM_code/experiments/review_instruction_record.py")
+    )
+    candidates.append(
+        audit_root() / "record_v3" / "DREAM_code" / "experiments" / "review_instruction_record.py"
+    )
     matches = [path for path in candidates if path.is_file() and sha(path) == expected]
     if not matches:
         raise ValueError(f"Missing exact recorded reviewer for case {case['id']}: {expected}")
@@ -30,8 +35,12 @@ def record_reviewer(case: dict, catalog_root: Path) -> Path:
         lock_path = audit_root() / "record_v3" / "source_hashes.json"
         hashes = json.loads(lock_path.read_text())
         source = chosen.parents[1]
-        actual = {path.relative_to(source).as_posix() for path in
-                  [*source.glob("experiments/*.py"), *source.glob("src/dream/**/*.py")]}
-        if actual != set(hashes) or any(sha(source / name) != value for name, value in hashes.items()):
+        actual = {
+            path.relative_to(source).as_posix()
+            for path in [*source.glob("experiments/*.py"), *source.glob("src/dream/**/*.py")]
+        }
+        if actual != set(hashes) or any(
+            sha(source / name) != value for name, value in hashes.items()
+        ):
             raise ValueError("Historical record-review v3 source changed")
     return chosen

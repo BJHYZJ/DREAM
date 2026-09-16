@@ -1,0 +1,12 @@
+{
+  "study_report_sha256": "25284c599f2b0d46e57e6584d7fbe0e577cb316374c3e3705d12a422541fc549",
+  "failure_selection_sha256": "5bfc459cdd2235ac89b4e62f5572c8df487e9b3c217384f3cc3da4a5745c1966",
+  "videos": 29,
+  "successes": 27,
+  "failures": 2,
+  "bytes": 218178152,
+  "all_frames_retained": true,
+  "source_fps": 5,
+  "output_fps": 20,
+  "playback_speed": 4
+}

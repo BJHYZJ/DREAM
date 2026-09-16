@@ -11,6 +11,8 @@ import cv2
 from scipy.ndimage import label
 from scipy.spatial import ConvexHull
 from scipy.spatial import cKDTree
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
 
 
 def focused_rgbd_crop(observation,remembered_point,side=320):
@@ -122,6 +124,25 @@ class ObservedShape:
     support_points: int
 
 
+def connected_depth_surface(xyz, mask, maximum_gap_m=.025):
+    """Separate image-adjacent surfaces across measured 3-D discontinuities."""
+    indices=np.full(mask.shape,-1,dtype=np.int32)
+    indices[mask]=np.arange(int(mask.sum()))
+    if not mask.any():return mask.copy()
+    rows=[];columns=[]
+    for left,right in ((np.s_[:-1,:],np.s_[1:,:]),(np.s_[:,:-1],np.s_[:,1:])):
+        adjacent=mask[left]&mask[right]
+        adjacent &= np.linalg.norm(xyz[left]-xyz[right],axis=-1)<=maximum_gap_m
+        rows.append(indices[left][adjacent]);columns.append(indices[right][adjacent])
+    row=np.concatenate(rows);column=np.concatenate(columns)
+    graph=coo_matrix((np.ones(len(row),dtype=np.uint8),(row,column)),
+                     shape=(int(mask.sum()),int(mask.sum()))).tocsr()
+    _,labels=connected_components(graph,directed=False)
+    selected=np.zeros(mask.shape,dtype=bool)
+    selected[mask]=labels==np.argmax(np.bincount(labels))
+    return selected
+
+
 def base_lateral_carry_rotation(current_rotation,base_yaw):
     """Calibration candidate: rotate a held grasp around gravity, not tilt it.
 
@@ -162,7 +183,7 @@ def point_observed_empty(observation,point_world,tolerance_m=.10):
     return bool(valid.sum()>=15 and np.mean(depth[valid]>point[2]+tolerance_m)>=.8)
 
 
-def observed_shape(observation, detection, minimum_points=24, refine_foreground=False):
+def observed_shape(observation, detection, minimum_points=24, refine_foreground=False, foreground_seed="upper"):
     if detection.observation_id != observation.frame_id:
         raise ValueError("Detection and RGB-D observation IDs must match")
     h,w=observation.depth_m.shape
@@ -205,15 +226,16 @@ def observed_shape(observation, detection, minimum_points=24, refine_foreground=
     counts=np.bincount(components.ravel()); counts[0]=0
     selected=components==int(np.argmax(counts))
     if refine_foreground:
+        selected=connected_depth_surface(inner,selected)
         selected=separate_object_surface(observation.rgb[y0:y1,x0:x1],selected,
-                                        inner[...,2],support,minimum_points)
+                                        inner[...,2],support,minimum_points,seed=foreground_seed)
     points=inner[selected]
     if len(points)<minimum_points:
         raise ValueError("Insufficient connected object surface")
     return ObservedShape(observation.frame_id,points,support,len(supported))
 
 
-def separate_object_surface(rgb,selected,heights,support,minimum_points=24):
+def separate_object_surface(rgb,selected,heights,support,minimum_points=24,seed="upper"):
     """Separate a tabletop object's appearance from a connected support rim.
 
     Seeds come from the observed upper object surface. The depth component
@@ -221,7 +243,14 @@ def separate_object_surface(rgb,selected,heights,support,minimum_points=24):
     Low-contrast or insufficient foreground evidence retains the original fit.
     """
     top=float(np.quantile(heights[selected],.98))
-    core=selected&(heights>=support+.5*(top-support))
+    if seed=="central":
+        rows,columns=np.indices(selected.shape)
+        h,w=selected.shape
+        core=selected&(columns>.3*w)&(columns<.7*w)&(rows>.25*h)&(rows<.75*h)
+    elif seed=="upper":
+        core=selected&(heights>=support+.5*(top-support))
+    else:
+        raise ValueError("Unknown observed foreground seed")
     if core.sum()<minimum_points or (~selected).sum()<minimum_points:
         return selected
     mask=np.full(selected.shape,cv2.GC_BGD,np.uint8)
@@ -233,13 +262,61 @@ def separate_object_surface(rgb,selected,heights,support,minimum_points=24):
     cv2.grabCut(np.ascontiguousarray(rgb,dtype=np.uint8),mask,None,
                 background,foreground,5,cv2.GC_INIT_WITH_MASK)
     refined=selected&((mask==cv2.GC_FGD)|(mask==cv2.GC_PR_FGD))
-    if refined.sum()<max(minimum_points,.60*selected.sum()):
+    if refined.sum()<minimum_points or (seed=="upper" and refined.sum()<.60*selected.sum()):
         return selected
     return refined
 
 
-def tabletop_grasp(observation,detection,maximum_jaw_width_m=.10):
-    shape=observed_shape(observation,detection,refine_foreground=True)
+def observed_narrow_grasp_section(points,support,height,maximum_jaw_width_m,fractions=None):
+    """Find an observed horizontal section that fits the physical finger opening."""
+    if height<=.12:return None
+    for fraction in (fractions if fractions is not None else (.78,.84,.90,.68,.58,.48)):
+        level=support+fraction*height
+        section=points[np.abs(points[:,2]-level)<min(.0125,.07*height)]
+        if len(section)<48:continue
+        rectangle=cv2.boxPoints(cv2.minAreaRect(np.ascontiguousarray(section[:,:2],dtype=np.float32)))
+        edge=rectangle[1]-rectangle[0]
+        if np.linalg.norm(edge)<1e-5:continue
+        first=edge/np.linalg.norm(edge)
+        axes=np.column_stack((first,[-first[1],first[0]]))
+        origin=np.median(section[:,:2],axis=0)
+        projected=(section[:,:2]-origin)@axes
+        lo,hi=np.quantile(projected,[.02,.98],axis=0)
+        widths=hi-lo
+        short=int(np.argmin(widths))
+        width=float(widths[short])
+        if .012<width<maximum_jaw_width_m-.006:
+            return origin+axes@((lo+hi)/2),axes,short,width,fraction,len(section)
+    return None
+
+
+def extend_pickup_column(observation,shape):
+    """Include visible upper surfaces above a detector's partial object box.
+
+    The column is bounded by the measured object's XY envelope and support.
+    It uses the same RGB-D frame, without an asset dimension or instance mask.
+    """
+    points=shape.points
+    height=float(np.quantile(points[:,2],.98))-shape.support_height_m
+    if height<=.04:return shape
+    center=np.median(points[:,:2],axis=0)
+    radius=min(.13,float(np.quantile(np.linalg.norm(points[:,:2]-center,axis=1),.98))+.015)
+    world=observation.world_points()
+    valid=np.isfinite(world).all(-1)&np.isfinite(observation.depth_m)
+    valid&=(observation.depth_m>.10)&(observation.depth_m<4.)
+    valid&=(np.linalg.norm(world[...,:2]-center,axis=-1)<radius)
+    valid&=(world[...,2]>shape.support_height_m+height+.005)&(world[...,2]<shape.support_height_m+.35)
+    expanded=world[valid]
+    if len(expanded)<24:return shape
+    return ObservedShape(shape.observation_id,np.vstack((points,expanded)),shape.support_height_m,shape.support_points)
+
+
+def tabletop_grasp(observation,detection,maximum_jaw_width_m=.10,_flat_recovery=False):
+    shape=observed_shape(observation,detection,refine_foreground=True,
+        foreground_seed="central" if _flat_recovery else "upper")
+    original_points=len(shape.points)
+    shape=extend_pickup_column(observation,shape)
+    column_extended=len(shape.points)>original_points
     points=shape.points
     top=float(np.quantile(points[:,2],.98))
     height=top-shape.support_height_m
@@ -248,6 +325,7 @@ def tabletop_grasp(observation,detection,maximum_jaw_width_m=.10):
         band=points[(points[:,2]>=shape.support_height_m+.25*height)
                     &(points[:,2]<=shape.support_height_m+.75*height)]
         if len(band)>=48:body=band
+    jaw_body=body
     center=np.median(body[:,:2],axis=0)
     covariance=np.cov((body[:,:2]-center).T)
     _,axes=np.linalg.eigh(covariance)
@@ -260,26 +338,119 @@ def tabletop_grasp(observation,detection,maximum_jaw_width_m=.10):
     local=(body[:,:2]-center)@axes
     lo,hi=np.quantile(local,[.02,.98],axis=0)
     center=center+axes@((lo+hi)/2)
+    object_center=center.copy()
     widths=hi-lo
     order=np.argsort(widths)
     usable=[int(i) for i in order if .012<float(widths[i])<maximum_jaw_width_m-.006]
     short=usable[0] if usable else int(order[0])
     width=float(widths[short])
+    fraction=(.78 if height>.12 else
+              .70 if height>.04 and height>2.5*width else .50)
+    section_points=None
+    circular_section=None
+    # The physical Fetch palm starts about 32 mm behind the finger origins.
+    # A downward grasp farther below the visible top pushes the palm into a
+    # bottle's upper surface. Fit a jaw section with measured top clearance.
+    if height>.12 and (column_extended or not usable or height>.20):
+        section=observed_narrow_grasp_section(points,shape.support_height_m,height,
+            maximum_jaw_width_m,fractions=(max(.50,1.-.025/height),))
+        if section is None:
+            error=ValueError("No observed top-clear jaw section; acquire another view")
+            error.observed_grasp_width_m=width
+            raise error
+        if section is not None:
+            center,axes,short,width,fraction,section_points=section
+            jaw_body=points[np.abs(points[:,2]-(shape.support_height_m+fraction*height))
+                        <min(.0125,.07*height)]
+            from instruction_round_section import observed_circular_section
+            circular_section=observed_circular_section(jaw_body[:,:2])
+            if circular_section is not None and 2*circular_section['radius_m']<maximum_jaw_width_m-.006:
+                # A rectangle around a visible half-cylinder is biased toward
+                # the camera. Verified curvature estimates the jaw center.
+                center=np.asarray(circular_section['center_xy'])
+                width=2*circular_section['radius_m']
+                band=points[np.abs(points[:,2]-(shape.support_height_m+.4*height))<.01]
+                body_circle=observed_circular_section(band[:,:2])
+                if (body_circle is not None and np.linalg.norm(
+                        np.asarray(body_circle['center_xy'])-center)<.01):
+                    object_center=np.asarray(body_circle['center_xy'])
     if not .012<width<maximum_jaw_width_m-.006:
-        raise ValueError(f"Observed grasp width {width:.3f} m is outside the calibrated gripper range")
+        section=observed_narrow_grasp_section(points,shape.support_height_m,height,maximum_jaw_width_m)
+        if section is None:
+            if height<=.04 and not _flat_recovery:
+                try:
+                    target,recovered=tabletop_grasp(observation,detection,maximum_jaw_width_m,
+                                                    _flat_recovery=True)
+                except ValueError:
+                    pass
+                else:
+                    recovered["foreground_recovery"]="central_appearance_after_flat_width_rejection"
+                    from instruction_flat_grasp_clearance import observed_clear_flat_grasp
+                    return observed_clear_flat_grasp(observation,detection,target,recovered)
+            error=ValueError(f"Observed grasp width {width:.3f} m is outside the calibrated gripper range")
+            error.observed_grasp_width_m=width
+            raise error
+        center,axes,short,width,fraction,section_points=section
     top=float(np.quantile(points[:,2],.98))
     height=top-shape.support_height_m
-    if not .012<height<.35:
+    minimum_height=.006 if _flat_recovery else .012
+    if not minimum_height<height<.35:
         raise ValueError(f"Observed object height {height:.3f} m is outside the tabletop adapter range")
-    target=np.r_[center,shape.support_height_m+height*(.78 if height>.12 else .50)]
-    radius=float(np.max(np.linalg.norm(points[:,:2]-center,axis=1)))
-    body_radius=float(np.max(np.linalg.norm(body[:,:2]-center,axis=1)))
+    target=np.r_[center,shape.support_height_m+height*fraction]
+    radius=float(np.max(np.linalg.norm(points[:,:2]-object_center,axis=1)))
+    body_radius=float(np.max(np.linalg.norm(body[:,:2]-object_center,axis=1)))
+    if radius>.20:
+        raise ValueError("Observed foreground extends beyond the supported pickup envelope")
     if height>.12 and radius>max(1.8*body_radius,body_radius+.05):
         raise ValueError("Observed object outline extends beyond the fitted body; acquire another view")
     fit=dict(radius_m=radius,height_m=height,closing_width_m=width,
              closing_axis_xy=axes[:,short].tolist(),support_height_m=shape.support_height_m,
              observed_points=len(points),support_points=shape.support_points,
-             observation_id=shape.observation_id,proposal="observed_tabletop_supported_jaw_axis")
+             grasp_height_fraction=fraction,grasp_section_points=section_points,
+             observation_id=shape.observation_id,proposal="observed_tabletop_supported_jaw_axis",
+             object_center_world=[*object_center.tolist(),shape.support_height_m+.5*height],
+             circular_grasp_section=circular_section,grasp_column_extended=column_extended)
+    # Several valid observed jaw axes can exist. Prefer the robot's lateral
+    # axis when it also fits, instead of a nearly radial wrist orientation.
+    # Thin/elongated tools retain their measured narrow-axis proposal.
+    approach=center-observation.base_xyyaw[:2]
+    if height>.04 and np.linalg.norm(approach)>1e-6:
+        lateral=np.array([-approach[1],approach[0]])/np.linalg.norm(approach)
+        projected=jaw_body[:,:2]@lateral
+        lateral_width=float(np.quantile(projected,.98)-np.quantile(projected,.02))
+        if (abs(float(lateral@axes[:,short]))<.65
+                and .012<lateral_width<maximum_jaw_width_m-.006):
+            fit.update(original_closing_axis_xy=fit['closing_axis_xy'],
+                       closing_axis_xy=lateral.tolist(),closing_width_m=lateral_width,
+                       jaw_axis_choice="observed_feasible_robot_lateral_axis")
+            # The higher section belongs to this alternate short-body jaw proposal.
+            if height<=.12 and section_points is None:
+                fraction=.70
+                target[2]=shape.support_height_m+height*fraction
+                fit['grasp_height_fraction']=fraction
+    if height<=.04 and not _flat_recovery:
+        # Refine a valid flat fit only when central appearance removes a
+        # meaningful part of the observed jaw width. Small segmentation noise
+        # must not invalidate an already calibrated grasp of an isolated body.
+        try:
+            refined_target,refined=tabletop_grasp(observation,detection,maximum_jaw_width_m,
+                                                _flat_recovery=True)
+        except ValueError:
+            pass
+        else:
+            if fit['closing_width_m']-refined['closing_width_m']>.01:
+                refined['foreground_recovery']='central_appearance_for_flat_grasp'
+                from instruction_flat_grasp_clearance import observed_clear_flat_grasp
+                return observed_clear_flat_grasp(observation,detection,refined_target,refined)
+    # A mug handle can obstruct the otherwise feasible lateral finger sweep.
+    # The narrower, already observed axis is a category-specific alternative;
+    # preserve fruit/egg grasps, their support clearance, and every motion guard.
+    if str(getattr(detection,"query","")).strip().lower()=="mug":
+        from instruction_open_jaw_axis import prefer_less_obstructed_axis
+        target,fit=prefer_less_obstructed_axis(observation,target,fit,shape)
+    if height>.20 and fit.get("grasp_section_points") is not None:
+        from instruction_contact_band_grasp import contact_band_grasp
+        target,fit=contact_band_grasp(observation,target,fit,shape)
     return target,fit
 
 
@@ -369,6 +540,12 @@ def receptacle_region(observation,detection,relation,payload_radius_m,payload_he
         if len(central)<12:
             raise ValueError("Placement surface is not sufficiently observed")
         surface_height=float(np.median(central[:,2]))
+    # A raised central floor and a deep rim jointly contradict a shallow
+    # plate. A single uncertain support/rim cue is insufficient.
+    if (relation=="on" and str(getattr(detection,"query","")).strip().lower()=="plate"
+            and surface_height-shape.support_height_m>.04
+            and top-surface_height>.04):
+        raise ValueError("Observed deep receptacle geometry conflicts with a shallow plate")
     # An 'in' action must not drive closed fingers and the retained payload
     # into the observed bowl floor. Release above the observed rim, then let
     # native gravity/contact settle the object. Cavity evidence comes from

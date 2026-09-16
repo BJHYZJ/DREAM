@@ -12,20 +12,33 @@ import math
 
 import numpy as np
 
-from dream_fetch_footprint import capture_robot_footprint,swept_clear
+from dream_fetch_footprint import capture_robot_footprint,navigation_swept_clear
 from dream_fetch_heading_astar import FetchHeadingAStar
 from fetch_heading_control import HeadingRouteExecutor,route_chunks,wrapped
 from houseexpo_cross_room import weighted_distances
 from maniskill_learned_dynamic import motion_detection_changed
 
 
-def translation_prefix(route):
-    """Keep all required preceding turns and at most one short translation."""
+def translation_prefix(route,maximum_distance=.65):
+    """Bound cumulative travel while retaining intervening checked turns."""
+    if maximum_distance<=0 or not np.isfinite(maximum_distance):
+        raise ValueError("Route prefix needs a positive finite distance")
     chunks=route_chunks(route)
-    for index in range(1,len(chunks)):
-        if np.linalg.norm(np.asarray(chunks[index][:2])-chunks[index-1][:2])>1e-7:
-            return chunks[:index+1]
-    return chunks
+    if not chunks:return []
+    result=[chunks[0]];travelled=0.
+    for point in chunks[1:]:
+        start=np.asarray(result[-1],dtype=float)
+        end=np.asarray(point,dtype=float)
+        distance=float(np.linalg.norm(end[:2]-start[:2]))
+        remaining=maximum_distance-travelled
+        if remaining<=1e-9:break
+        if distance>remaining:
+            bounded=end.copy();bounded[:2]=start[:2]+(end[:2]-start[:2])*remaining/distance
+            result.append(bounded.tolist())
+            break
+        result.append(end.tolist())
+        travelled+=distance
+    return result
 
 
 def candidate_route(planner,candidates,base,*,maximum_trials=32,source="memory_dock"):
@@ -64,6 +77,7 @@ class InstructionHeadingNavigation:
             self.heading_reverse_recovery_used=False
             self.heading_reverse_distance_m=0.
             self.heading_forward_progress_m=0.
+            self.heading_observed_exit_attempted=False
 
     def try_short_reverse_recovery(self,base,footprint):
         """At most .48 m per escape, checked in <=.16 m observed-free segments."""
@@ -78,10 +92,7 @@ class InstructionHeadingNavigation:
         # A rearward escape needs the WHOLE swept footprint in already observed
         # space. The forward exploration rule can use fresh front depth; no
         # rear-facing sensor is invented here. Never mutate the observed map.
-        observed_only=np.where(self.occupancy.known==0,-1,self.occupancy.known)
-        if not swept_clear(observed_only,self.occupancy.origin,self.occupancy.resolution,
-                np.asarray(footprint["vertices_base_xy"]),base,goal,padding=footprint["padding_m"],
-                inferred=self.occupancy.inferred_blocked):
+        if not navigation_swept_clear(self.occupancy,footprint,base,goal,require_observed=True):
             self.event("heading_reverse_recovery_declined",reason="rear_sweep_not_observed_free")
             return False
         self.heading_reverse_recovery_used=True
@@ -89,7 +100,8 @@ class InstructionHeadingNavigation:
         self.navigation_goal=goal[:2].tolist();self.waypoint=self.navigation_goal
         self.event("heading_short_reverse_recovery",maximum_distance_m=distance,
                    path_xy=self.planned_path,reason="no_forward_swept_route",
-                   rear_evidence="previously_observed_free_full_sweep")
+                   rear_evidence="previously_observed_free_full_sweep",
+                   collision_geometry="measured_matching_height_layers")
         executor=self.heading_executor()
         completed=executor.translate(goal[:2],planned_heading=base[2])
         travelled=float(np.linalg.norm(self.io.pose()[:2]-base[:2]))
@@ -137,10 +149,10 @@ class InstructionHeadingNavigation:
 
     def measured_navigation_footprint(self):
         held=self.task_stage=="placement_search"
+        from instruction_carry_geometry import navigation_payload
+        radius,height,frame=navigation_payload(self) if held else (None,None,None)
         return capture_robot_footprint(self.io,
-            payload_radius=self.perceived_payload_radius if held else None,
-            payload_height=self.perceived_payload_height if held else None,
-            payload_frame=getattr(self,"perceived_payload_frame",None) if held else None)
+            payload_radius=radius,payload_height=height,payload_frame=frame)
 
     def heading_executor(self,semantic_replan=None):
         def display(phase,waypoint):
@@ -208,7 +220,9 @@ class InstructionHeadingNavigation:
         start=tuple(self.occupancy.cells(base[:2]))
         if not safe[start]:
             self.event("heading_start_not_observed_clear",reason=reason)
-            return self.try_short_reverse_recovery(base,footprint)
+            if self.try_short_reverse_recovery(base,footprint):return True
+            from instruction_reverse_escape import try_observed_exit
+            return try_observed_exit(self)
         distances,_=weighted_distances(safe,start)
         cells=np.argwhere(safe&np.isfinite(distances))
         candidates=[]
@@ -244,7 +258,10 @@ class InstructionHeadingNavigation:
             measured_robot_radius_m=footprint["maximum_robot_radius_m"],
             footprint_vertices_base_xy=footprint["vertices_base_xy"],
             grid_offset_xy=planner.offset.tolist(),route_found=bool(route),exploring=exploring)
-        if not route:return self.try_short_reverse_recovery(base,footprint)
+        if not route:
+            if self.try_short_reverse_recovery(base,footprint):return True
+            from instruction_reverse_escape import try_observed_exit
+            return try_observed_exit(self)
         return self.execute_heading_route(base,route,exploring)
 
     def execute_heading_route(self,base,route,exploring):

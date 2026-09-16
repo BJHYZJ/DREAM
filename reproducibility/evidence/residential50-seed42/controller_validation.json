@@ -1,0 +1,98 @@
+{
+  "ready_for_formal_run": true,
+  "controller": "recovery_v6",
+  "controller_manifest_sha256": "f91f4a95be986b5ed20efbf65a1242cbde9d68ba645f7343d23049cbb1eb0b6c",
+  "created_utc": "2026-09-11T23:50:28.069484+00:00",
+  "selection": "Raise the folded arm, align the open hand directly above the observed target, then descend; reject unreachable contact poses before closing.",
+  "scoring_changed": false,
+  "object_gravity_changed": false,
+  "task_manifest_sha256": "ff32f3d704652dec76ae448eb2670cab228ef78d019054d5bbdaa7d605862a78",
+  "infrastructure_errors": [
+    {
+      "batch": "development_16",
+      "name": "02_ProcTHOR-Train-9031_seed42_dynamic",
+      "result_sha256": "c0929a0b57a3c04f1ec1f6a5b3bece3a38fb182273e2beb25aaa92bcfad72395",
+      "error": "OutOfMemoryError('CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 95.00 GiB of which 2.94 MiB is free. Process 904089 has 83.85 GiB memory in use. Process 351613 has 10.66 GiB memory in use. Process 1158701 has 480.00 MiB memory in use. Of the allocated memory 156.12 MiB is allocated by PyTorch, and 7.88 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)')",
+      "replacement_batch": "development_17"
+    }
+  ],
+  "validated_full_tasks": [
+    {
+      "batch": "development_16",
+      "name": "01_ProcTHOR-Train-7819_seed42_dynamic",
+      "scene": "ProcTHOR-Train-7819",
+      "recipe": "bread_plate_white_table",
+      "result_sha256": "0edfd3d980ee6cbe727383c4281e84008eaab1f9efb139f2175bfc949ab4d9f9",
+      "audit_status_sha256": "7090f29803699aacedb943acb0527e24e2a35802ea300cc7bd05d0bbd1b52201",
+      "manipulation_peak_torso_velocity_m_s": 0.04008502513170242,
+      "manipulation_peak_reference_error_m": 0.004260489940643208
+    },
+    {
+      "batch": "development_16",
+      "name": "03_ProcTHOR-Train-3859_seed42_dynamic",
+      "scene": "ProcTHOR-Train-3859",
+      "recipe": "mug_plate_wooden_table",
+      "result_sha256": "cd5c57cc5b309779a484c88450761c4ad1da0846a50032cc46a9aa45757c3831",
+      "audit_status_sha256": "5e7f83b103ca85f5894ecad124e17e97f90c26ce0adca720b882912e8bffcb86",
+      "manipulation_peak_torso_velocity_m_s": 0.04035477340221405,
+      "manipulation_peak_reference_error_m": 0.005492458343505757
+    },
+    {
+      "batch": "development_16",
+      "name": "04_ProcTHOR-Train-283_seed42_dynamic",
+      "scene": "ProcTHOR-Train-283",
+      "recipe": "mug_plate_wooden_table",
+      "result_sha256": "9eafa3ebd168fefc67b117085a7709056cad428431aa9eb39681dcaa43a2a75d",
+      "audit_status_sha256": "824ca27b15ee82066513a44b83f2527e84fc8e014fc089bd2cc90d335d4fa110",
+      "manipulation_peak_torso_velocity_m_s": 0.04034588113427162,
+      "manipulation_peak_reference_error_m": 0.005384693145751851
+    },
+    {
+      "batch": "development_16",
+      "name": "05_ProcTHOR-Test-244_seed42_dynamic",
+      "scene": "ProcTHOR-Test-244",
+      "recipe": "egg_bowl_white_table",
+      "result_sha256": "b2a5727f2805b6996f52957ba794fc79a0e09dff5dda09f04cc6d593352e18c0",
+      "audit_status_sha256": "ee5ce4e52847c0a26c8f077f783c9cd6a6fad42365882fa485dcd69fd2cd6a73",
+      "manipulation_peak_torso_velocity_m_s": 0.040400076657533646,
+      "manipulation_peak_reference_error_m": 0.0071422362327576705
+    },
+    {
+      "batch": "development_16",
+      "name": "06_ProcTHOR-Val-632_seed42_dynamic",
+      "scene": "ProcTHOR-Val-632",
+      "recipe": "tomato_bowl_white_table",
+      "result_sha256": "228a2c059709ee1e02df24d80f6259a6f78529ffefbd6ad89eb675c9661d5133",
+      "audit_status_sha256": "c6b234b38da2574ab0ffec1e3c16f6e9a82ef590d17ab69e9399baa081c35267",
+      "manipulation_peak_torso_velocity_m_s": 0.040381915867328644,
+      "manipulation_peak_reference_error_m": 0.008290538787841695
+    },
+    {
+      "batch": "development_17",
+      "name": "01_ProcTHOR-Train-9031_seed42_dynamic",
+      "scene": "ProcTHOR-Train-9031",
+      "recipe": "egg_plate_wooden_table",
+      "result_sha256": "05c17f588bd9038312dbf8318f966a2d7a214a38616d43c3034eeb61070348bb",
+      "audit_status_sha256": "1c94637bbca4c3b6df21e4dbed675794b7d74c44892070aec4216cce939008ff",
+      "manipulation_peak_torso_velocity_m_s": 0.04117357358336449,
+      "manipulation_peak_reference_error_m": 0.007914533615112407
+    }
+  ],
+  "failed_full_tasks": [],
+  "regression_attempts": 6,
+  "regression_qualified_successes": 6,
+  "selection_gate": "All six regression outcomes retained across five recipes; at least five full completions, including bread7819, mug3859, and tomato632, with independent checks and bounded manipulation torso motion.",
+  "visual_review_sha256": "a0150033d4d0723a87ccf6b33ff0b5b4b5f9cd74ee3b21ce37b31ef7f54f041a",
+  "materialization_verification_sha256": "cf65ef617a446702d0af6694552977d93885e601f96eed25431a6ff745743907",
+  "public_tests": {
+    "passed": 184,
+    "log_sha256": "d933553451e1160103d2c13e8ab250b3aa7680bc7f9f88bf05b959bda1802e74"
+  },
+  "formal_house_used_for_diagnosis": [
+    "ProcTHOR-Train-3859"
+  ],
+  "evaluation_scope": "Descriptive fixed-cohort evaluation after development; house3859 was used for grasp-clearance diagnosis. All final controller outcomes are kept separately from earlier versions.",
+  "reference_velocity_limit_m_s": 0.04,
+  "reference_acceleration_limit_m_s2": 0.1,
+  "torso_force_limit": 100
+}

@@ -1,0 +1,46 @@
+{
+  "all_fifty_houses_rendered": true,
+  "camera_rgb_shape": [
+    480,
+    640,
+    3
+  ],
+  "control_steps": 0,
+  "policy_executed": false,
+  "rendering_preflight_sha256": "6e20aa371173526a5cde829a4eb1ac7b195adfcba855e9796b647fdf84e950eb",
+  "asset_lock_sha256": "231aa063b957d76d2167031094d9f8e0e757a5c474049de3d98745fccf58f2fc",
+  "original_asset_lock_sha256": "e45a6174fb684c465e266f3c9e438cbb7fe8fd17a976aa26135bcb89f0ca0900",
+  "changed_assets": [
+    {
+      "file": "ai2thor/ai2thorhab-uncompressed/assets/objects/Desk_Lamp_11.glb",
+      "source_sha256": "9d4b6b98a1839d7d30b59e1ed97a5ca5836a9522c2c4e7e0fe38051f1b774913",
+      "rendered_sha256": "bdb0101db97c33ab42dbb4f4f09317f9dff5ed668b005833619e4fb8daa923fc",
+      "binary_buffers_unchanged": true,
+      "repairs": [
+        {
+          "mesh": 0,
+          "primitive": 0,
+          "added": "TEXCOORD_0",
+          "alias": "TEXCOORD_1"
+        },
+        {
+          "mesh": 0,
+          "primitive": 1,
+          "added": "TEXCOORD_0",
+          "alias": "TEXCOORD_1"
+        },
+        {
+          "mesh": 0,
+          "primitive": 2,
+          "added": "TEXCOORD_0",
+          "alias": "TEXCOORD_1"
+        }
+      ]
+    }
+  ],
+  "upstream_files_preserved": true,
+  "controller_and_task_manifest_unchanged": true,
+  "interrupted_batch_archive_sha256": "ef0d2a1991aef47f75d7f74e4dc21e2af20e1e938e5b2c5ffeef09229c3a3310",
+  "restart_scope": "All 50 fixed houses, seed 42, same controller. No results from the interrupted batch enter the replacement study.",
+  "created_utc": "2026-09-11T19:11:11.816226+00:00"
+}

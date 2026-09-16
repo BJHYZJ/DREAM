@@ -1,10 +1,11 @@
 """CLI setup, case configuration, and evaluator-version checks."""
+
 from pathlib import Path
 
 import pytest
 
-from dream_sim.run import CATALOG, build_command, load_catalog, preflight
 from dream_sim.auditor import record_reviewer, sha
+from dream_sim.run import CATALOG, build_command, load_catalog, preflight
 
 
 def test_catalog_without_runtime():
@@ -40,6 +41,7 @@ def test_refuses_unknown_case(tmp_path):
 @pytest.mark.parametrize("index", range(1, 11))
 def test_record_reviewer_matches_original_video(index):
     import json
+
     root, data = load_catalog(CATALOG)
     case = next(row for row in data["cases"] if row["id"] == f"{index:02d}")
     recorded = json.loads((root / case["records"]["record_review.json"]).read_text())
@@ -49,8 +51,13 @@ def test_record_reviewer_matches_original_video(index):
 @pytest.mark.parametrize("identifier", ["07", "10"])
 def test_renderer_matches_original_video(identifier):
     import json
+
     from dream_sim.render import renderer_source
+
     root, data = load_catalog(CATALOG)
     case = next(row for row in data["cases"] if row["id"] == identifier)
     recorded = json.loads((root / case["records"]["spectator_video_review.json"]).read_text())
-    assert sha(renderer_source(identifier) / "experiments" / "instruction_replay_video.py") == recorded["renderer_script_sha256"]
+    assert (
+        sha(renderer_source(identifier) / "experiments" / "instruction_replay_video.py")
+        == recorded["renderer_script_sha256"]
+    )

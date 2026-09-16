@@ -1,0 +1,356 @@
+{
+  "all_fifty_reviewed": true,
+  "review_scope": "Sampled search/manipulation stage frames and complete recorded manipulation joint traces; not continuous viewing of every frame.",
+  "attempts": [
+    {
+      "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "e13a6f844433f8bf2b705ce089ddf74db85c0c95716a3bca5088c2c31719b7d2",
+      "motion_flagged": false,
+      "observation": "Robot stops before reaching for the target after fresh detector verification fails. Target remains visible in the camera; no observed collapse or implausible manipulation. Failure retained."
+    },
+    {
+      "name": "04_ProcTHOR-Train-2043_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "d35608b04dd05777764ff6e5a7c88a05cc5229c9a9c5c96d27035932c63bfc0a",
+      "motion_flagged": false,
+      "observation": "Sampled grasp, carry through doorway and placement approach are coherent; final receptacle partly occluded by arm. Complete manipulation trace: peak .04684m/s, reference error .00902m, no sudden torso drop. Physical placement qualification assessed separately by replay."
+    },
+    {
+      "name": "01_ProcTHOR-Test-722_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "9f190cb5180886e1d4b8a5b1303abdfd24837786b68e41320667d8f69614f182",
+      "motion_flagged": false,
+      "observation": "Sampled mug pickup, navigation and release onto plate are coherent; complete manipulation trace peak .04037m/s/reference error .00531m, no abrupt torso drop."
+    },
+    {
+      "name": "06_ProcTHOR-Train-4300_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "e33bf0920d86c43d0daf3d1823a8ffe4d4c4de00f0f5703db07e566747299693",
+      "motion_flagged": false,
+      "observation": "Sampled mug pickup, carried-object navigation, and released plate placement are coherent; complete manipulation trace peak .04036m/s/reference error .00538m, no abrupt torso drop."
+    },
+    {
+      "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "7bbe27c50e0f10a742064b66aad6ad12ea5b547b42f2a06bb1c5caf2e0703d31",
+      "motion_flagged": false,
+      "observation": "Sampled egg pickup, navigation through doorway, and release onto plate agree with task sequence; complete manipulation trace peak .04464m/s/reference error .00865m, no abrupt torso drop."
+    },
+    {
+      "name": "05_ProcTHOR-Test-288_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "6587b5b3e5e5f39764c164467d6fe8cf64033be0c7166b06afc87a90b9cedb69",
+      "motion_flagged": false,
+      "observation": "Long target search followed by sampled tomato grasp, cross-room carry and bowl approach; release view partly occluded by arm, assessed independently by replay. Complete manipulation peak .04110m/s/reference error .00895m; no abrupt torso drop."
+    },
+    {
+      "name": "09_ProcTHOR-Test-166_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "0c875cafbac528dfe9489dfad2203dbe2feb749463e83699c6eb58a7a6d11476",
+      "motion_flagged": false,
+      "observation": "Sampled egg grasp, carry, and release into bowl are coherent; complete manipulation peak .04038m/s/reference error .00808m, no abrupt torso drop."
+    },
+    {
+      "name": "10_ProcTHOR-Test-459_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "0411fbada493d360d0773ae1b54110fe7ce3af43bf3654c23642148edfaa5b55",
+      "motion_flagged": false,
+      "observation": "Sampled tomato grasp, cross-room carry, and release into bowl are coherent; complete manipulation peak .05102m/s/reference error .00950m, no abrupt torso drop."
+    },
+    {
+      "name": "11_ProcTHOR-Train-3859_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "6cbe7a341e494bf2bc4451c865c92c4b6e57273122071b9161d2542f29fa7739",
+      "motion_flagged": false,
+      "observation": "Formal execution of previous torso-collapse diagnosis house: sampled grasp, carry and plate release coherent; complete manipulation peak .04035m/s/reference error .00549m, no abrupt torso drop."
+    },
+    {
+      "name": "14_ProcTHOR-Train-8921_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "8ccdbcfcf7950beabc921bdd45538c26705d52b5d33950b5116a1ca3754c15f7",
+      "motion_flagged": false,
+      "observation": "Sampled egg grasp, carry through doorway, and release into bowl are coherent. Complete manipulation peak .04044m/s/reference error .00856m; no abrupt drop during grasp/place. Initial unloaded transient is recorded separately in pickup_search statistics."
+    },
+    {
+      "name": "03_ProcTHOR-Train-6452_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "e968365dbf40cdcd4c348b21f2211590b098980c33afe12a050e12dfa8208b28",
+      "motion_flagged": false,
+      "observation": "Sampled search frames show navigation and active observation near interior walls; task terminates during pickup search without grasp or placement. No manipulation occurred; search-only motion retained in torso report."
+    },
+    {
+      "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "c9333abe52802fa314837717bd37dd8b1463213470217652a363f3d5a7c71854",
+      "motion_flagged": false,
+      "observation": "Sampled search frames show navigation near furniture and a staircase, ending before target pickup. Route execution failure retained; no grasp or placement occurred."
+    },
+    {
+      "name": "17_ProcTHOR-Train-9926_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "9e6d2a82b2e379e99cb88bbfa5071b5718f2acff51586c5d8f12be3383bb67a9",
+      "motion_flagged": false,
+      "observation": "Sampled egg pickup, doorway traversal and release onto plate are coherent, with egg visible on plate in the final camera view. Complete grasp/place traces: peak .04041m/s, reference error .00926m, no abrupt torso drop."
+    },
+    {
+      "name": "16_ProcTHOR-Train-507_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "9a54e4a22254ba60709baed16bb395047e8e515d34d35a7d4812d8e155ace540",
+      "motion_flagged": false,
+      "observation": "Search-only failure: route_execution_incomplete at step11878, no grasp or placement attempted. Final sampled overhead view is occluded by room geometry and head camera shows an untextured wall; cannot assess final robot pose from this frame. Full recorded torso trace has no manipulation stages. Failure and recording retained."
+    },
+    {
+      "name": "08_ProcTHOR-Train-7473_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "f5a7726326eb74ddc54937baf65b0f21f1abe5184e1df3db29b3fc51c6d52fbe",
+      "motion_flagged": false,
+      "observation": "Sampled bread grasp and carrying are coherent. Task reaches 1800 simulation seconds while still searching for the plate; bread remains held in final sampled view. Grasp peak .02090m/s and reference error .00576m; no manipulation collapse."
+    },
+    {
+      "name": "12_ProcTHOR-Train-4108_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "5d471de03f1ccb4b345111a7676b510762f6ab7c3aca8a39b3d73203e1511264",
+      "motion_flagged": false,
+      "observation": "Search-only failure before grasp. Sampled robot views show room and doorway exploration, ending near an interior wall; no manipulation attempted. Preserve recorded failure without inferring a specific route fault from the final scan alone."
+    },
+    {
+      "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "e221584c166990fb79be0e154c5cc10c3b4a7181248429e362a538f9293d7486",
+      "motion_flagged": false,
+      "observation": "Tomato is grasped and carried, but placement view2 has no fresh receptacle detection and the geometry check aborts release. The gray cylindrical support is configured Dining_Table_9_1, a draped table; earlier bin-lid interpretation was incorrect. Grasp/place peak .03998m/s/reference error .00912m; no abrupt torso drop. Failure retained."
+    },
+    {
+      "name": "19_ProcTHOR-Train-4204_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "eb0635748e318b7702cb95a625d85b7c300356581e73837bc5cebc730c98a0b1",
+      "motion_flagged": false,
+      "observation": "Sampled egg pickup, carry and bowl approach are coherent. Final head-camera view is partly arm-occluded; overhead view shows release area. Physical placement assessed by independent replay. Manipulation peak .04043m/s, reference error .00314m; no abrupt torso drop."
+    },
+    {
+      "name": "15_ProcTHOR-Train-2769_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "79625d8e7a2999e2505f3cd0b226aec369be51f1cf0d2012b4aa07c5c31ab8d4",
+      "motion_flagged": false,
+      "observation": "Search-only failure. Sampled views show room exploration and final observation through a doorway; no pickup or placement attempted. Last logged action is a head-camera scan, so no more specific failure cause is inferred from these frames."
+    },
+    {
+      "name": "21_ProcTHOR-Test-308_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "3d78dc31e2bed2daf290a89600e6552a7c98946d5bab1300b79bfeb840cb898f",
+      "motion_flagged": false,
+      "observation": "Search-only route failure at step3723. Sampled views show exploration near walls and a doorway, ending before mug pickup. No manipulation occurred; failure retained."
+    },
+    {
+      "name": "22_ProcTHOR-Train-3170_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "d41b0a754d89faba46e90f0ebe4ff84d6d261712a6ab49f53a63c2fa2c0abaf6",
+      "motion_flagged": false,
+      "observation": "Egg pickup, cross-room carry and release onto plate are coherent; egg visible on plate in final frame. Manipulation peak .04613m/s/reference error .00844m; no abrupt torso drop."
+    },
+    {
+      "name": "23_ProcTHOR-Val-265_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "b0522506e1b9b8bafe369857d86801f89a0a952de22952f4970578dd24e1767c",
+      "motion_flagged": false,
+      "observation": "Bread is carried and released onto the designated plate; observed release XY agrees with configured plate center within 5mm. Support appears cylindrical/gray despite white-table wording. Independent audit rejects this raw success for 15 native-contact steps; exclude from qualified successes. Manipulation peak .04012m/s/reference error .00434m; no abrupt torso drop."
+    },
+    {
+      "name": "24_ProcTHOR-Train-9699_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "34c362caaf98170f8541bc0120840bd67290505c4c729d02e7b3afafeef081f4",
+      "motion_flagged": false,
+      "observation": "Egg pickup and bowl approach occur, but stable released placement lasts only .7s and evaluator rejects task completion. Final camera partly arm-occluded, so do not infer a precise slip trajectory from sampled frames. Manipulation peak .04038m/s/reference error .00673m; no abrupt torso drop."
+    },
+    {
+      "name": "25_ProcTHOR-Val-605_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "6023960df7c676d5d3b86645ff6fd082fafbc320dd39f9bf25b1d01404d5dccd",
+      "motion_flagged": false,
+      "observation": "Tomato pickup, carry and bowl release are coherent. Final head view partly arm-occluded; configured Dining_Table_9_1 support renders gray/cylindrical despite white-table wording. Observed release center within 3mm of configured receptacle XY, stable placement9.3s, independent physical/primary/strict audit passed with native0. Grasp/place peak .03279m/s/reference error .00746m, no abrupt torso drop."
+    },
+    {
+      "name": "18_ProcTHOR-Train-3208_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "03418c9ae111f6114be97e99d54eb3be1a6565604c0bfcdfc80d9e1c306cb031",
+      "motion_flagged": false,
+      "observation": "Bread is picked up and carried; task stops during placement search after final head-camera scan, before released placement. Bread remains held in sampled final overhead view. Grasp peak .01929m/s/reference error .00539m; no abrupt torso drop."
+    },
+    {
+      "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "ec8881ea55b981afe489a3beaff43033485213e54e9da248de7aeb11c18d6d29",
+      "motion_flagged": false,
+      "observation": "Mug pickup, room traversal and release onto plate are coherent in sampled frames; final camera shows mug near right edge on the plate. Manipulation peak .04044m/s/reference error .00927m, no abrupt torso drop. Initial unloaded search transient .33543m/s remains separately recorded, so no global physical speed-cap claim. Independent audit subsequently rejected this raw success for 99 native-contact steps; exclude from qualified successes."
+    },
+    {
+      "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "10bc675acb3d274637b26cbeba9b555f01fde170492cae5dcab5677361f83fc4",
+      "motion_flagged": false,
+      "observation": "Tomato pickup, doorway transit and release are coherent. Final overhead view shows tomato in receptacle on gray cylindrical support; head-camera view partly occluded. Manipulation peak .02776m/s/reference error .00819m, no abrupt torso drop. Independent audit determines qualification."
+    },
+    {
+      "name": "28_ProcTHOR-Train-4956_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "5bd363a1009383235186cafaefabb4af038795c77ad917d475f899af11e9f150",
+      "motion_flagged": false,
+      "observation": "Bread pickup, doorway transport and release onto plate are coherent in sampled frames; bread visible on plate in final view. Gray draped table appearance matches previously checked Dining_Table_9_1 source identity. Manipulation peak .04010m/s/reference error .00569m; no abrupt torso drop."
+    },
+    {
+      "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "03927b79d3c4e0e3b3c79e82319763e30581e3c9d25899d5517fed37c8ac3454",
+      "motion_flagged": false,
+      "observation": "Egg pickup, cross-room carry and plate release are coherent in sampled frames; final camera shows egg on plate at right edge. Grasp/place peak .04042m/s/reference error .00314m, no abrupt torso drop."
+    },
+    {
+      "name": "34_ProcTHOR-Train-9419_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "cde1456cabdb4e7de70442d7cde1d6f35c0e7863586ac273e175a8be00c79d03",
+      "motion_flagged": false,
+      "observation": "Egg pickup, doorway carry and bowl approach are coherent in sampled views. Release region partly arm-occluded in final head view; physical placement qualification relies on independent replay. Grasp/place peak .04877m/s/reference error .00852m, no abrupt torso drop."
+    },
+    {
+      "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "e527f3a4fc47d1e54da0829254cb347390508446fc388940e56365bff1721df2",
+      "motion_flagged": false,
+      "observation": "Tomato pickup and carry occur, then fresh receptacle detection fails in placement views1 and2. Robot stops holding tomato above the gray draped support before release. Grasp/place peak .03984m/s/reference error .00825m; no abrupt torso drop."
+    },
+    {
+      "name": "31_ProcTHOR-Val-660_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "4ea7dd36d1ab8c8f4daa4b8c72e0319c5199f6eee7c56f12a3187a307084ecba",
+      "motion_flagged": false,
+      "observation": "Search-only failure: last scan includes a mug detection at step26354, but no completed pickup approach or grasp. Sampled final view shows distant target support near staircase. No manipulation occurred; preserve failure without equating detection with completion."
+    },
+    {
+      "name": "27_ProcTHOR-Val-576_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "cb0861ba2843e3dfc42cc72e813df9c56a536bd3ebd258fda15f819808ceb6c1",
+      "motion_flagged": false,
+      "observation": "Long initial search followed by coherent egg pickup, carry and release onto plate. Egg visible on plate in sampled final overhead and camera views. Grasp/place peak .04042m/s/reference error .00677m, no abrupt torso drop."
+    },
+    {
+      "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "21929e8910ce4d3a29a1bdba18f5be6c8f53671926431369cc72416b02e7c2fb",
+      "motion_flagged": false,
+      "observation": "Sampled frames show search through indoor passages and a final scan near a kitchen counter; no grasp or placement occurred. Search ends at step 21695 (1084.75 s), before the overall time limit; exact search exit branch is not established by these frames. Failure retained."
+    },
+    {
+      "name": "36_ProcTHOR-Test-959_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "0a02668352b77049c9609df1221ff7b19e05394bf818dd708dcd15d3ba8699ed",
+      "motion_flagged": false,
+      "observation": "Sampled mug pickup, cross-room carry through doorway, and release onto plate are coherent; final mug and plate visible in overhead view, head view partly occluded. Complete manipulation trace peak .04040 m/s, reference error .00350 m; no manipulation motion threshold flags. Independent audit passed."
+    },
+    {
+      "name": "29_ProcTHOR-Train-5013_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "ceff502f8459ed863f3b7478cf0307ccfd2b7077af034314b7b0f5a680cd14f8",
+      "motion_flagged": false,
+      "observation": "Sampled egg grasp and carry are coherent, but placement search continues until step 36000 / 1800 s without release. Egg remains held in sampled carry frames. Complete grasp trace peak .02879 m/s and reference error .00904 m; no manipulation motion flags. Time-limit failure retained."
+    },
+    {
+      "name": "37_ProcTHOR-Train-2063_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "975451cc19d6b0ad2d104fccb1a4b40a1facce6ec3f030f35b473e19c36700c8",
+      "motion_flagged": false,
+      "observation": "Sampled egg grasp, cross-room carry, approach and plate release are coherent; final egg visible on plate at head-view edge. Complete manipulation trace peak .04042 m/s and reference error .00398 m; no manipulation motion flags. Qualification assessed separately by independent replay."
+    },
+    {
+      "name": "38_ProcTHOR-Train-2809_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "07085ceb77950c45a40c6a04cc4de1cbc2c517b877d3f4eab8a9fe610033a1b7",
+      "motion_flagged": false,
+      "observation": "Sampled bread pickup and carry are coherent, then navigation ends near a bed without reaching the destination. route_execution_incomplete at step 7693; final frame 7733. No release occurred. Complete grasp trace peak .01916 m/s/reference error .00443 m; no manipulation motion flags. Failure retained."
+    },
+    {
+      "name": "43_ProcTHOR-Train-5361_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "5841bcebe651d4e8f5711ebe8dcacfe70e1cdd1c4be4407af93ac9e1619b7b69",
+      "motion_flagged": false,
+      "observation": "Bread remains on source cart; sampled arm approaches a high hover but does not descend or grasp. grasp_aborted_alignment_unreachable at step 2257, measured hover residual .03127 m and rotation error .07968 rad. Complete grasp-stage torso peak .01330 m/s/reference error .00095 m; no manipulation motion flags. Failure retained without relaxing alignment criterion."
+    },
+    {
+      "name": "42_ProcTHOR-Train-9100_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "89ca94e04ffafc527f01a21717c26164abc841e16f1f02a85716c18ca3ef7499",
+      "motion_flagged": false,
+      "observation": "Sampled egg pickup, cross-room carry through doorway and plate release are coherent; final egg visible on plate at head-view edge. Complete manipulation trace peak .04044 m/s/reference error .00313 m; no manipulation motion flags. Independent replay qualification passed."
+    },
+    {
+      "name": "41_ProcTHOR-Train-1182_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "5842e927514493f95fdf245b8dcf11cec385d77058f9c98aa683fec48491f299",
+      "motion_flagged": false,
+      "observation": "Sampled mug grasp, cross-room carry and plate release are coherent; plate/mug partly at head-camera edge and arm overlaps overhead release. Complete manipulation trace peak .04194 m/s/reference error .00948 m; no manipulation motion flags. Qualification assessed by independent replay."
+    },
+    {
+      "name": "44_ProcTHOR-Train-2898_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "44a40e6ef14485d70aa62e405252d7d620b07cf6b00a9dbd774e19b4879038ed",
+      "motion_flagged": false,
+      "observation": "Sampled egg grasp, carry and bowl approach are coherent. Final release is partly arm-occluded in both views; physical qualification assessed independently. Complete manipulation trace peak .04226 m/s/reference error .00907 m; no manipulation motion flags."
+    },
+    {
+      "name": "40_ProcTHOR-Train-4574_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "9f39040220ab1404f51ba357c229930cfd547516cfc41e023004b24b68ceeadf",
+      "motion_flagged": false,
+      "observation": "Sampled tomato grasp and carry are coherent, but route execution ends near a doorway before placement. route_execution_incomplete at step 11906 after a bowl detection; final frame 11946 still shows tomato held, no release. Complete grasp trace peak .02460 m/s/reference error .00768 m; no manipulation motion flags. Failure retained."
+    },
+    {
+      "name": "45_ProcTHOR-Train-6968_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "cb2503da9095e53fc9e8279868dc6a2005cff7aceeb789da202a270e566439fd",
+      "motion_flagged": false,
+      "observation": "Sampled tomato grasp, carry and bowl release are coherent; final target/receptacle partly at overhead edge and head view arm-occluded. Complete manipulation trace peak .03814 m/s/reference error .00814 m; no manipulation motion flags. Independent qualification passed. Rendered support appearance should be interpreted using asset-identity notes, not silhouette alone."
+    },
+    {
+      "name": "47_ProcTHOR-Val-46_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "f51118efe3fc76a79a0d0bb92d38a277b4f82efbd52a14ff2b335d0550cb0805",
+      "motion_flagged": false,
+      "observation": "Sampled search ends near dining furniture before reaching target cart; no grasp or placement occurs. route_execution_incomplete at step 2035, final frame 2075. No manipulation-stage joint records because no manipulation occurred. Failure retained."
+    },
+    {
+      "name": "48_ProcTHOR-Train-6322_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "0acd0b4a3af9a487b0110b7fd181354ba2c780e3a55a7fc03d6f3ff654d7885d",
+      "motion_flagged": false,
+      "observation": "Sampled bread grasp, cross-room carry through doorway and plate release are coherent; final bread visible on plate at head-view edge. Complete manipulation trace peak .04010 m/s/reference error .00535 m; no manipulation motion flags. Independent replay qualification assessed separately."
+    },
+    {
+      "name": "39_ProcTHOR-Train-406_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "9fb07b71b359963df6662e8148447a5c4e7a7245c26720a627fc9f46de7396fe",
+      "motion_flagged": false,
+      "observation": "Sampled indoor search ends near a kitchen counter without reaching a grasp stage. route_execution_incomplete at step 20866 (iteration 88), final frame 20906 / 1045.30 s, before overall time limit. No grasp or placement occurred; failure retained."
+    },
+    {
+      "name": "46_ProcTHOR-Train-4899_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "fb5da29c6c331e34cd2ccc46656730d973adf343f2c94d516e6e36641a3528b5",
+      "motion_flagged": false,
+      "observation": "Long initial search followed by sampled mug pickup, cross-room carry and plate release. Overhead final view shows mug on plate; head view partly at edge. Complete manipulation trace peak .04034 m/s/reference error .00284 m; no manipulation motion flags. Independent qualification passed."
+    },
+    {
+      "name": "49_ProcTHOR-Train-7428_seed42_dynamic",
+      "task_success": true,
+      "sheet_sha256": "03c3cd0846a5ba6ff1800065eb875211a0077f697b3417491a2ba0fbce74ccbc",
+      "motion_flagged": false,
+      "observation": "Sampled egg grasp and cross-room carry followed by a long receptacle search and bowl release. Final target/receptacle partly arm-occluded; independent replay assesses qualification. Complete manipulation trace peak .04043 m/s/reference error .00959 m; no manipulation motion flags."
+    },
+    {
+      "name": "50_ProcTHOR-Val-902_seed42_dynamic",
+      "task_success": false,
+      "sheet_sha256": "df5ece1a321b8cfc7acc3acdbad7d69106479d78c5265bb669553d8f95910dfc",
+      "motion_flagged": false,
+      "observation": "Sampled tomato grasp and carry are coherent, but receptacle search continues to step 36000 / 1800 s without release. Final head view shows tomato still held. Complete grasp trace peak .02676 m/s/reference error .00865 m; no manipulation motion flags. Time-limit failure retained."
+    }
+  ]
+}

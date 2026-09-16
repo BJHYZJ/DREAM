@@ -1,17 +1,18 @@
 """Run DREAM simulation tasks with versioned controllers and replay evaluation."""
+
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import importlib.metadata
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 from dream_sim.sources import PROJECT, engine_root, verify_public_configs
 
@@ -21,7 +22,11 @@ HELPERS = ENGINE / "experiments"
 CATALOG = HELPERS / "repro_profiles" / "profiles.json"
 sys.path.insert(0, str(HELPERS))
 from run_instruction_profile import (  # noqa: E402
-    build_command, child, load_catalog, verify_case, verify_source,
+    build_command,
+    child,
+    load_catalog,
+    verify_case,
+    verify_source,
 )
 
 
@@ -33,7 +38,9 @@ def digest(path: Path) -> str:
     return checksum.hexdigest()
 
 
-def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True, asset_lock: Path | None = None) -> dict:
+def preflight(
+    asset_dir: Path, model_cache: Path, *, runtime: bool = True, asset_lock: Path | None = None
+) -> dict:
     """Verify source/task locks; optionally check installed runtime and assets."""
     root, catalog = load_catalog(CATALOG)
     for entry in catalog["sources"].values():
@@ -41,12 +48,15 @@ def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True, asset
     for case in catalog["cases"]:
         verify_case(root, case)
         from dream_sim.auditor import record_reviewer
+
         record_reviewer(case, root)
     report = {
-        "catalog_sha256": digest(CATALOG), "profiles_verified": 10,
+        "catalog_sha256": digest(CATALOG),
+        "profiles_verified": 10,
         "source_snapshots_verified": len(catalog["sources"]),
         "original_video_review_versions_verified": 10,
-        "runtime_checked": runtime, "policy_executed": False,
+        "runtime_checked": runtime,
+        "policy_executed": False,
         **verify_public_configs(),
     }
     lock_path = asset_lock.resolve() if asset_lock else child(root, catalog["asset_lock"]["file"])
@@ -79,19 +89,29 @@ def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True, asset
             raise FileNotFoundError(f"Incomplete model snapshot: {model}@{revision}")
     for relative, expected in lock["artifacts"].items():
         path = child(asset_dir / "data" / "scene_datasets", relative)
-        if not path.is_file() or path.stat().st_size != expected["bytes"] or digest(path) != expected["sha256"]:
+        if (
+            not path.is_file()
+            or path.stat().st_size != expected["bytes"]
+            or digest(path) != expected["sha256"]
+        ):
             raise ValueError(f"Missing or mismatched locked asset: {relative}")
     import torch
+
     if not torch.cuda.is_available():
         raise RuntimeError("This supported configuration requires CUDA inference.")
     icd = os.environ.get("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/lvp_icd.json")
     if not all(Path(path).is_file() for path in icd.split(":")):
         raise FileNotFoundError("Set VK_ICD_FILENAMES to an installed Vulkan ICD.")
     report.update(
-        python=sys.version, packages=versions, asset_files_verified=len(lock["artifacts"]),
-        asset_dir=str(asset_dir), model_cache=str(model_cache),
-        model_revisions_verified=True, model_contents_sha256_verified=False,
-        cuda_devices=torch.cuda.device_count(), vulkan_icd=icd,
+        python=sys.version,
+        packages=versions,
+        asset_files_verified=len(lock["artifacts"]),
+        asset_dir=str(asset_dir),
+        model_cache=str(model_cache),
+        model_revisions_verified=True,
+        model_contents_sha256_verified=False,
+        cuda_devices=torch.cuda.device_count(),
+        vulkan_icd=icd,
         renderer_execution_tested=False,
         boundary="Dependency and resource checks; rendering and task behavior are evaluated during execution.",
     )
@@ -100,8 +120,9 @@ def preflight(asset_dir: Path, model_cache: Path, *, runtime: bool = True, asset
 
 def execute(command: list[str], log: Path, env: dict, *, cwd: Path = ENGINE) -> int:
     with log.open("x") as stream:
-        return subprocess.run(command, cwd=cwd, env=env, stdout=stream,
-                              stderr=subprocess.STDOUT).returncode
+        return subprocess.run(
+            command, cwd=cwd, env=env, stdout=stream, stderr=subprocess.STDOUT
+        ).returncode
 
 
 def audit(case: dict, batch: Path, run: Path, destination: Path, env: dict) -> dict:
@@ -112,14 +133,24 @@ def audit(case: dict, batch: Path, run: Path, destination: Path, env: dict) -> d
     helpers = frozen
     if case["scoring_reassessment"] or case["id"] == "07":
         from run_instruction_frozen_batch import freeze_sources
+
         audit_workspace = destination / "workspace"
         helpers = audit_workspace / "DREAM_code" / "experiments"
         freeze_sources(ENGINE, audit_workspace / "DREAM_code")
-        for name, key in ((".maniskill_assets", "MS_ASSET_DIR"), (".dream_model_cache", "HF_HUB_CACHE")):
+        for name, key in (
+            (".maniskill_assets", "MS_ASSET_DIR"),
+            (".dream_model_cache", "HF_HUB_CACHE"),
+        ):
             (audit_workspace / name).symlink_to(env[key], target_is_directory=True)
     report = {"new_policy_execution": False, "scoring_reassessment": case["scoring_reassessment"]}
-    command = [sys.executable, str(helpers / "replay_instruction_actions.py"),
-               "--source-run", str(run), "--output", str(destination / "physical")]
+    command = [
+        sys.executable,
+        str(helpers / "replay_instruction_actions.py"),
+        "--source-run",
+        str(run),
+        "--output",
+        str(destination / "physical"),
+    ]
     code = execute(command, destination / "physical.log", env)
     report["physical_returncode"] = code
     if code != 0:
@@ -127,20 +158,37 @@ def audit(case: dict, batch: Path, run: Path, destination: Path, env: dict) -> d
     physical = json.loads((destination / "physical" / "audit.json").read_text())
     report["physical_reexecution_passed"] = physical["physical_reexecution_passed"]
     from dream_sim.auditor import record_reviewer
+
     reviewer = record_reviewer(case, CATALOG.parent)
     report["record_review_script_sha256"] = digest(reviewer)
     report["record_review_matches_original_video"] = True
-    command = [sys.executable, str(reviewer),
-               "--run", str(run), "--physical-audit", str(destination / "physical" / "audit.json"),
-               "--output", str(destination / "record"), "--annotate"]
+    command = [
+        sys.executable,
+        str(reviewer),
+        "--run",
+        str(run),
+        "--physical-audit",
+        str(destination / "physical" / "audit.json"),
+        "--output",
+        str(destination / "record"),
+        "--annotate",
+    ]
     if case["scoring_reassessment"]:
-        reassessment = [sys.executable, str(helpers / "reassess_instruction_evaluation.py"),
-                        "--source-run", str(run), "--output", str(destination / "reassessment")]
+        reassessment = [
+            sys.executable,
+            str(helpers / "reassess_instruction_evaluation.py"),
+            "--source-run",
+            str(run),
+            "--output",
+            str(destination / "reassessment"),
+        ]
         code = execute(reassessment, destination / "reassessment.log", env)
         report["reassessment_returncode"] = code
         if code != 0:
             return dict(report, passed=False)
-        command.extend(["--scoring-reassessment", str(destination / "reassessment" / "reassessment.json")])
+        command.extend(
+            ["--scoring-reassessment", str(destination / "reassessment" / "reassessment.json")]
+        )
     code = execute(command, destination / "record.log", env)
     report["record_returncode"] = code
     record_path = destination / "record" / "record_review.json"
@@ -148,8 +196,12 @@ def audit(case: dict, batch: Path, run: Path, destination: Path, env: dict) -> d
     report.update(
         record_review_passed=record.get("record_review_passed", False),
         record_definition_version=record.get("review_definition_version", 1),
-        native_contact_control_steps=physical["contact_audit"]["native_environment_contact_control_steps"],
-        passed=code == 0 and physical["physical_reexecution_passed"] and record.get("record_review_passed", False),
+        native_contact_control_steps=physical["contact_audit"][
+            "native_environment_contact_control_steps"
+        ],
+        passed=code == 0
+        and physical["physical_reexecution_passed"]
+        and record.get("record_review_passed", False),
     )
     return report
 
@@ -157,16 +209,33 @@ def audit(case: dict, batch: Path, run: Path, destination: Path, env: dict) -> d
 def run_case(case: dict, output: Path, gpu: str, asset_dir: Path, model_cache: Path) -> dict:
     directory = output / ("case_" + case["id"])
     directory.mkdir()
-    report = {"case": case["id"], "scene": case["scene"], "seed": case["seed"],
-              "source_id": case["source_id"], "started_unix_s": time.time(), "passed": False}
+    report = {
+        "case": case["id"],
+        "scene": case["scene"],
+        "seed": case["seed"],
+        "source_id": case["source_id"],
+        "started_unix_s": time.time(),
+        "passed": False,
+    }
     env = os.environ.copy()
-    env.update(MS_ASSET_DIR=str(asset_dir), HF_HUB_CACHE=str(model_cache), HF_HUB_OFFLINE="1",
-               OMP_NUM_THREADS="2", MKL_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", PYTHONDONTWRITEBYTECODE="1")
+    env.update(
+        MS_ASSET_DIR=str(asset_dir),
+        HF_HUB_CACHE=str(model_cache),
+        HF_HUB_OFFLINE="1",
+        OMP_NUM_THREADS="2",
+        MKL_NUM_THREADS="2",
+        OPENBLAS_NUM_THREADS="2",
+        PYTHONDONTWRITEBYTECODE="1",
+    )
     env.setdefault("VK_ICD_FILENAMES", "/usr/share/vulkan/icd.d/lvp_icd.json")
     try:
         command, validated = build_command(
-            CATALOG, case_id=case["id"], output=directory / "execution", gpus=[gpu],
-            asset_dir=asset_dir, model_cache=model_cache,
+            CATALOG,
+            case_id=case["id"],
+            output=directory / "execution",
+            gpus=[gpu],
+            asset_dir=asset_dir,
+            model_cache=model_cache,
         )
         report["validated_configuration"] = validated
         report["policy_returncode"] = execute(command, directory / "policy.log", env)
@@ -182,19 +251,46 @@ def run_case(case: dict, output: Path, gpu: str, asset_dir: Path, model_cache: P
         report["original_scoring_protocol_success"] = attempt.get("protocol_success")
         if report["policy_returncode"] == 0 and attempt["status"] == "completed":
             report["audit"] = audit(case, directory / "execution", run, directory / "audit", env)
-            report["passed"] = report["audit"]["passed"] and all(attempt.get(key) for key in (
-                "source_verified_before", "source_verified_after", "task_verified_before", "task_verified_after"))
+            report["passed"] = report["audit"]["passed"] and all(
+                attempt.get(key)
+                for key in (
+                    "source_verified_before",
+                    "source_verified_after",
+                    "task_verified_before",
+                    "task_verified_after",
+                )
+            )
             if report["passed"] and case["same_controls_spectator_rerender"]:
-                render_command = [sys.executable, "-m", "dream_sim.render", "--execution", str(output),
-                                  "--case", case["id"], "--output", str(directory / "spectator")]
-                code = execute(render_command, directory / "spectator_launcher.log", env, cwd=PROJECT)
+                render_command = [
+                    sys.executable,
+                    "-m",
+                    "dream_sim.render",
+                    "--execution",
+                    str(output),
+                    "--case",
+                    case["id"],
+                    "--output",
+                    str(directory / "spectator"),
+                ]
+                code = execute(
+                    render_command, directory / "spectator_launcher.log", env, cwd=PROJECT
+                )
                 rendered = directory / "spectator" / "render_acceptance.json"
-                report["spectator_render"] = json.loads(rendered.read_text()) if rendered.is_file() else {"passed": False}
+                report["spectator_render"] = (
+                    json.loads(rendered.read_text()) if rendered.is_file() else {"passed": False}
+                )
                 report["passed"] = code == 0 and report["spectator_render"]["passed"]
-        report["saved_sha256"] = {name: digest(run / name) for name in (
-            "result.json", "actions.json", "evaluator_trajectory.json") if (run / name).is_file()}
+        report["saved_sha256"] = {
+            name: digest(run / name)
+            for name in ("result.json", "actions.json", "evaluator_trajectory.json")
+            if (run / name).is_file()
+        }
         if report["passed"]:
-            report["review_video"] = str(directory / ("spectator" if case["same_controls_spectator_rerender"] else "audit/record") / "reviewer_view.mp4")
+            report["review_video"] = str(
+                directory
+                / ("spectator" if case["same_controls_spectator_rerender"] else "audit/record")
+                / "reviewer_view.mp4"
+            )
             report["video_frame_record"] = str(run / "video_frames.json")
             report["review_video_playback_speed"] = 1
     except Exception as error:
@@ -214,8 +310,12 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--asset-dir", type=Path, default=SIMULATION / ".runtime" / "assets")
     parser.add_argument("--model-cache", type=Path, default=SIMULATION / ".runtime" / "models")
-    parser.add_argument("--gpus", nargs="+", default=["0"], help="One entry per worker; default: one worker")
-    parser.add_argument("--dry-run", action="store_true", help="Validate profiles without importing the simulator")
+    parser.add_argument(
+        "--gpus", nargs="+", default=["0"], help="One entry per worker; default: one worker"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Validate profiles without importing the simulator"
+    )
     parser.add_argument("--asset-lock", type=Path, help="Asset manifest to check with --preflight")
     args = parser.parse_args()
     if args.asset_lock and not args.preflight:
@@ -234,17 +334,33 @@ def main() -> None:
     cases = [case for case in catalog["cases"] if args.all or case["id"] == args.case]
     if args.dry_run:
         for case in cases:
-            _, report = build_command(CATALOG, case_id=case["id"], output=output / ("case_" + case["id"]) / "execution",
-                                      gpus=[args.gpus[0]], asset_dir=assets, model_cache=models)
+            _, report = build_command(
+                CATALOG,
+                case_id=case["id"],
+                output=output / ("case_" + case["id"]) / "execution",
+                gpus=[args.gpus[0]],
+                asset_dir=assets,
+                model_cache=models,
+            )
             print(json.dumps(report), flush=True)
         return
     output.mkdir(parents=True)
     (output / "preflight.json").write_text(json.dumps(checked, indent=2) + "\n")
-    (output / "planned.json").write_text(json.dumps({
-        "case_ids": [case["id"] for case in cases], "attempts_per_case": 1,
-        "gpu_workers": args.gpus, "automatic_retries": False,
-        "scoring_correction_case_ids": [case["id"] for case in cases if case["scoring_reassessment"]],
-    }, indent=2) + "\n")
+    (output / "planned.json").write_text(
+        json.dumps(
+            {
+                "case_ids": [case["id"] for case in cases],
+                "attempts_per_case": 1,
+                "gpu_workers": args.gpus,
+                "automatic_retries": False,
+                "scoring_correction_case_ids": [
+                    case["id"] for case in cases if case["scoring_reassessment"]
+                ],
+            },
+            indent=2,
+        )
+        + "\n"
+    )
     pending = iter(cases)
     lock = threading.Lock()
     completed = []
@@ -259,18 +375,33 @@ def main() -> None:
             report = run_case(case, output, gpu, assets, models)
             with lock:
                 completed.append(report)
-                (output / "progress.json").write_text(json.dumps({
-                    "planned": len(cases), "completed": len(completed),
-                    "passed": sum(row["passed"] for row in completed),
-                    "cases": [{key: row[key] for key in ("case", "passed")} for row in completed],
-                }, indent=2) + "\n")
-            print(json.dumps({"event": "finished", "case": case["id"], "passed": report["passed"]}), flush=True)
+                (output / "progress.json").write_text(
+                    json.dumps(
+                        {
+                            "planned": len(cases),
+                            "completed": len(completed),
+                            "passed": sum(row["passed"] for row in completed),
+                            "cases": [
+                                {key: row[key] for key in ("case", "passed")} for row in completed
+                            ],
+                        },
+                        indent=2,
+                    )
+                    + "\n"
+                )
+            print(
+                json.dumps({"event": "finished", "case": case["id"], "passed": report["passed"]}),
+                flush=True,
+            )
 
     with ThreadPoolExecutor(max_workers=len(args.gpus)) as pool:
         list(pool.map(worker, args.gpus))
-    result = {"planned": len(cases), "completed": len(completed),
-              "all_passed": len(completed) == len(cases) and all(row["passed"] for row in completed),
-              "cases": sorted(completed, key=lambda row: row["case"])}
+    result = {
+        "planned": len(cases),
+        "completed": len(completed),
+        "all_passed": len(completed) == len(cases) and all(row["passed"] for row in completed),
+        "cases": sorted(completed, key=lambda row: row["case"]),
+    }
     (output / "acceptance.json").write_text(json.dumps(result, indent=2) + "\n")
     raise SystemExit(0 if result["all_passed"] else 1)
 

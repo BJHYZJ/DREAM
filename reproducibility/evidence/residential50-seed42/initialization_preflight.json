@@ -1,0 +1,407 @@
+{
+  "planned": 50,
+  "checked": 50,
+  "all_initialized": true,
+  "results": [
+    {
+      "scene": "ProcTHOR-Test-722",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 5.106004476547241
+    },
+    {
+      "scene": "ProcTHOR-Train-2043",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 5.6642584800720215
+    },
+    {
+      "scene": "ProcTHOR-Train-8471",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 6.1487815380096436
+    },
+    {
+      "scene": "ProcTHOR-Train-6452",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 6.175361633300781
+    },
+    {
+      "scene": "ProcTHOR-Test-288",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.871525764465332
+    },
+    {
+      "scene": "ProcTHOR-Train-7473",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.119870901107788
+    },
+    {
+      "scene": "ProcTHOR-Train-1402",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.750981092453003
+    },
+    {
+      "scene": "ProcTHOR-Train-4300",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.2471063137054443
+    },
+    {
+      "scene": "ProcTHOR-Test-166",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.6783630847930908
+    },
+    {
+      "scene": "ProcTHOR-Train-7780",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.7696521282196045
+    },
+    {
+      "scene": "ProcTHOR-Train-3859",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.059938907623291
+    },
+    {
+      "scene": "ProcTHOR-Test-459",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.9498071670532227
+    },
+    {
+      "scene": "ProcTHOR-Train-4108",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.155575752258301
+    },
+    {
+      "scene": "ProcTHOR-Train-8921",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.7080235481262207
+    },
+    {
+      "scene": "ProcTHOR-Train-2769",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.3708317279815674
+    },
+    {
+      "scene": "ProcTHOR-Train-9926",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.2882699966430664
+    },
+    {
+      "scene": "ProcTHOR-Train-3208",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.807915210723877
+    },
+    {
+      "scene": "ProcTHOR-Train-507",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.0608129501342773
+    },
+    {
+      "scene": "ProcTHOR-Train-8432",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.7144687175750732
+    },
+    {
+      "scene": "ProcTHOR-Train-4204",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.79703688621521
+    },
+    {
+      "scene": "ProcTHOR-Test-308",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.007237195968628
+    },
+    {
+      "scene": "ProcTHOR-Val-265",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.1062004566192627
+    },
+    {
+      "scene": "ProcTHOR-Train-3170",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.048881769180298
+    },
+    {
+      "scene": "ProcTHOR-Val-605",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.9872050285339355
+    },
+    {
+      "scene": "ProcTHOR-Train-9699",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.3546042442321777
+    },
+    {
+      "scene": "ProcTHOR-Train-2451",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.9857337474822998
+    },
+    {
+      "scene": "ProcTHOR-Val-576",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.9873809814453125
+    },
+    {
+      "scene": "ProcTHOR-Train-4732",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.521226406097412
+    },
+    {
+      "scene": "ProcTHOR-Train-5013",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.797043561935425
+    },
+    {
+      "scene": "ProcTHOR-Train-4956",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 4.057835578918457
+    },
+    {
+      "scene": "ProcTHOR-Val-660",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.7787415981292725
+    },
+    {
+      "scene": "ProcTHOR-Train-5942",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.575222969055176
+    },
+    {
+      "scene": "ProcTHOR-Train-6673",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.2458384037017822
+    },
+    {
+      "scene": "ProcTHOR-Train-9419",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.5265533924102783
+    },
+    {
+      "scene": "ProcTHOR-Train-7199",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.0535645484924316
+    },
+    {
+      "scene": "ProcTHOR-Train-2809",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.3687880039215088
+    },
+    {
+      "scene": "ProcTHOR-Train-2063",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.0117454528808594
+    },
+    {
+      "scene": "ProcTHOR-Test-959",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 4.1351234912872314
+    },
+    {
+      "scene": "ProcTHOR-Train-406",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.958860397338867
+    },
+    {
+      "scene": "ProcTHOR-Train-4574",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.306126594543457
+    },
+    {
+      "scene": "ProcTHOR-Train-1182",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 5.689000368118286
+    },
+    {
+      "scene": "ProcTHOR-Train-2898",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 5.679437875747681
+    },
+    {
+      "scene": "ProcTHOR-Train-9100",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 7.1243577003479
+    },
+    {
+      "scene": "ProcTHOR-Train-6968",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 1.6782371997833252
+    },
+    {
+      "scene": "ProcTHOR-Train-5361",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 7.872423410415649
+    },
+    {
+      "scene": "ProcTHOR-Train-4899",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 4.042727470397949
+    },
+    {
+      "scene": "ProcTHOR-Val-46",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.9479548931121826
+    },
+    {
+      "scene": "ProcTHOR-Train-7428",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.5025787353515625
+    },
+    {
+      "scene": "ProcTHOR-Train-6322",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 3.8987088203430176
+    },
+    {
+      "scene": "ProcTHOR-Val-902",
+      "seed": 42,
+      "initialized": true,
+      "policy_executed": false,
+      "control_steps": 0,
+      "wall_time_s": 2.5306107997894287
+    }
+  ]
+}

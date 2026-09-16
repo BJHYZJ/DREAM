@@ -30,11 +30,14 @@ def route_chunks(route,max_distance=.65,max_reverse_distance=.18):
 class HeadingRouteExecutor:
     """PD feedback with measured footprint and fresh-depth guard callbacks."""
     def __init__(self,io,occupancy,footprint_provider,geometry_observe,event=lambda *a,**k:None,
-                 semantic_replan=None,state_listener=None):
+                 semantic_replan=None,state_listener=None,arrival_tolerance_m=.018):
         self.io=io;self.occupancy=occupancy;self.footprint_provider=footprint_provider
         self.geometry_observe=geometry_observe;self.event=event
         self.phase="Heading navigation diagnostic";self.waypoint=None;self.last_failure=None
         self.semantic_replan=semantic_replan;self.state_listener=state_listener
+        if not np.isfinite(arrival_tolerance_m) or not 0.<arrival_tolerance_m<=.018:
+            raise ValueError("Arrival tolerance must be positive and at most 18 mm")
+        self.arrival_tolerance_m=float(arrival_tolerance_m)
 
     def command(self,**kwargs):
         if self.state_listener is not None:self.state_listener(self.phase,self.waypoint)
@@ -69,7 +72,7 @@ class HeadingRouteExecutor:
     def translate(self,goal,planned_heading=None):
         goal=np.asarray(goal);self.waypoint=goal.tolist()
         base=self.io.pose();delta=goal-base[:2]
-        if np.linalg.norm(delta)<.018:return True
+        if np.linalg.norm(delta)<self.arrival_tolerance_m:return True
         yaw=math.atan2(delta[1],delta[0]) if planned_heading is None else float(planned_heading)
         reverse=np.dot(delta,[math.cos(yaw),math.sin(yaw)])<0
         if not self.turn(yaw):return False
@@ -83,17 +86,19 @@ class HeadingRouteExecutor:
         endpoint=np.r_[goal,yaw]
         if not self.clear(initial,endpoint):return self.stop("translation_sweep_not_observed_clear")
         best=distance;stagnant=0
+        depth_period=8 if reverse else 5
+        semantic_period=80 if reverse else 50
         for step in range(max(180,int(distance/.08*self.io.base.control_freq*2))):
             pose=self.io.pose();delta=goal-pose[:2];remaining=np.linalg.norm(delta)
-            if remaining<.018:
+            if remaining<self.arrival_tolerance_m:
                 self.command();self.geometry_observe()
                 self.event("heading_translation_complete",goal=goal.tolist(),base=self.io.pose().tolist())
                 return True
-            if step%8==0:self.geometry_observe()
-            if step and step%80==0 and self.semantic_replan is not None and self.semantic_replan():
+            if step%depth_period==0:self.geometry_observe()
+            if step and step%semantic_period==0 and self.semantic_replan is not None and self.semantic_replan():
                 return self.stop("semantic_replan_requested")
             error=wrapped(math.atan2(delta[1],delta[0])+(math.pi if reverse else 0)-pose[2])
-            speed=min(.06 if reverse else .10,max(.02,remaining*.65)) if abs(error)<.12 else 0.
+            speed=min(.06 if reverse else .16,max(.02,remaining*.65)) if abs(error)<.12 else 0.
             if reverse:speed=-speed
             rate=float(np.clip(1.8*error,-.25,.25));predicted=pose.copy()
             predicted[:2]+=speed/self.io.base.control_freq*4*np.array([math.cos(pose[2]),math.sin(pose[2])])

@@ -1,0 +1,12 @@
+{
+  "source": "final50/frozen_workspace/DREAM_code/experiments/maniskill_crossroom_policy.py",
+  "navigation_budget": 110,
+  "possible_early_exit_conditions": [
+    "110 navigation iterations exhausted",
+    "8 stalled guarded recovery iterations",
+    "No reachable observed goal after repeated scanning",
+    "Current base cell remains non-traversable after retreat/scan"
+  ],
+  "interpretation": "End after head-camera scan is insufficient to identify the specific branch. Describe as search ended before pickup or placement unless an explicit event/error establishes the cause.",
+  "controller_changed": false
+}

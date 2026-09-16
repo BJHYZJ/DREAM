@@ -1,0 +1,363 @@
+{
+  "original_manifest_sha256": "adc657fa58bc0e5aac45cf985067a72ffab57f8313b9c84f16c602b80419c552",
+  "final_manifest_sha256": "ff32f3d704652dec76ae448eb2670cab228ef78d019054d5bbdaa7d605862a78",
+  "changed_task_field": "maximum_sim_seconds",
+  "from_seconds": 1200,
+  "to_seconds": 1800,
+  "houses": 50,
+  "seed": 42,
+  "all_geometry_and_other_task_fields_unchanged": true,
+  "changes": [
+    {
+      "scene": "ProcTHOR-Test-722",
+      "seed": 42,
+      "old_task_sha256": "84badc80b01a8af7d841ad5403f6e435b3ddae21a2d07415b73688175d34ff95",
+      "new_task_sha256": "b9c6c74f60c5b11c492235debc046d405e807d21527e7f9c7ce9f57d5ceea57d",
+      "room_map_sha256": "cd5bce8910426406a8d5623a1e2a88a61112157903c750bff6573784ead6d1a8"
+    },
+    {
+      "scene": "ProcTHOR-Train-8471",
+      "seed": 42,
+      "old_task_sha256": "971e995859d69ac8c7cbdfa832f20782b0f30b5f2ba8844c468348486002ea9b",
+      "new_task_sha256": "73d3334444b092357645800012802fe4d403bc21d2b9169de431e3965d5cb5e1",
+      "room_map_sha256": "1ff859992d906590a43a2f94f375b1a2270805fd2525731e5c21261b17a22c83"
+    },
+    {
+      "scene": "ProcTHOR-Train-6452",
+      "seed": 42,
+      "old_task_sha256": "e9736952507929d5b063656134bb5b8da7dd9b54c4e05d6d36ed58ed3a8fdfb3",
+      "new_task_sha256": "413604db2a3558ddad0d04dceb37f687f7eb47f417f934edc6306563fd722b69",
+      "room_map_sha256": "1b215e45afa755680925c79e3d88e8d858618f32fe81063a9e753bbb42da04ea"
+    },
+    {
+      "scene": "ProcTHOR-Train-2043",
+      "seed": 42,
+      "old_task_sha256": "6bcc048d9e5f41ef111914e62cb3a877f76ef7f97c05f3a297f5a8dadba0d725",
+      "new_task_sha256": "15e0e7b43cf5f4f35240783e304de8a73748b006309bca268383d5aece06838f",
+      "room_map_sha256": "b112b2c764060f05220fc6e6f9c52356273f01d12ffebdbb18f52b09e091b774"
+    },
+    {
+      "scene": "ProcTHOR-Test-288",
+      "seed": 42,
+      "old_task_sha256": "b886265559e8383ae1671c76f89ffb92ebfd06155c0c6a87dba145defb3ded99",
+      "new_task_sha256": "07abe1d587b37847bf60b457b87d7707c5da9b78f151205bc42d58a91369d1d6",
+      "room_map_sha256": "3e4cded776cf038ac6622f7c460ede5729cf26bf1256a17a76f1b53494ff1fda"
+    },
+    {
+      "scene": "ProcTHOR-Train-4300",
+      "seed": 42,
+      "old_task_sha256": "f221509f1b79501daa763f186fc6ed21e1ba297cd1d3e8875756cef0677bd09f",
+      "new_task_sha256": "12e947f5f2b9688bc39c03f86181a1d42a54437aa715ab96c3bebce2502b5c77",
+      "room_map_sha256": "6f3f6d7689e37f578c7ee00e189110dfc6d48d6f9a469004ffb4005771f55bea"
+    },
+    {
+      "scene": "ProcTHOR-Train-1402",
+      "seed": 42,
+      "old_task_sha256": "5d63a6c1cc85abc8100d53275341085f5527bda932583ae161958fe9dc633da5",
+      "new_task_sha256": "5dabf715c95d148301011e29dd71d72d7bf1b959d5081324b46bb5f8fa17d6f4",
+      "room_map_sha256": "605909ebaa3f4c401fde2c205422e86141ed6a9b1dc8f8474a6503eed50eb0fc"
+    },
+    {
+      "scene": "ProcTHOR-Train-7473",
+      "seed": 42,
+      "old_task_sha256": "c41be10cf1d0ffee24ef77ab043d769e47e67fd8972d303c53ac29eaa07d8c7f",
+      "new_task_sha256": "3ae61a82541d46de81263276c7232dc4b9760fb05edb73956205ac1ccdf54faa",
+      "room_map_sha256": "bb82d7ae95d3549ad9d97526447395ab9628137c8a1224038f4cfa813c8ac7b8"
+    },
+    {
+      "scene": "ProcTHOR-Test-166",
+      "seed": 42,
+      "old_task_sha256": "ce117e732ea24b7af6f0e0c50c3ac13d3c9217a3c0fcf57f64c0c991faf812f3",
+      "new_task_sha256": "a622e86ca1c33a1d5a572613b56aa2825e9c770c4e21af87e2611a63db2a2979",
+      "room_map_sha256": "302d935c5c6d45c7ebddb9f94f185ddd815909ff201acc359cab8d7c490f5e6e"
+    },
+    {
+      "scene": "ProcTHOR-Test-459",
+      "seed": 42,
+      "old_task_sha256": "9f54ba6f786e7331b9f744e3e481c6a5f6b24725234025d7dcea4bd1f45afc46",
+      "new_task_sha256": "05b2fdc96b3e382544048c09fd99c18e2f1bf548e85893c63d652656e22b9c15",
+      "room_map_sha256": "4b9e8efbfab749b8df858eda593ce445d105f8434353a3b8021338a249641c7b"
+    },
+    {
+      "scene": "ProcTHOR-Train-3859",
+      "seed": 42,
+      "old_task_sha256": "3d41340e64329a0e6bcb39168b15ec145262d21c416fc61331fcc7e01429d998",
+      "new_task_sha256": "d84dacad2c3b72f540b9d0cbd3084e572f6247dfe2f1eb969b89cd942b1177df",
+      "room_map_sha256": "e81e8639c00d26517f7d170e94b4c313f48bfb4fce2770f27aaf27e22d8cb776"
+    },
+    {
+      "scene": "ProcTHOR-Train-4108",
+      "seed": 42,
+      "old_task_sha256": "0a96dfd1106a3b2a25408fbda824c58e3a2b630a5e53efd12298caa3427341a1",
+      "new_task_sha256": "792b944de41cb15f11e04224fad8266f49e6cda9e2c4d5ff5e56b1d0c784e941",
+      "room_map_sha256": "01874edca37b0cb20c5a2cede0301531386a3dc825383198fc5f1c48ea025968"
+    },
+    {
+      "scene": "ProcTHOR-Train-7780",
+      "seed": 42,
+      "old_task_sha256": "574a9c292d4858cda6e554547217863f5b5791a7862f67c5b8482ffb682e24e9",
+      "new_task_sha256": "5bbc7fdb0e0cd9981c6cb0a8c1adf4d48b36db5314b8ed3b9ba48ea6a10f9e28",
+      "room_map_sha256": "b300de48e828c8deee968f04de3798b19643478b7b5cff1bac20f654d5a31d79"
+    },
+    {
+      "scene": "ProcTHOR-Train-8921",
+      "seed": 42,
+      "old_task_sha256": "57972af51d13cad6c7a30624f6df20b99d9641b66345b45f245e3354314e94d2",
+      "new_task_sha256": "d5ec2521e5e837c235b6db0b17ee478d106a090ae13d85492b1ae1e40e3ee182",
+      "room_map_sha256": "d87af34d2f0322ba29eed909028f68b42146f9eb10173d04d9bcf839258bbf56"
+    },
+    {
+      "scene": "ProcTHOR-Train-2769",
+      "seed": 42,
+      "old_task_sha256": "6bcd6555aa5bf6e96ceb499ca7a67a850f767780295c4838096a408b7a1f7a3c",
+      "new_task_sha256": "3d5fc1f05bfcc58f35f12f1574bf0d1310d0dd0ef7c9795574a29849ef4d2230",
+      "room_map_sha256": "20cb87f655d442d7bba6fc64ef30a7d735b0b5a4b6880fd9c11c19d83ba5598c"
+    },
+    {
+      "scene": "ProcTHOR-Train-507",
+      "seed": 42,
+      "old_task_sha256": "1a7c411be0a34dc8705580bd9440461fa5c0d5076f277107898df95069559f94",
+      "new_task_sha256": "d70e72c187958fd4b24a83199cc563a3a24fe6ad7a4515ab3a3401194ab3cb94",
+      "room_map_sha256": "dd73ae86c7ffc57c0728098c33a2c1e5d9dcb7ec0be3c703468b700f2ec9f205"
+    },
+    {
+      "scene": "ProcTHOR-Train-9926",
+      "seed": 42,
+      "old_task_sha256": "2424792e95447e6a35955855a083ec471fc3a5d773fdae9e9331f62602482000",
+      "new_task_sha256": "4ec4af54d6bd959efabd327bf930be8fe58ed77ce27b91df13cf33ed8c837070",
+      "room_map_sha256": "f493ddbeb88216bc618d82b70d5bbc8cbe1428d0862a917e109f3f87e821e613"
+    },
+    {
+      "scene": "ProcTHOR-Train-3208",
+      "seed": 42,
+      "old_task_sha256": "9c229e7cffddc2ecb5002f8268f26591e41c24cc6db2f7519916717577f6c15d",
+      "new_task_sha256": "027c36d29d7e0328301a651dea6f4979d7cc23074660337f22df08458304a816",
+      "room_map_sha256": "9de0d5cf52181b8d0c3080245382843eb9fa66bfbe1dc884728d8541c40b4002"
+    },
+    {
+      "scene": "ProcTHOR-Train-4204",
+      "seed": 42,
+      "old_task_sha256": "201c5e288c7d8814ca3804b9603762712e9d7fa468303c332ac571dabafd57cb",
+      "new_task_sha256": "e86149fbc3b76e25f25e08b6c1b51cbd9996a305584345eb471f2136f79f73e8",
+      "room_map_sha256": "715b8317c3a22c1cee25e1eb719604738c593bd7f225992dade556566b290ec9"
+    },
+    {
+      "scene": "ProcTHOR-Train-8432",
+      "seed": 42,
+      "old_task_sha256": "fc5296275dc44fed54e16237d854fa72ea77314d8008c93811c146644a32fc74",
+      "new_task_sha256": "f6de12663ca242dd8c3249717b139d5110531bed23f224d2ce43eb814da65988",
+      "room_map_sha256": "47b829ea078157eea4cf20d147a680fa4eebeec350c640741277616ab851edcf"
+    },
+    {
+      "scene": "ProcTHOR-Test-308",
+      "seed": 42,
+      "old_task_sha256": "ed86c93527a010078f67cdace477d462202e178390037e297e2c61ae6a3c023e",
+      "new_task_sha256": "5b09b68420cdd7d5969cf3aa315a506d727674e5d95772f82008e95531a2bbd2",
+      "room_map_sha256": "d40474d271126fb519994d53661c4c855cb5089772e4ef209dfdc6607a1cba1d"
+    },
+    {
+      "scene": "ProcTHOR-Train-3170",
+      "seed": 42,
+      "old_task_sha256": "e111257fcffe4c6399374d6dafd65bd6989bb2daaa6a36baf7b1a6e8246b97ea",
+      "new_task_sha256": "5c0df48d2cfef789ac7f5b543c50c66afa0d59272b834842ceb52db628314a7c",
+      "room_map_sha256": "eb58673f1205befa0ceabf19d8031ef575a1f3bf3b4bcb170bc92c8b7efbdf02"
+    },
+    {
+      "scene": "ProcTHOR-Val-265",
+      "seed": 42,
+      "old_task_sha256": "fced9a2ee5bc07590a15cbad2580bc68ea3c00f1ae140f1ad1ea307db131fa55",
+      "new_task_sha256": "0540469ebf57c190e5837074a9eba3fdf7a242aa0bea0c2e384d521c8f9210b5",
+      "room_map_sha256": "1638f1da86b3e012136dca1527c724ee9be11a872f9254b309ee90f9f3936cef"
+    },
+    {
+      "scene": "ProcTHOR-Train-9699",
+      "seed": 42,
+      "old_task_sha256": "500087f12cb5df8ad7969322533d00af00c2dd74b3a7396b785b900a888cd36f",
+      "new_task_sha256": "9123be7078af788b678b2149c0ce5c6f9aef14b597ef8b3e6fa7cabeb9103000",
+      "room_map_sha256": "75b5ec87f7837654f8c7056335bbdca3d8ff3fbcd2d3ad6de1245cef63b87a0b"
+    },
+    {
+      "scene": "ProcTHOR-Val-605",
+      "seed": 42,
+      "old_task_sha256": "c6cbd4fc12f20cef38290a82e4347f27a7d3e246ed766d43c08a012622e49b97",
+      "new_task_sha256": "a75917180f4951d382c7e5eb01b24b2021f5bb8a6f16567ebae0704779ca2a15",
+      "room_map_sha256": "fb14bd8d2d9a93f7c47da182268f194ec1533169f6e54d81ad8e582ee041c261"
+    },
+    {
+      "scene": "ProcTHOR-Train-2451",
+      "seed": 42,
+      "old_task_sha256": "32a0f490d8c721011fca1a337ee493331d6eed4893fd44e5260e7e51cf871330",
+      "new_task_sha256": "2bdcf7a7fde2b87eb9365de94cbfffb07a74433c37b8a2b7d632d2c220075ac8",
+      "room_map_sha256": "d696da9ba56e5b32e4d8f29d68c2911c70d5db4282b21ff96f35d5ae03ba643f"
+    },
+    {
+      "scene": "ProcTHOR-Val-576",
+      "seed": 42,
+      "old_task_sha256": "6f395e556b6b73da5436f3391f2855bd11fe737c4eabeff0442f4890932f0fa6",
+      "new_task_sha256": "7cb0db39a84baff7c1ac6d7e962ddf5937ed2bf53df9a4947c138f34da8a922d",
+      "room_map_sha256": "c3d9bc497bda12e217d3e26dcc957368a5b85954d459426daed54773fb0883f0"
+    },
+    {
+      "scene": "ProcTHOR-Train-4956",
+      "seed": 42,
+      "old_task_sha256": "d4382079f37d3fbb2506491c001afe026db3771831aaa34b4ebae3a786974207",
+      "new_task_sha256": "540ff213122b5a04bd17d78a281acc0607afea7c290a9f736bb5d7eb6371a6f0",
+      "room_map_sha256": "fb5ef21ba5a1de8814f544cbe9af0801f862e3a98c8b502d0eb594ff272489db"
+    },
+    {
+      "scene": "ProcTHOR-Train-5013",
+      "seed": 42,
+      "old_task_sha256": "c80f288271c9b09d99fd06c82a34fad4584d9cdd4ba73c0dec1d3772baf75819",
+      "new_task_sha256": "929719b57b3ba2087ee7832be81b00c53e73fffdaa3b3d931c1ceee0c2c72d17",
+      "room_map_sha256": "b39f81ea3f7e3435b725835068718266c8727a56a806c880bf0cc91e80fa8710"
+    },
+    {
+      "scene": "ProcTHOR-Train-4732",
+      "seed": 42,
+      "old_task_sha256": "9398817d8f1557f4bb3d51d9ed059c18e04982b8708b1f1d17a9e461c612d020",
+      "new_task_sha256": "a867bfd14d5dd4f5a27b19efe1ad2cf93c2cb357482b025b1c23459731d059e1",
+      "room_map_sha256": "b3919de6450e4ad63bdb77da34898a22533b6bd8c41a659c87efba635107a440"
+    },
+    {
+      "scene": "ProcTHOR-Val-660",
+      "seed": 42,
+      "old_task_sha256": "77eafdfb1a582f45088a40b7ab1e1907341ba32f88486322b8deaffc8418fe8e",
+      "new_task_sha256": "6e7343d5446a7e87d77ef29a55d56a890679d9849516ed8982e6012d873cf096",
+      "room_map_sha256": "4ea154ef6b6bc11a4ccd8319550d025e44aef6b1943f497cfa6430f6cddf9c93"
+    },
+    {
+      "scene": "ProcTHOR-Train-7199",
+      "seed": 42,
+      "old_task_sha256": "4b0b8fd8745f4636007d97240f4877e767eb13ffe31e2836bc8885af1206f618",
+      "new_task_sha256": "7dba3d5215e78e36b352d93030b3c050b15021ec906be19f3378e8556d326e4c",
+      "room_map_sha256": "78802e79d9d9b31022307d51eb34ad3b4734611a1e4fab43a79fb95310c00615"
+    },
+    {
+      "scene": "ProcTHOR-Train-5942",
+      "seed": 42,
+      "old_task_sha256": "aa1e321a371e7db29a412f9a9bf5f93149ffb419e3c524f2d55e9ad51fdf7d01",
+      "new_task_sha256": "5de57b168362f1cb58928eaec8452556cbed30910fcef198e0fe5157a475e53f",
+      "room_map_sha256": "0f644e3a24e82e2153c49bcc5ad70c26365f4789b5da737b4b79a78e40d09339"
+    },
+    {
+      "scene": "ProcTHOR-Train-9419",
+      "seed": 42,
+      "old_task_sha256": "17f99151f51a92619bd0987d504bbd712d4eecdbb2ab213a182e375323f6dc67",
+      "new_task_sha256": "ada5e9aadcfbe81a773c5419aaa6963a42bd8c4e9e4c4d3c492b0a8b2692e087",
+      "room_map_sha256": "2cb22f6c789283c3ba1a14f42a47ac8b723392e54135ed5f4de801255a01975a"
+    },
+    {
+      "scene": "ProcTHOR-Train-6673",
+      "seed": 42,
+      "old_task_sha256": "772facf02c4400c93b271c6b6cb21dcf48ba38031fc7f388a013ebdb5732c0f6",
+      "new_task_sha256": "1b7962984d4965c71f0265b5b3f951724549418a9a8da41e604b82785a7c05f2",
+      "room_map_sha256": "70f22897c462fe6f84fbaab9aa5213357aa22c34f12e3e4105403557039fe57e"
+    },
+    {
+      "scene": "ProcTHOR-Test-959",
+      "seed": 42,
+      "old_task_sha256": "54b123717826affb5f21c529f91ce5967cc5561235baf3e142d038286ff2c747",
+      "new_task_sha256": "e3318fb4ec7b1d41b898c1a90b69af96ae34e1bd8cd90c190095d761feca2b2a",
+      "room_map_sha256": "248613f8a2cdd625d9492db0c7dd2bebaed74d20e5c602e9f1f0b0f1a79e5067"
+    },
+    {
+      "scene": "ProcTHOR-Train-2063",
+      "seed": 42,
+      "old_task_sha256": "69c7a11084bfe6542a778a53cbeaa1c43dfda52d53ce0573c17c334783e62cf3",
+      "new_task_sha256": "1f30618a159c56d692cabede08ca079e0739f7c26d449fe9227083308a0d1628",
+      "room_map_sha256": "3a70dbdfdff7f605731475c096469b75087b186864a9798531af7f7e9222df05"
+    },
+    {
+      "scene": "ProcTHOR-Train-2809",
+      "seed": 42,
+      "old_task_sha256": "19a3e2a21254dcb66133ea76728d55f12a19afe4cbd685af8572eae7cc382526",
+      "new_task_sha256": "99c4dc506939954d6d70e6b5f4804c752b4680eae6b20aa1347312326691132f",
+      "room_map_sha256": "6d199995b18a4d69da8526a5220a90ee7723718deb92b4240b19ca4b5328add9"
+    },
+    {
+      "scene": "ProcTHOR-Train-406",
+      "seed": 42,
+      "old_task_sha256": "fa5cd161211c8e1641a11f270bc0ce3a8a72c5bf47d87e769962e2375e9681e3",
+      "new_task_sha256": "d5323842b5a4222f6783712d7d771ff7937cc2fda45e960be46ac50629e2cba3",
+      "room_map_sha256": "a16ee4e1e035748d7296ad81a6666da48803414fd246589e5e4b0e7d6d58b778"
+    },
+    {
+      "scene": "ProcTHOR-Train-4574",
+      "seed": 42,
+      "old_task_sha256": "d5fa03a4d92611d85c0294c86b0fde1406363b3c63600453d82e62ffac57380f",
+      "new_task_sha256": "d22e65188afadd6f5a3a47f378336373683664967327ca16b35d830f5f9c73dd",
+      "room_map_sha256": "01c7d8e80708c93a7c9ff167797b3ad14788066745932a2eefee142207606e74"
+    },
+    {
+      "scene": "ProcTHOR-Train-1182",
+      "seed": 42,
+      "old_task_sha256": "c9eead8a5c15f34a690c45eeeb8560df7bb0b7f64b711a8f17913728a089ed0f",
+      "new_task_sha256": "83bc95cf40ba1a5aa925d041f0121c2a3128186a52133ff9dec44306e4af1d30",
+      "room_map_sha256": "486b063300db93eeca62120b7f2882a96a1cc481305beaa0cbf6713a43c35e60"
+    },
+    {
+      "scene": "ProcTHOR-Train-9100",
+      "seed": 42,
+      "old_task_sha256": "462ea947a10566d85aab8c9e6f18570c2d368c4eedf20a6fc93c6bd09f7e5a04",
+      "new_task_sha256": "ad1063757eaf820b4c07f5e5dd4bac2e98a3ca39bbccb91da5cd7f610c62a6a3",
+      "room_map_sha256": "6637e536c555716b4c90441e28b21296041e3c4ca60e7d6a3b65a17824a9d8d8"
+    },
+    {
+      "scene": "ProcTHOR-Train-5361",
+      "seed": 42,
+      "old_task_sha256": "c2e8f57fc6e4a317edae7179e000c15586bd7961c718ff5176c4a5137f80f9f1",
+      "new_task_sha256": "7741c9bc579d6c02f0374a6fce70ccc23fd0d79db6915ceb4b9bc4b570e45b10",
+      "room_map_sha256": "cf60c7a7ca838f385ae1505dae456b8f70c5968dcb71590f3eb5eef175d2b606"
+    },
+    {
+      "scene": "ProcTHOR-Train-2898",
+      "seed": 42,
+      "old_task_sha256": "5e4a4fcedd3f3f3b853859ee506c0a06f697fb2dad1fb7ca4cbd4ecee23a9213",
+      "new_task_sha256": "766976f4a2c7b78bed2957ff4ff638112bfb12016f6a99420776a59c0cede8a5",
+      "room_map_sha256": "cb557802299fa356c4e1c1f5efbd2cceb68bd830bc0c503ba383b270403f60ee"
+    },
+    {
+      "scene": "ProcTHOR-Train-6968",
+      "seed": 42,
+      "old_task_sha256": "473d18e27b2ce6e0deea5546e04a55a8e06811f88e124f2af54011dc5ce4c683",
+      "new_task_sha256": "70ef05e1d44d7f40e5bd49e2cac57a67571ddebe3d670799257c92669cafbbd8",
+      "room_map_sha256": "ad56a70fe9776664d1923056c61b197891a0103f5c486e9d8e31694d5bdce022"
+    },
+    {
+      "scene": "ProcTHOR-Train-4899",
+      "seed": 42,
+      "old_task_sha256": "2bcb60a84ac38a657c6b83a13e9fd7fcf382a2b258eef85dac803f565ee19ced",
+      "new_task_sha256": "f66c2ddc399b671959a97e2945c99518b0aa3cd4d99c3164104542af848e7dac",
+      "room_map_sha256": "70d76315fece3fd261d4475d5dd1541e48a8134012b02dff12d8b06a91cb0c2c"
+    },
+    {
+      "scene": "ProcTHOR-Val-46",
+      "seed": 42,
+      "old_task_sha256": "6e702344dead79214f11e01b51d5d84857d0eb22bed91b548a5792bbb2ed82f5",
+      "new_task_sha256": "827bef44839fe2a4b4b504bfa0d979cd1db0769597cc41dddff99eaafff147e8",
+      "room_map_sha256": "c1b7f7995fffd8b644657205b570e18d31c387a2474cedb4e952e0404a5b4bd5"
+    },
+    {
+      "scene": "ProcTHOR-Train-6322",
+      "seed": 42,
+      "old_task_sha256": "59c14c408c50fb114700574a53b837df74f851d0c7e2ccf1b20c9de6d9643712",
+      "new_task_sha256": "06a39c84a5f7bd8124353354f3c960e93400266979011bf3d7c3520234df50de",
+      "room_map_sha256": "03489dd434323c894413b157d78d5d754534150e792de72648d834229bf9cdb2"
+    },
+    {
+      "scene": "ProcTHOR-Train-7428",
+      "seed": 42,
+      "old_task_sha256": "3912460ed49e97c86ebda7f3a3c9e653ec815c5bd3a977484acf4657b2659b6a",
+      "new_task_sha256": "83e53dcf2e82487a03a36d167284eed839cdaf73f275bdf3967dd0109a4bc240",
+      "room_map_sha256": "b4960d0ebc67266d03b53634051d25b1e1565c23c0258b7b3cbedc830c7f7433"
+    },
+    {
+      "scene": "ProcTHOR-Val-902",
+      "seed": 42,
+      "old_task_sha256": "6224740f4c850b7fb8a1af73a41a91f90b9ee115d05a9436397f1bab9c67494c",
+      "new_task_sha256": "3d0ec1b4ed634aca00327bdac45c8538c203f27bb7175f6cdaa4c3e36a891cc9",
+      "room_map_sha256": "43f8db55393b53774237301f4c899dd0b030891383f49a0ecd9b9237cf57df27"
+    }
+  ],
+  "original_task_files_verified_unchanged": true
+}

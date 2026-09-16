@@ -74,14 +74,15 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
             spheres.extend((point,.10) for point in np.linspace(first,second,5))
         if self.io.grip < 0:
             spheres.append((array(self.io.robot.tcp_pose.p)[0],.13))
-            frame=getattr(self,"perceived_payload_frame",None)
+            from instruction_carry_geometry import navigation_payload
+            radius,height,frame=navigation_payload(self)
             if frame is not None:
                 matrix=array(self.io.robot.tcp_pose.to_transformation_matrix())[0]
                 center=matrix[:3,3]+matrix[:3,:3]@np.asarray(frame["center_tcp_m"])
                 axis=matrix[:3,:3]@np.asarray(frame["axis_tcp"])
-                height=self.perceived_payload_height;radius=self.perceived_payload_radius
                 count=max(2,int(np.ceil(height/.025))+1)
-                bound=math.hypot(radius+.015,height/(2*(count-1)))
+                # Match the observed payload envelope, including depth/grasp uncertainty.
+                bound=math.hypot(radius+.025,height/(2*(count-1)))
                 spheres.extend((center+offset*axis,bound) for offset in np.linspace(-height/2,height/2,count))
         return spheres
 
@@ -138,7 +139,7 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
             self.io.command(forward=-.05)
         return np.linalg.norm(self.io.pose()[:2]-pose[:2]) > .06
 
-    def move_chunk(self,path,max_cells=9,stop_on_detection=True,speed=.12,terminal_xy=None):
+    def move_chunk(self,path,max_cells=9,stop_on_detection=True,speed=.18,terminal_xy=None):
         max_cells=max(max_cells,int(round(.70/self.occupancy.resolution)))
         if not path or (len(path)<2 and terminal_xy is None):
             return False
@@ -174,6 +175,10 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
         if not self.occupancy.segment_safe(self.io.pose()[:2],chosen):
             self.event("safety_replan_after_turn")
             return False
+        if terminal:speed=min(speed,.12)
+        # Preserve or shorten the distance traveled between observed updates.
+        depth_period=max(1,int(16*min(1.,.12/max(speed,1e-6))))
+        semantic_period=max(1,int(80*min(1.,.12/max(speed,1e-6))))
         initial=self.io.pose()[:2].copy()
         best=float(np.linalg.norm(chosen-initial))
         stagnant=0
@@ -187,12 +192,12 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
                 self.observe()
                 self.event("executed_observed_route_chunk",goal=chosen.tolist(),base=pose.tolist())
                 return True
-            if step and step%16==0:
+            if step and step%depth_period==0:
                 self.geometry_observe()
                 if not self.occupancy.segment_safe(pose[:2],chosen):
                     self.event("safety_stop_new_obstacle",waypoint=chosen.tolist())
                     return np.linalg.norm(pose[:2]-initial)>.10
-            if step and step%80==0:
+            if step and step%semantic_period==0:
                 self.observe()
                 if stop_on_detection and motion_detection_changed(tracked_point,self.current_detection):
                     self.event("live_detection_during_motion",detection=asdict(self.current_detection))
@@ -244,8 +249,12 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
     def try_exploration_expansion(self,start,distances,safe):
         return None
 
+    def travel_observation(self):
+        return self.scan_sweep()
+
     def fallback_observation(self,moved,stalled,iteration):
-        self.scan_sweep()
+        if moved:self.travel_observation()
+        else:self.scan_sweep()
         if moved:return 0
         self.event("route_execution_incomplete",iteration=iteration,embodiment="measured_heading_footprint")
         if stalled>=1 and self.exploration_goal is not None:
@@ -268,6 +277,8 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
         self.compact_navigation_arm()
         stalled=0
         for iteration in range(budget):
+            if hasattr(self,"check_search_progress") and self.check_search_progress():
+                stalled=0
             dock_min,dock_max,handoff=self.docking_limits()
             self.phase="Search across rooms"
             if self.exploration_goal is not None and np.linalg.norm(self.io.pose()[:2]-self.exploration_goal)<.22:
@@ -407,9 +418,9 @@ class CrossRoomSearchPilot(LearnedSearchPilot):
                 if wrist_scans and iteration%2==0:
                     self.wrist_sweep()
                 elif not wrist_scans:
-                    # Fetch has an independently actuated head camera. Keep
-                    # the arm folded and gather views while the base is stopped.
-                    self.scan_sweep()
+                    # Fresh depth and semantic checks remain active during
+                    # travel; the instruction adapter can reuse a recent full scan.
+                    self.travel_observation()
             else:
                 stalled+=1
                 self.event("route_execution_incomplete",iteration=iteration)

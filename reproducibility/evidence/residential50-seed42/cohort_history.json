@@ -1,0 +1,22 @@
+{
+  "task_manifest_sha256": "ff32f3d704652dec76ae448eb2670cab228ef78d019054d5bbdaa7d605862a78",
+  "original_development_separation_sha256": "cb154d15017053b4ae95f805f793e384c00f3ecaa0d903cd80ce58b7278d9dff",
+  "original_development_houses": 10,
+  "additional_diagnostic_house": "ProcTHOR-Train-3859",
+  "controller_validation_sha256": "ec6566c0a1a7138b9d122b123791d88ff5d2c6e5f77bbf0428c19dbfed1d648d",
+  "superseded_batches": [
+    {
+      "directory": "aborted_render_batch",
+      "reason": "Provider asset required a UV attribute repair."
+    },
+    {
+      "directory": "formal50",
+      "controller": "recovery_v3",
+      "reason": "Pickup-support contact during grasp preparation led to a controller revision."
+    }
+  ],
+  "final_controller": "recovery_v6",
+  "final_results_directory": "final50",
+  "previous_outcomes_pooled": false,
+  "scope": "Descriptive fixed-cohort evaluation after development; all final-version outcomes retained."
+}

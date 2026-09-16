@@ -7,6 +7,7 @@ This does not itself authorize motion or replace independent physics checks.
 import math
 
 import cv2
+from instruction_collision_kernels import observed_kernel_clear
 import numpy as np
 from scipy.spatial import ConvexHull
 
@@ -141,9 +142,16 @@ def navigation_layer_views(occupancy,footprint):
     return views
 
 
-def navigation_swept_clear(occupancy,footprint,start,end,views=None):
+def navigation_swept_clear(occupancy,footprint,start,end,views=None,*,require_observed=False):
+    """Check matching collision heights; optionally reject every unknown swept cell.
+
+    Reverse recovery uses the same measured geometry as forward navigation, but
+    requires prior observations for the complete swept footprint at every height.
+    The stricter view is temporary: cached observations and margins are unchanged.
+    """
     if views is None:views=navigation_layer_views(occupancy,footprint)
-    return all(swept_clear(known,occupancy.origin,occupancy.resolution,vertices,start,end,
+    return all(swept_clear(np.where(known==0,-1,known) if require_observed else known,
+                          occupancy.origin,occupancy.resolution,vertices,start,end,
                           padding=footprint["padding_m"],inferred=occupancy.inferred_blocked)
                for known,vertices in views)
 
@@ -194,9 +202,6 @@ def orientation_masks(known,resolution,vertices,padding=.04,inferred=None,headin
     """
     if headings<4:raise ValueError("At least four headings are required")
     known=np.asarray(known);vertices=np.asarray(vertices,dtype=float)
-    occupied=known==-1
-    if inferred is not None:occupied|=inferred
-    obstacle_image=occupied.astype(np.float32)
     extent=padding+resolution/math.sqrt(2)
     offset=np.asarray(offset)
     radius=int(math.ceil((np.linalg.norm(vertices,axis=1).max()+np.linalg.norm(offset)+extent)/resolution))
@@ -206,8 +211,7 @@ def orientation_masks(known,resolution,vertices,padding=.04,inferred=None,headin
     for index in range(headings):
         polygon=vertices@rotation(index*2*np.pi/headings).T+offset
         kernel=(distances_to_polygon(points,polygon)<=extent).reshape(xx.shape).astype(np.float32)
-        counts=cv2.filter2D(obstacle_image,-1,kernel,borderType=cv2.BORDER_CONSTANT)
-        clear=(counts<.5)&(known==1)
+        clear=observed_kernel_clear(known,kernel,inferred)
         clear[:radius,:]=False;clear[-radius:,:]=False
         clear[:,:radius]=False;clear[:,-radius:]=False
         masks.append(clear)
@@ -243,12 +247,10 @@ def swept_mask(known,resolution,vertices,start_yaw,angle=0.,translation=(0.,0.),
     covered=np.zeros(len(points),bool)
     for alpha in np.linspace(0.,1.,intervals+1):
         polygon=vertices@rotation(start_yaw+alpha*angle).T+offset+alpha*translation
-        covered|=distances_to_polygon(points,polygon)<=extent
-    occupied=np.asarray(known)==-1
-    if inferred is not None:occupied|=inferred
-    counts=cv2.filter2D(occupied.astype(np.float32),-1,
-        covered.reshape(xx.shape).astype(np.float32),borderType=cv2.BORDER_CONSTANT)
-    clear=(counts<.5)&(known==1)
+        pending=np.flatnonzero(~covered)
+        if not len(pending):break
+        covered[pending]=distances_to_polygon(points[pending],polygon)<=extent
+    clear=observed_kernel_clear(known,covered.reshape(xx.shape).astype(np.float32),inferred)
     clear[:radius,:]=False;clear[-radius:,:]=False
     clear[:,:radius]=False;clear[:,-radius:]=False
     return clear

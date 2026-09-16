@@ -1,0 +1,104 @@
+{
+  "protocol": "residential50_easy_grasp_seed42_v1",
+  "status": "frozen_configuration",
+  "scene": "ProcTHOR-Train-406",
+  "instruction": "Please pick up the tomato and place it on the plate on the table.",
+  "recipe": {
+    "id": "tomato_3_plate",
+    "instruction": "Please pick up the tomato and place it on the plate on the table.",
+    "environment_assets": {
+      "pickup": "Tomato_3",
+      "placement": "Plate_9",
+      "support": "Dining_Table_27_1"
+    },
+    "pickup_scale": 1.0,
+    "placement_relation": "on"
+  },
+  "seed": 42,
+  "initial_room": 3,
+  "target_xy": [
+    -4.835999862670899,
+    -6.640000000447035
+  ],
+  "endpoint": [
+    -3.095999862670899,
+    -4.360000000447035
+  ],
+  "disturbance_waypoints": [
+    [
+      -4.835999862670899,
+      -6.400000000447035
+    ],
+    [
+      -4.835999862670899,
+      -6.1600000004470346
+    ],
+    [
+      -4.6559998626709,
+      -5.920000000447035
+    ],
+    [
+      -4.415999862670899,
+      -5.680000000447035
+    ],
+    [
+      -4.175999862670899,
+      -5.440000000447035
+    ],
+    [
+      -3.935999862670899,
+      -5.200000000447035
+    ],
+    [
+      -3.6959998626708988,
+      -4.960000000447034
+    ],
+    [
+      -3.4559998626708985,
+      -4.720000000447035
+    ],
+    [
+      -3.2159998626709,
+      -4.480000000447035
+    ]
+  ],
+  "placement_table_asset": "Dining_Table_27_1",
+  "placement_table_xy": [
+    -7.956843953847886,
+    -6.399223635047674
+  ],
+  "placement_table_collision_radius_m": 0.7850359149456825,
+  "placement_xy": [
+    -7.444898297905923,
+    -6.400000000447035
+  ],
+  "furniture_construction": {
+    "valid_furniture_centers": 911,
+    "footprint_margin_cells": 1,
+    "reference_max_distance_m": 3.0,
+    "footprint_vertices_xy_m": [
+      [
+        0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929612636566,
+        0.34684570133686066
+      ],
+      [
+        -0.6818929016590118,
+        -0.34684570133686066
+      ],
+      [
+        0.6818929612636566,
+        -0.34684570133686066
+      ]
+    ],
+    "source_asset_sha256": "cc2d4c039378bfbf382fc2394c3e86ca503bdb7cdbdedf867d8e248e71aa738d",
+    "conservative_radius_m": 0.7850359149456825,
+    "status": "geometry_only_not_robot_task_success"
+  },
+  "room_map_file": "evaluator_room_map.npz",
+  "maximum_sim_seconds": 1800,
+  "cart_rim_height_m": 0.02
+}

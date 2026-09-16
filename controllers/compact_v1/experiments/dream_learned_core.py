@@ -65,7 +65,8 @@ class RGBDObservation:
         return camera @ self.camera_to_world_cv[:3, :3].T + self.camera_to_world_cv[:3, 3]
 
     def save(self, path: Path):
-        np.savez_compressed(path, **vars(self))
+        from instruction_observation_efficiency import save_observation
+        save_observation(path, vars(self))
 
 
 @dataclass(frozen=True)
@@ -75,6 +76,7 @@ class Detection:
     score: float
     box_xyxy: list[float]
     point_world: list[float]
+    grounding_query: str | None = None
 
 
 class LearnedPerception:
@@ -99,6 +101,13 @@ class LearnedPerception:
         )
         self.encoder.model.eval()
         self.detector.model.eval()
+        from instruction_owl_attention import configure_owl_vision_attention
+        self.owl_attention_runtime = configure_owl_vision_attention(self.detector.model)
+        from instruction_owl_precision import configure_owl_vision_precision
+        self.owl_precision_runtime = configure_owl_vision_precision(self.detector.model)
+        self.owl_attention_runtime["precision"] = "managed_by_recorded_owl_vision_precision"
+        from instruction_perception_cache import CachedOwlQueries
+        self.cached_detector = CachedOwlQueries(self.detector)
         self.threshold = threshold
         self.text_cache = {}
 
@@ -120,7 +129,12 @@ class LearnedPerception:
             )
         return features[0].detach().cpu()
 
-    def detect(self, obs, query, max_depth=4.0):
+    def dense_sampled(self, obs, stride):
+        from instruction_feature_sampling import sampled_mask_siglip
+        with torch.inference_mode():
+            return sampled_mask_siglip(self.encoder,obs.rgb,stride)
+
+    def detect(self, obs, query, max_depth=4.0, *, threshold=None):
         """Original OWL inference; median valid bbox depth for simulator RGB-D.
 
         The original compute_obj_coord takes a median over the whole bbox,
@@ -128,7 +142,10 @@ class LearnedPerception:
         instance mask, color classifier or ground-truth object size is used.
         The output is a visible-surface estimate, not a known object centre.
         """
-        result = self.detector.predict(obs.rgb, query, self.threshold)
+        score_threshold=self.threshold if threshold is None else float(threshold)
+        if not np.isfinite(score_threshold) or not 0<=score_threshold<=1:
+            raise ValueError("Detection threshold must be finite and within [0, 1]")
+        result = self.cached_detector.predict(obs.rgb, query, score_threshold)
         scores = result["scores"].detach().cpu().numpy()
         boxes = result["boxes"].detach().cpu().numpy()
         world = obs.world_points()
@@ -145,22 +162,42 @@ class LearnedPerception:
             if valid.sum() < 6:
                 continue
             xyz = np.median(world[y0:y1, x0:x1][valid], axis=0)
+            from instruction_detection_extent import refine_detected_extent
+            refined = refine_detected_extent(world, obs.depth_m, box)
+            if refined is not None:
+                box = np.asarray(refined['box_xyxy'])
+                xyz = np.asarray(refined['point_world'])
             detections.append(Detection(obs.frame_id, query, float(scores[index]), box.tolist(), xyz.tolist()))
+        # One narrower wording may recover a plate at the ordinary threshold.
+        # Keep the instruction noun for memory and record the actual model query.
+        # Existing detections always take precedence; weak tracking never expands.
+        if not detections and query == "plate" and score_threshold >= self.threshold:
+            for candidate in self.detect(obs, "round plate", max_depth,
+                                         threshold=score_threshold):
+                detections.append(Detection(candidate.observation_id, query,
+                    candidate.score, candidate.box_xyxy, candidate.point_world,
+                    grounding_query=candidate.query))
         return detections
 
 
 class SemanticMemory:
-    def __init__(self, perception, *, dynamic=True, voxel_size=0.05, stride=6, max_depth=4.0):
+    def __init__(self, perception, *, dynamic=True, voxel_size=0.05, stride=6, max_depth=4.0,
+                 observation_directory=None):
         self.perception = perception
         self.dynamic = dynamic
         self.stride = stride
         self.max_depth = max_depth
         self.cloud = VoxelizedPointcloud(voxel_size=voxel_size, feature_pool_method="mean")
         self.observations: dict[int, RGBDObservation] = {}
+        if observation_directory is not None:
+            from instruction_observation_store import ObservationStore
+            self.observations = ObservationStore(observation_directory, RGBDObservation)
+        self.retrieval_verification_cache = {}
         self.rejected_regions = []
         self.rejected_observations=set()
         self.query_rejections={}
         self.rejection_version=0
+        self.retrieval_exclusions={}
         self.updates = []
 
     def __len__(self):
@@ -178,8 +215,13 @@ class SemanticMemory:
                 depth_in_view_max_distance=self.max_depth,
             )
         after_clear = len(self)
+        sampled_features = None
         if features is None:
-            features = self.perception.dense(obs)
+            sampler = getattr(self.perception,"dense_sampled",None)
+            if sampler is None:
+                features = self.perception.dense(obs)
+            else:
+                sampled_features = sampler(obs,self.stride)
         stride = self.stride
         points = obs.world_points()[::stride, ::stride]
         depth = obs.depth_m[::stride, ::stride]
@@ -188,11 +230,14 @@ class SemanticMemory:
         if valid.any():
             # The feature grid is aligned to the same camera image, not an
             # independently projected or simulator-provided semantic image.
-            h, w = obs.depth_m.shape
-            fh, fw = features.shape[:2]
-            ys = np.rint(np.arange(0,h,stride)*(fh-1)/max(1,h-1)).astype(int)
-            xs = np.rint(np.arange(0,w,stride)*(fw-1)/max(1,w-1)).astype(int)
-            sampled_features = features[ys[:,None],xs[None,:]]
+            if sampled_features is None:
+                h, w = obs.depth_m.shape
+                fh, fw = features.shape[:2]
+                ys = np.rint(np.arange(0,h,stride)*(fh-1)/max(1,h-1)).astype(int)
+                xs = np.rint(np.arange(0,w,stride)*(fw-1)/max(1,w-1)).astype(int)
+                sampled_features = features[ys[:,None],xs[None,:]]
+            if sampled_features.shape[:2] != points.shape[:2]:
+                raise ValueError("Sampled features must align with observed depth pixels")
             self.cloud.add(
                 torch.as_tensor(points[valid], dtype=torch.float32), obs_id=obs.frame_id,
                 features=sampled_features[valid].float(),
@@ -224,6 +269,12 @@ class SemanticMemory:
         scores = self.alignments(query)
         if not len(scores):
             return []
+        # Temporary navigation priorities do not delete semantic evidence or
+        # alter the displayed alignment field. Other saved candidates remain
+        # available while an unproductive approach is deferred.
+        for center,radius in getattr(self,"retrieval_exclusions",{}).get(query,[]):
+            near=torch.linalg.norm(self.cloud.points[:,:2]-torch.tensor(center),dim=1)<=radius
+            scores[near]=-float("inf")
         selected = []
         for i in torch.argsort(scores, descending=True).tolist():
             if not torch.isfinite(scores[i]):
@@ -237,19 +288,33 @@ class SemanticMemory:
         return selected
 
     def retrieve(self, query):
-        """Production order: best semantic voxel -> stored RGB-D -> OWL verify.
+        """Verify up to four semantically ranked saved RGB-D observations.
 
-        Try one candidate per call, matching feature-based localization. The
-        policy can explore/focus after a failed verification. Never use an
-        evaluator target coordinate as a fallback.
+        Each immutable image/query pair is inferred once. Rejection rules are
+        applied on every call so a cached visual result cannot revive a stale
+        or explicitly rejected location.
         """
-        candidates = self.ranked_observations(query, limit=1)
-        if not candidates:
-            return None, None
-        obs_id, score = candidates[0]
-        detections = self.perception.detect(self.observations[obs_id], query, self.max_depth)
-        detections=[d for d in detections if not self.detection_rejected(d)]
-        return (detections[0] if detections else None), dict(observation_id=obs_id, alignment=score)
+        candidates = self.ranked_observations(query, limit=4)
+        first_candidate = None
+        for obs_id, score in candidates:
+            candidate = dict(observation_id=obs_id, alignment=score)
+            if first_candidate is None:
+                first_candidate = candidate
+            key = (obs_id, query)
+            if key not in self.retrieval_verification_cache:
+                observation = self.observations[obs_id]
+                detections = self.perception.detect(observation, query, self.max_depth)
+                if not detections:
+                    from instruction_visual_search import tiled_detections
+                    detections = tiled_detections(self.perception, observation, query)
+                self.retrieval_verification_cache[key] = detections
+            detections = [d for d in self.retrieval_verification_cache[key]
+                          if not self.detection_rejected(d)
+                          and not any(np.linalg.norm(np.asarray(d.point_world[:2])-center)<=radius
+                                      for center,radius in getattr(self,"retrieval_exclusions",{}).get(query,[]))]
+            if detections:
+                return detections[0], candidate
+        return None, first_candidate
 
     def detection_rejected(self,detection):
         regions,observations=self.rejections_for(detection.query)

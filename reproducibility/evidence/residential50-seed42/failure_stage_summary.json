@@ -1,0 +1,128 @@
+{
+  "attempts": 50,
+  "counts": {
+    "grasp_verification_or_execution": 2,
+    "target_search_or_approach": 10,
+    "receptacle_search_or_approach": 6,
+    "placement_execution_or_stability": 3,
+    "independent_audit": 2
+  },
+  "failures": [
+    {
+      "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+      "stage": "grasp_verification_or_execution",
+      "result_sha256": "389ea9f74d324c5e3b089bb10671d959a403183ae6ae40a0d35da02a76a42c51"
+    },
+    {
+      "name": "03_ProcTHOR-Train-6452_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "b8b505b4e8db42b8fb6f5c301d792abf249c712ab10e759b67e543f3fb44a971"
+    },
+    {
+      "name": "08_ProcTHOR-Train-7473_seed42_dynamic",
+      "stage": "receptacle_search_or_approach",
+      "result_sha256": "25df26eca83a88351e4800ed7e7bbd60be32b2661ac6884f9b85e4849f7e0e0f"
+    },
+    {
+      "name": "12_ProcTHOR-Train-4108_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "c9b6db0138386021eb7301c7551a1fedb6a12ba41c9862211c885a7670ca6ad9"
+    },
+    {
+      "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "a98ab56dafbf01e2f9205ead79e67e953762893d5cabb14735afc5fb8d7be373"
+    },
+    {
+      "name": "15_ProcTHOR-Train-2769_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "2f80daeaf92abf38f8bd14897c7fc664c49ca38d7db48f99c56c5040183376af"
+    },
+    {
+      "name": "16_ProcTHOR-Train-507_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "b25fa444e1e8323040bbca622235acac020d73919fb3a880a24af9b4c42a1877"
+    },
+    {
+      "name": "18_ProcTHOR-Train-3208_seed42_dynamic",
+      "stage": "receptacle_search_or_approach",
+      "result_sha256": "8749c86e26e32f819225a2f2ab33c1318e81ca987127c74366d6e7ca15dd85bb"
+    },
+    {
+      "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+      "stage": "placement_execution_or_stability",
+      "result_sha256": "9fa2a27678745291a9e1d549c237d0536394a728a215b3a6b66fefdd3b1d9fac"
+    },
+    {
+      "name": "21_ProcTHOR-Test-308_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "c7ef44c9e55b8ec4ac0a8aa691b1a14daffa35c9e13a8e0138db2f1b5661db15"
+    },
+    {
+      "name": "23_ProcTHOR-Val-265_seed42_dynamic",
+      "stage": "independent_audit",
+      "result_sha256": "5d07d916d11f983e7cc15e139a422d1c4e76174fe3ea157c6fa59d08ba31fbf5"
+    },
+    {
+      "name": "24_ProcTHOR-Train-9699_seed42_dynamic",
+      "stage": "placement_execution_or_stability",
+      "result_sha256": "563175edd38ef5ae8205f0bf0e5b78dea3ad4825fdf43ea7c30800a3b954abc7"
+    },
+    {
+      "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
+      "stage": "independent_audit",
+      "result_sha256": "2e35611f58a8e351021054a963346daed7c16edf4e911c535aa1baab2f45e993"
+    },
+    {
+      "name": "29_ProcTHOR-Train-5013_seed42_dynamic",
+      "stage": "receptacle_search_or_approach",
+      "result_sha256": "2f617acdce138c47d935bc65139b21416553528d0c7f9d1339dd63c11ed2de38"
+    },
+    {
+      "name": "31_ProcTHOR-Val-660_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "a5b9feec0c6bd5f66109976bc042aa2c0eafc05491ed02699630bc8e4e70e661"
+    },
+    {
+      "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "67956bd169edc0c9cb94543f321b8be76deed6e3715e3f3e2fa0306afbe4fe47"
+    },
+    {
+      "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
+      "stage": "placement_execution_or_stability",
+      "result_sha256": "9246aa8c7573b1ca25bdfe3e828361e89c17115894e70883f261f391f766751d"
+    },
+    {
+      "name": "38_ProcTHOR-Train-2809_seed42_dynamic",
+      "stage": "receptacle_search_or_approach",
+      "result_sha256": "d02a509e4cc5c631c46e6bae2d0c27b20c08bf440faa4138de9df52bc05d6231"
+    },
+    {
+      "name": "39_ProcTHOR-Train-406_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "0369e206cc7de7e9648f2e2d372d01348e37a9235385d04c0983555c3de8e7d4"
+    },
+    {
+      "name": "40_ProcTHOR-Train-4574_seed42_dynamic",
+      "stage": "receptacle_search_or_approach",
+      "result_sha256": "841fe8ef9d57189f52dcffcbe8c54af398e8809da2b31af8f48574fb2304f75c"
+    },
+    {
+      "name": "43_ProcTHOR-Train-5361_seed42_dynamic",
+      "stage": "grasp_verification_or_execution",
+      "result_sha256": "146f5dcb0cb8de32c625ae6dcf29c2c40609afaaf5c7f9b021003d6373add7e7"
+    },
+    {
+      "name": "47_ProcTHOR-Val-46_seed42_dynamic",
+      "stage": "target_search_or_approach",
+      "result_sha256": "729b74e60b8dcb7b322bff0754ba112673412207c39d4fbdb99367c8730cdaf9"
+    },
+    {
+      "name": "50_ProcTHOR-Val-902_seed42_dynamic",
+      "stage": "receptacle_search_or_approach",
+      "result_sha256": "6a47fd74c553029dd6247da73379e0c43c32157f2d2584607a71fc4895166e68"
+    }
+  ],
+  "scope": "Terminal task stages, not inferred root causes; independent audit failures remain separate."
+}
