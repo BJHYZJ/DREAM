@@ -1,0 +1,242 @@
+{
+  "archive": "records.zip",
+  "sha256": "a91435884a68fe5b066d3fd8105419677b856c0c3895fc097ed525285ca9a9ef",
+  "members": {
+    "cases/05/05_ProcTHOR-Test-288_seed42_dynamic/result.json": {
+      "bytes": 3350,
+      "sha256": "a1cbbcfbf49134113015a40d3175ffceec67ce527c0554d618d9907d966d40fc"
+    },
+    "cases/05/trial_summary.json": {
+      "bytes": 434,
+      "sha256": "cf6fcee876e193cb18f585f5ea6caa4083515c366b198cb33c7e578cdebc670f"
+    },
+    "cases/05/prefix_comparison.json": {
+      "bytes": 980,
+      "sha256": "476887f36ee9383f30b614c3e10eca61e5e950b4a088cfd85791d28393a360bf"
+    },
+    "cases/05/runtime.memory.json": {
+      "bytes": 535,
+      "sha256": "83bcf007fc7bc5468d82f9bba11ed5ac8162fa665cd07d981ca1bebd752e2dd4"
+    },
+    "cases/07/07_ProcTHOR-Train-1402_seed42_dynamic/result.json": {
+      "bytes": 3251,
+      "sha256": "6d303ab472c4d14fcabe2e43634eb013d5a6aa0ce53b07ddf9f34d3b1aa2321c"
+    },
+    "cases/07/trial_summary.json": {
+      "bytes": 485,
+      "sha256": "018c8fe876a1977b1fdee0e3f06e13eb66af632d1f618a213f78cd42dedd2813"
+    },
+    "cases/07/prefix_comparison.json": {
+      "bytes": 980,
+      "sha256": "aa7caa12d6e1037db8926717ff830e9243bf92c1cda7dea8edf6b8f28dc27e48"
+    },
+    "cases/07/runtime.memory.json": {
+      "bytes": 564,
+      "sha256": "7eeac7d79edd2b47b2f7219080aae0626d725a50169d71ee2fd71b59ffdead32"
+    },
+    "cases/07/physics/07_ProcTHOR-Train-1402_seed42_dynamic/screen_physics_review.json": {
+      "bytes": 10249,
+      "sha256": "3df14c2dda209a0d53a1c3169fce8ce2505cbc26ef5c1cf02775bd687da6e6f4"
+    },
+    "cases/30/30_ProcTHOR-Train-4732_seed42_dynamic/result.json": {
+      "bytes": 3253,
+      "sha256": "77514cf2a007453e2432556de025b71e25aa0489952463003ac37dc06ad25f57"
+    },
+    "cases/30/trial_summary.json": {
+      "bytes": 435,
+      "sha256": "0c7ad5ad47536d65018e11bed17f73154291a390bfdeca08c4c81664e483bb2c"
+    },
+    "cases/30/prefix_comparison.json": {
+      "bytes": 720,
+      "sha256": "0a4ca3499125cebb291c295bdad30d6d1a27320797c567b4ba2d64a3e8b74cf8"
+    },
+    "cases/30/runtime.memory.json": {
+      "bytes": 556,
+      "sha256": "176dc58422561546ba09b8761601df2b148c1e311de6ac1bb7d423d126c673e2"
+    },
+    "cases/32/32_ProcTHOR-Train-7199_seed42_dynamic/result.json": {
+      "bytes": 3239,
+      "sha256": "da90d5b1fc9f099a01835a1dafb8e2f204cdd5a2f5ced963c4f119bc288f2427"
+    },
+    "cases/32/trial_summary.json": {
+      "bytes": 437,
+      "sha256": "66f19e310ff10d979d7760196a3f59ba8ed9f1f8f3c06d2915f1ed644c168ffd"
+    },
+    "cases/32/prefix_comparison.json": {
+      "bytes": 720,
+      "sha256": "1c72553fefba64152475e9b031eea0d44543edda3bb69bf54e9955f7b38e20d8"
+    },
+    "cases/32/runtime.memory.json": {
+      "bytes": 535,
+      "sha256": "e7f29c265d7c83439ef422aa9fc6d62f4e4afb70b18ff7a4d0c7cfa7c350819a"
+    },
+    "attempts/05/1/protocol.json": {
+      "bytes": 32008,
+      "sha256": "4c8cce81cb10771f8dff68e65aa362c6f3f2e640cfaa0bb663a96cf0b83508fc"
+    },
+    "attempts/05/1/runtime.memory.json": {
+      "bytes": 535,
+      "sha256": "83bcf007fc7bc5468d82f9bba11ed5ac8162fa665cd07d981ca1bebd752e2dd4"
+    },
+    "attempts/05/1/trial_summary.json": {
+      "bytes": 434,
+      "sha256": "cf6fcee876e193cb18f585f5ea6caa4083515c366b198cb33c7e578cdebc670f"
+    },
+    "attempts/05/1/prefix_comparison.json": {
+      "bytes": 980,
+      "sha256": "476887f36ee9383f30b614c3e10eca61e5e950b4a088cfd85791d28393a360bf"
+    },
+    "attempts/05/1/05_ProcTHOR-Test-288_seed42_dynamic/configuration.json": {
+      "bytes": 337,
+      "sha256": "1d57e5cdb2b48dacb50be973488d608e3632d90824f6fa1a51562fdf46bdbaed"
+    },
+    "attempts/05/1/05_ProcTHOR-Test-288_seed42_dynamic/environment_task.json": {
+      "bytes": 4176,
+      "sha256": "25c64391457c935dcf6bcc2ad9e957231f0e869b739e70e79df7e7ecf3cc8f3a"
+    },
+    "attempts/05/1/05_ProcTHOR-Test-288_seed42_dynamic/result.json": {
+      "bytes": 3350,
+      "sha256": "a1cbbcfbf49134113015a40d3175ffceec67ce527c0554d618d9907d966d40fc"
+    },
+    "attempts/07/1/protocol.json": {
+      "bytes": 32017,
+      "sha256": "79af632c9adb3cd1917821216ec869fca9ed3df04c6895013b921ab7bb0b8d6b"
+    },
+    "attempts/07/1/runtime.memory.json": {
+      "bytes": 534,
+      "sha256": "d359b2defbdcfd92e76d6dd3b615a0d6381f7f81771be0712851c17ac74a9687"
+    },
+    "attempts/07/1/trial_summary.json": {
+      "bytes": 437,
+      "sha256": "10f38288a63e2dd9e6310316e1bdff342f835fc6f7c53541940d459b95429306"
+    },
+    "attempts/07/1/prefix_comparison.json": {
+      "bytes": 980,
+      "sha256": "54bb0e943601e8942d6d229ef19d931ef16e86bf182f68b6224a656ee0ffb3f2"
+    },
+    "attempts/07/1/07_ProcTHOR-Train-1402_seed42_dynamic/configuration.json": {
+      "bytes": 337,
+      "sha256": "1d57e5cdb2b48dacb50be973488d608e3632d90824f6fa1a51562fdf46bdbaed"
+    },
+    "attempts/07/1/07_ProcTHOR-Train-1402_seed42_dynamic/environment_task.json": {
+      "bytes": 2841,
+      "sha256": "631085c7dcbf170df2d9058e152e87513c541bea6a28460623184dbbe4dce3d1"
+    },
+    "attempts/07/1/07_ProcTHOR-Train-1402_seed42_dynamic/result.json": {
+      "bytes": 3222,
+      "sha256": "ae8c9695fb045d60d12e91e0a3ebf024d71a751cd208b7d5d315e22f19abbd94"
+    },
+    "attempts/07/2/protocol.json": {
+      "bytes": 32149,
+      "sha256": "e2aaf3544f7ddc7e9746189847316103edf7b167514202017990c5ea94406c69"
+    },
+    "attempts/07/2/runtime.memory.json": {
+      "bytes": 564,
+      "sha256": "7eeac7d79edd2b47b2f7219080aae0626d725a50169d71ee2fd71b59ffdead32"
+    },
+    "attempts/07/2/trial_summary.json": {
+      "bytes": 485,
+      "sha256": "018c8fe876a1977b1fdee0e3f06e13eb66af632d1f618a213f78cd42dedd2813"
+    },
+    "attempts/07/2/prefix_comparison.json": {
+      "bytes": 980,
+      "sha256": "aa7caa12d6e1037db8926717ff830e9243bf92c1cda7dea8edf6b8f28dc27e48"
+    },
+    "attempts/07/2/07_ProcTHOR-Train-1402_seed42_dynamic/configuration.json": {
+      "bytes": 337,
+      "sha256": "1d57e5cdb2b48dacb50be973488d608e3632d90824f6fa1a51562fdf46bdbaed"
+    },
+    "attempts/07/2/07_ProcTHOR-Train-1402_seed42_dynamic/environment_task.json": {
+      "bytes": 2841,
+      "sha256": "631085c7dcbf170df2d9058e152e87513c541bea6a28460623184dbbe4dce3d1"
+    },
+    "attempts/07/2/07_ProcTHOR-Train-1402_seed42_dynamic/result.json": {
+      "bytes": 3251,
+      "sha256": "6d303ab472c4d14fcabe2e43634eb013d5a6aa0ce53b07ddf9f34d3b1aa2321c"
+    },
+    "attempts/30/1/protocol.json": {
+      "bytes": 31757,
+      "sha256": "9a3f9651039453009290100487e5cae58e448f8a67419298632dd5938c190ae8"
+    },
+    "attempts/30/1/runtime.memory.json": {
+      "bytes": 534,
+      "sha256": "b26ba10bae164076806ec7bed8eee5aa2f8451ed4068555404df9f895d6a9957"
+    },
+    "attempts/30/1/trial_summary.json": {
+      "bytes": 435,
+      "sha256": "022348ad038fffd209e4e65be07fff2c92c9b273defb9dde5a30fdc60f64b483"
+    },
+    "attempts/30/1/prefix_comparison.json": {
+      "bytes": 720,
+      "sha256": "c089b2f1ccc677f1e7862f10a600c2c8541e325643eab19d7b82d74864295960"
+    },
+    "attempts/30/1/30_ProcTHOR-Train-4732_seed42_dynamic/configuration.json": {
+      "bytes": 337,
+      "sha256": "1d57e5cdb2b48dacb50be973488d608e3632d90824f6fa1a51562fdf46bdbaed"
+    },
+    "attempts/30/1/30_ProcTHOR-Train-4732_seed42_dynamic/environment_task.json": {
+      "bytes": 4185,
+      "sha256": "b963532dbbe9689e1fea73f1891b9dca0f64ea25e1a32a27769773f879d0819d"
+    },
+    "attempts/30/1/30_ProcTHOR-Train-4732_seed42_dynamic/result.json": {
+      "bytes": 3223,
+      "sha256": "c99580a61fb9e0fc42a46758ffc9e12f8d22e0535981f9a93335237797de1147"
+    },
+    "attempts/30/2/protocol.json": {
+      "bytes": 31889,
+      "sha256": "1efc5f4509784681884def77b1e9974c41851193ac40e24a898ca61fe2f5f9ab"
+    },
+    "attempts/30/2/runtime.memory.json": {
+      "bytes": 556,
+      "sha256": "176dc58422561546ba09b8761601df2b148c1e311de6ac1bb7d423d126c673e2"
+    },
+    "attempts/30/2/trial_summary.json": {
+      "bytes": 435,
+      "sha256": "0c7ad5ad47536d65018e11bed17f73154291a390bfdeca08c4c81664e483bb2c"
+    },
+    "attempts/30/2/prefix_comparison.json": {
+      "bytes": 720,
+      "sha256": "0a4ca3499125cebb291c295bdad30d6d1a27320797c567b4ba2d64a3e8b74cf8"
+    },
+    "attempts/30/2/30_ProcTHOR-Train-4732_seed42_dynamic/configuration.json": {
+      "bytes": 337,
+      "sha256": "1d57e5cdb2b48dacb50be973488d608e3632d90824f6fa1a51562fdf46bdbaed"
+    },
+    "attempts/30/2/30_ProcTHOR-Train-4732_seed42_dynamic/environment_task.json": {
+      "bytes": 4185,
+      "sha256": "b963532dbbe9689e1fea73f1891b9dca0f64ea25e1a32a27769773f879d0819d"
+    },
+    "attempts/30/2/30_ProcTHOR-Train-4732_seed42_dynamic/result.json": {
+      "bytes": 3253,
+      "sha256": "77514cf2a007453e2432556de025b71e25aa0489952463003ac37dc06ad25f57"
+    },
+    "attempts/32/1/protocol.json": {
+      "bytes": 31755,
+      "sha256": "4db49b218135155aa97da192458dcd3974784d12a9b8422b442801ef899867ac"
+    },
+    "attempts/32/1/runtime.memory.json": {
+      "bytes": 535,
+      "sha256": "e7f29c265d7c83439ef422aa9fc6d62f4e4afb70b18ff7a4d0c7cfa7c350819a"
+    },
+    "attempts/32/1/trial_summary.json": {
+      "bytes": 437,
+      "sha256": "66f19e310ff10d979d7760196a3f59ba8ed9f1f8f3c06d2915f1ed644c168ffd"
+    },
+    "attempts/32/1/prefix_comparison.json": {
+      "bytes": 720,
+      "sha256": "1c72553fefba64152475e9b031eea0d44543edda3bb69bf54e9955f7b38e20d8"
+    },
+    "attempts/32/1/32_ProcTHOR-Train-7199_seed42_dynamic/configuration.json": {
+      "bytes": 337,
+      "sha256": "1d57e5cdb2b48dacb50be973488d608e3632d90824f6fa1a51562fdf46bdbaed"
+    },
+    "attempts/32/1/32_ProcTHOR-Train-7199_seed42_dynamic/environment_task.json": {
+      "bytes": 2978,
+      "sha256": "e482c3a321a412670fda3f07c7934f7dd627ce6bae264f89daa283633a497035"
+    },
+    "attempts/32/1/32_ProcTHOR-Train-7199_seed42_dynamic/result.json": {
+      "bytes": 3239,
+      "sha256": "da90d5b1fc9f099a01835a1dafb8e2f204cdd5a2f5ced963c4f119bc288f2427"
+    }
+  }
+}

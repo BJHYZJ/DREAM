@@ -1,0 +1,60 @@
+{
+  "case": "07_ProcTHOR-Train-1402_seed42_dynamic",
+  "all_controls_replayed": true,
+  "new_policy_execution": false,
+  "robot_action_seconds": 4723.7,
+  "maximum_replay_error": {
+    "base_xy_m": 0.0,
+    "yaw_rad": 0.0,
+    "tcp_xyz_m": 0.0,
+    "target_xyz_m": 0.0
+  },
+  "checks": {
+    "complete_physical_replay": true,
+    "task_completion": true,
+    "arm_returns": true,
+    "grasp_reencoding_prefix_exact": true,
+    "no_robot_self_contact": true
+  },
+  "videos": {
+    "overview": {
+      "file": "long_search_07.mp4",
+      "frames": 2362,
+      "fps": 12.0,
+      "duration_s": 196.83333333333334,
+      "playback_speed": 24,
+      "bytes": 30434588,
+      "sha256": "e53d3e27f27ab40e347c1d51ac0351e52cc380e0d1cedc7fc40cfc773f21428a"
+    },
+    "grasp": {
+      "file": "long_search_07_grasp.mp4",
+      "frames": 287,
+      "fps": 5.0,
+      "duration_s": 57.4,
+      "playback_speed": 1,
+      "bytes": 5702909,
+      "sha256": "382cb35c4dc60c88c1f74d35a5f9588c1eeb20d911ca490721e9af098d4477fd"
+    },
+    "place": {
+      "file": "long_search_07_place.mp4",
+      "frames": 337,
+      "fps": 5.0,
+      "duration_s": 67.4,
+      "playback_speed": 1,
+      "bytes": 3626380,
+      "sha256": "d5339bf222db8fd45fbea1ada5d082af44b78eca325e1b4f0efc4189cd4daeb8"
+    }
+  },
+  "executed_renderer_sha256": "5c62a7e12601b649e37b740c3d96881241a32d23ab6982eb3c573fcab6ea5cab",
+  "grasp_reencoding_renderer_sha256": "4eee21b72ca815acce8a76d1caadc60861285bebcc4a622602a74e2c3c44f708",
+  "maintained_exporter_sha256": "c22c36b69777f91c375b3dbb0626b0986fbe617ea7e7239f658ea3238dfda818",
+  "independent_review_sha256": "3df14c2dda209a0d53a1c3169fce8ce2505cbc26ef5c1cf02775bd687da6e6f4",
+  "input_sha256": {
+    "actions.json": "c0cb7fcd88d68d85d373f448ea0d149f575216ee42e60e11fa6e6cdf3fe9e7bb",
+    "evaluator_trajectory.json": "c56bf47604a938d820e9920884fc00346fc5150dc3e3b84b282e83351a0fd6b9",
+    "events.jsonl": "ce7df45d5dba037a4440c6a58cd04c069f9d66a51dc986ac1982926cf51bbaae",
+    "result.json": "6d303ab472c4d14fcabe2e43634eb013d5a6aa0ce53b07ddf9f34d3b1aa2321c",
+    "disturbance_forces.json": "fa35a1f53790aa87d13c9d5bfcb9ab38d9abce4719bee8a54efcf8207e953892"
+  },
+  "encoding_note": "Overview and placement passed full decoding. The grasp excerpt was re-rendered from its exact control prefix to a local temporary file after the first encoded copy failed decoding. All published frames decode successfully."
+}

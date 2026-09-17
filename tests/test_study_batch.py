@@ -82,10 +82,30 @@ def setup_study(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("workers_per_gpu,from_profile", [(2, False), (4, False), (4, True)])
+@pytest.mark.parametrize(
+    "robot_time_limit,wall_time_limit",
+    [(900, 2700), (1200, 2700), (1200, 3600), (1500, 4500), (1800, 5400), (1800, 0)],
+)
 def test_parallel_prepares_frozen_cohort_before_bounded_execution(
-    tmp_path, monkeypatch, workers_per_gpu, from_profile
+    tmp_path, monkeypatch, workers_per_gpu, from_profile, robot_time_limit, wall_time_limit
 ):
     tasks = setup_study(tmp_path, monkeypatch)
+    if robot_time_limit != 900:
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                *sys.argv,
+                "--robot-time-limit-seconds",
+                str(robot_time_limit),
+                "--wait-for-slot-seconds",
+                "1200",
+            ],
+        )
+    if wall_time_limit != 2700:
+        monkeypatch.setattr(
+            sys, "argv", [*sys.argv, "--wall-timeout-seconds", str(wall_time_limit)]
+        )
     if from_profile:
         profile = tmp_path / ".runtime/worker_resource_limits.json"
         profile.parent.mkdir()
@@ -98,8 +118,10 @@ def test_parallel_prepares_frozen_cohort_before_bounded_execution(
         calls.append(command)
         if len(calls) == 1:
             assert "--prepare-only" in command
-            assert command[command.index("--wall-timeout") + 1] == "2700"
-            assert command[command.index("--simulation-time-limit-seconds") + 1] == "900"
+            assert command[command.index("--wall-timeout") + 1] == str(wall_time_limit)
+            assert command[command.index("--simulation-time-limit-seconds") + 1] == str(
+                robot_time_limit
+            )
             assert command[command.index("--tasks") + 1 : command.index("--output")] == list(
                 map(str, tasks)
             )
@@ -109,8 +131,9 @@ def test_parallel_prepares_frozen_cohort_before_bounded_execution(
         else:
             assert command[1:3] == ["-m", "dream_sim.batch"]
             for flag, value in [
-                ("--time-limit-seconds", "2700"),
-                ("--robot-time-limit-seconds", "900"),
+                ("--time-limit-seconds", str(wall_time_limit)),
+                ("--robot-time-limit-seconds", str(robot_time_limit)),
+                ("--wait-for-slot-seconds", "1200" if robot_time_limit != 900 else "120"),
                 ("--workers-per-gpu", str(workers_per_gpu)),
                 ("--raster-threads", "4"),
             ]:
@@ -122,6 +145,24 @@ def test_parallel_prepares_frozen_cohort_before_bounded_execution(
     monkeypatch.setattr(study.subprocess, "run", run)
     study.main()
     assert len(calls) == 2
+
+
+@pytest.mark.parametrize("seconds", [0, -1, 1801])
+def test_robot_time_limit_rejects_unsupported_budgets(tmp_path, monkeypatch, seconds):
+    setup_study(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            *sys.argv,
+            "--robot-time-limit-seconds",
+            str(seconds),
+        ],
+    )
+    with pytest.raises(SystemExit) as error:
+        study.main()
+    assert error.value.code == 2
+    assert not (tmp_path / "screen").exists()
 
 
 def test_failed_preparation_never_starts_workers(tmp_path, monkeypatch):
@@ -143,3 +184,57 @@ def test_parallel_requires_locked_cohort(tmp_path, monkeypatch):
     with pytest.raises(SystemExit) as error:
         study.main()
     assert error.value.code == 2
+
+
+def test_default_staged_return_is_materialized_and_launched_for_locked_cohort(
+    tmp_path, monkeypatch
+):
+    setup_study(tmp_path, monkeypatch)
+    directory = tmp_path / "controllers/staged_return"
+    (directory / "experiments").mkdir(parents=True)
+    payload = b"arm return implementation\n"
+    (directory / "experiments/arm_return.py").write_bytes(payload)
+    (directory / "controller.json").write_text(
+        json.dumps(
+            dict(
+                base_controller="compact_v1",
+                base_study_source_id="base",
+                overrides={"experiments/arm_return.py": study.sha(payload)},
+            )
+        )
+    )
+    monkeypatch.setattr(sys, "argv", [sys.argv[0], *sys.argv[3:]])
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append(command)
+        if len(calls) == 1:
+            frozen = Path(command[command.index("--source-repo") + 1])
+            assert (frozen / "experiments/arm_return.py").read_bytes() == payload
+            assert (frozen / "experiments/policy.py").read_bytes() == b"candidate\n"
+            assert command[command.index("--cohort-id") + 1] == "locked-cohort"
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(study.subprocess, "run", run)
+    study.main()
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize("seconds", [-1, 5401])
+def test_wall_time_limit_rejects_unsupported_watchdogs(tmp_path, monkeypatch, seconds):
+    setup_study(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [*sys.argv, "--wall-timeout-seconds", str(seconds)])
+    with pytest.raises(SystemExit) as error:
+        study.main()
+    assert error.value.code == 2
+    assert not (tmp_path / "screen").exists()
+
+
+def test_custom_wall_time_limit_requires_parallel_batch(tmp_path, monkeypatch):
+    setup_study(tmp_path, monkeypatch)
+    argv = [arg for arg in sys.argv if arg != "--parallel"]
+    monkeypatch.setattr(sys, "argv", [*argv, "--wall-timeout-seconds", "3600"])
+    with pytest.raises(SystemExit) as error:
+        study.main()
+    assert error.value.code == 2
+    assert not (tmp_path / "screen").exists()

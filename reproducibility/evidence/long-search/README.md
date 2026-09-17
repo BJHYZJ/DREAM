@@ -1,0 +1,9 @@
+# Extended residential searches
+
+Four original budget/iteration-limited cases (05, 07, 30, 32) were rerun without the robot-action deadline or global navigation iteration limit. Goal selection, manipulation, stagnation checks and geometric acceptance rules were retained. This is a selected follow-up, separate from the main **38/50 (76%)** cohort.
+
+Case 07 completed the task after 4,723.7 robot-action seconds, including 4,511.85 seconds of placement search. It traveled 264.6 m; the object remained stably placed for 32.5 seconds. Independent physical replay, recorded observations and both arm-return checks passed. The stricter lost-then-reacquired video criterion was not met and is not claimed.
+
+Cases 05, 30 and 32 did not satisfy all task criteria. See [results.json](results.json) for the outcomes and interpretation of each case. The [records archive](records.zip) preserves the source results, execution settings, memory-guard interruptions and independent checks. Runs 07 and 30 initially stopped at the 90% guard on a 10 GiB worker and were repeated with a 16 GiB cap. Both repeats reproduced their preceding control/state prefixes. The simulation clocks exclude inference and loading waits; these are not battery measurements or real-robot endurance results.
+
+The [video](https://bjhyzj.github.io/dream-web/simulation/#long-search-07) replays every original control and applied force. The complete-timeline overview is sampled every two robot seconds and played at 24×; grasp and placement excerpts use 1× timing. No new policy trial is generated for rendering. Large sensor arrays remain in the experiment storage.

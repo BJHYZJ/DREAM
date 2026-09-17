@@ -1,0 +1,13 @@
+{
+  "id": "continuous_return",
+  "base_controller": "staged_return",
+  "base_study_source_id": "93c90f6a9e2dd87142adeb5610debdfc1b1007e91eb44d0b51ad3055ca6ac1d9",
+  "overrides": {
+    "experiments/instruction_arm_return.py": "fed1e41abdcb4f297ad12fb0e09f11430b3910d3ad5a1dd8faa41f05c3b372fe",
+    "experiments/instruction_arm_motion.py": "524ce07192270ed732f9d886225e31e7bf4341c69fb9414efc949afb84beed76",
+    "experiments/instruction_policy.py": "cb4582a82461710f2ad09e992612a00f645df71dc02c9dca149de5ce2774078a",
+    "experiments/maniskill_learned_probe.py": "0308a8a308079d833900c8e03a52015c1545606cc70f22703e3513aedaa1fb06",
+    "experiments/replay_instruction_actions.py": "b0183800d119168a5fd4a1d9710496a28be232bd8533079e49cc15b91f9d7f76",
+    "experiments/run_instruction_task.py": "90946cbfcff1033028a08cff1f400919bc976623652e07c2e7e24bf667c058f3"
+  }
+}

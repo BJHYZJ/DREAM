@@ -54,7 +54,7 @@ def initial_worker_assignments(jobs, gpus, workers_per_gpu):
 
 
 def wait_for_execution(process, started_path, limit, *, grace=30, poll_seconds=0.5):
-    """The execution cap begins at slot acquisition, excluding the queue."""
+    """An optional server deadline excludes queue time; zero disables it."""
     started = None
     timed_out = False
     sent = None
@@ -62,7 +62,7 @@ def wait_for_execution(process, started_path, limit, *, grace=30, poll_seconds=0
         if started is None and started_path.exists():
             started = json.loads(started_path.read_text())["started_unix_s"]
         now = time.time()
-        if started is not None and now - started >= limit:
+        if limit > 0 and started is not None and now - started >= limit:
             timed_out = True
             if sent is None:
                 os.killpg(process.pid, signal.SIGINT)
@@ -81,7 +81,7 @@ def wait_for_execution(process, started_path, limit, *, grace=30, poll_seconds=0
         else time.time()
     )
     elapsed = None if started is None else finished - started
-    timed_out = timed_out or (elapsed is not None and elapsed >= limit)
+    timed_out = timed_out or (limit > 0 and elapsed is not None and elapsed >= limit)
     return process.returncode, timed_out, elapsed
 
 
@@ -142,7 +142,7 @@ def main():
         "--time-limit-seconds",
         type=float,
         default=2700,
-        help="Separate server watchdog, including loading and saving",
+        help="Separate server watchdog, including loading and saving; 0 disables it",
     )
     p.add_argument(
         "--robot-time-limit-seconds",
@@ -163,10 +163,10 @@ def main():
     protocol = json.loads((run / "protocol.json").read_text())
     if len(set(args.gpus)) != len(args.gpus) or args.workers_per_gpu not in (1, 2, 4):
         p.error("Invalid GPU slots")
-    if len(args.gpus) * args.workers_per_gpu > 8 or not 0 < args.time_limit_seconds <= 3600:
+    if len(args.gpus) * args.workers_per_gpu > 8 or not 0 <= args.time_limit_seconds <= 5400:
         p.error("Batch exceeds eight workers or the server watchdog cap")
-    if not 0 < args.robot_time_limit_seconds <= 900:
-        p.error("Robot action duration must be positive and at most 15 minutes")
+    if not 0 < args.robot_time_limit_seconds <= 1800:
+        p.error("Robot action duration must be positive and at most 30 minutes")
     if not 0 <= args.wait_for_slot_seconds <= 3600:
         p.error("Worker slot wait must be between zero and one hour")
     if protocol["simulation_budget_s"] != args.robot_time_limit_seconds:
@@ -189,6 +189,7 @@ def main():
         planned_attempts=len(protocol["attempts"]),
         protocol_sha256=digest(run / "protocol.json"),
         execution_wall_limit_seconds=args.time_limit_seconds,
+        execution_wall_watchdog_enabled=args.time_limit_seconds > 0,
         robot_action_limit_seconds=args.robot_time_limit_seconds,
         worker_slot_wait_seconds=args.wait_for_slot_seconds,
         deadline_starts="Robot clock: executed controls; separate server watchdog: worker slot acquired",

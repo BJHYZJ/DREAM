@@ -100,6 +100,14 @@ def analyze(
     root = root.resolve()
     audits = audits.resolve()
     output = output.resolve()
+    if (root / "screen_complete.json").exists() and not (root / "batch_result.json").exists():
+        from dream_sim.screened_report import analyze_screened
+
+        if baseline_path is not None:
+            raise ValueError("Residential cohort has no matched baseline comparison")
+        return analyze_screened(
+            root, audits, output, include_contact_rejections=include_contact_rejections
+        )
     if not (root / "batch_result.json").exists():
         raise RuntimeError("The declared experiment has not finished")
     protocol = read(root / "protocol.json")
@@ -228,7 +236,8 @@ def analyze(
             events = [
                 json.loads(line) for line in (folder / "events.jsonl").read_text().splitlines()
             ]
-            fold = review_fold(events, read(folder / "actions.json"), physical["contact_audit"])
+            fold = review_fold(events, read(folder / "actions.json"), physical["contact_audit"],
+                               physical.get("arm_joint_motion_reexecution"))
             row["arm_return_review"] = fold
             if not fold["passed"]:
                 row.update(qualified_task_success=False, audit_qualification="arm_return_rejected")

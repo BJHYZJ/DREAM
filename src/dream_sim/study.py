@@ -18,11 +18,24 @@ def sha(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
 
 
-def controller_overrides(directory: Path, base_source_id: str) -> dict[str, bytes]:
+def controller_overrides(
+    directory: Path, base_source_id: str, *, _parents: frozenset[Path] = frozenset()
+) -> dict[str, bytes]:
+    directory = directory.resolve()
+    if directory in _parents:
+        raise ValueError("Controller inheritance contains a cycle")
     manifest = json.loads((directory / "controller.json").read_text())
     if manifest["base_study_source_id"] != base_source_id:
         raise ValueError("Controller revision requires a different base implementation")
     files = {}
+    if parent_name := manifest.get("base_controller"):
+        parent_relative = safe_member(parent_name)
+        if len(parent_relative.parts) != 1:
+            raise ValueError("Base controller must be a sibling directory")
+        parent = directory.parent / parent_relative
+        if parent.is_symlink() or parent.resolve().parent != directory.parent:
+            raise ValueError("Base controller escapes the controller directory")
+        files.update(controller_overrides(parent, base_source_id, _parents=_parents | {directory}))
     for name, digest in manifest["overrides"].items():
         relative = safe_member(name)
         if relative.parts[0] != "experiments" or relative.suffix != ".py":
@@ -111,8 +124,10 @@ def main() -> None:
             "recovery_v5",
             "recovery_v6",
             "compact_v1",
+            "staged_return",
+            "continuous_return",
         ],
-        default="recovery",
+        default="staged_return",
     )
     parser.add_argument(
         "--cases",
@@ -136,7 +151,25 @@ def main() -> None:
     parser.add_argument(
         "--parallel",
         action="store_true",
-        help="Run the locked cohort with a 900-second robot action limit and a separate server watchdog",
+        help="Run the locked cohort with a recorded robot action limit and a separate server watchdog",
+    )
+    parser.add_argument(
+        "--robot-time-limit-seconds",
+        type=int,
+        default=900,
+        help="Parallel task action budget, frozen before execution (default: 900; maximum: 1800)",
+    )
+    parser.add_argument(
+        "--wall-timeout-seconds",
+        type=int,
+        default=2700,
+        help="Parallel execution watchdog; 0 disables the server deadline (maximum: 5400)",
+    )
+    parser.add_argument(
+        "--wait-for-slot-seconds",
+        type=int,
+        default=120,
+        help="Parallel worker queue wait, excluded from robot and execution clocks (maximum: 3600)",
     )
     parser.add_argument(
         "--raster-threads",
@@ -153,6 +186,18 @@ def main() -> None:
     )
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
+    if not 0 < args.robot_time_limit_seconds <= 1800:
+        parser.error("Robot action duration must be positive and at most 30 minutes")
+    if args.robot_time_limit_seconds != 900 and not args.parallel:
+        parser.error("--robot-time-limit-seconds is a parallel batch setting")
+    if not 0 <= args.wall_timeout_seconds <= 5400:
+        parser.error("Server watchdog must be zero (disabled) or at most 90 minutes")
+    if args.wall_timeout_seconds != 2700 and not args.parallel:
+        parser.error("--wall-timeout-seconds is a parallel batch setting")
+    if not 0 <= args.wait_for_slot_seconds <= 3600:
+        parser.error("Worker slot wait must be between zero and one hour")
+    if args.wait_for_slot_seconds != 120 and not args.parallel:
+        parser.error("--wait-for-slot-seconds is a parallel batch setting")
     if args.workers_per_gpu is None:
         profile = PROJECT / ".runtime/worker_resource_limits.json"
         args.workers_per_gpu = (
@@ -223,8 +268,11 @@ def main() -> None:
                 "parallel": args.parallel,
                 "workers_per_gpu": args.workers_per_gpu if args.parallel else 1,
                 "parallel_tasks": len(args.gpus) * (args.workers_per_gpu if args.parallel else 1),
-                "whole_task_wall_timeout_s": 2700 if args.parallel else 14400,
-                "robot_action_limit_seconds": 900 if args.parallel else None,
+                "whole_task_wall_timeout_s": args.wall_timeout_seconds if args.parallel else 14400,
+                "worker_slot_wait_limit_s": args.wait_for_slot_seconds if args.parallel else None,
+                "robot_action_limit_seconds": args.robot_time_limit_seconds
+                if args.parallel
+                else None,
                 "execute": args.execute,
                 "output": str(output),
             },
@@ -259,7 +307,7 @@ def main() -> None:
             "--gpus",
             *args.gpus,
             "--wall-timeout",
-            "2700" if args.parallel else "14400",
+            str(args.wall_timeout_seconds) if args.parallel else "14400",
             "--asset-dir",
             str(args.asset_dir.resolve()),
             "--model-cache",
@@ -272,6 +320,8 @@ def main() -> None:
                 "recovery_v5",
                 "recovery_v6",
                 "compact_v1",
+                "staged_return",
+                "continuous_return",
             ):
                 raise ValueError(
                     "Explicit residential cohort requires a supported residential controller"
@@ -280,7 +330,13 @@ def main() -> None:
         if full_comparison:
             command.append("--benchmark")
         if args.parallel:
-            command.extend(["--prepare-only", "--simulation-time-limit-seconds", "900"])
+            command.extend(
+                [
+                    "--prepare-only",
+                    "--simulation-time-limit-seconds",
+                    str(args.robot_time_limit_seconds),
+                ]
+            )
         subprocess.run(command, cwd=engine, check=True)
         if args.parallel:
             subprocess.run(
@@ -297,9 +353,11 @@ def main() -> None:
                     "--raster-threads",
                     str(args.raster_threads),
                     "--time-limit-seconds",
-                    "2700",
+                    str(args.wall_timeout_seconds),
                     "--robot-time-limit-seconds",
-                    "900",
+                    str(args.robot_time_limit_seconds),
+                    "--wait-for-slot-seconds",
+                    str(args.wait_for_slot_seconds),
                     "--execute",
                 ],
                 cwd=PROJECT,

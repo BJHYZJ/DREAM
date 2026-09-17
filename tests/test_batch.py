@@ -2,6 +2,8 @@ import subprocess
 import sys
 import time
 
+import pytest
+
 from dream_sim.batch import action_time_success, classify_failure, wait_for_execution
 
 
@@ -58,4 +60,48 @@ def test_server_duration_is_separate_from_robot_action_duration():
     assert (
         classify_failure(dict(result, robot_action_timeout=True), False, "pickup_search")
         == "pickup_search_action_timeout"
+    )
+
+
+def test_extended_budget_cannot_rescore_a_previous_shorter_trial():
+    completed = dict(
+        evaluator_task_success=True,
+        robot_action_seconds=1050,
+        robot_action_limit_seconds=1200,
+        robot_action_timeout=False,
+    )
+    assert action_time_success(completed, 0, False, 1200)
+    assert not action_time_success(completed, 0, False, 900)
+    previous = dict(completed, robot_action_seconds=900, robot_action_limit_seconds=900)
+    assert not action_time_success(previous, 0, False, 1200)
+    assert not action_time_success(dict(completed, robot_action_seconds=1200.05), 0, False, 1200)
+
+
+@pytest.mark.parametrize("already_finished", [False, True])
+def test_disabled_server_watchdog_never_rejects_long_execution(tmp_path, already_finished):
+    started = tmp_path / "worker.started.json"
+    finished = tmp_path / "worker.finished.json"
+    script = tmp_path / "worker.py"
+    script.write_text(
+        "import json,sys,time\nfrom pathlib import Path\n"
+        "Path(sys.argv[1]).write_text(json.dumps({'started_unix_s':time.time()-10000}))\n"
+        "time.sleep(.05)\n"
+        "Path(sys.argv[2]).write_text(json.dumps({'finished_unix_s':time.time()}))\n"
+    )
+    process = subprocess.Popen(
+        [sys.executable, str(script), str(started), str(finished)], start_new_session=True
+    )
+    if already_finished:
+        process.wait(timeout=5)
+    code, timed_out, elapsed = wait_for_execution(process, started, 0, poll_seconds=0.01)
+    assert code == 0 and timed_out is False and elapsed >= 10000
+    result = dict(
+        evaluator_task_success=True,
+        robot_action_seconds=1800,
+        robot_action_limit_seconds=1800,
+        robot_action_timeout=False,
+    )
+    assert action_time_success(result, code, timed_out, 1800)
+    assert not action_time_success(
+        dict(result, robot_action_seconds=1800.05), code, timed_out, 1800
     )

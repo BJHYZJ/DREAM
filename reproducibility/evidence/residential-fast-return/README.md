@@ -1,0 +1,57 @@
+# Residential manipulation with faster arm return
+
+The `continuous_return` controller completes **38 of 50 tasks (76%)**. Every counted success passes independent physics replay, observation checks, and checks of both loaded and empty arm return. All 12 unsuccessful tasks remain in the denominator.
+
+Each house has one native-scale pickup/place task, seed 42, dynamic memory, an **1800-second robot-action budget**, and **no fixed server execution deadline**. Queue waiting is excluded from execution clocks. The controller retains its navigation iteration and stagnation stopping rules. The cohort contains 21 pickup models from six categories, selected for graspable geometry. These houses were used during controller development; this is not a held-out generalization test or an isolated memory ablation. Hosted mLLM verification is disabled in this simulation configuration.
+
+| File | Contents |
+| --- | --- |
+| [results.json](results.json) | All 50 outcomes, action times, source hashes, and review identities |
+| [failures.json](failures.json) | All 12 failures, event evidence, measurements, and uncertainty in the causal interpretation |
+| [return_times.json](return_times.json) | Loaded and empty return durations for all 32 jointly qualified tasks in the staged/fast comparison |
+| [records.zip](records.zip) | Original protocol, task definitions and maps, all task results, frozen source identities, and all 38 physics and observation reviews |
+| [manifest.json](manifest.json) | File and archive-member sizes and SHA-256 hashes |
+
+The reported endpoint is **audit-qualified task completion**. Original public-review records also retain a separate `strict_success` field for the more restrictive recording protocol; that field is not the endpoint used to calculate 38/50. The portable result's `strict_pass` means that task completion and independent reviews passed. The original fields and records are preserved in the archive.
+
+## Failure analysis
+
+| Recorded outcome or interpretation | Tasks |
+| --- | ---: |
+| Pickup search or navigation incomplete | 4 |
+| Placement search or navigation incomplete | 2 |
+| Global navigation iteration limit, inferred from termination and control flow | 2 |
+| Placement search reached the 1800-second action budget | 2 |
+| Released object did not satisfy stable placement | 1 |
+| Grasp alignment failed; empty-arm recovery found no feasible path | 1 |
+
+Cases 05 and 07 are marked as **inferred** iteration-limit terminations because the original logs do not explicitly record the final loop index. Case 26 records only 0.35 seconds of stable placement. Case 46 records an unreachable grasp alignment followed by unsuccessful empty-arm recovery. A search-stage label does not prove correct-object acquisition or physical reachability. These causal explanations use recorded events and evaluator measurements; failed tasks have not all been independently replayed.
+
+Long-search supplements for cases 05, 07, 30, and 32 remove the action deadline and global navigation iteration limit. They are separate experiments and do not change this cohort's outcomes. Their trajectories must be compared with the original control and physical-state prefixes before interpreting any later success as an extension.
+
+## Comparison with preceding runs
+
+The preceding 1200-second run completed 35/50 tasks. All 35 also succeed here; cases 15, 19, and 37 additionally pass. Placement-alignment recovery, action time, and server deadline changed together, so the increase does not isolate the effect of extra time.
+
+Among the 32 tasks qualified in both this run and the slower staged-return run, median complete loaded return takes 44.55 → 20.98 seconds, and empty return takes 52.40 → 24.38 seconds. Each duration includes the intermediate postures and final settling. These paired timing comparisons exclude tasks that did not qualify in both runs; success rates retain all 50 tasks.
+
+The [historical compact-controller result](../residential-evaluation/) remains 36/50 at 900 action seconds with a 2700-second server watchdog. The [video cohort](../residential50-seed42/) also retains its own task definitions and results.
+
+## Verify and reproduce
+
+From the repository root, verify the portable files and every archived member:
+
+```bash
+python - <<'PY'
+import json
+from pathlib import Path
+from dream_sim.verify_evidence import verify_files
+
+root = Path("reproducibility/evidence/residential-fast-return")
+manifest = json.loads((root / "manifest.json").read_text())
+verify_files(root, manifest["files"])
+print("All portable file and archive-member checksums match.")
+PY
+```
+
+This checks record integrity. It does not perform a new physics replay or recheck the large raw sensor arrays retained in local experiment storage. Original review reports retain input hashes for the observations, controls, and trajectories they used. See the [reproduction guide](../../../docs/reproduction.md) for a new execution and independent review. The default `scripts/run_residential.sh` selects this controller and its 1800-second/no-server-deadline protocol. The separate `python -m dream_sim.evaluate` command continues to verify the historical compact-controller archive.

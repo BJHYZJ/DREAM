@@ -72,3 +72,31 @@ def test_materialization_rejects_modules_outside_experiments(tmp_path):
         materialize_controller(
             tmp_path / "source", tmp_path / "copy", {"src/dream/new.py": b"unexpected\n"}
         )
+
+
+def test_inherited_controller_keeps_parent_integrity_and_replaces_only_declared_files(tmp_path):
+    parent = tmp_path / "parent"
+    child = tmp_path / "child"
+    revision(parent, content=b"parent\n")
+    revision(child, name="experiments/return.py", content=b"return\n")
+    manifest = json.loads((child / "controller.json").read_text())
+    manifest["base_controller"] = "parent"
+    (child / "controller.json").write_text(json.dumps(manifest))
+    assert controller_overrides(child, "base") == {
+        "experiments/policy.py": b"parent\n",
+        "experiments/return.py": b"return\n",
+    }
+    (parent / "experiments/policy.py").write_text("tampered")
+    with pytest.raises(ValueError, match="checksum mismatch"):
+        controller_overrides(child, "base")
+
+
+def test_controller_inheritance_rejects_cycles_and_paths_outside_siblings(tmp_path):
+    root = tmp_path / "controller"
+    revision(root)
+    manifest = json.loads((root / "controller.json").read_text())
+    for name in ("controller", "../outside"):
+        manifest["base_controller"] = name
+        (root / "controller.json").write_text(json.dumps(manifest))
+        with pytest.raises(ValueError):
+            controller_overrides(root, "base")

@@ -1,0 +1,204 @@
+{
+  "all_supplemental_runs_ended": true,
+  "selected_cases": 4,
+  "qualified_supplemental_successes": 1,
+  "main_result_unchanged": "38/50 (76%) at 1800 robot-action seconds",
+  "selection": "All four original action-deadline or inferred navigation-iteration-limit endings; not a random evaluation sample.",
+  "changes": "Removed action deadline and global navigation iteration limit; repeated memory-interrupted cases 07/30 with 16 GiB worker cap. No goal selection or manipulation policy change.",
+  "memory_interruptions_preserved": true,
+  "cases": [
+    {
+      "case": "05",
+      "name": "05_ProcTHOR-Test-288_seed42_dynamic",
+      "qualified_success": false,
+      "robot_action_seconds": 4284.8,
+      "server_execution_seconds": 7692.203613042831,
+      "stage_action_seconds": {
+        "pickup_search": 4027.7,
+        "grasp": 65.95,
+        "placement_search": 127.1,
+        "place": 62.05,
+        "finished": 2.0
+      },
+      "base_distance_m": 213.88174816236003,
+      "held_base_transport_m": 4.718585484473927,
+      "stable_placement_s": 32.15,
+      "failure_category": "cross_room_criteria_not_met",
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": true,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "original_control_prefix_identical": true,
+      "original_physical_prefix_identical": true,
+      "source_hashes_unchanged": true,
+      "interpretation": "Lift, transport and stable placement recorded, but the cross-room criteria were not met. No independent success qualification.",
+      "evidence": {
+        "cases/05/05_ProcTHOR-Test-288_seed42_dynamic/result.json": "a1cbbcfbf49134113015a40d3175ffceec67ce527c0554d618d9907d966d40fc",
+        "cases/05/trial_summary.json": "cf6fcee876e193cb18f585f5ea6caa4083515c366b198cb33c7e578cdebc670f",
+        "cases/05/prefix_comparison.json": "476887f36ee9383f30b614c3e10eca61e5e950b4a088cfd85791d28393a360bf",
+        "cases/05/runtime.memory.json": "83bcf007fc7bc5468d82f9bba11ed5ac8162fa665cd07d981ca1bebd752e2dd4"
+      },
+      "final_worker_memory_cap_gib": 10
+    },
+    {
+      "case": "07",
+      "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
+      "qualified_success": true,
+      "robot_action_seconds": 4723.7,
+      "server_execution_seconds": 11420.300041913986,
+      "stage_action_seconds": {
+        "pickup_search": 85.15,
+        "grasp": 57.3,
+        "placement_search": 4511.85,
+        "place": 67.4,
+        "finished": 2.0
+      },
+      "base_distance_m": 264.58041137205475,
+      "held_base_transport_m": 260.17296446016894,
+      "stable_placement_s": 32.5,
+      "failure_category": "qualified_success",
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": true,
+        "cross_room_search": true,
+        "cross_room_delivery": true,
+        "correct_visual_moved_target_observation": true
+      },
+      "original_control_prefix_identical": true,
+      "original_physical_prefix_identical": true,
+      "source_hashes_unchanged": true,
+      "independent_review": {
+        "task_physics_and_observation_checks_passed": true,
+        "fold": {
+          "passed": true,
+          "checks": {
+            "carried_arm_folded": true,
+            "idle_arm_folded": true,
+            "self_contact_record_present": true,
+            "no_robot_self_contact": true,
+            "no_robot_fixture_contact_during_return": true
+          },
+          "robot_self_contact_substeps": 0,
+          "return_fixture_contacts": []
+        }
+      },
+      "interpretation": "Qualified task success: independent physics, observation, contact and both arm-return checks passed.",
+      "evidence": {
+        "cases/07/07_ProcTHOR-Train-1402_seed42_dynamic/result.json": "6d303ab472c4d14fcabe2e43634eb013d5a6aa0ce53b07ddf9f34d3b1aa2321c",
+        "cases/07/trial_summary.json": "018c8fe876a1977b1fdee0e3f06e13eb66af632d1f618a213f78cd42dedd2813",
+        "cases/07/prefix_comparison.json": "aa7caa12d6e1037db8926717ff830e9243bf92c1cda7dea8edf6b8f28dc27e48",
+        "cases/07/runtime.memory.json": "7eeac7d79edd2b47b2f7219080aae0626d725a50169d71ee2fd71b59ffdead32",
+        "cases/07/physics/07_ProcTHOR-Train-1402_seed42_dynamic/screen_physics_review.json": "3df14c2dda209a0d53a1c3169fce8ce2505cbc26ef5c1cf02775bd687da6e6f4"
+      },
+      "initial_memory_interrupted_robot_action_seconds": 2393.2,
+      "final_worker_memory_cap_gib": 16
+    },
+    {
+      "case": "30",
+      "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
+      "qualified_success": false,
+      "robot_action_seconds": 2539.3,
+      "server_execution_seconds": 4575.569806575775,
+      "stage_action_seconds": {
+        "pickup_search": 121.1,
+        "grasp": 47.6,
+        "placement_search": 2303.55,
+        "place": 65.05,
+        "finished": 2.0
+      },
+      "base_distance_m": 86.41896744261686,
+      "held_base_transport_m": 79.60633622542674,
+      "stable_placement_s": 0.0,
+      "failure_category": "released_placement_not_validated",
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "original_control_prefix_identical": true,
+      "original_physical_prefix_identical": true,
+      "source_hashes_unchanged": true,
+      "interpretation": "Lift and transport recorded, but no stable released placement. The precise geometric cause is unresolved.",
+      "evidence": {
+        "cases/30/30_ProcTHOR-Train-4732_seed42_dynamic/result.json": "77514cf2a007453e2432556de025b71e25aa0489952463003ac37dc06ad25f57",
+        "cases/30/trial_summary.json": "0c7ad5ad47536d65018e11bed17f73154291a390bfdeca08c4c81664e483bb2c",
+        "cases/30/prefix_comparison.json": "0a4ca3499125cebb291c295bdad30d6d1a27320797c567b4ba2d64a3e8b74cf8",
+        "cases/30/runtime.memory.json": "176dc58422561546ba09b8761601df2b148c1e311de6ac1bb7d423d126c673e2"
+      },
+      "initial_memory_interrupted_robot_action_seconds": 2122.3,
+      "final_worker_memory_cap_gib": 16
+    },
+    {
+      "case": "32",
+      "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
+      "qualified_success": false,
+      "robot_action_seconds": 2543.25,
+      "server_execution_seconds": 4337.694016933441,
+      "stage_action_seconds": {
+        "pickup_search": 1729.65,
+        "grasp": 64.15,
+        "placement_search": 685.65,
+        "place": 61.8,
+        "finished": 2.0
+      },
+      "base_distance_m": 87.11758466723323,
+      "held_base_transport_m": 0.0,
+      "stable_placement_s": 0.0,
+      "failure_category": "target_pickup_not_validated",
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": false,
+        "relocation_triggered_during_translation": false,
+        "external_relocation_finished": false,
+        "external_move_preserved_payload_support": false,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": false
+      },
+      "original_control_prefix_identical": true,
+      "original_physical_prefix_identical": true,
+      "source_hashes_unchanged": true,
+      "interpretation": "No verified pickup, lift or held transport of the requested target, despite completion of manipulation commands.",
+      "evidence": {
+        "cases/32/32_ProcTHOR-Train-7199_seed42_dynamic/result.json": "da90d5b1fc9f099a01835a1dafb8e2f204cdd5a2f5ced963c4f119bc288f2427",
+        "cases/32/trial_summary.json": "66f19e310ff10d979d7760196a3f59ba8ed9f1f8f3c06d2915f1ed644c168ffd",
+        "cases/32/prefix_comparison.json": "1c72553fefba64152475e9b031eea0d44543edda3bb69bf54e9955f7b38e20d8",
+        "cases/32/runtime.memory.json": "e7f29c265d7c83439ef422aa9fc6d62f4e4afb70b18ff7a4d0c7cfa7c350819a"
+      },
+      "final_worker_memory_cap_gib": 10
+    }
+  ],
+  "main_cohort_successes": 38,
+  "main_cohort_attempts": 50,
+  "video_endpoint": "Task completion; distinct from the selected-video requirement for observed loss followed by reacquisition."
+}

@@ -59,7 +59,7 @@ For caches stored elsewhere, add these options to preflight and run commands:
 
 ### Easy-grasp protocol
 
-The DREAM Fetch controller completes **36/50 easy-grasp tasks (72%)**. All 36 successes pass independent physics and observation checks, including arm returns. All 50 scenes use the original fixed tasks and maps, seed 42, dynamic memory, and native object scale. The cohort contains 21 models across 6 categories; see the [task definition](../configs/residential50-easy-grasp/README.md).
+The default `continuous_return` controller completes **38/50 easy-grasp tasks (76%)** with independent physics, observation, and both arm-return checks. All 50 scenes use fixed tasks and maps, seed 42, dynamic memory, and native object scale. The cohort contains 21 models across 6 categories; see the [task definition](../configs/residential50-easy-grasp/README.md). These are controller-development houses, so the rate describes this cohort.
 
 ```bash
 DREAM_PYTHON="$(command -v python)" \
@@ -70,11 +70,24 @@ DREAM_MODEL_CACHE="$PWD/.runtime/models" \
   --output results/residential50
 ```
 
-This prints the plan; add `--execute` to run it. Each task receives **900 seconds of robot actions** and a separate **2700-second execution watchdog**. The example selects GPUs 0 and 1 with four workers per GPU. The deployment resource profile must assign the corresponding worker slots, CPU cores, and memory limits. Queue time is separate from execution time. Use a new output directory for every run. The three environment variables above select your installed Python and prepared caches; omitting them uses `python3.11` and the repository-local `.runtime/render_assets` and `.runtime/models` caches.
+This prints the plan for `continuous_return`; add `--execute` to run it. The script defaults to **1800 seconds of robot actions**, **no fixed server deadline**, and **1200 seconds of worker-slot waiting**. Each arm-return state and the final fold must pass the configured settling checks. The example selects GPUs 0 and 1 with four workers per GPU. The deployment resource profile must assign the corresponding worker slots, CPU cores, and memory limits. Queue time is separate from execution time. Use a new output directory for every run. The three cache/runtime environment variables above select your installed Python and prepared caches; omitting them uses `python3.11` and the repository-local `.runtime/render_assets` and `.runtime/models` caches.
 
-The [sealed all-50 report](../reproducibility/evidence/residential-evaluation/results.json) retains every failure and records source and per-attempt evidence hashes. The offline evaluation command checks that the official loader reconstructs the evaluated Python source from its recorded base and override modules. Video qualification is separate; the existing gallery belongs to the historical diverse-object experiment.
+The historical `compact_v1` controller passed 36/50 (72%) and the slower corrected `staged_return` passed 32/50 (64%). To select either historical protocol through the script, set `DREAM_CONTROLLER` to its name and pass `--robot-time-limit-seconds 900 --wall-timeout-seconds 2700`. Explicit command-line values override the script defaults.
 
-The [experiment directory](../reproducibility/evidence/residential-evaluation/README.md) contains all task outcomes and independent review records; full sensor arrays remain in local experiment storage. To check its 36/50 result and confirm that the installed controller matches the frozen evaluated source, run `python -m dream_sim.evaluate`. This checks the recorded results and reconstructs the controller from the checksum-locked source archive.
+The completed fast-return evaluations passed 33/50 (66%) at 900 action seconds and 35/50 (70%) at 1200 action seconds, including independent task and arm-return checks. The current controller adds bounded release-alignment recovery and passed **38/50 (76%)** in a separate completed cohort, with every success independently checked. It retained all 35 successes from the 1200-second cohort and completed scenes 15, 19, and 37. To reproduce this 30-minute action protocol with no fixed server deadline:
+
+```bash
+DREAM_CONTROLLER=continuous_return ./scripts/run_residential.sh \
+  --gpus 0 1 --workers-per-gpu 4 --raster-threads 4 \
+  --robot-time-limit-seconds 1800 --wall-timeout-seconds 0 \
+  --wait-for-slot-seconds 1200 --output results/residential50-1800
+```
+
+Add `--execute` to run it, and use the Python and cache environment variables above for your installation. The limit is frozen in `protocol.json` before workers start and must match every recorded result. The runner accepts up to 1800 action seconds. `--wall-timeout-seconds 0` disables the separate server deadline; completed tasks finish immediately and robot-action timeouts still count as failures. A positive server limit can be set explicitly, up to 5400 seconds. `--wait-for-slot-seconds` controls only the worker queue wait (script default 1200, maximum 3600); it does not extend either execution clock. Direct calls to `python -m dream_sim.study` retain the CLI defaults of `staged_return`, 900 action seconds, a 2700-second server watchdog, and 120 seconds of queue waiting; pass the full options above to select the current residential protocol without the wrapper. The completed 1800-second evaluation and its public review both report 38/50 (76%); its records and failure analysis are in `results/residential-adjusted/`. The controller, action budget, and server deadline changed together relative to the preceding cohort. Changed time budgets define separate experiments; old task records cannot be rescored against a longer limit.
+
+The [current all-50 report](../reproducibility/evidence/residential-fast-return/results.json) retains all 38 qualified successes and 12 failures. Its [evidence directory](../reproducibility/evidence/residential-fast-return/) includes the original task and review records, failure analysis, paired return times, and file/member checksums. Follow that directory's integrity-check instructions to verify the portable records. Video qualification is separate; the existing gallery belongs to the historical diverse-object experiment.
+
+The [historical compact-controller directory](../reproducibility/evidence/residential-evaluation/README.md) retains its 36/50 result and independent review records. Run `python -m dream_sim.evaluate` to check that archive and reconstruct its evaluated source. This command is specific to the historical compact controller. Large raw sensor arrays from both experiments remain in local experiment storage; the portable integrity check does not perform another physics replay.
 
 ### Diverse-object protocol
 
@@ -98,7 +111,7 @@ For external caches, add `--asset-dir /absolute/path/to/assets --model-cache /ab
 
 The controller selects exploration candidates reachable through heading-dependent, swept-footprint motion edges, plans through observed free space, verifies the requested receptacle from RGB-D geometry, and uses feedback during grasping and release. The torso follows a smooth position reference shared across arm control modes. Its reference speed and acceleration are limited to 0.04 m/s and 0.10 m/s². Physical joint motion is measured separately.
 
-Initialization and arm returns use a compact, torso-facing arm posture. The joint target is `[-1.253857, 1.35, 0.4, 1.9, -0.013637, 1.200051, 0.000009]`, ordered as the seven Fetch arm joints. Shoulder/elbow flexion and upper-arm roll draw the arm inward while maintaining torso clearance. After grasping or release, the robot lifts clear of the support, folds with the base stationary, and checks measured tracking and settling. Fold/unfold joint references are limited to 0.9 rad/s; physical tracking is checked separately. Before extending again, the robot partly turns the shoulder forward and lifts, then extends forward. Camera-height adjustments preserve folded arm targets. Independent replay checks evaluate the measured arm motion and clearance.
+Initialization and arm returns use a compact, torso-facing arm posture. The joint target is `[-1.253857, 1.35, 0.4, 1.9, -0.013637, 1.200051, 0.000009]`, ordered as the seven Fetch arm joints. Shoulder/elbow flexion and upper-arm roll draw the arm inward while maintaining torso clearance. After grasping or release, the robot lifts clear of the support, folds with the base stationary, and checks measured tracking and settling. The selected controller sets the return speed and acceleration bounds. `continuous_return` uses 0.85 rad/s and 1.5 rad/s² while holding an object, and 1.1 rad/s and 2.0 rad/s² with an empty gripper; physical tracking is checked separately. Before extending again, the robot partly turns the shoulder forward and lifts, then extends forward. Camera-height adjustments preserve folded arm targets. Independent replay checks evaluate the measured arm motion and clearance.
 
 The controller disables optional held-arm extensions for receptacle visibility and uses head and base views during that search. The optional extension method remains available and retraces its measured joint path before navigation resumes, checking payload retention, joint tracking, and base displacement. Search progress also accounts for the remaining length of a route ending near the observed target, so a necessary detour is not abandoned solely because straight-line distance increases. Replanning without measured base movement and routes to unrelated exploration frontiers do not reset the stalled-search budget.
 
@@ -106,20 +119,21 @@ Before grasping, the robot aligns the open gripper above the observed target and
 
 ### Evaluate the recordings
 
-After execution finishes:
+After all 50 tasks finish, review the corrected `staged_return` or `continuous_return` recordings:
 
 ```bash
-python results/residential50/frozen_workspace/DREAM_code/experiments/audit_instruction_batch.py \
-  --batch results/residential50 --output results/residential50_audits \
-  --workers 2 --all-task-successes
+python -m dream_sim.study_review --run results/residential50 \
+  --output results/residential50_audits --execute
 python -m dream_sim.study_report --run results/residential50 \
   --audits results/residential50_audits --output results/residential50_summary \
   --include-contact-rejections
 ```
 
+`study_review` reads the parallel runner's `screen_results` and `screen_complete.json`, binds every task to its frozen inputs, and reviews successful tasks one at a time in separate CPU processes. Omit `--execute` to inspect the review plan. If exact physical replays already exist, add `--physical-audits /path/to/audits`; their source and input checks still apply, and the saved observations are checked again. Review output directories must be new. Video export is separate from these task and arm-return checks.
+
 The report verifies all 50 outcomes against their fixed inputs and checks independent physical replays of successful tasks. It writes `study_analysis.json` and `attempts.csv`. Task completion requires correct visual observation of the moved object, sustained physical grasp and lift, cross-room transport, and stable release in the requested receptacle. Continuous correct tracking is permitted; losing and rediscovering the object is recorded as a separate behavior.
 
-`task_success` is the evaluator outcome. `qualified_task_success` additionally requires independent physics and recording checks, recorded compact-arm returns after grasp and release, and collision checks for those motions. Robot self contacts are recorded at every native physics substep. A one-second joint-position window verifies that the returned arm has settled; native joint velocities are retained separately. The completion rate uses all 50 tasks, including failures. `--include-contact-rejections` counts tasks rejected solely for native-environment contact as unsuccessful qualified outcomes while preserving their original scores. Missing audits, changed sources, or other failed checks stop reporting.
+`task_success` is the evaluator outcome. `qualified_task_success` additionally requires independent physics and recording checks, recorded compact-arm returns after grasp and release, and collision checks for those motions. Robot self contacts are recorded at every native physics substep. The staged-return reviewer checks the position and native-velocity settling windows. The derived `continuous_return` controller also records positions at every native physics step; after a final-stow native-velocity timeout, its explicit displacement-based check must be independently replayed before acceptance. Earlier cohorts retain their original measurement method and scores. The completion rate uses all 50 tasks, including failures. Valid review records that reject task completion or arm return count as unsuccessful qualified outcomes. `--include-contact-rejections` also retains native-environment contact rejections as unsuccessful outcomes while preserving their original scores. Missing audits, changed sources, or failed recording-integrity checks stop reporting.
 
 ## 4. Read results
 
@@ -131,7 +145,8 @@ The report verifies all 50 outcomes against their fixed inputs and checks indepe
 | `<attempt>/events.jsonl` | Perception, memory, navigation, and manipulation events |
 | `<attempt>/actions.json` | Applied controls and measured arm/torso state |
 | `<attempt>/evaluator_trajectory.jsonl` | Physical task trajectory |
-| `attempts.jsonl`, `batch_result.json` | Every completed outcome and study completion status |
+| `screen_results/`, `screen_complete.json` | Every completed outcome and completion status for parallel execution |
+| `attempts.jsonl`, `batch_result.json` | Equivalent outcome records for the serial study runner |
 
 The audit directory contains a physical replay, video/source checks, and a status report for each successful task. Inspect the attempt's policy log and audit logs when a check fails. Replaying saved controls does not launch another policy attempt.
 
@@ -161,6 +176,7 @@ The original ten demonstrations remain reproducible through `python -m dream_sim
 | Localization | Simulator odometry; the ROS SLAM backend is used in the real-robot implementation |
 | Navigation | Observed occupancy, frontier exploration, and DREAM A* logic |
 | Manipulation | RGB-D grasp/receptacle geometry and feedback-controlled motion templates; AnyGrasp is used in the real-robot system |
+| Arm-return safety feedback | `staged_return` additionally reads robot-link self-contact impulses at every simulator substep; no task-object pose enters its return planner |
 | Language-model verification | Hosted mLLM verification is disabled in this adapter |
 | Evaluation | Environment object poses, room geometry, contacts, and recorded trajectories |
 
@@ -178,4 +194,17 @@ The [component measurements](../reproducibility/evidence/components/README.md) c
 
 Parallel execution reads `.runtime/worker_resource_limits.json`, a machine-specific deployment profile. It must agree with `--gpus`, `--workers-per-gpu`, and the available CPU and memory allocation. This local file is excluded from Git because its CPU IDs, cgroup paths, and GPU assignment belong to the host machine. The batch runner and `worker_limits.py` validate that configuration before task execution. Keep your deployment's existing allocation when using this repository on a shared server.
 
-To inspect the task list without launching workers, omit `--execute`. The standard `study` mode uses one worker per requested GPU; `--parallel` selects the bounded 900-second residential batch with explicit worker slots.
+To inspect the task list without launching workers, omit `--execute`. The standard `study` mode uses one worker per requested GPU; `--parallel` selects the residential batch with explicit worker slots and a recorded action limit (900 seconds by default).
+
+## Render an independently reviewed trial
+
+The exporter uses the frozen source and saved control/force trace. It requires a passing task, observation and arm-return review in the run directory. No policy decisions are rerun and the original result is not rescored.
+
+```bash
+python -m dream_sim.render_trial \
+  --run /path/to/run \
+  --name 07_ProcTHOR-Train-1402_seed42_dynamic \
+  --output /path/to/new-video-directory
+```
+
+The output contains a complete-timeline overview at 24× playback (one frame per two robot seconds), 1× grasp and placement excerpts, frame timestamps, and a checksum-bound rendering receipt. Each control is physically re-executed even when it is not displayed. The exporter rejects control/state mismatches and rechecks both arm returns before writing its completion receipt. Use the simulation environment and asset caches described above; rendering uses the CPU and H.264 encoding. The [extended-search records](../reproducibility/evidence/long-search/README.md) document the different termination and memory settings used for that follow-up. Its one qualified completion among four selected cases does not replace the main 38/50 result.

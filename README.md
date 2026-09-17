@@ -62,17 +62,21 @@ DREAM_MODEL_CACHE="$PWD/.runtime/models" \
   --output results/residential50 --execute
 ```
 
-The DREAM Fetch controller passes task completion and independent physics/observation checks in **36/50 scenes (72%)**. All 50 tasks ran with seed 42, dynamic memory, native object scale, a **900-second robot-action budget**, and a separate **2700-second execution watchdog**. The easy-grasp cohort uses 21 pickup models across 6 categories. These houses were used for controller development, so the rate describes this fixed cohort. See the [complete results](reproducibility/evidence/residential-evaluation/results.json). The videos below belong to a separate recorded cohort.
+The default `continuous_return` controller passes task completion and independent physics, observation, and arm-return checks in **38/50 scenes (76%)**. All 50 tasks ran with seed 42, dynamic memory, native object scale, an **1800-second robot-action budget**, and **no fixed server deadline**. The easy-grasp cohort uses 21 pickup models across 6 categories. These houses were used for controller development, so the rate describes this fixed cohort. The [portable evidence](reproducibility/evidence/residential-fast-return/) includes all outcomes, original review records, failure analysis, and paired return times. Full local records are in `results/residential-adjusted/`. The [historical compact-controller result](reproducibility/evidence/residential-evaluation/results.json) remains 36/50 (72%) at 900 action seconds with a 2700-second server watchdog. The videos below belong to a separate recorded cohort.
 
 The command uses GPUs 0 and 1 with four workers per GPU; the deployment resource profile must support this allocation. Omit `--execute` to inspect the plan. See the [run guide](docs/reproduction.md#3-run-the-residential-study) for cache paths and the distinct study protocols.
 
 Each attempt saves observations, applied controls, physical trajectories, and its outcome. The [run guide](docs/reproduction.md) explains independent replay checks and complete-cohort analysis.
 
+The [arm-return controller](controllers/continuous_return/README.md) lifts clear of the support and follows measured intermediate postures before confirming the final fold. Independent replay checks both loaded and empty returns, including self-contact and fixture contact. The [return-time comparison](reproducibility/evidence/residential-fast-return/return_times.json) reports the shared successful tasks and timing definitions for the staged and continuous controllers. Historical configurations and their original budgets are documented in the [run guide](docs/reproduction.md).
+
 ## Demonstrations and evaluation
 
-In the historical diverse-object residential study, DREAM completed **27/50 tasks (54%)**. The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) includes **all 27 successful runs** and **2 failure cases**, with synchronized scene, robot-camera, semantic-memory, and navigation views. Videos retain the complete recorded sequence at 4× speed.
+In the historical diverse-object residential study, DREAM completed **27/50 tasks (54%)**. The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) includes **all 27 successful runs** and **2 failure cases**, with synchronized scene, robot-camera, semantic-memory, and navigation views. Videos retain the complete recorded sequence at 4× speed. Those historical video checks did not record robot self-contact or require a verified final fold, so their completion labels do not establish collision-free arm retraction.
 
 The [experiment records](reproducibility/evidence/residential50-seed42/README.md) contain all 50 outcomes, task configurations, and independent physics and recording checks. Every attempt contributes to the completion rate. Earlier experiments retain their own records in [`reproducibility/evidence/`](reproducibility/evidence/).
+
+The [extended-search case study](reproducibility/evidence/long-search/README.md) reports all four follow-up outcomes separately from the main cohort, including the 78.7-minute successful task.
 
 ## Code structure
 
@@ -103,7 +107,7 @@ python -m dream_sim.evaluate
 python -m pytest -q
 ```
 
-These commands check configuration, source integrity, and stored records without running the simulator. See the [run guide](docs/reproduction.md#4-read-results) for evaluating a new execution.
+These commands check configuration, source integrity, and stored records without running the simulator. `dream_sim.evaluate` checks the historical compact-controller result; the [current evidence guide](reproducibility/evidence/residential-fast-return/#verify-and-reproduce) provides the 76% archive integrity check. See the [run guide](docs/reproduction.md#4-read-results) for evaluating a new execution.
 
 ## Citation
 

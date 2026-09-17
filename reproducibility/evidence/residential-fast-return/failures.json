@@ -1,0 +1,2538 @@
+{
+  "protocol_sha256": "00c8fa73e832ba15dece7ed3cced0eb539bf115303c0025dd894369089c23bbe",
+  "failed_tasks": 12,
+  "categories": {
+    "pickup_search_failure": 4,
+    "navigation_iteration_limit_inferred": 2,
+    "placement_failure": 1,
+    "placement_search_failure": 2,
+    "action_timeout:placement_search": 2,
+    "aborted_grasp_recovery_failure": 1
+  },
+  "failures": [
+    {
+      "name": "03_ProcTHOR-Train-6452_seed42_dynamic",
+      "scene": "ProcTHOR-Train-6452",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the mug and place it on the plate on the table.",
+      "category": "pickup_search_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
+      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "final_stage": "pickup_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 30368,
+      "robot_action_seconds": 1518.4,
+      "server_execution_seconds": 3237.5487473011017,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": false,
+        "relocation_triggered_during_translation": false,
+        "external_relocation_finished": false,
+        "external_move_preserved_payload_support": false,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": false,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": false
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": false,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 5159,
+          "event": {
+            "step": 29096,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 71,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5181,
+          "event": {
+            "step": 29272,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 72,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5203,
+          "event": {
+            "step": 29448,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 73,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5225,
+          "event": {
+            "step": 29624,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 74,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5247,
+          "event": {
+            "step": 29800,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 75,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5269,
+          "event": {
+            "step": 29976,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 76,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5291,
+          "event": {
+            "step": 30152,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 77,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 5313,
+          "event": {
+            "step": 30328,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 78,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 5311,
+          "event": {
+            "step": 30328,
+            "event": "observation",
+            "task_stage": "pickup_search",
+            "frame_id": 3770,
+            "memory": {
+              "frame_id": 3770,
+              "sim_step": 30328,
+              "sensor": "fetch_head",
+              "before": 72261,
+              "removed": 1980,
+              "after": 72335,
+              "input_points": 8560,
+              "elapsed_s": 1.3152054101228714
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 5312,
+          "event": {
+            "step": 30328,
+            "event": "near_surface_head_scan",
+            "task_stage": "pickup_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        },
+        {
+          "line": 5313,
+          "event": {
+            "step": 30328,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 78,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "03_ProcTHOR-Train-6452_seed42_dynamic/result.json",
+          "sha256": "d0f218097d62f1cd65cb045985ce2559223c1d1e4c63f83b989497eae97a21d2"
+        },
+        {
+          "path": "03_ProcTHOR-Train-6452_seed42_dynamic/events.jsonl",
+          "sha256": "de8146edc8271b9aed960369614bee9f0d1676c6b4b37df498d242d8efd4c4da"
+        },
+        {
+          "path": "03_ProcTHOR-Train-6452_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "11b9d014b8401254710684495d3c4bc15dc7156adaf8a88551f95490ce2314e0"
+        },
+        {
+          "path": "03_ProcTHOR-Train-6452_seed42_dynamic/actions.json",
+          "sha256": "231cded822a0971e5fd468de3a5492bfa1b4d91e88ae8c5a8dacfee4059241c0"
+        },
+        {
+          "path": "screen_results/03_ProcTHOR-Train-6452_seed42_dynamic.json",
+          "sha256": "edc9446b63278d213fac6ae68fb1eba731f09e38451b5ebb927a2594f65c3490"
+        },
+        {
+          "path": "frozen_tasks/03_ProcTHOR-Train-6452_seed42/task.json",
+          "sha256": "a0def5eeeac31af036537b2dec87e19cfd2f84303884d99066e72ecf296ad83c"
+        }
+      ],
+      "recorded_unix_s": 1789574680.0106485,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "05_ProcTHOR-Test-288_seed42_dynamic",
+      "scene": "ProcTHOR-Test-288",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the egg and place it on the plate on the table.",
+      "category": "navigation_iteration_limit_inferred",
+      "review_status": "task_failed",
+      "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+      "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
+      "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+      "final_stage": "pickup_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 30238,
+      "robot_action_seconds": 1511.9,
+      "server_execution_seconds": 3532.3778326511383,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": {
+        "category": "navigation_iteration_limit_inferred",
+        "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+        "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
+        "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+        "evidence_status": "inferred_from_terminal_events_and_frozen_control_flow",
+        "evidence": {
+          "kind": "navigation_iteration_limit",
+          "prefix_controls": 30198,
+          "navigation_iteration_limit": 110,
+          "terminal_idle_controls_excluded": 40,
+          "evidence": "Inferred from the frozen runner control flow: final route completed, only camera events followed, and normal forty-control termination occurred. Validate the iteration-110 boundary in the extended run."
+        },
+        "proposed_followup": "取消全局迭代及动作截止时间，保留原停止点之前的动作和状态对照。",
+        "updated_unix_s": 1789574323.916722
+      },
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": false,
+        "relocation_triggered_during_translation": false,
+        "external_relocation_finished": false,
+        "external_move_preserved_payload_support": false,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": false,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": false
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": false,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 2798,
+          "event": {
+            "step": 17521,
+            "event": "route_chunk_budget_exhausted",
+            "task_stage": "pickup_search"
+          }
+        },
+        {
+          "line": 3001,
+          "event": {
+            "step": 18677,
+            "event": "route_chunk_budget_exhausted",
+            "task_stage": "pickup_search"
+          }
+        },
+        {
+          "line": 3043,
+          "event": {
+            "step": 18944,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 69,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3073,
+          "event": {
+            "step": 19177,
+            "event": "route_chunk_budget_exhausted",
+            "task_stage": "pickup_search"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 4618,
+          "event": {
+            "step": 30198,
+            "event": "head_view_settled",
+            "task_stage": "pickup_search",
+            "settled": true,
+            "additional_controls": 11,
+            "target_pan_tilt_rad": [
+              -0.800000011920929,
+              0.6499999761581421
+            ],
+            "measured_pan_tilt_rad": [
+              -0.7916743755340576,
+              0.6499994397163391
+            ],
+            "tolerance_rad": 0.025,
+            "arm_joint_targets_unchanged": true
+          }
+        },
+        {
+          "line": 4619,
+          "event": {
+            "step": 30198,
+            "event": "observation",
+            "task_stage": "pickup_search",
+            "frame_id": 2808,
+            "memory": {
+              "frame_id": 2808,
+              "sim_step": 30198,
+              "sensor": "fetch_head",
+              "before": 66727,
+              "removed": 2424,
+              "after": 66830,
+              "input_points": 8560,
+              "elapsed_s": 1.2691864296793938
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 4620,
+          "event": {
+            "step": 30198,
+            "event": "near_surface_head_scan",
+            "task_stage": "pickup_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "05_ProcTHOR-Test-288_seed42_dynamic/result.json",
+          "sha256": "69b7e34d0fd99dfbb75b917317fa92a95a135c450878a34a5b1f929acaafa00b"
+        },
+        {
+          "path": "05_ProcTHOR-Test-288_seed42_dynamic/events.jsonl",
+          "sha256": "648a500045e97fd267732c3d35e766cd2e4cc8a1a4d0b39150969b4fd6b99122"
+        },
+        {
+          "path": "05_ProcTHOR-Test-288_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "0fba53b10fb6322de03b24d1f9e50c4e67cb77d36922601db5de26ad169093f9"
+        },
+        {
+          "path": "05_ProcTHOR-Test-288_seed42_dynamic/actions.json",
+          "sha256": "e314dffdda15e85138b34e269629a202925b96bbf98db6650e4b85a9e1682a2c"
+        },
+        {
+          "path": "screen_results/05_ProcTHOR-Test-288_seed42_dynamic.json",
+          "sha256": "20d275700727938830bf58c14575caadfd1dcf65039a41096d1e3234be949c6e"
+        },
+        {
+          "path": "frozen_tasks/05_ProcTHOR-Test-288_seed42/task.json",
+          "sha256": "25c64391457c935dcf6bcc2ad9e957231f0e869b739e70e79df7e7ecf3cc8f3a"
+        }
+      ],
+      "recorded_unix_s": 1789574681.2927668,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
+      "scene": "ProcTHOR-Train-1402",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the candle and place it on the plate on the table.",
+      "category": "navigation_iteration_limit_inferred",
+      "review_status": "task_failed",
+      "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+      "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
+      "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+      "final_stage": "placement_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 28882,
+      "robot_action_seconds": 1444.1,
+      "server_execution_seconds": 3926.5623302459717,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": {
+        "category": "navigation_iteration_limit_inferred",
+        "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+        "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
+        "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+        "evidence_status": "inferred_from_terminal_events_and_frozen_control_flow",
+        "evidence": {
+          "kind": "navigation_iteration_limit",
+          "prefix_controls": 28842,
+          "navigation_iteration_limit": 110,
+          "terminal_idle_controls_excluded": 40,
+          "evidence": "Inferred from the frozen runner control flow: final route completed, only camera events followed, and normal forty-control termination occurred. Validate the iteration-110 boundary in the extended run."
+        },
+        "proposed_followup": "取消全局迭代及动作截止时间，保留原停止点之前的动作和状态对照。",
+        "updated_unix_s": 1789574324.1247861
+      },
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 1309.8,
+        "held_base_transport_m": 78.0782154572226,
+        "stable_placement_s": 0.0,
+        "pickup_approached": true,
+        "placement_approached": false,
+        "release_ready": false
+      },
+      "failure_events": [],
+      "final_events": [
+        {
+          "line": 4120,
+          "event": {
+            "step": 28842,
+            "event": "head_view_settled",
+            "task_stage": "placement_search",
+            "settled": true,
+            "additional_controls": 11,
+            "target_pan_tilt_rad": [
+              -0.800000011920929,
+              0.6499999761581421
+            ],
+            "measured_pan_tilt_rad": [
+              -0.7916750311851501,
+              0.6499776840209961
+            ],
+            "tolerance_rad": 0.025,
+            "arm_joint_targets_unchanged": true
+          }
+        },
+        {
+          "line": 4121,
+          "event": {
+            "step": 28842,
+            "event": "observation",
+            "task_stage": "placement_search",
+            "frame_id": 2346,
+            "memory": {
+              "frame_id": 2346,
+              "sim_step": 28842,
+              "sensor": "fetch_head",
+              "before": 161206,
+              "removed": 4772,
+              "after": 160898,
+              "input_points": 8129,
+              "elapsed_s": 3.4772967100143433
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 4122,
+          "event": {
+            "step": 28842,
+            "event": "near_surface_head_scan",
+            "task_stage": "placement_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "07_ProcTHOR-Train-1402_seed42_dynamic/result.json",
+          "sha256": "dd9a137c886259189fc20d2af7ef07383f6e88b6d72db0d57e9679cca3d23641"
+        },
+        {
+          "path": "07_ProcTHOR-Train-1402_seed42_dynamic/events.jsonl",
+          "sha256": "fb22ed86caf0d538ef46b6413d16f06067a282646016497f9373e047c629664d"
+        },
+        {
+          "path": "07_ProcTHOR-Train-1402_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "e72d5fe881038908b94ef615299172bcd18d9bbb4ceab0729139881bb6865420"
+        },
+        {
+          "path": "07_ProcTHOR-Train-1402_seed42_dynamic/actions.json",
+          "sha256": "3a5b9af5b5c5bda44c6aab0481d69cd4facfb9425dc0ddf7ddfcfceb85c94722"
+        },
+        {
+          "path": "screen_results/07_ProcTHOR-Train-1402_seed42_dynamic.json",
+          "sha256": "89c394885fc0b89ca6f9986fb69cb1552ca50bb1e60502e3f445ec6d1bd5adfd"
+        },
+        {
+          "path": "frozen_tasks/07_ProcTHOR-Train-1402_seed42/task.json",
+          "sha256": "631085c7dcbf170df2d9058e152e87513c541bea6a28460623184dbbe4dce3d1"
+        }
+      ],
+      "recorded_unix_s": 1789574682.9127536,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "16_ProcTHOR-Train-507_seed42_dynamic",
+      "scene": "ProcTHOR-Train-507",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the mug and place it on the plate on the table.",
+      "category": "pickup_search_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
+      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "final_stage": "pickup_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 18265,
+      "robot_action_seconds": 913.25,
+      "server_execution_seconds": 1871.136771440506,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": false,
+        "relocation_triggered_during_translation": false,
+        "external_relocation_finished": false,
+        "external_move_preserved_payload_support": false,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": false,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": false
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": false,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 3100,
+          "event": {
+            "step": 16993,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 51,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3122,
+          "event": {
+            "step": 17169,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 52,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3144,
+          "event": {
+            "step": 17345,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 53,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3166,
+          "event": {
+            "step": 17521,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 54,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3188,
+          "event": {
+            "step": 17697,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 55,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3210,
+          "event": {
+            "step": 17873,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 56,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3232,
+          "event": {
+            "step": 18049,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 57,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 3254,
+          "event": {
+            "step": 18225,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 58,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 3252,
+          "event": {
+            "step": 18225,
+            "event": "multiscale_visual_search",
+            "task_stage": "pickup_search",
+            "observation_id": 1939,
+            "detections": [],
+            "source": "overlapping_calibrated_tiles_of_saved_RGBD"
+          }
+        },
+        {
+          "line": 3253,
+          "event": {
+            "step": 18225,
+            "event": "near_surface_head_scan",
+            "task_stage": "pickup_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        },
+        {
+          "line": 3254,
+          "event": {
+            "step": 18225,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 58,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "16_ProcTHOR-Train-507_seed42_dynamic/result.json",
+          "sha256": "6fbdc70f03d77d3af7eab98439dbf12f5eaa482c909896dfd054915698220a01"
+        },
+        {
+          "path": "16_ProcTHOR-Train-507_seed42_dynamic/events.jsonl",
+          "sha256": "93a84def87575b0ead6f774b5a8a4c48819452c46529a314e70050e5c4982741"
+        },
+        {
+          "path": "16_ProcTHOR-Train-507_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "93b357d80bac4a684c26ebe7ae55dd70af7d3108dd75669158722ffe490b802e"
+        },
+        {
+          "path": "16_ProcTHOR-Train-507_seed42_dynamic/actions.json",
+          "sha256": "bdfe7865d4ac6a5174c67dba99c08675f408e350ec6ec12536ea272fe198eb72"
+        },
+        {
+          "path": "screen_results/16_ProcTHOR-Train-507_seed42_dynamic.json",
+          "sha256": "14ce93a0a23a649253edd60bac643d1dc24c088ec76e9b8ff1487071565ba8cf"
+        },
+        {
+          "path": "frozen_tasks/16_ProcTHOR-Train-507_seed42/task.json",
+          "sha256": "003ff24bbc1ffa4e5c21554c62f69497de9f9bb9942927cc095993fac655ecb4"
+        }
+      ],
+      "recorded_unix_s": 1789574683.7250829,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2451",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the soap bottle and place it on the plate on the table.",
+      "category": "placement_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "未达到稳定放置条件；评分记录的稳定放置时间为 0.35 秒",
+      "direct_cause_en": "The stable-placement criterion was not met; the recorded stable-placement duration was 0.35 s",
+      "uncertainty_zh": "这是本次任务评分的直接记录。具体脱离容器的过程可通过本次轨迹和视频进一步核对。",
+      "final_stage": "finished",
+      "final_phase": "Fold arm with base stationary",
+      "final_control_step": 8443,
+      "robot_action_seconds": 422.15,
+      "server_execution_seconds": 597.5058908462524,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": {
+        "category": "placement_failure",
+        "direct_cause_zh": "未达到稳定放置条件；评分记录的稳定放置时间为 0.35 秒",
+        "direct_cause_en": "The stable-placement criterion was not met; the recorded stable-placement duration was 0.35 s",
+        "uncertainty_zh": "这是本次任务评分的直接记录。具体脱离容器的过程可通过本次轨迹和视频进一步核对。",
+        "evidence_status": "recorded_task_criterion",
+        "evidence": {
+          "task_criteria": {
+            "instruction_before_initial_scan": true,
+            "correct_discovery_before_relocation": true,
+            "relocation_triggered_during_translation": true,
+            "external_relocation_finished": true,
+            "external_move_preserved_payload_support": true,
+            "sustained_physical_lift": true,
+            "held_base_transport": true,
+            "second_language_search": true,
+            "stable_released_receptacle_placement": false,
+            "cross_room_search": true,
+            "cross_room_delivery": true,
+            "correct_visual_moved_target_observation": true
+          },
+          "stable_placement_s": 0.35,
+          "source": "26_ProcTHOR-Train-2451_seed42_dynamic/result.json"
+        },
+        "updated_unix_s": 1789574666.3222866
+      },
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": true,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 197.0,
+        "held_base_transport_m": 4.225669757334345,
+        "stable_placement_s": 0.35,
+        "pickup_approached": true,
+        "placement_approached": true,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 923,
+          "event": {
+            "step": 5796,
+            "event": "placement_memory_view_rejected",
+            "task_stage": "placement_search",
+            "observation_id": 578,
+            "invalidation_scope": "candidate_observation",
+            "preserved_track": {
+              "observation_id": 5,
+              "query": "plate",
+              "score": 0.29861366748809814,
+              "box_xyxy": [
+                287.6551513671875,
+                342.05352783203125,
+                383.3688049316406,
+                391.9039306640625
+              ],
+              "point_world": [
+                -2.4657111167907715,
+                -5.660256385803223,
+                0.7956792712211609
+              ],
+              "grounding_query": null
+            }
+          }
+        },
+        {
+          "line": 1026,
+          "event": {
+            "step": 6237,
+            "event": "placement_memory_view_rejected",
+            "task_stage": "placement_search",
+            "observation_id": 649,
+            "invalidation_scope": "candidate_observation",
+            "preserved_track": {
+              "observation_id": 648,
+              "query": "plate",
+              "score": 0.26865726709365845,
+              "box_xyxy": [
+                343.4215087890625,
+                321.04974365234375,
+                428.2982177734375,
+                361.13165283203125
+              ],
+              "point_world": [
+                -2.4700403213500977,
+                -5.658379554748535,
+                0.795744776725769
+              ],
+              "grounding_query": null
+            }
+          }
+        },
+        {
+          "line": 1116,
+          "event": {
+            "step": 6720,
+            "event": "observed_placement_base_alignment_result",
+            "task_stage": "place",
+            "completed": true,
+            "measured_advance_m": 0.03189371847184377,
+            "last_failure": null
+          }
+        },
+        {
+          "line": 1118,
+          "event": {
+            "step": 7501,
+            "event": "release_alignment_height_recovery",
+            "task_stage": "place",
+            "torso_target_m": 0.27364152431488037
+          }
+        },
+        {
+          "line": 1119,
+          "event": {
+            "step": 7794,
+            "event": "release_alignment_height_recovery",
+            "task_stage": "place",
+            "torso_target_m": 0.33364152669906616
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 1123,
+          "event": {
+            "step": 8403,
+            "event": "stationary_arm_fold",
+            "task_stage": "place",
+            "loaded": false,
+            "vertical_clearance_gain_m": 0.145641028881073,
+            "base_displacement_m": 0.00010846971102333355,
+            "requested_base_translation_m": 0.0,
+            "maximum_tracking_error_rad": 0.08321999365733079
+          }
+        },
+        {
+          "line": 1124,
+          "event": {
+            "step": 8403,
+            "event": "idle_arm_folded",
+            "task_stage": "place",
+            "posture_id": "recovery_v2_tighter_belly_v1",
+            "target_joint_positions_rad": [
+              -1.253857,
+              1.35,
+              0.3999999999999999,
+              1.9,
+              -0.013637000000000066,
+              1.200051,
+              9.000000000036756e-06
+            ],
+            "measured_joint_positions_rad": [
+              -1.253866195678711,
+              1.350001573562622,
+              0.39999842643737793,
+              1.8999958038330078,
+              -0.013636957854032516,
+              1.2000600099563599,
+              8.999526471598074e-06
+            ],
+            "maximum_tracking_error_rad": 0.08321999365733079,
+            "planned_duration_s": 16.6,
+            "maximum_reference_speed_rad_s": 1.1,
+            "maximum_reference_acceleration_rad_s2": 2.0,
+            "settled_joint_range_rad": 0.001310586929321289,
+            "settle_window_s": 1.0,
+            "native_endpoint_velocity_rad_s": [
+              8.475658250972629e-05,
+              -1.4373986232385505e-05,
+              1.4220631783246063e-05,
+              3.7824498576810583e-05,
+              -4.727156976969127e-07,
+              -8.24165326775983e-05,
+              3.812530380287171e-08
+            ],
+            "settled": true,
+            "control_frequency_hz": 20.0,
+            "stages": [
+              {
+                "stage": "withdraw",
+                "start_step": 8071,
+                "end_step": 8174,
+                "target_tcp_world_m": [
+                  -2.5744516849517822,
+                  -5.40289306640625,
+                  1.1047401428222656
+                ],
+                "measured_tcp_world_m": [
+                  -2.57456111907959,
+                  -5.402580261230469,
+                  1.1048076152801514
+                ],
+                "minimum_tcp_height_m": 1.064740197658539,
+                "reference_interpolation": "cubic_with_shape_preserving_limit_fallback",
+                "measured_joint_positions_rad": [
+                  -0.8067758083343506,
+                  -1.0441035032272339,
+                  1.491711139678955,
+                  1.809522032737732,
+                  -0.48018068075180054,
+                  1.4004778861999512,
+                  0.7673959732055664
+                ],
+                "settled": true
+              },
+              {
+                "stage": "raise",
+                "start_step": 8174,
+                "end_step": 8180,
+                "target_joint_positions_rad": [
+                  -0.8067758083343506,
+                  -1.0441035032272339,
+                  1.491711139678955,
+                  1.809522032737732,
+                  -0.48018068075180054,
+                  1.4004778861999512,
+                  0.7673959732055664
+                ],
+                "measured_joint_positions_rad": [
+                  -0.8067787885665894,
+                  -1.0441057682037354,
+                  1.4917172193527222,
+                  1.8095290660858154,
+                  -0.48017916083335876,
+                  1.4004794359207153,
+                  0.7673960328102112
+                ],
+                "settled_joint_range_rad": 1.5497207641601562e-06,
+                "settled": true
+              },
+              {
+                "stage": "shorten",
+                "start_step": 8180,
+                "end_step": 8224,
+                "target_joint_positions_rad": [
+                  -0.8067758083343506,
+                  -1.0441035032272339,
+                  0.3999999999999999,
+                  2.05,
+                  -0.01363700000000001,
+                  0.8,
+                  9.000000000036756e-06
+                ],
+                "measured_joint_positions_rad": [
+                  -0.8068819642066956,
+                  -1.044089913368225,
+                  0.40020087361335754,
+                  2.049948215484619,
+                  -0.013767415657639503,
+                  0.8001500964164734,
+                  0.0002032216580118984
+                ],
+                "settled_joint_range_rad": 0.002610832452774048,
+                "settled": true
+              },
+              {
+                "stage": "turn",
+                "start_step": 8224,
+                "end_step": 8243,
+                "target_joint_positions_rad": [
+                  -0.9369285023841858,
+                  -1.0441035032272339,
+                  0.3999999999999999,
+                  2.05,
+                  -0.013637000000000066,
+                  0.8,
+                  9.000000000036756e-06
+                ],
+                "measured_joint_positions_rad": [
+                  -0.9368608593940735,
+                  -1.0440953969955444,
+                  0.39983105659484863,
+                  2.049995183944702,
+                  -0.013668384402990341,
+                  0.8000071048736572,
+                  1.3592905816040002e-05
+                ],
+                "settled_joint_range_rad": 0.0032036304473876953,
+                "settled": true
+              },
+              {
+                "stage": "lower",
+                "start_step": 8243,
+                "end_step": 8312,
+                "target_joint_positions_rad": [
+                  -0.9369285023841858,
+                  0.8,
+                  0.3999999999999999,
+                  2.05,
+                  -0.013637000000000066,
+                  0.8,
+                  9.000000000036756e-06
+                ],
+                "measured_joint_positions_rad": [
+                  -0.9369146227836609,
+                  0.79994797706604,
+                  0.39999598264694214,
+                  2.050018548965454,
+                  -0.013636596500873566,
+                  0.8000038862228394,
+                  8.930159310693853e-06
+                ],
+                "settled_joint_range_rad": 0.0009391307830810547,
+                "settled": true
+              },
+              {
+                "stage": "approach_stow",
+                "start_step": 8312,
+                "end_step": 8344,
+                "target_joint_positions_rad": [
+                  -1.503857,
+                  1.35,
+                  0.3999999999999999,
+                  1.75,
+                  -0.013637000000000066,
+                  1.200051,
+                  9.000000000036756e-06
+                ],
+                "measured_joint_positions_rad": [
+                  -1.503520131111145,
+                  1.349787950515747,
+                  0.40002182126045227,
+                  1.7502144575119019,
+                  -0.013623562641441822,
+                  1.1997816562652588,
+                  7.210436706373002e-06
+                ],
+                "settled_joint_range_rad": 0.003958582878112793,
+                "settled": true
+              },
+              {
+                "stage": "align",
+                "start_step": 8344,
+                "end_step": 8367,
+                "target_joint_positions_rad": [
+                  -1.253857,
+                  1.35,
+                  0.3999999999999999,
+                  1.75,
+                  -0.013637000000000066,
+                  1.200051,
+                  9.000000000036756e-06
+                ],
+                "measured_joint_positions_rad": [
+                  -1.2542145252227783,
+                  1.3500405550003052,
+                  0.39993801712989807,
+                  1.7499940395355225,
+                  -0.013656646013259888,
+                  1.2000401020050049,
+                  1.1112954780401196e-05
+                ],
+                "settled_joint_range_rad": 0.004546642303466797,
+                "settled": true
+              },
+              {
+                "stage": "stow",
+                "start_step": 8367,
+                "end_step": 8403,
+                "target_joint_positions_rad": [
+                  -1.253857,
+                  1.35,
+                  0.3999999999999999,
+                  1.9,
+                  -0.013637000000000066,
+                  1.200051,
+                  9.000000000036756e-06
+                ],
+                "measured_joint_positions_rad": [
+                  -1.253866195678711,
+                  1.350001573562622,
+                  0.39999842643737793,
+                  1.8999958038330078,
+                  -0.013636957854032516,
+                  1.2000600099563599,
+                  8.999526471598074e-06
+                ],
+                "settled_joint_range_rad": 0.001310586929321289,
+                "settled": true
+              }
+            ],
+            "arm_return_protocol": "feedback_gated",
+            "maximum_self_contact_force_n": 0.0,
+            "all_intermediate_postures_settled": true
+          }
+        },
+        {
+          "line": 1125,
+          "event": {
+            "step": 8403,
+            "event": "placement_motion_complete",
+            "task_stage": "finished",
+            "success_requires_independent_evaluation": true
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "26_ProcTHOR-Train-2451_seed42_dynamic/result.json",
+          "sha256": "b4ad241fd9f149e4568732856de6857dc0cae02d8a9b42e67421feb06554da8f"
+        },
+        {
+          "path": "26_ProcTHOR-Train-2451_seed42_dynamic/events.jsonl",
+          "sha256": "a04494faf473bae5eeced151319c92f00157932e685487c94616c121f9a62b76"
+        },
+        {
+          "path": "26_ProcTHOR-Train-2451_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "5abb6deb70a51fbeee5e4863841e7c301f9bd3072a1cb56b0c366faa544b3e2c"
+        },
+        {
+          "path": "26_ProcTHOR-Train-2451_seed42_dynamic/actions.json",
+          "sha256": "6b8523a4ddbbf00aa73e7f8ac5d0d40c067155bc3bd32e6c8c51124b8ef3a116"
+        },
+        {
+          "path": "screen_results/26_ProcTHOR-Train-2451_seed42_dynamic.json",
+          "sha256": "c6bf62496a25f91320dacb2159ce57af2b06542178dec91d82c08e8041883487"
+        },
+        {
+          "path": "frozen_tasks/26_ProcTHOR-Train-2451_seed42/task.json",
+          "sha256": "de7c3368db18b6a2cf158084724ea9498bc008b77e91c1eb36b61fb2b09f0597"
+        }
+      ],
+      "recorded_unix_s": 1789574684.0154622,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "27_ProcTHOR-Val-576_seed42_dynamic",
+      "scene": "ProcTHOR-Val-576",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the soap bottle and place it on the plate on the table.",
+      "category": "placement_search_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "放置位置搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_en": "Receptacle search or navigation did not complete; the final navigation event reports incomplete route execution",
+      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "final_stage": "placement_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 12664,
+      "robot_action_seconds": 633.2,
+      "server_execution_seconds": 1008.756716966629,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 162.0,
+        "held_base_transport_m": 0.7556200233822653,
+        "stable_placement_s": 0.0,
+        "pickup_approached": true,
+        "placement_approached": false,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 1821,
+          "event": {
+            "step": 10607,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 1,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1847,
+          "event": {
+            "step": 10810,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 2,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1874,
+          "event": {
+            "step": 11013,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 3,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1900,
+          "event": {
+            "step": 11216,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 4,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1923,
+          "event": {
+            "step": 11392,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 5,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1945,
+          "event": {
+            "step": 11568,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 6,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1967,
+          "event": {
+            "step": 11744,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 7,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1989,
+          "event": {
+            "step": 11920,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 8,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2011,
+          "event": {
+            "step": 12096,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 9,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2033,
+          "event": {
+            "step": 12272,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 10,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2055,
+          "event": {
+            "step": 12448,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 11,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2077,
+          "event": {
+            "step": 12624,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 12,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 2075,
+          "event": {
+            "step": 12624,
+            "event": "multiscale_visual_search",
+            "task_stage": "placement_search",
+            "observation_id": 1297,
+            "detections": [],
+            "source": "overlapping_calibrated_tiles_of_saved_RGBD"
+          }
+        },
+        {
+          "line": 2076,
+          "event": {
+            "step": 12624,
+            "event": "near_surface_head_scan",
+            "task_stage": "placement_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        },
+        {
+          "line": 2077,
+          "event": {
+            "step": 12624,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 12,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "27_ProcTHOR-Val-576_seed42_dynamic/result.json",
+          "sha256": "97150e99aa77dda0d8be07163a3b4b68ae37a66fdb0111fcc42fb6b4f004b653"
+        },
+        {
+          "path": "27_ProcTHOR-Val-576_seed42_dynamic/events.jsonl",
+          "sha256": "9528f374fab34b2163e7107f2e7a44a14f4ecb05939fd919b2265aff745f6fa1"
+        },
+        {
+          "path": "27_ProcTHOR-Val-576_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "9dc144a1eb3aea70e48f768d033815c5c8657359ae46285390466385f18206b4"
+        },
+        {
+          "path": "27_ProcTHOR-Val-576_seed42_dynamic/actions.json",
+          "sha256": "f7eda1bcbc26519d329dfefeeee891c9e628e46da9395aa010dfc240070f2f05"
+        },
+        {
+          "path": "screen_results/27_ProcTHOR-Val-576_seed42_dynamic.json",
+          "sha256": "287db431fdfe44ed3d546721b4793864489a36b8e8bf2e3d3329d7695438375e"
+        },
+        {
+          "path": "frozen_tasks/27_ProcTHOR-Val-576_seed42/task.json",
+          "sha256": "d5fbfa9b1e6bbf29059054b155a1c52f5d50942c9ec08461da25a6c0954a289d"
+        }
+      ],
+      "recorded_unix_s": 1789574774.674014,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4732",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the apple and place it on the plate on the table.",
+      "category": "action_timeout:placement_search",
+      "review_status": "task_failed",
+      "direct_cause_zh": "在 placement_search 阶段用尽机器人动作预算，整场任务未完成",
+      "direct_cause_en": "The robot-action budget expired during placement_search before task completion",
+      "uncertainty_zh": "到达预算仅说明任务在该预算内未完成；不能据此断言继续增加时间就一定成功。",
+      "final_stage": "placement_search",
+      "final_phase": "Translate through observed passage",
+      "final_control_step": 36000,
+      "robot_action_seconds": 1800.0,
+      "server_execution_seconds": 4254.73272228241,
+      "error": "TimeoutError('Robot action-time budget exceeded')",
+      "classifier_evidence": [
+        "Translate through observed passage"
+      ],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 605.4,
+        "held_base_transport_m": 56.98140644941529,
+        "stable_placement_s": 0.0,
+        "pickup_approached": true,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 2190,
+          "event": {
+            "step": 15473,
+            "event": "head_viewpoint_height_recovery",
+            "task_stage": "placement_search",
+            "torso_target_m": 0.18000000715255737,
+            "payload_pose_hold_used": false,
+            "observation_id": 1231,
+            "detected": false,
+            "during_local_focus": true
+          }
+        },
+        {
+          "line": 2917,
+          "event": {
+            "step": 21663,
+            "event": "placement_memory_view_rejected",
+            "task_stage": "placement_search",
+            "observation_id": 1665,
+            "invalidation_scope": "candidate_observation",
+            "preserved_track": null
+          }
+        },
+        {
+          "line": 2988,
+          "event": {
+            "step": 21969,
+            "event": "placement_memory_view_rejected",
+            "task_stage": "placement_search",
+            "observation_id": 1700,
+            "invalidation_scope": "candidate_observation",
+            "preserved_track": null
+          }
+        },
+        {
+          "line": 3036,
+          "event": {
+            "step": 22166,
+            "event": "placement_memory_view_rejected",
+            "task_stage": "placement_search",
+            "observation_id": 1689,
+            "invalidation_scope": "candidate_observation",
+            "preserved_track": null
+          }
+        },
+        {
+          "line": 4615,
+          "event": {
+            "step": 30763,
+            "event": "placement_memory_view_rejected",
+            "task_stage": "placement_search",
+            "observation_id": 2904,
+            "invalidation_scope": "candidate_observation",
+            "preserved_track": null
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 5613,
+          "event": {
+            "step": 35990,
+            "event": "navigation_depth_update",
+            "task_stage": "placement_search",
+            "frame_id": 3652,
+            "sensor": "fetch_head",
+            "occupied_voxels": 125189
+          }
+        },
+        {
+          "line": 5614,
+          "event": {
+            "step": 35995,
+            "event": "navigation_depth_update",
+            "task_stage": "placement_search",
+            "frame_id": 3653,
+            "sensor": "fetch_head",
+            "occupied_voxels": 125189
+          }
+        },
+        {
+          "line": 5615,
+          "event": {
+            "step": 36000,
+            "event": "navigation_depth_update",
+            "task_stage": "placement_search",
+            "frame_id": 3654,
+            "sensor": "fetch_head",
+            "occupied_voxels": 125189
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "30_ProcTHOR-Train-4732_seed42_dynamic/result.json",
+          "sha256": "8de67af1a10a0e0f18c99b12fd4ecc576f0b195c0e143e3cce239d6d0e6b8f72"
+        },
+        {
+          "path": "30_ProcTHOR-Train-4732_seed42_dynamic/events.jsonl",
+          "sha256": "d7fd7e89b5a794a199466e52bdea0246a0072320278cbdee6354e2c1d43f420a"
+        },
+        {
+          "path": "30_ProcTHOR-Train-4732_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "ad2f9d221ee1c1668edaa548a06991f22be1b70b7dda0b6dced3f42fd0af7973"
+        },
+        {
+          "path": "30_ProcTHOR-Train-4732_seed42_dynamic/actions.json",
+          "sha256": "c397cf7d2af5d5a7754d8428ebb02b6d0e5b43543369648c3f9c1396b1226b4b"
+        },
+        {
+          "path": "screen_results/30_ProcTHOR-Train-4732_seed42_dynamic.json",
+          "sha256": "31d13f44c145c304af1e559837b97721a7dbdc0b595d0b24fa7c423f4f428000"
+        },
+        {
+          "path": "frozen_tasks/30_ProcTHOR-Train-4732_seed42/task.json",
+          "sha256": "b963532dbbe9689e1fea73f1891b9dca0f64ea25e1a32a27769773f879d0819d"
+        }
+      ],
+      "recorded_unix_s": 1789578242.3788812,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
+      "scene": "ProcTHOR-Train-7199",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the egg and place it on the plate on the table.",
+      "category": "action_timeout:placement_search",
+      "review_status": "task_failed",
+      "direct_cause_zh": "在 placement_search 阶段用尽机器人动作预算，整场任务未完成",
+      "direct_cause_en": "The robot-action budget expired during placement_search before task completion",
+      "uncertainty_zh": "到达预算仅说明任务在该预算内未完成；不能据此断言继续增加时间就一定成功。",
+      "final_stage": "placement_search",
+      "final_phase": "Verify remembered location",
+      "final_control_step": 36000,
+      "robot_action_seconds": 1800.0,
+      "server_execution_seconds": 4051.440792798996,
+      "error": "TimeoutError('Robot action-time budget exceeded')",
+      "classifier_evidence": [
+        "Verify remembered location"
+      ],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": false,
+        "relocation_triggered_during_translation": false,
+        "external_relocation_finished": false,
+        "external_move_preserved_payload_support": false,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": false
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": true,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [],
+      "final_events": [
+        {
+          "line": 6298,
+          "event": {
+            "step": 35985,
+            "event": "observation",
+            "task_stage": "placement_search",
+            "frame_id": 4392,
+            "memory": {
+              "frame_id": 4392,
+              "sim_step": 35985,
+              "sensor": "fetch_head",
+              "before": 80740,
+              "removed": 4688,
+              "after": 79932,
+              "input_points": 6387,
+              "elapsed_s": 1.4987810775637627
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 6299,
+          "event": {
+            "step": 35985,
+            "event": "navigation_depth_update",
+            "task_stage": "placement_search",
+            "frame_id": 4393,
+            "sensor": "fetch_head",
+            "occupied_voxels": 70919
+          }
+        },
+        {
+          "line": 6300,
+          "event": {
+            "step": 35995,
+            "event": "navigation_depth_update",
+            "task_stage": "placement_search",
+            "frame_id": 4394,
+            "sensor": "fetch_head",
+            "occupied_voxels": 71014
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "32_ProcTHOR-Train-7199_seed42_dynamic/result.json",
+          "sha256": "fdaa1fd9403ad34704398db02f60910a7656c39c952180752eb460234a21efa1"
+        },
+        {
+          "path": "32_ProcTHOR-Train-7199_seed42_dynamic/events.jsonl",
+          "sha256": "d77637932a5bede11d99b690b6883ccd3ff6e2684af8da5eb1982a6049657372"
+        },
+        {
+          "path": "32_ProcTHOR-Train-7199_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "0851aa7bfd5dc2b6eb23ddcb6af53eb518f806cc117c5c7f033c1002c7de1c34"
+        },
+        {
+          "path": "32_ProcTHOR-Train-7199_seed42_dynamic/actions.json",
+          "sha256": "40f792f5ba5fb8c5da4d9534c40acb9b5bc05c6670b81fbb70849ed8af41bf5d"
+        },
+        {
+          "path": "screen_results/32_ProcTHOR-Train-7199_seed42_dynamic.json",
+          "sha256": "e7cb9c2f1c9c0c739219f653e6ea862076a5be624a1bbc4bf040bd307b1beb6c"
+        },
+        {
+          "path": "frozen_tasks/32_ProcTHOR-Train-7199_seed42/task.json",
+          "sha256": "e482c3a321a412670fda3f07c7934f7dd627ce6bae264f89daa283633a497035"
+        }
+      ],
+      "recorded_unix_s": 1789578244.3980193,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
+      "scene": "ProcTHOR-Train-5942",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the apple and place it on the plate on the table.",
+      "category": "pickup_search_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
+      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "final_stage": "pickup_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 9014,
+      "robot_action_seconds": 450.7,
+      "server_execution_seconds": 993.0201361179352,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": false,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": false,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 1426,
+          "event": {
+            "step": 7415,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 21,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1444,
+          "event": {
+            "step": 7443,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 22,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1463,
+          "event": {
+            "step": 7471,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 23,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1480,
+          "event": {
+            "step": 7499,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 24,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1508,
+          "event": {
+            "step": 7666,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 25,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1549,
+          "event": {
+            "step": 7880,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 26,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1588,
+          "event": {
+            "step": 8094,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 27,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1613,
+          "event": {
+            "step": 8270,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 28,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1638,
+          "event": {
+            "step": 8446,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 29,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1663,
+          "event": {
+            "step": 8622,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 30,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1687,
+          "event": {
+            "step": 8798,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 31,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1710,
+          "event": {
+            "step": 8974,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 32,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 1708,
+          "event": {
+            "step": 8974,
+            "event": "observation",
+            "task_stage": "pickup_search",
+            "frame_id": 1025,
+            "memory": {
+              "frame_id": 1025,
+              "sim_step": 8974,
+              "sensor": "fetch_head",
+              "before": 37209,
+              "removed": 2947,
+              "after": 37311,
+              "input_points": 8560,
+              "elapsed_s": 0.9085641354322433
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 1709,
+          "event": {
+            "step": 8974,
+            "event": "near_surface_head_scan",
+            "task_stage": "pickup_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        },
+        {
+          "line": 1710,
+          "event": {
+            "step": 8974,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 32,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "33_ProcTHOR-Train-5942_seed42_dynamic/result.json",
+          "sha256": "bc56dd85995c2e2136a0f086af79375b305966ba020087a6f0146fac59f5fee8"
+        },
+        {
+          "path": "33_ProcTHOR-Train-5942_seed42_dynamic/events.jsonl",
+          "sha256": "c65e1eadacf35ad12a39d21e71aed89cd2d27f0c11ac8cd61d941f1228180434"
+        },
+        {
+          "path": "33_ProcTHOR-Train-5942_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "b035b3628e0b41cd32c84d2a8084d3baca2ebf7679d5702b042474f60d9881d1"
+        },
+        {
+          "path": "33_ProcTHOR-Train-5942_seed42_dynamic/actions.json",
+          "sha256": "72e703cdb2f5df6c0ad86f3364a5bae9dd0c4e57399bffa77604611b8492aa5f"
+        },
+        {
+          "path": "screen_results/33_ProcTHOR-Train-5942_seed42_dynamic.json",
+          "sha256": "f62a0f6b441ece4d49c54d6af4c17558af231ec43e4f4c6ca8c4aca4f4c623d0"
+        },
+        {
+          "path": "frozen_tasks/33_ProcTHOR-Train-5942_seed42/task.json",
+          "sha256": "a4ed2534844be4ef03775e2949998e35901c1f52e05b655c1de8bef6f446edc2"
+        }
+      ],
+      "recorded_unix_s": 1789575199.6210904,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
+      "scene": "ProcTHOR-Train-6673",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the apple and place it on the plate on the table.",
+      "category": "placement_search_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "放置位置搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_en": "Receptacle search or navigation did not complete; the final navigation event reports incomplete route execution",
+      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "final_stage": "placement_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 16713,
+      "robot_action_seconds": 835.65,
+      "server_execution_seconds": 1679.8768763542175,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": true,
+        "held_base_transport": true,
+        "second_language_search": true,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 343.15,
+        "held_base_transport_m": 4.425081815691539,
+        "stable_placement_s": 0.0,
+        "pickup_approached": true,
+        "placement_approached": false,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 2309,
+          "event": {
+            "step": 13747,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 23,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2389,
+          "event": {
+            "step": 14253,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 24,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2469,
+          "event": {
+            "step": 14759,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 25,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2550,
+          "event": {
+            "step": 15265,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 26,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2573,
+          "event": {
+            "step": 15441,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 27,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2595,
+          "event": {
+            "step": 15617,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 28,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2617,
+          "event": {
+            "step": 15793,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 29,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2639,
+          "event": {
+            "step": 15969,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 30,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2661,
+          "event": {
+            "step": 16145,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 31,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2683,
+          "event": {
+            "step": 16321,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 32,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2705,
+          "event": {
+            "step": 16497,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 33,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 2727,
+          "event": {
+            "step": 16673,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 34,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 2725,
+          "event": {
+            "step": 16673,
+            "event": "observation",
+            "task_stage": "placement_search",
+            "frame_id": 1453,
+            "memory": {
+              "frame_id": 1453,
+              "sim_step": 16673,
+              "sensor": "fetch_head",
+              "before": 49830,
+              "removed": 3902,
+              "after": 49889,
+              "input_points": 8560,
+              "elapsed_s": 0.8109412714838982
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 2726,
+          "event": {
+            "step": 16673,
+            "event": "near_surface_head_scan",
+            "task_stage": "placement_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        },
+        {
+          "line": 2727,
+          "event": {
+            "step": 16673,
+            "event": "route_execution_incomplete",
+            "task_stage": "placement_search",
+            "iteration": 34,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "35_ProcTHOR-Train-6673_seed42_dynamic/result.json",
+          "sha256": "c416c0183fbb830d17d36b58210e103a0d509b38d753bf59f2b0a42ca9a05901"
+        },
+        {
+          "path": "35_ProcTHOR-Train-6673_seed42_dynamic/events.jsonl",
+          "sha256": "09910a3396793959e94218db06f47ce6aead6d311450f6bff3798daf28f680d5"
+        },
+        {
+          "path": "35_ProcTHOR-Train-6673_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "6c2799b3b942a2e5dcbe745bdd59a84c033c2e4a97606b27b596861a8a13afb4"
+        },
+        {
+          "path": "35_ProcTHOR-Train-6673_seed42_dynamic/actions.json",
+          "sha256": "3df748178a19ddbeed13fa1d01c597885b7bf09f4ca88bab45816b98ffcc8a11"
+        },
+        {
+          "path": "screen_results/35_ProcTHOR-Train-6673_seed42_dynamic.json",
+          "sha256": "7548dbe9186cbe019cc489076a93accf7a59e25b6ce077bd5c4db16990e7fa4c"
+        },
+        {
+          "path": "frozen_tasks/35_ProcTHOR-Train-6673_seed42/task.json",
+          "sha256": "546ac759585a31fe787567d957a49c5f328fbbc304bbe79401c4210307d0f672"
+        }
+      ],
+      "recorded_unix_s": 1789576254.1882055,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "46_ProcTHOR-Train-4899_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4899",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the soap bottle and place it on the plate on the table.",
+      "category": "aborted_grasp_recovery_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "抓取对齐失败后，空手恢复未找到可行路径",
+      "direct_cause_en": "Grasp alignment failed and the subsequent empty-arm recovery found no feasible path",
+      "uncertainty_zh": "记录确认了终止阶段和未通过的条件；更深层原因需要结合观测、几何或回放验证。",
+      "final_stage": "grasp",
+      "final_phase": "Lift arm clear before folding",
+      "final_control_step": 17892,
+      "robot_action_seconds": 894.6,
+      "server_execution_seconds": 1662.4733533859253,
+      "error": "ArmReturnError('Arm return withdraw: no joint-limit-feasible clearance path')",
+      "classifier_evidence": [
+        "ArmReturnError('Arm return withdraw: no joint-limit-feasible clearance path')"
+      ],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": false,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": true,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": true
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": true,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 3331,
+          "event": {
+            "step": 17842,
+            "event": "grasp_aborted_alignment_unreachable",
+            "task_stage": "grasp"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 3329,
+          "event": {
+            "step": 16953,
+            "event": "depth_grasp_center",
+            "task_stage": "grasp",
+            "center_world": [
+              -12.512614009874348,
+              -3.380521865695741,
+              1.2628716278076173
+            ],
+            "radius_m": 0.05420551900280378,
+            "height_m": 0.24957242488861087,
+            "closing_width_m": 0.013431390188634394,
+            "closing_axis_xy": [
+              0.1680821180343628,
+              -0.9857730269432068
+            ],
+            "support_height_m": 1.0382992029190063,
+            "observed_points": 5313,
+            "support_points": 17192,
+            "grasp_height_fraction": 0.8998286769415411,
+            "grasp_section_points": 373,
+            "observation_id": 2165,
+            "proposal": "observed_tabletop_supported_jaw_axis",
+            "object_center_world": [
+              -12.50560351644152,
+              -3.3873080756371357,
+              1.163085415363312
+            ],
+            "circular_grasp_section": null,
+            "grasp_column_extended": false,
+            "pca_closing_axis_xy": [
+              0.1680821180343628,
+              -0.9857730269432068
+            ],
+            "equivalent_axis_sign_flipped": false,
+            "axis_sign_reference": "measured robot lateral axis at visual approach"
+          }
+        },
+        {
+          "line": 3330,
+          "event": {
+            "step": 17842,
+            "event": "high_grasp_alignment",
+            "task_stage": "grasp",
+            "hover_world": [
+              -12.512614250183105,
+              -3.380521774291992,
+              1.3478716611862183
+            ],
+            "residual_m": 0.034798718988895416,
+            "rotation_error_rad": 0.29796420261072804,
+            "torso_position_m": 0.3761487901210785
+          }
+        },
+        {
+          "line": 3331,
+          "event": {
+            "step": 17842,
+            "event": "grasp_aborted_alignment_unreachable",
+            "task_stage": "grasp"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "46_ProcTHOR-Train-4899_seed42_dynamic/result.json",
+          "sha256": "baa75404affb7d75febd41c7eba1cda90d7a4cc5d65e318b0ba7fbb59b4bcf7d"
+        },
+        {
+          "path": "46_ProcTHOR-Train-4899_seed42_dynamic/events.jsonl",
+          "sha256": "18daf4cf3183675c3f5e37baa5503dd2391754c43a5310910b9b2a4cdcd5f3b3"
+        },
+        {
+          "path": "46_ProcTHOR-Train-4899_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "df49b62846defc073b9f88a2bee1d8312d73cd4f24fb05f6dbe711ca1f8c97f7"
+        },
+        {
+          "path": "46_ProcTHOR-Train-4899_seed42_dynamic/actions.json",
+          "sha256": "9ac6330e011abd526ba4a5000acf8eaacb4e59787f3d2a8876bed4c6e30732db"
+        },
+        {
+          "path": "screen_results/46_ProcTHOR-Train-4899_seed42_dynamic.json",
+          "sha256": "ef7448ca90ad48dacea5c4b91ee9d8d8c30b0e495f42e72558c1fe53777981a9"
+        },
+        {
+          "path": "frozen_tasks/46_ProcTHOR-Train-4899_seed42/task.json",
+          "sha256": "150e024a6c53c4c59d0582ef41deb5aad294a2ce536900b70fb62af19253c3cd"
+        }
+      ],
+      "recorded_unix_s": 1789578426.2965496,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    },
+    {
+      "name": "47_ProcTHOR-Val-46_seed42_dynamic",
+      "scene": "ProcTHOR-Val-46",
+      "seed": 42,
+      "variant": "dynamic",
+      "instruction": "Please pick up the tomato and place it on the plate on the table.",
+      "category": "pickup_search_failure",
+      "review_status": "task_failed",
+      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
+      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "final_stage": "pickup_search",
+      "final_phase": "Inspect nearby surfaces",
+      "final_control_step": 7088,
+      "robot_action_seconds": 354.4,
+      "server_execution_seconds": 742.5513129234314,
+      "error": null,
+      "classifier_evidence": [],
+      "analyst_annotation": null,
+      "task_criteria": {
+        "instruction_before_initial_scan": true,
+        "correct_discovery_before_relocation": true,
+        "relocation_triggered_during_translation": true,
+        "external_relocation_finished": true,
+        "external_move_preserved_payload_support": true,
+        "sustained_physical_lift": false,
+        "held_base_transport": false,
+        "second_language_search": false,
+        "stable_released_receptacle_placement": false,
+        "cross_room_search": false,
+        "cross_room_delivery": false,
+        "correct_visual_moved_target_observation": false
+      },
+      "task_measurements": {
+        "sustained_lift_s": 0.0,
+        "held_base_transport_m": 0.0,
+        "stable_placement_s": 0.0,
+        "pickup_approached": false,
+        "placement_approached": null,
+        "release_ready": false
+      },
+      "failure_events": [
+        {
+          "line": 811,
+          "event": {
+            "step": 4953,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 9,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 840,
+          "event": {
+            "step": 5182,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 10,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 868,
+          "event": {
+            "step": 5411,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 11,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 896,
+          "event": {
+            "step": 5640,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 12,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 920,
+          "event": {
+            "step": 5816,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 13,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 943,
+          "event": {
+            "step": 5992,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 14,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 966,
+          "event": {
+            "step": 6168,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 15,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 989,
+          "event": {
+            "step": 6344,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 16,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1012,
+          "event": {
+            "step": 6520,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 17,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1035,
+          "event": {
+            "step": 6696,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 18,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1058,
+          "event": {
+            "step": 6872,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 19,
+            "embodiment": "measured_heading_footprint"
+          }
+        },
+        {
+          "line": 1081,
+          "event": {
+            "step": 7048,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 20,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "final_events": [
+        {
+          "line": 1079,
+          "event": {
+            "step": 7048,
+            "event": "observation",
+            "task_stage": "pickup_search",
+            "frame_id": 613,
+            "memory": {
+              "frame_id": 613,
+              "sim_step": 7048,
+              "sensor": "fetch_head",
+              "before": 27375,
+              "removed": 2993,
+              "after": 27584,
+              "input_points": 8560,
+              "elapsed_s": 0.6936854347586632
+            },
+            "detections": []
+          }
+        },
+        {
+          "line": 1080,
+          "event": {
+            "step": 7048,
+            "event": "near_surface_head_scan",
+            "task_stage": "pickup_search",
+            "pitch_rad": 0.65,
+            "detected": false,
+            "sensor": "fetch_head"
+          }
+        },
+        {
+          "line": 1081,
+          "event": {
+            "step": 7048,
+            "event": "route_execution_incomplete",
+            "task_stage": "pickup_search",
+            "iteration": 20,
+            "embodiment": "measured_heading_footprint"
+          }
+        }
+      ],
+      "source_records": [
+        {
+          "path": "47_ProcTHOR-Val-46_seed42_dynamic/result.json",
+          "sha256": "3e4042c14900a4fd2913fb9459af3ae95128f366a08946aeea85a62776de39bd"
+        },
+        {
+          "path": "47_ProcTHOR-Val-46_seed42_dynamic/events.jsonl",
+          "sha256": "973410d9c3408ae333562b5d0737bc180cd1e938711b6cb81ddb0bfcbb3c1fb5"
+        },
+        {
+          "path": "47_ProcTHOR-Val-46_seed42_dynamic/evaluator_trajectory.jsonl",
+          "sha256": "2926d5d8b77fdf5c9e7c87f641782ff1dca1ad22cd3a2cba4fbb2cb23084c2f1"
+        },
+        {
+          "path": "47_ProcTHOR-Val-46_seed42_dynamic/actions.json",
+          "sha256": "48e4cb8d45bce894cd95671cece2f9b2b254ec3c6afb47e78a1a14836e392330"
+        },
+        {
+          "path": "screen_results/47_ProcTHOR-Val-46_seed42_dynamic.json",
+          "sha256": "75728ce9a4bd4df3f4b95fc1003695c25c6960cfb3b7346db47b967efbad0e6f"
+        },
+        {
+          "path": "frozen_tasks/47_ProcTHOR-Val-46_seed42/task.json",
+          "sha256": "f7459fdf3f70de61e2dd1c9f308688f8fab59f28c7b06afc8546b5d342b2096c"
+        }
+      ],
+      "recorded_unix_s": 1789577519.1870096,
+      "independent_failure_replay_completed": false,
+      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+    }
+  ],
+  "scope": "Recorded outcomes and annotated causes. Causes are not independently replayed unless explicitly stated; iteration-limit explanations for 05/07 remain inferred."
+}

@@ -1,0 +1,375 @@
+{
+  "comparison": "staged_return versus continuous_return; all 32 jointly qualified tasks",
+  "previous_protocol_sha256": "935438c23d8a02a0c8b3afde1f5c1fb3bf01bddac5168c342b23b153dcb1078e",
+  "current_protocol_sha256": "00c8fa73e832ba15dece7ed3cced0eb539bf115303c0025dd894369089c23bbe",
+  "duration_definition": "First lift-clear control through fold completion inclusive, including intermediate states and settling; control frequency from fold receipt.",
+  "statistics": {
+    "loaded": {
+      "pairs": 32,
+      "previous_median_seconds": 44.55,
+      "current_median_seconds": 20.975,
+      "median_paired_reduction_fraction": 0.5281143899443762
+    },
+    "empty": {
+      "pairs": 32,
+      "previous_median_seconds": 52.4,
+      "current_median_seconds": 24.375,
+      "median_paired_reduction_fraction": 0.5337999259294035
+    }
+  },
+  "rows": [
+    {
+      "name": "01_ProcTHOR-Test-722_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.8,
+        "empty": 49.2
+      },
+      "current_seconds": {
+        "loaded": 21.45,
+        "empty": 24.2
+      }
+    },
+    {
+      "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.05,
+        "empty": 52.35
+      },
+      "current_seconds": {
+        "loaded": 21.0,
+        "empty": 24.25
+      }
+    },
+    {
+      "name": "04_ProcTHOR-Train-2043_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.95,
+        "empty": 53.35
+      },
+      "current_seconds": {
+        "loaded": 20.3,
+        "empty": 24.8
+      }
+    },
+    {
+      "name": "06_ProcTHOR-Train-4300_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.75,
+        "empty": 47.45
+      },
+      "current_seconds": {
+        "loaded": 22.65,
+        "empty": 20.25
+      }
+    },
+    {
+      "name": "09_ProcTHOR-Test-166_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.2,
+        "empty": 52.6
+      },
+      "current_seconds": {
+        "loaded": 22.5,
+        "empty": 24.05
+      }
+    },
+    {
+      "name": "10_ProcTHOR-Test-459_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.95,
+        "empty": 52.6
+      },
+      "current_seconds": {
+        "loaded": 20.45,
+        "empty": 24.35
+      }
+    },
+    {
+      "name": "11_ProcTHOR-Train-3859_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.65,
+        "empty": 52.4
+      },
+      "current_seconds": {
+        "loaded": 20.25,
+        "empty": 24.2
+      }
+    },
+    {
+      "name": "12_ProcTHOR-Train-4108_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.4,
+        "empty": 48.45
+      },
+      "current_seconds": {
+        "loaded": 21.1,
+        "empty": 21.85
+      }
+    },
+    {
+      "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.35,
+        "empty": 52.25
+      },
+      "current_seconds": {
+        "loaded": 20.55,
+        "empty": 24.45
+      }
+    },
+    {
+      "name": "14_ProcTHOR-Train-8921_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.8,
+        "empty": 53.6
+      },
+      "current_seconds": {
+        "loaded": 20.75,
+        "empty": 24.9
+      }
+    },
+    {
+      "name": "17_ProcTHOR-Train-9926_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.85,
+        "empty": 53.1
+      },
+      "current_seconds": {
+        "loaded": 20.25,
+        "empty": 24.8
+      }
+    },
+    {
+      "name": "18_ProcTHOR-Train-3208_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.55,
+        "empty": 49.6
+      },
+      "current_seconds": {
+        "loaded": 22.65,
+        "empty": 22.55
+      }
+    },
+    {
+      "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 46.8,
+        "empty": 53.3
+      },
+      "current_seconds": {
+        "loaded": 20.5,
+        "empty": 24.4
+      }
+    },
+    {
+      "name": "21_ProcTHOR-Test-308_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.75,
+        "empty": 51.75
+      },
+      "current_seconds": {
+        "loaded": 21.35,
+        "empty": 24.1
+      }
+    },
+    {
+      "name": "22_ProcTHOR-Train-3170_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.15,
+        "empty": 51.0
+      },
+      "current_seconds": {
+        "loaded": 21.45,
+        "empty": 23.8
+      }
+    },
+    {
+      "name": "23_ProcTHOR-Val-265_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.8,
+        "empty": 53.55
+      },
+      "current_seconds": {
+        "loaded": 20.5,
+        "empty": 24.95
+      }
+    },
+    {
+      "name": "24_ProcTHOR-Train-9699_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 59.8,
+        "empty": 52.4
+      },
+      "current_seconds": {
+        "loaded": 28.9,
+        "empty": 24.5
+      }
+    },
+    {
+      "name": "25_ProcTHOR-Val-605_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.6,
+        "empty": 48.75
+      },
+      "current_seconds": {
+        "loaded": 20.55,
+        "empty": 24.0
+      }
+    },
+    {
+      "name": "28_ProcTHOR-Train-4956_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 42.7,
+        "empty": 52.6
+      },
+      "current_seconds": {
+        "loaded": 20.0,
+        "empty": 24.55
+      }
+    },
+    {
+      "name": "29_ProcTHOR-Train-5013_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.9,
+        "empty": 53.65
+      },
+      "current_seconds": {
+        "loaded": 21.05,
+        "empty": 25.15
+      }
+    },
+    {
+      "name": "31_ProcTHOR-Val-660_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.45,
+        "empty": 49.05
+      },
+      "current_seconds": {
+        "loaded": 21.0,
+        "empty": 23.35
+      }
+    },
+    {
+      "name": "36_ProcTHOR-Test-959_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.25,
+        "empty": 50.8
+      },
+      "current_seconds": {
+        "loaded": 20.95,
+        "empty": 23.7
+      }
+    },
+    {
+      "name": "38_ProcTHOR-Train-2809_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.6,
+        "empty": 52.4
+      },
+      "current_seconds": {
+        "loaded": 21.5,
+        "empty": 24.6
+      }
+    },
+    {
+      "name": "39_ProcTHOR-Train-406_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.9,
+        "empty": 53.4
+      },
+      "current_seconds": {
+        "loaded": 21.05,
+        "empty": 24.95
+      }
+    },
+    {
+      "name": "40_ProcTHOR-Train-4574_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.95,
+        "empty": 52.85
+      },
+      "current_seconds": {
+        "loaded": 20.45,
+        "empty": 24.75
+      }
+    },
+    {
+      "name": "41_ProcTHOR-Train-1182_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.05,
+        "empty": 52.75
+      },
+      "current_seconds": {
+        "loaded": 20.7,
+        "empty": 24.55
+      }
+    },
+    {
+      "name": "42_ProcTHOR-Train-9100_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.3,
+        "empty": 49.25
+      },
+      "current_seconds": {
+        "loaded": 21.65,
+        "empty": 22.45
+      }
+    },
+    {
+      "name": "43_ProcTHOR-Train-5361_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.4,
+        "empty": 48.4
+      },
+      "current_seconds": {
+        "loaded": 22.8,
+        "empty": 22.3
+      }
+    },
+    {
+      "name": "44_ProcTHOR-Train-2898_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 43.4,
+        "empty": 53.8
+      },
+      "current_seconds": {
+        "loaded": 20.45,
+        "empty": 25.35
+      }
+    },
+    {
+      "name": "48_ProcTHOR-Train-6322_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.4,
+        "empty": 53.2
+      },
+      "current_seconds": {
+        "loaded": 20.65,
+        "empty": 24.7
+      }
+    },
+    {
+      "name": "49_ProcTHOR-Train-7428_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 45.1,
+        "empty": 53.7
+      },
+      "current_seconds": {
+        "loaded": 20.35,
+        "empty": 25.05
+      }
+    },
+    {
+      "name": "50_ProcTHOR-Val-902_seed42_dynamic",
+      "previous_seconds": {
+        "loaded": 44.4,
+        "empty": 51.1
+      },
+      "current_seconds": {
+        "loaded": 21.2,
+        "empty": 23.95
+      }
+    }
+  ],
+  "scope": "Paired descriptive timing comparison on jointly successful tasks; success-rate denominators remain 50. Controllers and execution budgets differ."
+}
