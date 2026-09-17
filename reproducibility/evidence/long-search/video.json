@@ -25,8 +25,8 @@
       "fps": 12.0,
       "duration_s": 196.83333333333334,
       "playback_speed": 24,
-      "bytes": 39496256,
-      "sha256": "2baec082208b41a059ec6907b314c84af65bdfc09abfae6fae5f8fccdd6088eb"
+      "bytes": 39710261,
+      "sha256": "2ae9d08e5c71e98d51127ca59e474789f93f4d1179b67cdce98611482d30d07b"
     },
     "grasp": {
       "file": "long_search_07_grasp.mp4",
@@ -34,8 +34,8 @@
       "fps": 5.0,
       "duration_s": 57.4,
       "playback_speed": 1,
-      "bytes": 5197861,
-      "sha256": "58e9106b4419960eda01fcabe9a7d7d191ae086d5492a8061d4b79a956cf5a9d"
+      "bytes": 5190657,
+      "sha256": "d667fa31a36411f1259469e0b747fb7035c217d97fcabf0e417099764ddc40cf"
     },
     "place": {
       "file": "long_search_07_place.mp4",
@@ -43,8 +43,8 @@
       "fps": 5.0,
       "duration_s": 67.4,
       "playback_speed": 1,
-      "bytes": 3664048,
-      "sha256": "3efe47f92eb21b6967e8e8af5b68e87d928a36b111ed76aaa456e52bd29e3513"
+      "bytes": 3664438,
+      "sha256": "18bdf7bea93813d14a114e25442fcdfec0d1160470cee6cb89320ee1cd740a5f"
     }
   },
   "executed_renderer_sha256": "5c62a7e12601b649e37b740c3d96881241a32d23ab6982eb3c573fcab6ea5cab",
@@ -60,7 +60,7 @@
   },
   "encoding_note": "Overview and placement passed full decoding. The grasp excerpt was re-rendered from its exact control prefix to a local temporary file after the first encoded copy failed decoding. All published frames decode successfully.",
   "base_render_receipt_sha256": "d5382a26e2ab6a5cf12cc27c8a7f42e8b528ce657aa39e05408a5548719a0d2f",
-  "panel_renderer_sha256": "97c0ad9ad6de294bec2c199afaffb4d62a21168aa085257e47536a5f8d9c7543",
+  "panel_renderer_sha256": "bae6472c8868ab7eee24a4151b16a9635e3cc3d02bca2bd94ce6464201c8fc25",
   "observation_sha256": {
     "observation_00001.npz": "92c75071f59246e155a948db24a12995a9b40826c412055f6850fda3ed8f889b",
     "observation_00002.npz": "293d7f4428609a5a7e818428268357dd47fd16a05102ef987397f739dd248388",
@@ -8292,7 +8292,7 @@
     "navigation_depth_08228.npz": "a30d7bfc6f2b0407d342b3400593ba7d9a6b0fff8b974413bf3939b2cd8e8fb3",
     "navigation_depth_08229.npz": "4ed2c3bce5641ec1994264af45818aa0adf05357c2e6d5992f3380740c3e8825"
   },
+  "semantic_receipt_sha256": "e9ce4f5c326e99f569d52803334c183a15c06a3fb0a98026aab373e55fcbf6e7",
   "head_receipt_sha256": "62b356ab4f7f1a2e62956a25fe6607b7db7e0eb28ae5a19778fef9fb19d0867c",
-  "map_mode": "observed_geometry",
-  "panel_description": "External replay, synchronous first-person camera replay, saved semantic observation, geometry projected from saved RGB-D observations, and logged target/routes. Newly rendered camera images are for display only and never update task memory."
+  "panel_description": "External replay, synchronous first-person camera replay, saved semantic observation, frozen-encoder semantic heatmap before candidate rejection, and logged target/routes. Newly rendered camera images are for display only and never update task memory."
 }

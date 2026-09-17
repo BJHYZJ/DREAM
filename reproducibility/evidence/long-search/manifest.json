@@ -241,12 +241,12 @@
   },
   "files": {
     "video.json": {
-      "bytes": 829714,
-      "sha256": "3544a774193246d59e272e6deb506e245a029bf5c2bbf1a384c7fffe92680d2f"
+      "bytes": 829786,
+      "sha256": "d87d6fbcebed198ce72dea03a94e84cac33f154d27131491bf6cad1a597e7891"
     },
     "video_records.zip": {
-      "bytes": 444285,
-      "sha256": "8dbe1da961e67a96eddc8c73513a2ab8591a3098fb8570af4a7fedbad7ca729d",
+      "bytes": 711289,
+      "sha256": "3a41e5a72982c7b02cd1c58c5247def950eb96b2b3bd0c75b85f3d8ea0f9a931",
       "members": {
         "head/audit.json": {
           "bytes": 17995,
@@ -255,6 +255,10 @@
         "head/head_receipt.json": {
           "bytes": 2035,
           "sha256": "62b356ab4f7f1a2e62956a25fe6607b7db7e0eb28ae5a19778fef9fb19d0867c"
+        },
+        "memory/semantic_receipt.json": {
+          "bytes": 856652,
+          "sha256": "e9ce4f5c326e99f569d52803334c183a15c06a3fb0a98026aab373e55fcbf6e7"
         },
         "original_physics/grasp_video_physics.json": {
           "bytes": 12508,
@@ -281,8 +285,8 @@
           "sha256": "562c54b8fcee51ffccdaaf6fb9fdccec8db7dec4444b708c4b6817c003a60c7c"
         },
         "render/render_receipt.json": {
-          "bytes": 829714,
-          "sha256": "3544a774193246d59e272e6deb506e245a029bf5c2bbf1a384c7fffe92680d2f"
+          "bytes": 829786,
+          "sha256": "d87d6fbcebed198ce72dea03a94e84cac33f154d27131491bf6cad1a597e7891"
         },
         "renderers/4eee21b72ca815acce8a76d1caadc60861285bebcc4a622602a74e2c3c44f708.py": {
           "bytes": 3414,
@@ -292,13 +296,17 @@
           "bytes": 8154,
           "sha256": "5c62a7e12601b649e37b740c3d96881241a32d23ab6982eb3c573fcab6ea5cab"
         },
-        "renderers/97c0ad9ad6de294bec2c199afaffb4d62a21168aa085257e47536a5f8d9c7543.py": {
-          "bytes": 19579,
-          "sha256": "97c0ad9ad6de294bec2c199afaffb4d62a21168aa085257e47536a5f8d9c7543"
-        },
         "renderers/9bd738d228948c802b93dacbe5c518eb2f4fc172dedb70312f40bdcf7b77e336.py": {
           "bytes": 6879,
           "sha256": "9bd738d228948c802b93dacbe5c518eb2f4fc172dedb70312f40bdcf7b77e336"
+        },
+        "renderers/ab6465fa11d30076836a7fadb541198fb677037bc39cedd669d6d3a0a08adc50.py": {
+          "bytes": 5509,
+          "sha256": "ab6465fa11d30076836a7fadb541198fb677037bc39cedd669d6d3a0a08adc50"
+        },
+        "renderers/bae6472c8868ab7eee24a4151b16a9635e3cc3d02bca2bd94ce6464201c8fc25.py": {
+          "bytes": 18483,
+          "sha256": "bae6472c8868ab7eee24a4151b16a9635e3cc3d02bca2bd94ce6464201c8fc25"
         },
         "renderers/c22c36b69777f91c375b3dbb0626b0986fbe617ea7e7239f658ea3238dfda818.py": {
           "bytes": 9364,
