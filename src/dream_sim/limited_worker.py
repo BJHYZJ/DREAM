@@ -59,7 +59,7 @@ def worker_environment(gpu: str, raster_threads: int = 8) -> dict[str, str]:
     )
     for name in ("lvp_icd.json", "lvp_icd.x86_64.json"):
         icd = Path("/usr/share/vulkan/icd.d") / name
-        if icd.is_file():
+        if not environment.get("VK_ICD_FILENAMES") and icd.is_file():
             environment["VK_ICD_FILENAMES"] = str(icd)
             break
     return environment

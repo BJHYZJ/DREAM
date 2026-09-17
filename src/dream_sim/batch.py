@@ -183,7 +183,8 @@ def main():
     verify()
     config_path = Path(__file__).resolve().parents[2] / ".runtime/worker_resource_limits.json"
     config = json.loads(config_path.read_text())
-    assert config["workers_per_gpu"] == args.workers_per_gpu
+    if config["workers_per_gpu"] != args.workers_per_gpu:
+        p.error("--workers-per-gpu differs from .runtime/worker_resource_limits.json")
     plan = dict(
         kind="residential_batch",
         planned_attempts=len(protocol["attempts"]),
@@ -211,7 +212,7 @@ def main():
         },
         resource_config_sha256=digest(config_path),
         created_unix_s=time.time(),
-        scoring="Task evaluator success AND recorded robot action duration <=15minutes. Loading/inference/saving waits do not advance the robot clock. Runtime watchdog aborts are reported separately. Every declared task contributes to the result.",
+        scoring=f"Task evaluator success AND recorded robot action duration <= {args.robot_time_limit_seconds:g} seconds. Loading/inference/saving waits do not advance the robot clock. Runtime watchdog aborts are reported separately. Every declared task contributes to the result.",
         qualification="Task completion is provisional until the independent physics and recording checks pass.",
     )
     print(json.dumps(plan, indent=2), flush=True)

@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from dream_sim.io import configure_vulkan
 from dream_sim.study_records import load_completed_screen, read, sha
 
 INPUT_FILES = (
@@ -60,9 +61,7 @@ def review_one(run, name, output, physical_audit=None):
         MS_ASSET_DIR=protocol["asset_root"],
         HF_HUB_CACHE=protocol["model_cache"],
     )
-    vulkan = Path("/usr/share/vulkan/icd.d/lvp_icd.x86_64.json")
-    if vulkan.exists():
-        os.environ["VK_ICD_FILENAMES"] = str(vulkan)
+    configure_vulkan()
     sys.path[:0] = [str(source / "experiments"), str(source / "src")]
     if physical_audit is None:
         import replay_instruction_actions

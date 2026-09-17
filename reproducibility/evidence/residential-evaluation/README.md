@@ -14,9 +14,9 @@ Each house has one native-scale pickup/place task, seed 42, dynamic memory, a 90
 Verify the public outcomes and reconstruct the evaluated controller:
 
 ```bash
-python -m dream_sim.evaluate
+python -m dream_sim.evaluate --cohort compact
 ```
 
 The check confirms task and review record integrity and that the reconstructed controller matches the evaluated Python source. It does not execute a new task or recheck the archived raw sensor arrays. A new simulation run generates its own full observations, controls, and trajectories.
 
-See the [run guide](../../../docs/reproduction.md) for execution and independent replay. The separate [dynamic/static memory comparison](../recovery-v2-study/) and [recorded video cohort](../residential50-seed42/) retain their own protocols and outcomes.
+See the [run guide](../../../docs/reproduction.md) for execution and independent replay. The separate [dynamic/static memory comparison](../recovery-v2-study/) and [historical five-recipe cohort](../residential50-seed42/) retain their own protocols and outcomes.

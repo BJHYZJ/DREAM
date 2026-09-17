@@ -1,14 +1,15 @@
 # Task configuration
 
-[`residential50-diverse/task_manifest.json`](residential50-diverse/task_manifest.json) defines the 50-house study: one cross-room task per house, 50 different native-scale pickup models across 20 categories, seed 42 throughout, and dynamic memory. Each task and room map is bound to a SHA256 checksum. The accompanying asset lock records the required scene files.
+The current **38/50 residential evaluation** uses [`residential50-easy-grasp/task_manifest.json`](residential50-easy-grasp/task_manifest.json): 50 houses, seed 42, dynamic memory, and 21 native-scale pickup models across six categories. The main website trial numbers refer to this manifest.
 
 | Directory | Contents |
 | --- | --- |
-| `residential50-diverse/` | Fifty houses with distinct pickup models, room maps, and rendering asset lock |
-| `residential50/` | Earlier five-recipe, fifty-house study and source asset lock |
-| `tasks/` | Earlier demonstration task definitions and evaluator room maps |
-| `locks/` | Model revisions and earlier scene-asset records |
+| `residential50-easy-grasp/` | Current 50 tasks, object selection, room maps, and SHA256 identities |
+| `residential50/` | Shared 50-house source/rendering asset locks and the earlier five-recipe task set |
+| `residential50-diverse/` | Separate historical configuration with 50 distinct pickup models |
+| `tasks/` | Ten earlier demonstration / paired-comparison houses and evaluator maps |
+| `locks/` | Model revisions and asset lock for those ten houses |
 
-`cases.json` maps the original ten demonstrations to their recorded profiles. Those profiles retain their controller, task, seed, and evaluation version. Their outcomes are stored separately in the [experiment records](../reproducibility/evidence/).
+`cases.json` identifies the ten archived profiles used by `dream_sim.profile` and the common-controller comparison. Its `01` is **not** current website trial 01. Use `scripts/run_residential.sh` for the current cohort.
 
-The runner verifies task and source checksums before execution. See the [run guide](../docs/reproduction.md) for the residential study command and output files.
+Task and room-map hashes are checked before execution. GPU/CPU allocation is local to the machine: create it with `python -m dream_sim.configure`, as described in the [run guide](../docs/reproduction.md#worker-resources). It is stored in the ignored `.runtime/worker_resource_limits.json` file.

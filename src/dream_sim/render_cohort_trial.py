@@ -16,7 +16,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from dream_sim.io import atomic_json, digest
+from dream_sim.io import atomic_json, configure_vulkan, digest
 
 
 def main() -> None:
@@ -24,11 +24,14 @@ def main() -> None:
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--name", required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--audits", type=Path, help="Independent review directory; default: RUN/physics"
+    )
     parser.add_argument("--manipulation-clips", action="store_true")
     args = parser.parse_args()
     run, output = args.run.resolve(), args.output.resolve()
     source, record = run / "frozen_workspace/DREAM_code", run / args.name
-    review_path = run / "physics" / args.name / "screen_physics_review.json"
+    review_path = (args.audits or run / "physics") / args.name / "screen_physics_review.json"
     original_result = json.loads((record / "result.json").read_text())
     review = json.loads(review_path.read_text()) if review_path.exists() else None
     if review is not None and review.get("name") != args.name:
@@ -52,10 +55,10 @@ def main() -> None:
         )
     }
     output.mkdir(parents=True, exist_ok=False)
+    configure_vulkan()
     os.environ.update(
         CUDA_VISIBLE_DEVICES="",
         HF_HUB_OFFLINE="1",
-        VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
         MS_ASSET_DIR=protocol["asset_root"],
         HF_HUB_CACHE=protocol["model_cache"],
     )

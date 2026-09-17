@@ -14,8 +14,8 @@ python -m dream_sim.resume_study \
 
 Inspect the printed remaining task list, then add `--execute` to resume. The
 deployment allocation is read from `allowed_gpu_ids` in
-`.runtime/worker_resource_limits.json`. The current two-card server uses GPUs
-0 and 1, one worker per GPU and two concurrent workers in total. Duplicate or
+`.runtime/worker_resource_limits.json`. Use the GPU indices allocated on your machine; the example requires GPUs
+0 and 1 in that configuration. Duplicate or
 unallocated GPU IDs are rejected. Each worker uses two OpenCV/BLAS threads, up to eight
 software rasterizer threads, and two threads per video encoder. The encoder
 uses `veryfast` with the original quality, resolution and frame cadence.
@@ -29,9 +29,9 @@ schedulers from running against the same durable batch.
 Batches use disk-backed recording directories. Executing from `/dev/shm` requires the explicit legacy
 `--allow-ram-recordings` option. The adapter shares two process locks across
 batch schedulers and independent diagnostics; another worker cannot reuse a GPU.
-This server's `.runtime/worker_resource_limits.json` points to a configured
-memory cgroup: 16 GiB per worker including descendants, 32 GiB for the worker
-groups together. These limits do not reserve memory. The adapter requests a
+A deployment may configure a memory cgroup, for example 16 GiB per worker
+and 32 GiB for two workers together. The portable configuration generator
+does not create these kernel limits. The adapter requests a
 graceful stop at 90% of the worker limit; the kernel enforces the hard limit.
 Each runtime receipt has a companion `.memory.json` with the actual kernel
 limit and peak accounted usage. Configuring kernel limits is deployment work;

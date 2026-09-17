@@ -11,7 +11,7 @@ These records cover memory pruning, policy scaling, and exploration. `manifest.j
 
 The RMP map comparison checks propagation of supplied reference-pose corrections. Its reference and global reconstructions use the same keyframes and integration routine. Cache pruning is evaluated after map integration and correction, without changing active voxels; later queries or reconstruction from the pruned history are not evaluated.
 
-These component tests measure their stated geometry, memory, and exploration settings. Learned-perception task results are recorded separately in the [ManiSkill comparison](../study/README.md).
+These component tests measure their stated geometry, memory, and exploration settings. Learned-perception task results are recorded separately in the [paired ManiSkill comparison](../recovery-v2-study/README.md).
 
 Extract an archive into a new directory to restore its `experiments/results/...` layout. The corresponding scripts are in the source archive's engine `experiments/` directory:
 

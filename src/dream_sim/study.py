@@ -178,7 +178,7 @@ def main() -> None:
     parser.add_argument(
         "--workers-per-gpu",
         type=int,
-        choices=(2, 4),
+        choices=(1, 2, 4),
         help="Parallel batch concurrency; match the verified deployment resource profile",
     )
     parser.add_argument("--execute", action="store_true")
@@ -202,8 +202,8 @@ def main() -> None:
             if args.parallel and profile.exists()
             else 2
         )
-        if args.workers_per_gpu not in (2, 4):
-            parser.error("Parallel batch requires a two- or four-worker GPU deployment profile")
+        if args.workers_per_gpu not in (1, 2, 4):
+            parser.error("Parallel batch requires one, two, or four workers per GPU")
     if args.parallel and not args.task_manifest:
         parser.error("--parallel requires a checksum-locked --task-manifest")
     if args.raster_threads != 2 and not args.parallel:

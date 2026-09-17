@@ -81,7 +81,9 @@ def setup_study(tmp_path, monkeypatch):
     return tasks
 
 
-@pytest.mark.parametrize("workers_per_gpu,from_profile", [(2, False), (4, False), (4, True)])
+@pytest.mark.parametrize(
+    "workers_per_gpu,from_profile", [(1, False), (1, True), (2, False), (4, False), (4, True)]
+)
 @pytest.mark.parametrize(
     "robot_time_limit,wall_time_limit",
     [(900, 2700), (1200, 2700), (1200, 3600), (1500, 4500), (1800, 5400), (1800, 0)],

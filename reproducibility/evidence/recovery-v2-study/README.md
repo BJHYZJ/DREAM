@@ -21,9 +21,18 @@ The [analysis](analysis/comparison_analysis.json) includes every outcome and a m
 
 `protocol_and_inputs.zip` contains the frozen source, task inputs, and batch records. The 60 archives in `attempts/` contain compact execution records; `audit_reports.zip` contains replay and record-check reports. Extract these archives into one directory to obtain the layout accepted by `python -m dream_sim.study_report`.
 
-For example, with the records extracted into `results/recovery_v2_records`, run this command from the repository root to reproduce the statistics and previous-controller comparison:
+From the repository root, extract the records into a new directory and recompute the statistics and previous-controller comparison:
 
 ```bash
+mkdir -p results
+mkdir results/recovery_v2_records
+python -m zipfile -e reproducibility/evidence/recovery-v2-study/protocol_and_inputs.zip \
+  results/recovery_v2_records
+python -m zipfile -e reproducibility/evidence/recovery-v2-study/audit_reports.zip \
+  results/recovery_v2_records
+for archive in reproducibility/evidence/recovery-v2-study/attempts/*.zip; do
+  python -m zipfile -e "$archive" results/recovery_v2_records
+done
 python -m dream_sim.study_report --run results/recovery_v2_records \
   --audits results/recovery_v2_records/audits \
   --baseline-csv reproducibility/evidence/recovery-study/analysis/attempts.csv \

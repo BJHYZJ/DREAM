@@ -7,7 +7,7 @@ The study evaluates one controller across ten development-selected houses, three
 | Dynamic | 7 / 30 | 23.3% |
 | Static, accumulation only | 6 / 30 | 20.0% |
 
-The difference is **+3.3 percentage points**, with a 95% paired-house bootstrap interval of **[−16.7, +23.3]**. This interval does not establish superiority or equivalence. The houses were selected during development, so the result describes this study rather than held-out generalization. The ten gallery videos form a separate qualitative selection.
+The difference is **+3.3 percentage points**, with a 95% paired-house bootstrap interval of **[−16.7, +23.3]**. This interval does not establish superiority or equivalence. The houses were selected during development, so the result describes this study rather than held-out generalization. The earlier ten demonstration profiles form a separate qualitative selection and are not the current 50-trial website gallery.
 
 ## Records
 
@@ -25,7 +25,7 @@ Extract the ZIPs into a new directory to restore their recorded relative paths. 
 To verify the stored files:
 
 ```bash
-python -m dream_sim.verify_evidence
+python -m dream_sim.verify_evidence --include-historical
 ```
 
 ## Run the comparison

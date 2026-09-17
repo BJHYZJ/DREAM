@@ -2,6 +2,12 @@
 
 This guide covers environment setup, case execution, evaluation, and video export. Run commands from the root of the `simulation` branch checkout.
 
+## Choose the experiment
+
+The commands in Sections 1–5 reproduce the current **50-house, 38/50** experiment using `continuous_return`. The [paired dynamic/static comparison](#evaluate-a-common-controller) and [extended search](#extended-search-video) are separate experiments. The [archive index](../reproducibility/README.md) explains which records support each result.
+
+A clean checkout contains the source, fixed tasks, and compact evidence. It does **not** contain the authors' original RGB-D recordings. Installation and a new policy run produce complete local recordings; unpacking an evidence ZIP alone is insufficient for physics replay or video export.
+
 ## 1. Install the environment
 
 Use Linux with Python 3.11, CUDA inference, and a Vulkan renderer:
@@ -14,7 +20,7 @@ python -m pip install --no-deps -e .
 python -m pip check
 ```
 
-The reference environment uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3, PyTorch 2.10.0, CPU PhysX, Mesa Vulkan rendering, and NVIDIA H20 GPUs. A single task used approximately 10.5 GB of GPU memory on that configuration. Start with one worker and check resource use before adding more. A snapshot of 18 concurrent tasks showed about 5–8.2 GiB of resident host memory per task; this is not a peak-memory bound. Saved RGB-D frames, controls, and videos require additional storage. Use a disk-backed output directory for routine runs: placing recordings in `/dev/shm` charges their full size to host memory until they are archived and removed.
+The reference environment uses Python 3.11.15, ManiSkill 3.0.1, SAPIEN 3.0.3, PyTorch 2.10.0, CPU PhysX, Mesa Vulkan rendering, and NVIDIA H20 GPUs. A single task used approximately 10.5 GB of GPU memory on that configuration. Start with one worker and check resource use before adding more. A snapshot of 18 concurrent tasks showed about 5–8.2 GiB of resident host memory per task; this is not a peak-memory bound. The batch runner requires at least **128 GiB free on the output filesystem before each task**; reserve additional space for model and scene downloads. Saved RGB-D frames, controls, and videos require additional storage. Use a disk-backed output directory for routine runs: placing recordings in `/dev/shm` charges their full size to host memory until they are archived and removed.
 
 Install the CUDA and Vulkan runtime appropriate to your machine. For the Mesa software renderer used in the reference environment:
 
@@ -23,6 +29,14 @@ export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
 ```
 
 Set this variable to an installed, compatible ICD. Preflight checks its path; task execution also exercises the renderer. Changes in hardware or numerical libraries can affect the resulting trajectories.
+
+Before the first run, select a physical GPU allocated to you (`nvidia-smi -L` lists device indices) and create the machine-local configuration:
+
+```bash
+python -m dream_sim.configure --gpus 0 --workers-per-gpu 1 --cpu-threads 2
+```
+
+The command assigns distinct cores from the process's available CPU affinity and refuses to overwrite an existing configuration. It does not install a RAM or GPU-memory cap. On a shared machine, retain the existing allocation. See [Worker resources](#worker-resources) for multiple workers.
 
 ## 2. Prepare models and scene assets
 
@@ -59,53 +73,44 @@ For caches stored elsewhere, add these options to preflight and run commands:
 
 ### Easy-grasp protocol
 
-The default `continuous_return` controller completes **38/50 easy-grasp tasks (76%)** with independent physics, observation, and both arm-return checks. All 50 scenes use fixed tasks and maps, seed 42, dynamic memory, and native object scale. The cohort contains 21 models across 6 categories; see the [task definition](../configs/residential50-easy-grasp/README.md). These are controller-development houses, so the rate describes this cohort.
+The published run uses `continuous_return`, all 50 tasks in `configs/residential50-easy-grasp/task_manifest.json`, seed 42, dynamic memory, native object scale, an **1800-second action budget**, and **no fixed server deadline**. Its 21 pickup models span six categories. The houses were used during controller development.
+
+Inspect the plan first:
 
 ```bash
-DREAM_PYTHON="$(command -v python)" \
-DREAM_ASSET_DIR="$PWD/.runtime/render_assets" \
-DREAM_MODEL_CACHE="$PWD/.runtime/models" \
-./scripts/run_residential.sh \
-  --gpus 0 1 --workers-per-gpu 4 --raster-threads 4 \
+DREAM_PYTHON="$(command -v python)" ./scripts/run_residential.sh \
+  --gpus 0 --workers-per-gpu 1 --raster-threads 2 \
   --output results/residential50
 ```
 
-This prints the plan for `continuous_return`; add `--execute` to run it. The script defaults to **1800 seconds of robot actions**, **no fixed server deadline**, and **1200 seconds of worker-slot waiting**. Each arm-return state and the final fold must pass the configured settling checks. The example selects GPUs 0 and 1 with four workers per GPU. The deployment resource profile must assign the corresponding worker slots, CPU cores, and memory limits. Queue time is separate from execution time. Use a new output directory for every run. The three cache/runtime environment variables above select your installed Python and prepared caches; omitting them uses `python3.11` and the repository-local `.runtime/render_assets` and `.runtime/models` caches.
+Add `--execute` to the same command to start. Without it, the command checks inputs and prints the plan; it does not run a task. The one-worker configuration runs the same 50 tasks sequentially. Use a new output directory for each experiment. All terminal outcomes, including failures, remain in the denominator.
 
-The historical `compact_v1` controller passed 36/50 (72%) and the slower corrected `staged_return` passed 32/50 (64%). To select either historical protocol through the script, set `DREAM_CONTROLLER` to its name and pass `--robot-time-limit-seconds 900 --wall-timeout-seconds 2700`. Explicit command-line values override the script defaults.
-
-The current controller includes bounded release-alignment recovery. To reproduce its 30-minute action protocol with no fixed server deadline:
+The wrapper selects the current controller and budgets explicitly. Direct `dream_sim.study` calls have older defaults, so the equivalent current command is:
 
 ```bash
-DREAM_CONTROLLER=continuous_return ./scripts/run_residential.sh \
-  --gpus 0 1 --workers-per-gpu 4 --raster-threads 4 \
+python -m dream_sim.study --controller continuous_return \
+  --task-manifest configs/residential50-easy-grasp/task_manifest.json \
+  --asset-dir .runtime/render_assets --model-cache .runtime/models \
+  --parallel --gpus 0 --workers-per-gpu 1 --raster-threads 2 \
   --robot-time-limit-seconds 1800 --wall-timeout-seconds 0 \
-  --wait-for-slot-seconds 1200 --output results/residential50-1800
+  --wait-for-slot-seconds 1200 --output results/residential50 --execute
 ```
 
-Add `--execute` to run it, and use the Python and cache environment variables above for your installation. The limit is frozen in `protocol.json` before workers start and must match every recorded result. The runner accepts up to 1800 action seconds. `--wall-timeout-seconds 0` disables the separate server deadline; completed tasks finish immediately and robot-action timeouts still count as failures. A positive server limit can be set explicitly, up to 5400 seconds. `--wait-for-slot-seconds` controls only the worker queue wait (script default 1200, maximum 3600); it does not extend either execution clock. Direct calls to `python -m dream_sim.study` retain the CLI defaults of `staged_return`, 900 action seconds, a 2700-second server watchdog, and 120 seconds of queue waiting; pass the full options above to select the current residential protocol without the wrapper. The completed 1800-second evaluation and its public review both report 38/50 (76%); its records and failure analysis are in `results/residential-adjusted/`. The controller, action budget, and server deadline changed together relative to the preceding cohort. Changed time budgets define separate experiments; old task records cannot be rescored against a longer limit.
+Robot-action time counts executed controls. It excludes inference, loading, saving, and queue waits. `--wall-timeout-seconds 0` disables the separate server deadline. The worker wait limit applies before execution begins. Navigation iteration and stagnation rules still apply. Changed budgets or controllers define a new experiment, not a rescore of the original recordings.
 
-The [current all-50 report](../reproducibility/evidence/residential-fast-return/results.json) retains all 38 qualified successes and 12 failures. Its [evidence directory](../reproducibility/evidence/residential-fast-return/) includes the original task and review records, failure analysis, paired return times, and file/member checksums. Follow that directory's integrity-check instructions to verify the portable records. The current gallery includes all 50 of these attempts; failures are exported without requiring a successful-task review.
+For external caches, set `DREAM_ASSET_DIR` and `DREAM_MODEL_CACHE` for the shell wrapper, or pass `--asset-dir` and `--model-cache` to the Python entry point. The default caches are `.runtime/render_assets` and `.runtime/models`.
 
-The [historical compact-controller directory](../reproducibility/evidence/residential-evaluation/README.md) retains its 36/50 result and independent review records. Run `python -m dream_sim.evaluate` to check that archive and reconstruct its evaluated source. This command is specific to the historical compact controller. Large raw sensor arrays from both experiments remain in local experiment storage; the portable integrity check does not perform another physics replay.
+The current [results](../reproducibility/evidence/residential-fast-return/results.json) contain every outcome. Run `python -m dream_sim.evaluate` to check those records and the exact evaluated source offline. This does not launch a new simulation. To check the earlier 36/50 compact-controller archive, use `python -m dream_sim.evaluate --cohort compact`.
 
-### Diverse-object protocol
+### Historical residential protocols
 
+| Controller | Tasks | Action / server limits | Published outcome |
+| --- | --- | --- | --- |
+| `continuous_return` | Easy-grasp 50 | 1800 s / disabled | 38/50 |
+| `staged_return` | Easy-grasp 50 | 900 s / 2700 s | 32/50 |
+| `compact_v1` | Easy-grasp 50 | 900 s / 2700 s | 36/50 |
 
-The earlier diverse-object configuration contains **50 distinct houses**, one cross-room pickup/place task per house, and **seed 42 for every task**. Each house uses a different pickup model: **50 native-scale models across 20 categories**, including one mug. Every instruction requests placement on a plate. All tasks use dynamic memory and the same `compact_v1` controller. The task manifest fixes the houses, instructions, object layouts, initial-state seed, and file checksums. Using the current controller starts a new experiment with that configuration.
-
-```bash
-python -m dream_sim.study --controller compact_v1 \
-  --task-manifest configs/residential50-diverse/task_manifest.json \
-  --asset-dir .runtime/render_assets \
-  --gpus 0 1 --output results/residential50
-```
-
-This validates the inputs and prints the execution plan. Add `--execute` to run the study. Use `--gpus 0` for one standard worker or `--gpus 0 1` for two. This deployment accepts GPU IDs 0 and 1; repeated IDs are rejected. The parallel batch wrapper above sets multiple workers per GPU explicitly. Use a new output directory for each study. The manifest cannot be combined with overrides of cases, seeds, or memory variants.
-
-Each task has a 1,800-second simulation budget and a 14,400-second policy wall timeout. RGB-D perception, rendering, and recording add wall time. The runner records each outcome once and does not retry failed tasks automatically.
-
-For external caches, add `--asset-dir /absolute/path/to/assets --model-cache /absolute/path/to/models`.
+To run either historical easy-grasp protocol, set `DREAM_CONTROLLER` to that controller and append `--robot-time-limit-seconds 900 --wall-timeout-seconds 2700` to the wrapper command, with a new output directory. Command-line options override the wrapper defaults. The separate `configs/residential50-diverse/` configuration uses 50 distinct object models; it is not the task set behind the current gallery.
 
 ### Robot control
 
@@ -152,38 +157,39 @@ The audit directory contains a physical replay, video/source checks, and a statu
 
 ## 5. Export a current trial video
 
-Use a complete recorded run directory, including its frozen workspace, task records, and independent reviews:
+Use the complete run you created in Section 3, including its frozen workspace and task records. Keep the separate independent reviews from Section 3 as well. The compact published evidence ZIP is not a replacement for this directory:
 
 ```bash
 python -m dream_sim.render_cohort_trial \
-  --run results/residential-adjusted \
+  --run results/residential50 --audits results/residential50_audits \
   --name 01_ProcTHOR-Test-722_seed42_dynamic \
   --output /path/to/new-render-directory --manipulation-clips
 ```
 
 The exporter physically replays every control and disturbance. It supports both successful and failed tasks, checks that the original task criteria and outcome are preserved, and rejects state mismatches. The complete timeline is sampled once per robot second and encoded at 12 fps for 12× playback. The optional grasp and placement excerpts use five frames per robot second at 1×. This first export supplies the physically verified external view and saved observations. To reconstruct semantic heatmaps and compose all panels, use the same recording:
 
-
 ```bash
 python -m dream_sim.render_head_view \
-  --run results/residential-adjusted \
+  --run results/residential50 \
   --name 01_ProcTHOR-Test-722_seed42_dynamic \
   --render /path/to/new-render-directory --output /path/to/new-camera-directory
-python -m dream_sim.semantic_history \
-  --run results/residential-adjusted \
+CUDA_VISIBLE_DEVICES=0 python -m dream_sim.semantic_history \
+  --run results/residential50 \
   --name 01_ProcTHOR-Test-722_seed42_dynamic --output /path/to/new-semantic-directory
 python -m dream_sim.observation_panels \
-  --record results/residential-adjusted/01_ProcTHOR-Test-722_seed42_dynamic \
+  --record results/residential50/01_ProcTHOR-Test-722_seed42_dynamic \
   --render /path/to/new-render-directory --semantic /path/to/new-semantic-directory \
   --head /path/to/new-camera-directory \
   --output /path/to/new-composite-directory
 ```
 
+For semantic reconstruction, replace `CUDA_VISIBLE_DEVICES=0` with your allocated physical GPU. This offline step uses CUDA and is separate from the batch worker scheduler.
+
 Semantic reconstruction uses the original frozen encoder, mean voxel-feature pooling and depth clearing, and compares every update's voxel counts with the recording. The heatmap displays raw text-feature alignment before candidate rejection. The overlaid target and planned path come from the original controller log. RGB-D spatial history is a display reconstruction, not an exact copy of the controller's collision map. The current first-person pane is newly rendered during exact physical replay and updates with robot motion. The adjacent Saved observation pane retains the most recent actual semantic observation and its capture time. Newly rendered camera images are display-only and never enter the semantic reconstruction. Every memory/path panel uses only original observations and events at or before its displayed simulation time. These steps perform no new navigation or task decisions.
 
 Encoding uses a local temporary directory, H.264, yuv420p, and faststart. Every frame must decode before the output is accepted. The rendering receipt contains input, observation, protocol, and video hashes. The gallery's [video metadata](https://github.com/BJHYZJ/dream-web/blob/master/simulation/videos.json) links all 50 recordings to the 38/50 evaluation. Exporting them does not execute the policy again or change the denominator.
 
-`dream_sim.video` remains available for converting older archived composite recordings. Those profiles and their video format are distinct from the current gallery.
+Outputs include encoded MP4s and JSON receipts. Keep the run directory until all external-view, head-camera, and semantic reconstruction steps finish. These commands replay saved controls; they do not rerun policy decisions.
 
 ## Implementation boundary
 
@@ -212,11 +218,67 @@ The [component measurements](../reproducibility/evidence/components/README.md) c
 
 ## Worker resources
 
-Parallel execution reads `.runtime/worker_resource_limits.json`, a machine-specific deployment profile. It must agree with `--gpus`, `--workers-per-gpu`, and the available CPU and memory allocation. This local file is excluded from Git because its CPU IDs, cgroup paths, and GPU assignment belong to the host machine. The batch runner and `worker_limits.py` validate that configuration before task execution. Keep your deployment's existing allocation when using this repository on a shared server.
+Execution reads `.runtime/worker_resource_limits.json`. The generated one-worker profile contains physical GPU indices, maximum worker count, and per-worker CPU affinity. The file is ignored by Git because device and CPU indices belong to the host. Never copy the authors' cgroup paths or CPU indices onto another machine.
 
-To inspect the task list without launching workers, omit `--execute`. The standard `study` mode uses one worker per requested GPU; `--parallel` selects the residential batch with explicit worker slots and a recorded action limit (900 seconds by default).
+On a machine with sufficient GPU/host memory and at least eight allocated CPU cores, an example four-worker allocation is:
 
-## Render an independently reviewed trial
+```bash
+python -m dream_sim.configure --gpus 0 1 --workers-per-gpu 2 --cpu-threads 2 \
+  --output .runtime/proposed_worker_resources.json
+```
+
+Review that file and install it as `.runtime/worker_resource_limits.json` while no DREAM workers are active. Then use `--gpus 0 1 --workers-per-gpu 2 --raster-threads 2`. A GPU needs enough memory for every concurrent worker; the measured 10.5 GB per task is not a universal upper bound. Up to four workers per GPU and eight total are supported. More workers reduce available RAM and GPU memory per task.
+
+The generator selects CPU cores but does not reserve devices or install kernel memory limits. Its memory-limit fields are `null`. Existing deployments may additionally specify a writable cgroup-v1 `memory_cgroup_parent`; only then does `WorkerLimits` apply and monitor those kernel limits. Runtime receipts report the actual applied limits. Configure such isolation through the machine's administrator or job scheduler.
+
+## Evaluate a common controller
+
+The reported memory comparison uses `recovery_v2`, ten houses, seeds 100/101/102, and both dynamic and static memory: **60 attempts**. These houses need the earlier asset lock in addition to the current residential scene assets. Prepare a separate cache:
+
+```bash
+python -m dream_sim.prepare assets \
+  --reference-lock configs/locks/instruction_asset_lock03.json \
+  --output-parent .runtime/comparison-assets/data/scene_datasets \
+  --output-manifest .runtime/comparison-assets.json
+python -m dream_sim.study --controller recovery_v2 \
+  --gpus 0 --asset-dir .runtime/comparison-assets --model-cache .runtime/models \
+  --output results/memory-comparison --execute
+```
+
+The default comparison cases, seeds, and variants are fixed by the profile catalog. Do not pass the residential task manifest for this experiment. Review and summarize the new recordings:
+
+```bash
+MS_ASSET_DIR="$PWD/.runtime/comparison-assets" \
+HF_HUB_CACHE="$PWD/.runtime/models" \
+python results/memory-comparison/frozen_workspace/DREAM_code/experiments/audit_instruction_batch.py \
+  --batch results/memory-comparison --output results/memory-comparison-audits \
+  --workers 1 --all-task-successes --input-bound
+python -m dream_sim.study_report --run results/memory-comparison \
+  --audits results/memory-comparison-audits \
+  --include-contact-rejections --output results/memory-comparison-summary
+```
+
+The paired comparison uses its frozen batch reviewer above. `dream_sim.study_review` is specifically for the newer residential controller with measured intermediate arm returns.
+
+The [paired-comparison README](../reproducibility/evidence/recovery-v2-study/README.md) describes how to recompute the published statistics from its compact archives. This does not require downloading original RGB-D images, whereas a new physical replay does. The earlier `study` and `recovery-study` archives retain their own controllers and outcomes.
+
+## Troubleshooting
+
+| Symptom | What to check |
+| --- | --- |
+| `invalid choice` for a GPU index | Create the local allocation with `dream_sim.configure` before launching another CLI process; match `--gpus` to `allowed_gpu_ids`. |
+| Worker-count mismatch or missing resource file | Run `configure` once and use its `workers_per_gpu`; existing profiles are never overwritten automatically. |
+| Missing model files while offline | Complete `prepare models --production` using the same model cache passed to the runner. |
+| Vulkan or asset errors | Check the installed Vulkan ICD, prepare the rendering cache, and pass its path to preflight and execution. |
+| `Insufficient disk headroom` | The recording filesystem needs at least 128 GiB free before each task. Use disk-backed storage. |
+| GPU or host memory exhaustion | Start with one worker per GPU and inspect actual resource use. Worker concurrency is not part of the task definition. |
+| Output directory already exists | Choose a new directory; do not overwrite completed failures to improve the aggregate. See [recovery](recovery.md) for interrupted runs. |
+| Missing sensor arrays during replay | Use a complete generated recording. Compact evidence archives omit the large arrays. |
+| Source checksum mismatch | Use a clean checkout and a new `DREAM_SIM_SOURCE_CACHE`; do not edit generated, checksum-locked sources. |
+
+## Extended-search video
+
+
 
 The exporter uses the frozen source and saved control/force trace. It requires a passing task, observation and arm-return review in the run directory. No policy decisions are rerun and the original result is not rescored.
 

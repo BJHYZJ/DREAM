@@ -9,6 +9,17 @@ from pathlib import Path
 from typing import Any
 
 
+def configure_vulkan() -> None:
+    """Respect an explicit renderer; otherwise locate an installed Mesa ICD."""
+    if os.environ.get("VK_ICD_FILENAMES"):
+        return
+    for name in ("lvp_icd.json", "lvp_icd.x86_64.json"):
+        path = Path("/usr/share/vulkan/icd.d") / name
+        if path.is_file():
+            os.environ["VK_ICD_FILENAMES"] = str(path)
+            return
+
+
 def digest(path: Path) -> str:
     """Hash a file without retaining large recording archives in the page cache."""
     with path.open("rb") as stream:

@@ -1,5 +1,6 @@
-"""Verify experiment archive checksums and video-to-case mappings offline."""
+"""Verify published experiment archives, outcomes, and controller source offline."""
 
+import argparse
 import hashlib
 import json
 import zipfile
@@ -29,26 +30,6 @@ def verify_files(root, files):
                         or hashlib.sha256(payload).hexdigest() != row["sha256"]
                     ):
                         raise ValueError(f"Archived record changed: {member}")
-
-
-def validate_gallery_manifest(manifest, catalog):
-    """Numeric public labels must still identify the exact frozen case."""
-    profiles = {row["id"]: row for row in catalog["cases"]}
-    identifiers = [f"{index:02d}" for index in range(1, 11)]
-    if [row.get("profile_id") for row in manifest["cases"]] != identifiers:
-        raise ValueError("Gallery must map each public video to exactly one ordered profile")
-    for row in manifest["cases"]:
-        identifier = row["profile_id"]
-        profile = profiles[identifier]
-        if row["video"] != identifier + ".mp4" or row["index"] != int(identifier):
-            raise ValueError("Public video numbering does not match its profile")
-        for key in ("scene", "seed", "instruction", "source_id", "task_sha256"):
-            if row[key] != profile[key]:
-                raise ValueError(f"Gallery changes original profile {identifier}: {key}")
-        if row["original_video_sha256"] != profile["video_sha256"]:
-            raise ValueError("Gallery changes original recording identity")
-        if row["source_run"] != profile["original_source_run"]:
-            raise ValueError("Gallery changes original source-run provenance")
 
 
 def verify_comparison(root):
@@ -152,55 +133,47 @@ def verify_residential(root):
 
 
 def main():
-    evidence = EVIDENCE
-    study = json.loads((evidence / "study" / "manifest.json").read_text())
-    if study["attempt_archives"] != 60:
-        raise ValueError("Incomplete attempt archive set")
-    verify_files(evidence / "study", study["files"])
-    components = json.loads((evidence / "components" / "manifest.json").read_text())
-    verify_files(
-        evidence / "components", {row["file"]: row for row in components["groups"].values()}
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--include-historical",
+        action="store_true",
+        help="Also check the earlier complete study cohorts retained for comparison",
     )
-    reproduction = json.loads((evidence / "reproduction" / "manifest.json").read_text())
-    if reproduction["new_policy_attempts"] != 10 or len(reproduction["cases"]) != 10:
-        raise ValueError("Incomplete ten-case reproduction records")
-    verify_files(evidence / "reproduction", reproduction["files"])
-    gallery_root = evidence / "gallery"
-    gallery = json.loads((gallery_root / "manifest.json").read_text())
-    catalog = json.loads((gallery_root / gallery["profile_catalog"]).read_text())
-    validate_gallery_manifest(gallery, catalog)
-    verify_files(gallery_root, gallery["files"])
-    for row in gallery["cases"]:
-        encoding = json.loads((gallery_root / row["encoding_report"]).read_text())
-        if encoding["output_sha256"] != row["video_sha256"]:
-            raise ValueError("Gallery video identity differs from its encoding record")
-    packaging = json.loads((evidence / "packaging" / "manifest.json").read_text())
-    if packaging["new_policy_attempts"] != 1 or packaging["case_ids"] != ["01"]:
-        raise ValueError("Unexpected packaging smoke-test scope")
-    verify_files(evidence / "packaging", packaging["files"])
-    comparisons = {}
-    for name in ("recovery-study", "recovery-v2-study"):
-        if (evidence / name).exists():
-            comparisons[name] = verify_comparison(evidence / name)
-    residential_root = evidence / "residential50-seed42"
-    residential = verify_residential(residential_root) if residential_root.exists() else None
-    diverse_root = evidence / "residential50-diverse-seed42"
-    diverse = verify_residential(diverse_root) if diverse_root.exists() else None
+    args = parser.parse_args()
+    from dream_sim.evaluate import verify_controller, verify_historical_results, verify_results
+
+    current = verify_results()
+    verify_controller(current.pop("source_sha256"))
+    components = json.loads((EVIDENCE / "components/manifest.json").read_text())
+    verify_files(
+        EVIDENCE / "components", {row["file"]: row for row in components["groups"].values()}
+    )
+    comparison = verify_comparison(EVIDENCE / "recovery-v2-study")
+    long_search = EVIDENCE / "long-search"
+    verify_files(long_search, json.loads((long_search / "manifest.json").read_text())["files"])
+    historical = {}
+    if args.include_historical:
+        study = json.loads((EVIDENCE / "study/manifest.json").read_text())
+        verify_files(EVIDENCE / "study", study["files"])
+        historical["study_attempts"] = study["attempt_archives"]
+        historical["recovery_study_attempts"] = verify_comparison(EVIDENCE / "recovery-study")
+        historical["residential50_seed42"] = verify_residential(EVIDENCE / "residential50-seed42")
+        compact = verify_historical_results()
+        verify_controller(compact.pop("source_sha256"), "compact_v1")
+        historical["compact_controller"] = compact
     print(
         json.dumps(
             {
-                "diverse_residential_study": diverse,
-                "residential_study": residential,
-                "compact_evidence_verified": True,
-                "attempts_retained": 60,
-                "controller_comparison_attempts_retained": comparisons,
-                "reproduction_cases_retained": 10,
+                "current_residential": current,
+                "current_controller_matches_evaluated_source": True,
+                "paired_comparison_attempts": comparison,
                 "component_groups": len(components["groups"]),
-                "separate_packaging_smoke_cases_retained": 1,
-                "public_video_profile_mappings_verified": 10,
+                "long_search_files_verified": True,
+                "historical": historical,
                 "raw_sensor_video_audit_performed": False,
                 "new_policy_execution": False,
-            }
+            },
+            indent=2,
         )
     )
 

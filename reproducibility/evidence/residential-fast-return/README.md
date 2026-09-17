@@ -35,7 +35,7 @@ Long-search supplements for cases 05, 07, 30, and 32 remove the action deadline 
 
 Among the 32 tasks qualified in both this run and the slower staged-return run, median complete loaded return takes 44.55 → 20.98 seconds, and empty return takes 52.40 → 24.38 seconds. Each duration includes the intermediate postures and final settling. These paired timing comparisons exclude tasks that did not qualify in both runs; success rates retain all 50 tasks.
 
-The [historical compact-controller result](../residential-evaluation/) remains 36/50 at 900 action seconds with a 2700-second server watchdog. The [archived diverse-object study](../residential50-seed42/) retains its own task definitions and results. Its recordings are separate from the current gallery.
+The [historical compact-controller result](../residential-evaluation/) remains 36/50 at 900 action seconds with a 2700-second server watchdog. The [earlier five-recipe study](../residential50-seed42/) retains its own task definitions and results. Its recordings are separate from the current gallery.
 
 ## Current video coverage
 
@@ -45,19 +45,12 @@ The separately labeled extended-search case 07 belongs to the four-case follow-u
 
 ## Verify and reproduce
 
-From the repository root, verify the portable files and every archived member:
+From the repository root:
 
 ```bash
-python - <<'PY'
-import json
-from pathlib import Path
-from dream_sim.verify_evidence import verify_files
-
-root = Path("reproducibility/evidence/residential-fast-return")
-manifest = json.loads((root / "manifest.json").read_text())
-verify_files(root, manifest["files"])
-print("All portable file and archive-member checksums match.")
-PY
+python -m dream_sim.evaluate
 ```
 
-This checks record integrity. It does not perform a new physics replay or recheck the large raw sensor arrays retained in local experiment storage. Original review reports retain input hashes for the observations, controls, and trajectories they used. See the [reproduction guide](../../../docs/reproduction.md) for a new execution and independent review. The default `scripts/run_residential.sh` selects this controller and its 1800-second/no-server-deadline protocol. The separate `python -m dream_sim.evaluate` command continues to verify the historical compact-controller archive.
+This verifies all file and ZIP-member hashes, binds the 50 outcomes to their frozen tasks and independent success reviews, and reconstructs the evaluated `continuous_return` source. It does not run the policy again or perform a new physics replay. The original RGB-D arrays are not distributed in this compact archive.
+
+Follow the [run guide](../../../docs/reproduction.md) to configure your machine, prepare the assets and models, run a new 50-task cohort, and independently review it. `scripts/run_residential.sh` selects this controller with 1800 action seconds and no server deadline. Use `python -m dream_sim.evaluate --cohort compact` only for the historical 36/50 compact-controller archive.

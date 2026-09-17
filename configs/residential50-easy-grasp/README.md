@@ -1,15 +1,26 @@
-# 便于抓放的 50 房屋任务
+# Fifty-house tasks with graspable object models
 
-此配置使用便于抓取、放置的物体，保留原多物体任务的全部 50 个房屋、布局、移动路径和随机种子 42，替换其中 33 场的目标模型。它与早期 diverse-object 配置分别评测，成功率各自统计。
+This is the task set behind the current **38/50 (76%)** evaluation and the 50 videos on the project website. It retains all 50 houses, layouts, relocation paths, and seed 42 from the earlier diverse-object configuration, replacing the pickup model in 33 tasks.
 
-6 类、21 个模型均使用原始尺寸；每类安排 8–9 场。候选从已有 541 个模型记录中筛选，排除细薄物体、过大物体、细长物体及放置不稳定模型。22 个候选中 21 个通过短物理检查；Apple_19 因偏移落点放下后速度过高被排除。候选模型不要求每个场景各不相同。
+The tasks use **21 native-scale models across six categories**, with 8–9 tasks per category. Model selection screened 541 available model records, excluding very thin, large, slender, and unstable candidates. Of 22 candidates, 21 passed the short support/placement checks; Apple_19 was excluded after excessive velocity following an offset release. Models can appear in multiple houses.
 
-短检查包含托盘支撑和盘上中心、左右各 2 cm 三个落点。它不是机器人完整抓取试验，场景成功由独立完整执行判定。
+Those checks used tray support and plate releases at the center and at ±2 cm. They were object-selection checks, not complete robot pickup trials. Full task outcomes come from the separately recorded policy executions.
 
-- `task_manifest.json`：50 个任务与房间地图的校验值。
-- `object_changes.csv`：每个场景替换前后的物体。
-- `object_selection.json`：接受和剔除模型及其短检查依据。
+| File | Contents |
+| --- | --- |
+| `task_manifest.json` | All 50 task and room-map hashes |
+| `object_changes.csv` | Pickup models before and after substitution |
+| `object_selection.json` | Accepted/rejected candidates and selection measurements |
+| `tasks50/` | Task definitions and evaluator room maps |
 
-运行 `./scripts/run_residential50_fast.sh --workers-per-gpu 4 --output /新的结果目录 --execute`。每场 900 秒机器人动作上限、2700 秒执行看门狗，GPU 0、1 各 4 场、合计最多 8 场并行；不加 `--execute` 只查看计划。
+After following the [setup guide](../../docs/reproduction.md), inspect or execute the current protocol:
 
-DREAM Fetch 控制器在完整 50 场实验中完成 36 场任务，全部通过独立物理、观测和收臂复核，严格成功率为 **36/50（72%）**。14 场失败均计入分母。[逐场结果](../../reports/residential50-20260915/v55-full50-final.json) · [公共源码一致性](../../reports/residential50-20260915/v55-public-promotion.json) · [完整执行记录](../../reproducibility/evidence/residential50-easy-v55/README.md)。视频资格单独记录。
+```bash
+DREAM_PYTHON="$(command -v python)" ./scripts/run_residential.sh \
+  --gpus 0 --workers-per-gpu 1 --raster-threads 2 \
+  --output results/residential50 --execute
+```
+
+Use the GPU and worker count in your local resource configuration. Omitting `--execute` prints the plan. The wrapper selects `continuous_return`, 1800 robot-action seconds, and no fixed server deadline. All 38 successes pass independent physics, observation, contact, and both arm-return checks; all 12 failures remain in the denominator.
+
+[Current results and records](../../reproducibility/evidence/residential-fast-return/) · [Historical compact-controller result, 36/50](../../reproducibility/evidence/residential-evaluation/)

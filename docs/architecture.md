@@ -19,6 +19,7 @@ The environment initializes the house and task objects and moves the target afte
 | Module | Responsibility |
 | --- | --- |
 | `dream_sim.run` | Validate the runtime, execute cases, and collect evaluation results |
+| `dream_sim.configure` | Create a portable, machine-local GPU/CPU worker allocation |
 | `dream_sim.prepare` | Download the required models and scene assets |
 | `dream_sim.render_assets` | Prepare scene files for rendering while preserving upstream assets |
 | `dream_sim.sources` | Verify and extract controller sources; locate a case's implementation |
@@ -36,7 +37,7 @@ The environment initializes the house and task objects and moves the target afte
 
 ## Controller modules
 
-The historical evaluated controller modules are in `controllers/compact_v1/`. The corrected arm return is in [`controllers/staged_return/`](../controllers/staged_return/README.md), which inherits those modules and declares its own checksums. The derived [`continuous_return`](../controllers/continuous_return/README.md) adds continuous path timing, shape-preserving limit handling, and native-physics position sampling for independently verified final settling. The official loader combines them with the checksum-locked base archive; paths below are relative to the resulting `DREAM_code/` workspace. `python -m dream_sim.evaluate` reconstructs and checks the historical `compact_v1` workspace. Use `python -m dream_sim.sources --case 01` to locate the recorded demonstration implementation.
+The historical evaluated controller modules are in `controllers/compact_v1/`. The corrected arm return is in [`controllers/staged_return/`](../controllers/staged_return/README.md), which inherits those modules and declares its own checksums. The derived [`continuous_return`](../controllers/continuous_return/README.md) adds continuous path timing, shape-preserving limit handling, and native-physics position sampling for independently verified final settling. The official loader combines them with the checksum-locked base archive; paths below are relative to the resulting `DREAM_code/` workspace. `python -m dream_sim.evaluate` reconstructs and checks the current `continuous_return` workspace; `--cohort compact` selects the historical `compact_v1` workspace. Use `python -m dream_sim.sources --case 01` to locate the recorded demonstration implementation.
 
 | Source file | Responsibility |
 | --- | --- |
@@ -64,7 +65,7 @@ The [simulation interfaces](reproduction.md#implementation-boundary) describe th
 
 The `compact_v1` controller contains 41 override modules that reconstruct the 264 Python files evaluated in the complete easy-grasp study (36/50 strict successes). `dream_sim.study` combines these checked overrides with the fixed base source, then freezes the complete controller and task inputs before execution. Its torso controller shares a smooth reference across arm modes. The arm returns to the compact initial posture after pickup and release. Exploration candidates must be reachable through the robot’s heading-dependent swept motion edges before A* selects a route.
 
-The [historical experiment records](../reproducibility/evidence/residential-evaluation/README.md) contain the compact controller's evaluated source identity, every task outcome, and independent reviews. Run `python -m dream_sim.evaluate` to verify that source and its recorded 36/50 result. The [current fast-return records](../reproducibility/evidence/residential-fast-return/) document the separately frozen 38/50 evaluation, its 1800-second action budget, independent reviews, and failure analysis.
+The [historical experiment records](../reproducibility/evidence/residential-evaluation/README.md) contain the compact controller's evaluated source identity, every task outcome, and independent reviews. Run `python -m dream_sim.evaluate --cohort compact` to verify that source and its recorded 36/50 result. The [current fast-return records](../reproducibility/evidence/residential-fast-return/) document the separately frozen 38/50 evaluation, its 1800-second action budget, independent reviews, and failure analysis.
 
 Earlier demonstration profiles retain their recorded source versions. Each case records its controller, task, seed, evaluation version, and video identity. These are selected through the profile catalog.
 

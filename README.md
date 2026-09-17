@@ -2,28 +2,25 @@
 
 **Dynamic Resilient Spatio-Semantic Memory with Hybrid Localization for Mobile Manipulation**
 
-[Project page](https://bjhyzj.github.io/dream-web/) · [Paper](https://arxiv.org/abs/2606.00576) · [Videos](https://bjhyzj.github.io/dream-web/simulation/) · [Real-robot code](https://github.com/BJHYZJ/DREAM/tree/realtime)
+[Project page](https://bjhyzj.github.io/dream-web/) · [Paper](https://arxiv.org/abs/2606.00576) · [Simulation demos](https://bjhyzj.github.io/dream-web/simulation/) · [Real-robot code](https://github.com/BJHYZJ/DREAM/tree/realtime)
 
-DREAM is a mobile manipulation framework for previously unseen indoor environments. Starting from a language instruction, the robot explores its surroundings, builds a 3D semantic memory, finds task objects, and carries out grasping and placement. It uses new observations to update remembered locations when objects move.
-
-The full system combines dynamic spatio-semantic memory, Redundancy-Aware Memory Pruning, multi-sensor SLAM, hybrid target localization, and task-oriented navigation. The ROS implementation and hardware setup are on the [`realtime` branch](https://github.com/BJHYZJ/DREAM/tree/realtime).
+DREAM starts from a language instruction, explores an unfamiliar environment, builds and updates semantic memory, and performs object pickup and placement. This `simulation` branch provides the **Fetch / ManiSkill / SAPIEN** implementation. The ROS system, SLAM backend, hardware configuration, and AnyGrasp integration are on the [`realtime` branch](https://github.com/BJHYZJ/DREAM/tree/realtime).
 
 ![DREAM system overview](https://bjhyzj.github.io/dream-web/media/figures/main.png)
 
-## Indoor simulation
+## What to reproduce
 
-This branch runs cross-room pick-and-place tasks in **ManiSkill / SAPIEN** with a Fetch robot. The robot searches for an object, observes a change in its location, finds it again, and delivers it to the requested receptacle.
+| Experiment | Configuration | Published result |
+| --- | --- | --- |
+| Current residential evaluation and all 50 videos | `continuous_return`, 50 fixed houses, seed 42, dynamic memory | **38/50 (76%)**, including all 12 failures |
+| Paired memory comparison | `recovery_v2`, 10 houses × 3 seeds × 2 memory variants | Dynamic 22/30; static 14/30 |
+| Extended search | Four selected cases with action/iteration limits removed | One qualified completion; separate from 38/50 |
 
-- **Perception:** SigLIP visual-language features and OWL-V2 object detection from head-camera RGB-D observations.
-- **Memory:** semantic voxel mapping, retrieval of task-relevant observations, and depth-based updates to stale object locations.
-- **Navigation:** observed occupancy mapping, frontier exploration, and A* route planning.
-- **Manipulation:** grasp and placement poses computed from observed geometry, executed with robot feedback.
+The current residential tasks use native-scale objects, a **1800-second robot-action budget**, and **no fixed server deadline**. These houses were used during controller development. See the [experiment index](reproducibility/README.md) for protocols, evidence contents, and the earlier comparison cohorts.
 
-The simulator supplies odometry, and task instructions use a bounded English pickup/place grammar. See the [implementation details](docs/reproduction.md#implementation-boundary) for the simulation interfaces and their relation to the real-robot system.
+## Quick start
 
-## Getting started
-
-Use Linux with **Python 3.11**, CUDA inference, and a working Vulkan renderer. The [setup guide](docs/reproduction.md) covers dependencies, model downloads, scene assets, and resource requirements.
+Use Linux, Python 3.11, an NVIDIA GPU for inference, and a working Vulkan renderer. The reference system used about 10.5 GB of GPU memory per task. Start with one worker. The batch runner requires **at least 128 GiB free on the recording filesystem before each task**, in addition to space for downloaded assets and models. See the [complete setup and run guide](docs/reproduction.md) for rendering, resource allocation, and troubleshooting.
 
 ```bash
 git clone --branch simulation https://github.com/BJHYZJ/DREAM.git
@@ -35,9 +32,10 @@ python -m pip install --no-deps -e .
 python -m pip check
 ```
 
-Prepare the models and scene assets:
+Create the local worker configuration on a **new checkout**. Replace `0` with a physical GPU index allocated to you. The command uses available CPU cores and refuses to overwrite an existing allocation.
 
 ```bash
+python -m dream_sim.configure --gpus 0 --workers-per-gpu 1 --cpu-threads 2
 python -m dream_sim.prepare models --cache-dir .runtime/models --production
 python -m dream_sim.prepare assets \
   --reference-lock configs/residential50/assets.lock.json \
@@ -51,63 +49,52 @@ python -m dream_sim.run --preflight --asset-dir .runtime/render_assets \
   --asset-lock configs/residential50/render_assets.lock.json
 ```
 
-Run the residential study:
+Inspect the current 50-task plan, then append `--execute` to run it:
 
 ```bash
-DREAM_PYTHON="$(command -v python)" \
-DREAM_ASSET_DIR="$PWD/.runtime/render_assets" \
-DREAM_MODEL_CACHE="$PWD/.runtime/models" \
-./scripts/run_residential.sh \
-  --gpus 0 1 --workers-per-gpu 4 --raster-threads 4 \
-  --output results/residential50 --execute
+DREAM_PYTHON="$(command -v python)" ./scripts/run_residential.sh \
+  --gpus 0 --workers-per-gpu 1 --raster-threads 2 \
+  --output results/residential50
 ```
 
-The default `continuous_return` controller passes task completion and independent physics, observation, and arm-return checks in **38/50 scenes (76%)**. All 50 tasks ran with seed 42, dynamic memory, native object scale, an **1800-second robot-action budget**, and **no fixed server deadline**. The easy-grasp cohort uses 21 pickup models across 6 categories. These houses were used for controller development, so the rate describes this fixed cohort. The [portable evidence](reproducibility/evidence/residential-fast-return/) includes all outcomes, original review records, failure analysis, and paired return times. Full local records are in `results/residential-adjusted/`. The [historical compact-controller result](reproducibility/evidence/residential-evaluation/results.json) remains 36/50 (72%) at 900 action seconds with a 2700-second server watchdog. The main video gallery contains all 50 attempts from the current 38/50 cohort.
+Use a fresh output directory for each execution. Models and assets default to the prepared `.runtime` directories. GPU indices and worker counts must match your local configuration. One worker runs the same 50 tasks sequentially; adding workers changes concurrency, not the task definitions or action budget.
 
-The command uses GPUs 0 and 1 with four workers per GPU; the deployment resource profile must support this allocation. Omit `--execute` to inspect the plan. See the [run guide](docs/reproduction.md#3-run-the-residential-study) for cache paths and the distinct study protocols.
+After execution, independently review successful tasks and calculate the result over **all 50 attempts**:
 
-Each attempt saves observations, applied controls, physical trajectories, and its outcome. The [run guide](docs/reproduction.md) explains independent replay checks and complete-cohort analysis.
+```bash
+python -m dream_sim.study_review --run results/residential50 \
+  --output results/residential50_audits --execute
+python -m dream_sim.study_report --run results/residential50 \
+  --audits results/residential50_audits --output results/residential50_summary \
+  --include-contact-rejections
+```
 
-The [arm-return controller](controllers/continuous_return/README.md) lifts clear of the support and follows measured intermediate postures before confirming the final fold. Independent replay checks both loaded and empty returns, including self-contact and fixture contact. The [return-time comparison](reproducibility/evidence/residential-fast-return/return_times.json) reports the shared successful tasks and timing definitions for the staged and continuous controllers. Historical configurations and their original budgets are documented in the [run guide](docs/reproduction.md).
+`results/residential50_summary/study_analysis.json` and `attempts.csv` contain the new results. Completion requires the task outcome and independent physics, observation, contact, and both arm-return checks. A new execution is not guaranteed to reproduce the original 38 successes on different hardware.
 
-## Demonstrations and evaluation
+## Inspect the published evidence without running the simulator
 
-The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) contains **all 50 current trials: 38 successes and 12 failures**. Each complete timeline is rendered from its original controls and disturbances at 12× playback, with a current first-person camera replay, timestamped saved observations, reconstructed semantic-memory heatmaps, and logged navigation paths. Trials 01 and 11 also have normal-speed grasp and placement excerpts, including both arm returns.
+```bash
+python -m dream_sim.evaluate
+python -m dream_sim.verify_evidence
+```
 
-The [current experiment records](reproducibility/evidence/residential-fast-return/) bind the videos to the same controller, task definitions, source hashes, and outcome records as the 76% result. Earlier quantitative studies retain their original evidence archives; their videos are no longer part of the website gallery.
+`evaluate` checks the **current 38/50 records** and reconstructs the exact evaluated controller. `verify_evidence` also checks the paired comparison, component measurements, and extended-search archive. These are offline checks of saved files; they do not perform a new policy run or physics replay. Use `evaluate --cohort compact` or `verify_evidence --include-historical` for the earlier cohorts.
 
-The [extended-search case study](reproducibility/evidence/long-search/README.md) reports all four follow-up outcomes separately from the main cohort, including the 78.7-minute successful task.
+The repository contains compact outcomes, protocols, checksums, and review records. **It does not contain the full original RGB-D recordings.** To replay or export a video locally, first run the tasks to generate complete recordings, or obtain a complete original recording separately. Hash lists and compact evidence ZIPs cannot replace the omitted sensor data. [Videos and replay commands](docs/reproduction.md#5-export-a-current-trial-video).
 
-## Code structure
+## Implementation and source layout
 
 | Directory | Contents |
 | --- | --- |
-| `src/dream_sim/` | Task and batch execution, resource preparation, result evaluation, and video tools |
-| `configs/` | Case catalog, task definitions, room maps, and dependency locks |
-| `controllers/` | Controller modules for residential evaluation |
-| `requirements/` | Python package versions |
-| `reproducibility/source_archives/` | Checksum-locked controller source, extracted automatically when used |
-| `reproducibility/evidence/` | Experiment records, analysis, and video metadata |
-| `tests/` | Runner, configuration, resource-allocation, and result-integrity tests |
+| `src/dream_sim/` | Preparation, worker allocation, execution, result checks, and video export |
+| `controllers/continuous_return/` | Current controller overrides; inherits the staged and compact controllers |
+| `configs/residential50-easy-grasp/` | Current 50 tasks, room maps, and fixed input hashes |
+| `requirements/` | Pinned Python dependencies |
+| `reproducibility/source_archives/` | Required base source, verified and extracted by the loader |
+| `reproducibility/evidence/` | Published experiment outcomes and supporting comparison records |
+| `tests/` | Regression tests for execution, scheduling, and result integrity |
 
-To inspect an earlier archived demonstration profile (these IDs are separate from current trial numbers):
-
-```bash
-python -m dream_sim.sources --case 01
-```
-
-The returned directory contains `experiments/instruction_policy.py`, the navigation and manipulation helpers, and `src/dream/`. The [architecture guide](docs/architecture.md) maps these modules to the task pipeline.
-
-## Validation
-
-```bash
-python -m dream_sim.run --preflight --dry-run
-python -m dream_sim.verify_evidence
-python -m dream_sim.evaluate
-python -m pytest -q
-```
-
-These commands check configuration, source integrity, and stored records without running the simulator. `dream_sim.evaluate` checks the historical compact-controller result; the [current evidence guide](reproducibility/evidence/residential-fast-return/#verify-and-reproduce) provides the 76% archive integrity check. See the [run guide](docs/reproduction.md#4-read-results) for evaluating a new execution.
+The simulator supplies odometry. Perception uses SigLIP and OWL-V2; manipulation uses observed RGB-D geometry and feedback-controlled motion. Hosted mLLM verification is disabled in this adapter. See the [implementation boundary](docs/reproduction.md#implementation-boundary) and [module map](docs/architecture.md).
 
 ## Citation
 
@@ -125,4 +112,4 @@ These commands check configuration, source integrity, and stored records without
 
 ## License
 
-The DREAM code is released under the [MIT License](LICENSE). SigLIP and OWL-V2 weights, and AI2-THOR scene assets, are obtained separately under the licenses of those projects. Versions and checksums are listed in the [model and asset records](configs/locks/).
+DREAM code uses the [MIT License](LICENSE). SigLIP and OWL-V2 weights and AI2-THOR scene assets are downloaded separately under their upstream licenses. Versions are pinned in the [model lock](configs/locks/dream_models.lock.json) and [asset lock](configs/residential50/assets.lock.json).

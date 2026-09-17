@@ -14,7 +14,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from dream_sim.io import atomic_json, digest
+from dream_sim.io import atomic_json, configure_vulkan, digest
 
 
 def main():
@@ -35,10 +35,10 @@ def main():
         raise ValueError("Record identity differs from the external-view replay")
     if any(digest(source / name) != value for name, value in protocol["source_sha256"].items()):
         raise ValueError("Frozen source identity differs from the recorded protocol")
+    configure_vulkan()
     os.environ.update(
         CUDA_VISIBLE_DEVICES="",
         HF_HUB_OFFLINE="1",
-        VK_ICD_FILENAMES="/usr/share/vulkan/icd.d/lvp_icd.x86_64.json",
         MS_ASSET_DIR=protocol["asset_root"],
         HF_HUB_CACHE=protocol["model_cache"],
     )
