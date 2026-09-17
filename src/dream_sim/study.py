@@ -119,9 +119,6 @@ def main() -> None:
             "baseline",
             "recovery",
             "recovery_v2",
-            "recovery_v3",
-            "recovery_v4",
-            "recovery_v5",
             "recovery_v6",
             "compact_v1",
             "staged_return",
@@ -315,9 +312,6 @@ def main() -> None:
         ]
         if manifest is not None:
             if args.controller not in (
-                "recovery_v3",
-                "recovery_v4",
-                "recovery_v5",
                 "recovery_v6",
                 "compact_v1",
                 "staged_return",

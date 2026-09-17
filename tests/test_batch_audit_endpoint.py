@@ -12,7 +12,7 @@ import pytest
 def test_audit_status_uses_requested_endpoint(tmp_path, monkeypatch, task_endpoint):
     source = (
         Path(__file__).resolve().parents[1]
-        / "controllers/recovery_v3/experiments/audit_instruction_batch.py"
+        / "controllers/compact_v1/experiments/audit_instruction_batch.py"
     )
     spec = importlib.util.spec_from_file_location("batch_audit", source)
     module = importlib.util.module_from_spec(spec)
