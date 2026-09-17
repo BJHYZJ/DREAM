@@ -1,6 +1,7 @@
-"""Compose external replay, current head view, saved observation, and semantic heat.
+"""Compose camera views with reconstructed semantics or observed RGB-D geometry.
 
-The display uses saved observations and a verified semantic reconstruction.
+Semantic mode uses saved observations and a verified feature reconstruction.
+Geometry mode projects saved depth observations without semantic scores.
 It never reads scene meshes, evaluator object poses, or future observations.
 """
 
@@ -20,7 +21,9 @@ def main():
     parser.add_argument("--record", type=Path, required=True)
     parser.add_argument("--render", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--semantic", type=Path, required=True)
+    map_mode = parser.add_mutually_exclusive_group(required=True)
+    map_mode.add_argument("--semantic", type=Path)
+    map_mode.add_argument("--geometry-only", action="store_true")
     parser.add_argument("--head", type=Path, required=True)
     args = parser.parse_args()
     import cv2
@@ -34,28 +37,30 @@ def main():
         raise ValueError("The base render must match this trial and pass replay checks")
     if any(digest(record / name) != value for name, value in receipt["input_sha256"].items()):
         raise ValueError("Original records changed since the physical replay")
-    semantic_root = args.semantic.resolve()
-    semantic_receipt_path = semantic_root / "semantic_receipt.json"
-    semantic_receipt = json.loads(semantic_receipt_path.read_text())
-    if (
-        semantic_receipt["case"] != record.name
-        or not semantic_receipt["all_recorded_memory_counts_match"]
-    ):
-        raise ValueError("Semantic reconstruction does not match this recording")
-    semantic_frames = {row["frame_id"]: row for row in semantic_receipt["frames"]}
+    semantic_receipt = None
     semantic_xy = np.empty((0, 2), np.float32)
     semantic_fields = {}
     semantic_stage = "pickup"
-    if (
-        receipt.get("protocol_sha256", semantic_receipt["protocol_sha256"])
-        != semantic_receipt["protocol_sha256"]
-    ):
-        raise ValueError("Semantic reconstruction belongs to another protocol")
-    if any(
-        digest(record / name) != value
-        for name, value in semantic_receipt["observation_sha256"].items()
-    ):
-        raise ValueError("Semantic reconstruction used different observations")
+    if args.semantic:
+        semantic_root = args.semantic.resolve()
+        semantic_receipt_path = semantic_root / "semantic_receipt.json"
+        semantic_receipt = json.loads(semantic_receipt_path.read_text())
+        if (
+            semantic_receipt["case"] != record.name
+            or not semantic_receipt["all_recorded_memory_counts_match"]
+        ):
+            raise ValueError("Semantic reconstruction does not match this recording")
+        semantic_frames = {row["frame_id"]: row for row in semantic_receipt["frames"]}
+        if (
+            receipt.get("protocol_sha256", semantic_receipt["protocol_sha256"])
+            != semantic_receipt["protocol_sha256"]
+        ):
+            raise ValueError("Semantic reconstruction belongs to another protocol")
+        if any(
+            digest(record / name) != value
+            for name, value in semantic_receipt["observation_sha256"].items()
+        ):
+            raise ValueError("Semantic reconstruction used different observations")
     if any(
         digest(render / f"{key}.mp4") != video["sha256"] for key, video in receipt["videos"].items()
     ):
@@ -230,15 +235,18 @@ def main():
                             saved_rgb = cv2.resize(rgb, (320, 240))
                             saved_step, saved_frame_id = capture_step, frame_id
                             memory_size = event.get("memory", {}).get("after", memory_size)
-                            semantic_frame = semantic_frames[event["frame_id"]]
-                            semantic_file = semantic_root / semantic_frame["file"]
-                            if digest(semantic_file) != semantic_frame["sha256"]:
-                                raise ValueError("Semantic frame checksum differs from its receipt")
-                            with np.load(semantic_file) as saved:
-                                semantic_xy = saved["xy"]
-                                semantic_fields = {
-                                    key: saved[key] for key in ("pickup", "placement")
-                                }
+                            if semantic_receipt is not None:
+                                semantic_frame = semantic_frames[event["frame_id"]]
+                                semantic_file = semantic_root / semantic_frame["file"]
+                                if digest(semantic_file) != semantic_frame["sha256"]:
+                                    raise ValueError(
+                                        "Semantic frame checksum differs from its receipt"
+                                    )
+                                with np.load(semantic_file) as saved:
+                                    semantic_xy = saved["xy"]
+                                    semantic_fields = {
+                                        key: saved[key] for key in ("pickup", "placement")
+                                    }
                     elif name in ("memory_retrieval", "verified_visual_track"):
                         detection = event.get("detection")
                         target = detection.get("point_world") if detection else None
@@ -269,7 +277,13 @@ def main():
                     if saved_rgb is not None:
                         canvas[66:306, 1280:1600] = saved_rgb
                     canvas[344:594, 960:] = map_rgb
-                    displayed_query = semantic_receipt["queries"][semantic_stage == "placement"]
+                    if semantic_receipt is not None:
+                        query = semantic_receipt["queries"][semantic_stage == "placement"]
+                        map_label = (
+                            f"Semantic memory: {query} | {memory_size} voxels | alignment 0.17-0.26"
+                        )
+                    else:
+                        map_label = "Observed RGB-D geometry and logged navigation"
                     labels = [
                         ("First-person view", 972, 25, 0.5),
                         (f"Head-camera replay | {step / 20:.2f} s", 972, 49, 0.4),
@@ -283,7 +297,7 @@ def main():
                             0.4,
                         ),
                         (
-                            f"Semantic memory: {displayed_query} | {memory_size} voxels | alignment 0.17-0.26",
+                            map_label,
                             972,
                             324,
                             0.4,
@@ -358,10 +372,20 @@ def main():
         base_render_receipt_sha256=digest(render / "render_receipt.json"),
         panel_renderer_sha256=digest(Path(__file__)),
         observation_sha256=observation_hashes,
-        semantic_receipt_sha256=digest(semantic_receipt_path),
         head_receipt_sha256=digest(head_receipt_path),
-        panel_description="External replay, synchronous first-person camera replay, saved semantic observation, frozen-encoder semantic heatmap before candidate rejection, and logged target/routes. Newly rendered camera images are for display only and never update task memory.",
+        map_mode="semantic_alignment" if semantic_receipt is not None else "observed_geometry",
+        panel_description=(
+            "External replay, synchronous first-person camera replay, saved semantic observation, "
+            + (
+                "frozen-encoder semantic heatmap before candidate rejection, "
+                if semantic_receipt is not None
+                else "geometry projected from saved RGB-D observations, "
+            )
+            + "and logged target/routes. Newly rendered camera images are for display only and never update task memory."
+        ),
     )
+    if semantic_receipt is not None:
+        receipt["semantic_receipt_sha256"] = digest(semantic_receipt_path)
     receipt["checks"].update(
         panel_timestamps_not_future=all(
             frame["observation_step"] <= frame["sim_step"]

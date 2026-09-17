@@ -62,7 +62,7 @@ DREAM_MODEL_CACHE="$PWD/.runtime/models" \
   --output results/residential50 --execute
 ```
 
-The default `continuous_return` controller passes task completion and independent physics, observation, and arm-return checks in **38/50 scenes (76%)**. All 50 tasks ran with seed 42, dynamic memory, native object scale, an **1800-second robot-action budget**, and **no fixed server deadline**. The easy-grasp cohort uses 21 pickup models across 6 categories. These houses were used for controller development, so the rate describes this fixed cohort. The [portable evidence](reproducibility/evidence/residential-fast-return/) includes all outcomes, original review records, failure analysis, and paired return times. Full local records are in `results/residential-adjusted/`. The [historical compact-controller result](reproducibility/evidence/residential-evaluation/results.json) remains 36/50 (72%) at 900 action seconds with a 2700-second server watchdog. The videos below belong to a separate recorded cohort.
+The default `continuous_return` controller passes task completion and independent physics, observation, and arm-return checks in **38/50 scenes (76%)**. All 50 tasks ran with seed 42, dynamic memory, native object scale, an **1800-second robot-action budget**, and **no fixed server deadline**. The easy-grasp cohort uses 21 pickup models across 6 categories. These houses were used for controller development, so the rate describes this fixed cohort. The [portable evidence](reproducibility/evidence/residential-fast-return/) includes all outcomes, original review records, failure analysis, and paired return times. Full local records are in `results/residential-adjusted/`. The [historical compact-controller result](reproducibility/evidence/residential-evaluation/results.json) remains 36/50 (72%) at 900 action seconds with a 2700-second server watchdog. The main video gallery contains all 50 attempts from the current 38/50 cohort.
 
 The command uses GPUs 0 and 1 with four workers per GPU; the deployment resource profile must support this allocation. Omit `--execute` to inspect the plan. See the [run guide](docs/reproduction.md#3-run-the-residential-study) for cache paths and the distinct study protocols.
 
@@ -72,9 +72,9 @@ The [arm-return controller](controllers/continuous_return/README.md) lifts clear
 
 ## Demonstrations and evaluation
 
-In the historical diverse-object residential study, DREAM completed **27/50 tasks (54%)**. The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) includes **all 27 successful runs** and **2 failure cases**, with synchronized scene, robot-camera, semantic-memory, and navigation views. Videos retain the complete recorded sequence at 4× speed. Those historical video checks did not record robot self-contact or require a verified final fold, so their completion labels do not establish collision-free arm retraction.
+The [video gallery](https://bjhyzj.github.io/dream-web/simulation/) contains **all 50 current trials: 38 successes and 12 failures**. Each complete timeline is rendered from its original controls and disturbances at 12× playback, with a current first-person camera replay, timestamped saved observations, reconstructed semantic-memory heatmaps, and logged navigation paths. Trials 01 and 11 also have normal-speed grasp and placement excerpts, including both arm returns.
 
-The [experiment records](reproducibility/evidence/residential50-seed42/README.md) contain all 50 outcomes, task configurations, and independent physics and recording checks. Every attempt contributes to the completion rate. Earlier experiments retain their own records in [`reproducibility/evidence/`](reproducibility/evidence/).
+The [current experiment records](reproducibility/evidence/residential-fast-return/) bind the videos to the same controller, task definitions, source hashes, and outcome records as the 76% result. Earlier quantitative studies retain their original evidence archives; their videos are no longer part of the website gallery.
 
 The [extended-search case study](reproducibility/evidence/long-search/README.md) reports all four follow-up outcomes separately from the main cohort, including the 78.7-minute successful task.
 
@@ -90,7 +90,7 @@ The [extended-search case study](reproducibility/evidence/long-search/README.md)
 | `reproducibility/evidence/` | Experiment records, analysis, and video metadata |
 | `tests/` | Runner, configuration, resource-allocation, and result-integrity tests |
 
-To locate the controller for a case:
+To inspect an earlier archived demonstration profile (these IDs are separate from current trial numbers):
 
 ```bash
 python -m dream_sim.sources --case 01

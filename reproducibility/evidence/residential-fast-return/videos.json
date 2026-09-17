@@ -1,0 +1,2504 @@
+{
+  "schema_version": 1,
+  "cohort": "residential-adjusted",
+  "controller": "continuous_return",
+  "attempts": 50,
+  "successes": 38,
+  "failures": 12,
+  "protocol_sha256": "00c8fa73e832ba15dece7ed3cced0eb539bf115303c0025dd894369089c23bbe",
+  "new_policy_execution": false,
+  "layout": "External replay on the left; current first-person camera and saved semantic observation above the semantic heatmap on the right.",
+  "heatmap": "Frozen-encoder voxel feature alignment before candidate rejection. Displayed targets and routes come from the original controller log.",
+  "results": [
+    {
+      "name": "01_ProcTHOR-Test-722_seed42_dynamic",
+      "scene": "ProcTHOR-Test-722",
+      "qualified_success": true,
+      "robot_action_seconds": 318.45,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "f208ba5df5de9f9c3d14fb79fbe7a5c5cb335770912ae6b6041daa91ebd9cfc1",
+        "actions.json": "211289d36300d42e8ce75ae60ba91c6c4a1353d028784c9ac2eb4e4399ca0ace",
+        "events.jsonl": "a659eaef7634d0ba480d70721958cdff260cd5d350d6169f145aaff5e1bdfca0",
+        "result.json": "5969b38fedbf6bcee2fe0baa76af7a75cbbd46a55a53c7b9ad92b45451c7450d",
+        "evaluator_trajectory.json": "3de07991e3d57dfe5b40aea50b696136da2ca2c77a9ff27611e5ca0fa4881bac",
+        "disturbance_forces.json": "5456c0f0ea65e595bd7c940bbce13f0511172743c4efb126aaded02a40c68b9d"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 115,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/01_ProcTHOR-Test-722_seed42_dynamic.mp4",
+          "frames": 319,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 26.583333333333332,
+          "bytes": 4098768,
+          "sha256": "528a068dd3b8b7520f168d908086edf8b6889afe02ed7466d37d83df741f019a",
+          "poster": "media/simulation/current50/01_ProcTHOR-Test-722_seed42_dynamic.jpg"
+        },
+        "grasp": {
+          "file": "media/simulation/current50/01_ProcTHOR-Test-722_seed42_dynamic_grasp.mp4",
+          "frames": 287,
+          "fps": 5,
+          "playback_speed": 1,
+          "duration_s": 57.4,
+          "bytes": 3943662,
+          "sha256": "7c322aa3749850723353757e17fa9706d553c2c0b23d9db0fcdc5c1b9db674b0",
+          "poster": "media/simulation/current50/01_ProcTHOR-Test-722_seed42_dynamic_grasp.jpg"
+        },
+        "place": {
+          "file": "media/simulation/current50/01_ProcTHOR-Test-722_seed42_dynamic_place.mp4",
+          "frames": 336,
+          "fps": 5,
+          "playback_speed": 1,
+          "duration_s": 67.2,
+          "bytes": 3447607,
+          "sha256": "95b1edf4eb6841dcbd10c568f6975ca0af0ceb89edf16e028bbbe6d340ad7301",
+          "poster": "media/simulation/current50/01_ProcTHOR-Test-722_seed42_dynamic_place.jpg"
+        }
+      }
+    },
+    {
+      "name": "02_ProcTHOR-Train-8471_seed42_dynamic",
+      "scene": "ProcTHOR-Train-8471",
+      "qualified_success": true,
+      "robot_action_seconds": 251.3,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "a6f1b7c82197aa5dc6d29cf3962b655dbc767b71aa85f9fd29289130370d437f",
+        "actions.json": "597df8013d1f644c28150da6af7bde209f28aa22c30c3fffb6fc68ff0b6de71f",
+        "events.jsonl": "1dd7ce351763a3f3a4d7d5a6d9a0cf5020f169a21184b96484c8fbb5522d722e",
+        "result.json": "2c80534d68c55de5ef6bd6abec351b9255512e5dfb6cf652d0d78be2dce5d6fd",
+        "evaluator_trajectory.json": "2e929cecde5032bdb2dc251321564d15d5b503c28ae0ccf384804fc97e0d731c",
+        "disturbance_forces.json": "7d44fd511adef14dc7b9108c558a1c8cb31083781732fdc2b20d34ad7957fe12"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 83,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/02_ProcTHOR-Train-8471_seed42_dynamic.mp4",
+          "frames": 252,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 21.0,
+          "bytes": 3447483,
+          "sha256": "942add64cf72ada7debc25653183460e75e704038640023806f11c635bd7d19b",
+          "poster": "media/simulation/current50/02_ProcTHOR-Train-8471_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "03_ProcTHOR-Train-6452_seed42_dynamic",
+      "scene": "ProcTHOR-Train-6452",
+      "qualified_success": false,
+      "robot_action_seconds": 1518.4,
+      "failure_reason": "Pickup search or navigation incomplete",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "a0def5eeeac31af036537b2dec87e19cfd2f84303884d99066e72ecf296ad83c",
+        "actions.json": "231cded822a0971e5fd468de3a5492bfa1b4d91e88ae8c5a8dacfee4059241c0",
+        "events.jsonl": "de8146edc8271b9aed960369614bee9f0d1676c6b4b37df498d242d8efd4c4da",
+        "result.json": "d0f218097d62f1cd65cb045985ce2559223c1d1e4c63f83b989497eae97a21d2",
+        "evaluator_trajectory.json": "dcac5f88830d301af4a3741bbe5bd142200be1ba1db2585ad7424eb34e94dfaf",
+        "disturbance_forces.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 621,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/03_ProcTHOR-Train-6452_seed42_dynamic.mp4",
+          "frames": 1519,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 126.58333333333333,
+          "bytes": 18028143,
+          "sha256": "3e8918fe4588d2c00e56c3f96130884578539fdfe3f0e3dce61718ac0e1cbdfa",
+          "poster": "media/simulation/current50/03_ProcTHOR-Train-6452_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "04_ProcTHOR-Train-2043_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2043",
+      "qualified_success": true,
+      "robot_action_seconds": 329.35,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "e593d3cb51dcc0dbbd23f4e19d06c1e54f7e5032e486c95b7167e3e57190526b",
+        "actions.json": "61eb2fc50fe5cc4484a7b39116e7fb957573c27f91fd7e7e997db0607fb10232",
+        "events.jsonl": "621bbd5887f88600aaaa2f7b56b0d52190904c47184600550dff0c6428e37b59",
+        "result.json": "bb62f795c382a364ab01b71abefca03dcc40d2a0c21441b02d952cf3006e67ee",
+        "evaluator_trajectory.json": "e6fe9cb23ea461a6e179d36b0654edc8b099a611e9cce61e6846ababecfb307e",
+        "disturbance_forces.json": "8e4010544ff969acce63fc4577d3831bd294677eb43633416f72c93087d95d71"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 110,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/04_ProcTHOR-Train-2043_seed42_dynamic.mp4",
+          "frames": 330,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 27.5,
+          "bytes": 2983952,
+          "sha256": "c88a392afdf4bc24f42aacae37ef1a7d6ced33062438a3e0b360b44ecf294d7a",
+          "poster": "media/simulation/current50/04_ProcTHOR-Train-2043_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "05_ProcTHOR-Test-288_seed42_dynamic",
+      "scene": "ProcTHOR-Test-288",
+      "qualified_success": false,
+      "robot_action_seconds": 1511.9,
+      "failure_reason": "Navigation iteration limit (inferred)",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "25c64391457c935dcf6bcc2ad9e957231f0e869b739e70e79df7e7ecf3cc8f3a",
+        "actions.json": "e314dffdda15e85138b34e269629a202925b96bbf98db6650e4b85a9e1682a2c",
+        "events.jsonl": "648a500045e97fd267732c3d35e766cd2e4cc8a1a4d0b39150969b4fd6b99122",
+        "result.json": "69b7e34d0fd99dfbb75b917317fa92a95a135c450878a34a5b1f929acaafa00b",
+        "evaluator_trajectory.json": "60899a3f779305bc69dfafdc7ad8ce8299db53f368bc37308c7583b60c835d6a",
+        "disturbance_forces.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 767,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/05_ProcTHOR-Test-288_seed42_dynamic.mp4",
+          "frames": 1512,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 126.0,
+          "bytes": 9139885,
+          "sha256": "95e2bda2c2d9aa1ba2f2ee5dca9a3cb2d375ec1f55a99d5a8091f242db58f9cb",
+          "poster": "media/simulation/current50/05_ProcTHOR-Test-288_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "06_ProcTHOR-Train-4300_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4300",
+      "qualified_success": true,
+      "robot_action_seconds": 281.5,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "33771f331ce4747a9848da47bd8d2d1989e363a71886ebb4cf6c26bd2f10521c",
+        "actions.json": "409da16c98325afd853c20102dbab05c1ab2649a5d834183a98e0f40cc67c0ac",
+        "events.jsonl": "795f0cd9c7ea7dfc9cf491fc8a70e91a42395c719aa3537446c7695057c10c15",
+        "result.json": "d199cab025cea6921386d08ee02ecfb45a6da85fbf0276905aa8e3044e6690ed",
+        "evaluator_trajectory.json": "fd7efd7739db349350f2f1e58b094cd315195f999884f8d11e2ba033467232c9",
+        "disturbance_forces.json": "64b2364eefc2d6247b92a24002bfbc95335d244651ef7bd81ce313258f8718bd"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 82,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/06_ProcTHOR-Train-4300_seed42_dynamic.mp4",
+          "frames": 282,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 23.5,
+          "bytes": 3763306,
+          "sha256": "189ed1f1bd837de6be89168b75871007125fc1ea8a3f5e59adf1cfb646e0de95",
+          "poster": "media/simulation/current50/06_ProcTHOR-Train-4300_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
+      "scene": "ProcTHOR-Train-1402",
+      "qualified_success": false,
+      "robot_action_seconds": 1444.1,
+      "failure_reason": "Navigation iteration limit (inferred)",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "631085c7dcbf170df2d9058e152e87513c541bea6a28460623184dbbe4dce3d1",
+        "actions.json": "3a5b9af5b5c5bda44c6aab0481d69cd4facfb9425dc0ddf7ddfcfceb85c94722",
+        "events.jsonl": "fb22ed86caf0d538ef46b6413d16f06067a282646016497f9373e047c629664d",
+        "result.json": "dd9a137c886259189fc20d2af7ef07383f6e88b6d72db0d57e9679cca3d23641",
+        "evaluator_trajectory.json": "4d4445e869abb1fbb3c94303f480caed4bd40a91740da36abee9f9e550c0e2a6",
+        "disturbance_forces.json": "fa35a1f53790aa87d13c9d5bfcb9ab38d9abce4719bee8a54efcf8207e953892"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 795,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/07_ProcTHOR-Train-1402_seed42_dynamic.mp4",
+          "frames": 1445,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 120.41666666666667,
+          "bytes": 22671605,
+          "sha256": "0758640538931815240d52a525c737c3c1c3b549b6985cc2fb1509dc11bf8631",
+          "poster": "media/simulation/current50/07_ProcTHOR-Train-1402_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "08_ProcTHOR-Train-7473_seed42_dynamic",
+      "scene": "ProcTHOR-Train-7473",
+      "qualified_success": true,
+      "robot_action_seconds": 1087.95,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "ff9a73b65c8db4469affc349e9744147b53a5687f8433b543a5537330b29104d",
+        "actions.json": "ecb9284d510d29a231e996c595bb5ade4a5ce526651ce6077338f655600af0f3",
+        "events.jsonl": "bb4eb14acbca4d371dfde45980bfbae019a0e9c3f847837c9a541a01a54697d7",
+        "result.json": "b191efd465224065fbb24352d408a13bb00a6e9e8a5ef4a9c57f31e38b57352b",
+        "evaluator_trajectory.json": "13cd89a8a27bebdbb1f0c8cfec5a0245a3d35d11ecb42696bd069cc87833cddd",
+        "disturbance_forces.json": "9006e21bb294c54c1ca47b2705d868386bc249e1c0925e06a3703e70b8cc5eca"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 513,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/08_ProcTHOR-Train-7473_seed42_dynamic.mp4",
+          "frames": 1088,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 90.66666666666667,
+          "bytes": 7687988,
+          "sha256": "5f0c44860354b55273b2bbd99f206f2eebb64e51969759d982e61967c1c322ad",
+          "poster": "media/simulation/current50/08_ProcTHOR-Train-7473_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "09_ProcTHOR-Test-166_seed42_dynamic",
+      "scene": "ProcTHOR-Test-166",
+      "qualified_success": true,
+      "robot_action_seconds": 662.25,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "be6c2dc4e2b3384435897f3f192e6b23bf157771beae92e42b0d2e5f1abbddae",
+        "actions.json": "a4ee7d89fd07203bb7bb8d775cd30c64665a5af17de8a0ac63b99bb2de7031c8",
+        "events.jsonl": "af52a651d47e072ec9ab4a853955000a8381c1864edd96883edc109dca3a975a",
+        "result.json": "e11147b2d9a0a98987fef7de22dd5f971e0cd1f914cdf401aa9eb1e4fb68a993",
+        "evaluator_trajectory.json": "fd847baed9c170268c725e548428e03fc269e04d04fbeabeba2acfdf2b4d6720",
+        "disturbance_forces.json": "a23bfe74a63ded175647c1fe65ba800820441ca916766aa506b91c2088a90ed2"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 269,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/09_ProcTHOR-Test-166_seed42_dynamic.mp4",
+          "frames": 663,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 55.25,
+          "bytes": 6773428,
+          "sha256": "d793f4dbf2e55eb453d62228c0ad74bf9d6444a7317b1ac73d320f348ee8284d",
+          "poster": "media/simulation/current50/09_ProcTHOR-Test-166_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "10_ProcTHOR-Test-459_seed42_dynamic",
+      "scene": "ProcTHOR-Test-459",
+      "qualified_success": true,
+      "robot_action_seconds": 381.65,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "3028e9979400e9edbec77b7f23955ff61f747f7f95a30d8edccf1067b780097b",
+        "actions.json": "dd4b926db55a3f43f6e639eb55b4053fd507443849625ab06a5a6e90aff6e9f0",
+        "events.jsonl": "31a01e28d1c519bad3c7ab9849192fbd93d8c75fb3303dbe454cdf81887a2f57",
+        "result.json": "e07043c8a750677df5930e88dbdd3141b9cc360dbb75bf5a8872ee94247570fe",
+        "evaluator_trajectory.json": "6fbf5431af48b3b5fd637c6354babed29b88d4a60ce41b9912afc47bce6b0c7e",
+        "disturbance_forces.json": "3224372d27bb2b5fe410381e7560aa1b52191f25125a4bd3ddc75bd65366ecbf"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 135,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/10_ProcTHOR-Test-459_seed42_dynamic.mp4",
+          "frames": 382,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 31.833333333333332,
+          "bytes": 3701233,
+          "sha256": "5d0490b2d07b23e7e0535fe55c22969f16b0db993fa5cca91645d4d33dfd06e5",
+          "poster": "media/simulation/current50/10_ProcTHOR-Test-459_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "11_ProcTHOR-Train-3859_seed42_dynamic",
+      "scene": "ProcTHOR-Train-3859",
+      "qualified_success": true,
+      "robot_action_seconds": 722.3,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "996da864e2c38889f8e19367d94a04df5a644783fda95f91cf34af17126365cf",
+        "actions.json": "641bdb2bf1491a1bbc46f21fea024df3c717d40b902d34a94203f0abab5fb50a",
+        "events.jsonl": "96931aac076edde569d7ee9a5840a85aa5371c7b5a9948c199ce764ef158e117",
+        "result.json": "17809e1527e1bfe9caf907d5e6d27b018e52af03e41f0c0a65a4dbcee5888dee",
+        "evaluator_trajectory.json": "f159d7eae5e769cc8b40c5a7dcfe3a8f9df93bca6293b92be3c1ba72387b4163",
+        "disturbance_forces.json": "42d64d7a7a9a08d1b78f37b59378741153d1c9b05b80927cd79dc2017b585b36"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 305,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/11_ProcTHOR-Train-3859_seed42_dynamic.mp4",
+          "frames": 723,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 60.25,
+          "bytes": 7042495,
+          "sha256": "a74f448682a6d8531f856cb9e9c8b80d2eba91423e8c8e6784c0bfa4cf667fcd",
+          "poster": "media/simulation/current50/11_ProcTHOR-Train-3859_seed42_dynamic.jpg"
+        },
+        "grasp": {
+          "file": "media/simulation/current50/11_ProcTHOR-Train-3859_seed42_dynamic_grasp.mp4",
+          "frames": 237,
+          "fps": 5,
+          "playback_speed": 1,
+          "duration_s": 47.4,
+          "bytes": 1746645,
+          "sha256": "5061cb95dfe4d086e3b58de616afe56cd58f5d06ecf8553e781cc8165297d1a4",
+          "poster": "media/simulation/current50/11_ProcTHOR-Train-3859_seed42_dynamic_grasp.jpg"
+        },
+        "place": {
+          "file": "media/simulation/current50/11_ProcTHOR-Train-3859_seed42_dynamic_place.mp4",
+          "frames": 328,
+          "fps": 5,
+          "playback_speed": 1,
+          "duration_s": 65.6,
+          "bytes": 2592355,
+          "sha256": "480631371179f404599e1607705cef1c7bd3ea951ae5dc75267bb5369ab5d6e7",
+          "poster": "media/simulation/current50/11_ProcTHOR-Train-3859_seed42_dynamic_place.jpg"
+        }
+      }
+    },
+    {
+      "name": "12_ProcTHOR-Train-4108_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4108",
+      "qualified_success": true,
+      "robot_action_seconds": 367.75,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "246b1f0b11cb8534df56f1d9c143cbb750cf28dbccb089a0fbfe5edecafba414",
+        "actions.json": "b19387a0ea6525ad0a9cc824f1036a2a93b715fbe9d2f8205863265d6619049c",
+        "events.jsonl": "44afd7b39a21ff52db59ded0e0b9477383b369edf371e7d2c56bfdac3ce00f5c",
+        "result.json": "53d4f24d796bdddbcb4198761a5879668b28556e5021435748762b74548f3ab5",
+        "evaluator_trajectory.json": "7e365cd10540b6f80d2047ba003398709fedbe0c69fa2a1919ea6316985c5853",
+        "disturbance_forces.json": "48a562e615e708f499a04a99a083bf84787972cf8d82a6603c89c49a8577dc8f"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 149,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/12_ProcTHOR-Train-4108_seed42_dynamic.mp4",
+          "frames": 368,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 30.666666666666668,
+          "bytes": 4658398,
+          "sha256": "88098c04f3b40503f0c2202f6cf1330fd4255f2e7e3c6a1bc0ac689b0090246a",
+          "poster": "media/simulation/current50/12_ProcTHOR-Train-4108_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "13_ProcTHOR-Train-7780_seed42_dynamic",
+      "scene": "ProcTHOR-Train-7780",
+      "qualified_success": true,
+      "robot_action_seconds": 330.9,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "9a913b8c86d42ea03fdb9d2d9d4e6b2d465474f8fa33747819d78b4806001d2f",
+        "actions.json": "d4e53ad1231eb8ca543cefb17de0b4b0578b109a4717b90ee06cdf37ad3a58fb",
+        "events.jsonl": "e2238ac665218453e72c100a6ac13101a55059e5534bbce771efa8b7c69d4e72",
+        "result.json": "d30ab6cee99344e894c50070cea27f2c2e83660c5ab480b8335829594f684b7c",
+        "evaluator_trajectory.json": "b36834c457715bdbd15fb93ee32a0c05ea5a24531982976b4eea4eea1b9feebd",
+        "disturbance_forces.json": "fd98c603a66173ee76425a6c52d4d88c23311f285273f22149f1581d8f24b515"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 132,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/13_ProcTHOR-Train-7780_seed42_dynamic.mp4",
+          "frames": 331,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 27.583333333333332,
+          "bytes": 2639977,
+          "sha256": "c485d743f248b64c34ece8ae8dbab8b9991fcf8ac305918854bfe726d534629e",
+          "poster": "media/simulation/current50/13_ProcTHOR-Train-7780_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "14_ProcTHOR-Train-8921_seed42_dynamic",
+      "scene": "ProcTHOR-Train-8921",
+      "qualified_success": true,
+      "robot_action_seconds": 246.75,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "05be866221af69b55a6b8bc15ff2c25ba9ff5925e93e183dd3918de5c815e055",
+        "actions.json": "322c7ec4d541f6d136349f8ef63728351638f3e19bda4d1622ee952be263dc60",
+        "events.jsonl": "836873787f09dec4ddd4fb257e8ba6261ed42dac74baec5d273427be243dd5fa",
+        "result.json": "12c564c0a442b31d2b5698ed6c668c05e754369aca9a6be7ab1c027c5d89bd56",
+        "evaluator_trajectory.json": "c661fa871bed0974638e1b7be4e717ebba22bedc5fa49a7739272f3b711c11f9",
+        "disturbance_forces.json": "439e5f0dcb94844b3c108e632d7d6eb94aeb8073ab04ca77b214ced12e44445c"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 84,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/14_ProcTHOR-Train-8921_seed42_dynamic.mp4",
+          "frames": 247,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 20.583333333333332,
+          "bytes": 2432472,
+          "sha256": "a111996643824b534caf5740fc854b42b53f524e692e26f47d89fa6de35ab0c5",
+          "poster": "media/simulation/current50/14_ProcTHOR-Train-8921_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "15_ProcTHOR-Train-2769_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2769",
+      "qualified_success": true,
+      "robot_action_seconds": 1385.55,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "27dde463715831cd198a50e79fda22037ad5daf6b707057c75ff7bfc245e9467",
+        "actions.json": "fb534637bf1e4f501698c36ee32939514509b4feb6e38db0a25551e1d526d3b3",
+        "events.jsonl": "94ae491843a18a86de01e27e85d90d26640ca725019f6ed705b0c503a47cd914",
+        "result.json": "39cfd79b0a2f4e27edcde7c533dec4f85babcaa8c56e0b561bd07877db20c9aa",
+        "evaluator_trajectory.json": "3b47777817e0f0541ad2302cc7808b4416e0f18380728cda2cb8cde7c119bee1",
+        "disturbance_forces.json": "7df70ba278b71bca1610d887286d5fe1dee6145406484bfa0081884b59df82de"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 616,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/15_ProcTHOR-Train-2769_seed42_dynamic.mp4",
+          "frames": 1386,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 115.5,
+          "bytes": 15770947,
+          "sha256": "987352f1a3526def0c7d02979d8c25964d766f289bcc4bfe51dcd2f3bb5a3883",
+          "poster": "media/simulation/current50/15_ProcTHOR-Train-2769_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "16_ProcTHOR-Train-507_seed42_dynamic",
+      "scene": "ProcTHOR-Train-507",
+      "qualified_success": false,
+      "robot_action_seconds": 913.25,
+      "failure_reason": "Pickup search or navigation incomplete",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "003ff24bbc1ffa4e5c21554c62f69497de9f9bb9942927cc095993fac655ecb4",
+        "actions.json": "bdfe7865d4ac6a5174c67dba99c08675f408e350ec6ec12536ea272fe198eb72",
+        "events.jsonl": "93a84def87575b0ead6f774b5a8a4c48819452c46529a314e70050e5c4982741",
+        "result.json": "6fbdc70f03d77d3af7eab98439dbf12f5eaa482c909896dfd054915698220a01",
+        "evaluator_trajectory.json": "de05792831852794cbeb8142a0c3715ec5c9db58742fb541dea052fcbc7fba91",
+        "disturbance_forces.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 391,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/16_ProcTHOR-Train-507_seed42_dynamic.mp4",
+          "frames": 914,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 76.16666666666667,
+          "bytes": 13179541,
+          "sha256": "38011872bd356ab877a9ff0d49432a37c9f0fcda1196a2548b5e4d8df2b7d6ae",
+          "poster": "media/simulation/current50/16_ProcTHOR-Train-507_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "17_ProcTHOR-Train-9926_seed42_dynamic",
+      "scene": "ProcTHOR-Train-9926",
+      "qualified_success": true,
+      "robot_action_seconds": 244.4,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "b54ba19ec4fca723bb4f5cbb5029f117fd8d77d2906b9b2c5bcc5e26f4def700",
+        "actions.json": "e3d48a96dfecfd31e338815b74e288ba379e96a25b8f1df8934890fb5a1d0bbe",
+        "events.jsonl": "6307b4eb1426801b8f00b38e74fa36a3c402a84dec447bc3d3b2a58df0c4d1ac",
+        "result.json": "ad223724e43ab62d03828a65811509834fec5e0fd0ba52a87ed9d9134cd77e49",
+        "evaluator_trajectory.json": "89ce050c31162d31715ea33b4a308bafb51f250c7bc92ecd52fb53e21bff1760",
+        "disturbance_forces.json": "f0a1b0928bc80febc96ca98f799656b6c05f6fdcd1d9703141b9afbbe1cffb35"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 78,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/17_ProcTHOR-Train-9926_seed42_dynamic.mp4",
+          "frames": 245,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 20.416666666666668,
+          "bytes": 3220350,
+          "sha256": "afbc3c9922d613a5ef8bb99fd7a98885835c9be27c141c47b2d87b844a0f3c2e",
+          "poster": "media/simulation/current50/17_ProcTHOR-Train-9926_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "18_ProcTHOR-Train-3208_seed42_dynamic",
+      "scene": "ProcTHOR-Train-3208",
+      "qualified_success": true,
+      "robot_action_seconds": 763.85,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "e6b6b7038139b00654219a766b77153ed088b05da75cf7307530ba15f6151739",
+        "actions.json": "616ade515f83c77a257c92ef1940db0c39e44b28de8b2a8b2a9dfa64d2334368",
+        "events.jsonl": "eab148a9e85960d635d5abf0a73d781543226097f3ed8e9781d26f983acf356d",
+        "result.json": "bf55a6121cd11e5ba01467c9e91cf40b7de546dde0efad7322ac69990e4b1ffc",
+        "evaluator_trajectory.json": "e424fea8fe1caec3cafa1e5adee70eb91c0e3f9f850ae38f6b814840bfcfaea9",
+        "disturbance_forces.json": "cd1cc80564d63920d2d2e4595d6585b137cb2983fb33d08547f0971230009ad3"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 350,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/18_ProcTHOR-Train-3208_seed42_dynamic.mp4",
+          "frames": 764,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 63.666666666666664,
+          "bytes": 10059819,
+          "sha256": "882ebc5ff43f3bc42fa0fc34cb12e9b167c5153598175f1bc7a144417412632d",
+          "poster": "media/simulation/current50/18_ProcTHOR-Train-3208_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "19_ProcTHOR-Train-4204_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4204",
+      "qualified_success": true,
+      "robot_action_seconds": 856.95,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "4ab9129a7cea40e2eb74f96997c31a411bacb94ec9b1d241c3e2c922f5dfe809",
+        "actions.json": "29a5dc2d34832ac2331ec6e011228dbdc4057413baeef3e2ab30167b6a5ef828",
+        "events.jsonl": "2b2e6db9ce1f7eb59acde2fdfffd7df7acfc74328162f7683f92efbe51920b63",
+        "result.json": "c6aacddcc16918343cfc7d68c9790175c13dbaa90b6bc9f826fe5c95cb4493b5",
+        "evaluator_trajectory.json": "abcb9d7c1f280cfa23ad13661e0f9ae4f103cb2e3b6bba7f3a45313ba03aeada",
+        "disturbance_forces.json": "46965b153f3c8efcdffce7f0217b7990f5750d06b87913cecf69be2e4c03ea17"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 337,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/19_ProcTHOR-Train-4204_seed42_dynamic.mp4",
+          "frames": 857,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 71.41666666666667,
+          "bytes": 9925161,
+          "sha256": "ddf2ce8f185d356e81e9d2a986f139c8322933087aa87e78f88aed5825cb441f",
+          "poster": "media/simulation/current50/19_ProcTHOR-Train-4204_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "20_ProcTHOR-Train-8432_seed42_dynamic",
+      "scene": "ProcTHOR-Train-8432",
+      "qualified_success": true,
+      "robot_action_seconds": 314.15,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "c1c414161e6adb3ceaa122724f3a353d219b001c91de3ebe1dfa5656fc94bbfa",
+        "actions.json": "161300b14e804f55821877fd13e5eade3422fb2d85798c10b1e9961aa2cfdc79",
+        "events.jsonl": "d034cf5143800f6380a88910cbd30383c30bdfc2d13763502eb14fd448e6b4fa",
+        "result.json": "deb3900d51c256d8d2e6f8c756939183c1a5ae33d897808f953a866caa700e39",
+        "evaluator_trajectory.json": "e43ce42302a3fd35fa4a34dd35262b118460b593f25ae86e3b5eeadd547f32c1",
+        "disturbance_forces.json": "9b9bb126e6ae8bc5ba4114f8aba53ec3e1be6889c87b990cb3be7dfd41173493"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 102,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/20_ProcTHOR-Train-8432_seed42_dynamic.mp4",
+          "frames": 315,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 26.25,
+          "bytes": 3150532,
+          "sha256": "d6c4269e4f80f09f05dc98a6c5d144eab788f843634450c9e55dca28f53cf216",
+          "poster": "media/simulation/current50/20_ProcTHOR-Train-8432_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "21_ProcTHOR-Test-308_seed42_dynamic",
+      "scene": "ProcTHOR-Test-308",
+      "qualified_success": true,
+      "robot_action_seconds": 355.65,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "aa9c7b92f8b59ecf4a489e8dd9a7c1f97974f40e68dc52dab24f48e3c4159274",
+        "actions.json": "b5aa936afee889cd3cdc8862128130ada940b525302a27a89d694a3dbf144258",
+        "events.jsonl": "ae1ea502d6d16e47f3d503af0a5707a504f59ab17d242e0684a347dd47084d50",
+        "result.json": "91f84750204f08397e2f6f568da430cf519e1360964031408ace81174f9da3e3",
+        "evaluator_trajectory.json": "3c3aa6b42078e489fabfebe1785bb08805d5168ef6e5e40d0118c616b40c7c97",
+        "disturbance_forces.json": "44c534e7dfbfb1cb095f8baff25e392bb5461ba06a781c509c3828722dca0adc"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 135,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/21_ProcTHOR-Test-308_seed42_dynamic.mp4",
+          "frames": 356,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 29.666666666666668,
+          "bytes": 2507901,
+          "sha256": "d4eda426bee7da5168935f88c72a56df6e56a29dc6c83740375d42e0b5df5704",
+          "poster": "media/simulation/current50/21_ProcTHOR-Test-308_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "22_ProcTHOR-Train-3170_seed42_dynamic",
+      "scene": "ProcTHOR-Train-3170",
+      "qualified_success": true,
+      "robot_action_seconds": 378.8,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "1e40e76b7c3d3796fdc95a916881aaf506be1df5bd8c71dd41c3470dfc186a89",
+        "actions.json": "9370619ca76cc92a6ddec9f95a3961e3fb1e188be1d3e6426df443fbfbf0aec3",
+        "events.jsonl": "3c1d7f669bafde1283139367857c43a916e98cd1731f6a955f07918f30c747d0",
+        "result.json": "9a3c50b2b06be9ab1bff1ad3d6af9ed92ca466bdb04e14ab38486513f205afbd",
+        "evaluator_trajectory.json": "7143dc9c630b6280b4b958295a7ed364e529ff94e6a818031ae449692434754e",
+        "disturbance_forces.json": "9255417baccb8ace65a7f66cd4a5740f6562525674bc4185f30f708dbbe6de8d"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 149,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/22_ProcTHOR-Train-3170_seed42_dynamic.mp4",
+          "frames": 379,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 31.583333333333332,
+          "bytes": 4019997,
+          "sha256": "18067fceaaeb83123ad63d84a701f729ada73171d8d9966bc7f1d1eeaf8f0598",
+          "poster": "media/simulation/current50/22_ProcTHOR-Train-3170_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "23_ProcTHOR-Val-265_seed42_dynamic",
+      "scene": "ProcTHOR-Val-265",
+      "qualified_success": true,
+      "robot_action_seconds": 313.45,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "516429c2a056aca9851e7afcb3be9eef4f7cd9de197f5483d38e3ed2eb47a03d",
+        "actions.json": "c6178b8e80ed638ec4f4282d2d3a25e38ab1c9cc2d2e8a9244bf16ad51c855c0",
+        "events.jsonl": "4fb39854c6ad1374ba28dd0dc3fd730b9bb73884a914ca15e62a18c6708ce09c",
+        "result.json": "8643f2c3c1696663c6c3950d505cec9a3403395e99ffca4c508ee88941558b5c",
+        "evaluator_trajectory.json": "c335d96a565fec1bc469337343b644459e0e0f148c90c0926c0e2b31304fd76e",
+        "disturbance_forces.json": "3d41ea06c9b2824c49d4717cf429637f0de3b8e08f4f124b0ba19501ac1affc5"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 108,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/23_ProcTHOR-Val-265_seed42_dynamic.mp4",
+          "frames": 314,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 26.166666666666668,
+          "bytes": 3289441,
+          "sha256": "aa6f1365c107c1cb0678bdd8cf32632790bdc9dd856afd48d0e786f2f5754a0a",
+          "poster": "media/simulation/current50/23_ProcTHOR-Val-265_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "24_ProcTHOR-Train-9699_seed42_dynamic",
+      "scene": "ProcTHOR-Train-9699",
+      "qualified_success": true,
+      "robot_action_seconds": 457.7,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "1455b07dd4ce7ca436ac535e6c5552c1045508cfa1c965fc36f27a9afecc7d7e",
+        "actions.json": "7227a7e9c79d07cfae1c4072cfc2170b2fd0dde819ed2800d5ff6e0d5dfc63a4",
+        "events.jsonl": "922fbb7787d0890933a427910f334d1d27f07bdd9a58e25727260851768b709c",
+        "result.json": "685e939c749fabdd3ef08178cc9cd9c1dd93249999cc2677069f799d55336344",
+        "evaluator_trajectory.json": "710afa063c9dabe4d87ef7ae0d50784a3ce2b1b7afd6357ba173b2acb78e2cd5",
+        "disturbance_forces.json": "0e003f0a103b9dcb42d8e1f8c953e3f0b70d07eea145ba783acf86a18640b55f"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 197,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/24_ProcTHOR-Train-9699_seed42_dynamic.mp4",
+          "frames": 458,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 38.166666666666664,
+          "bytes": 4954050,
+          "sha256": "9d35419e98c38071dbc21270d3edeaf074cb426b39188958d3c8edbfaff516ae",
+          "poster": "media/simulation/current50/24_ProcTHOR-Train-9699_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "25_ProcTHOR-Val-605_seed42_dynamic",
+      "scene": "ProcTHOR-Val-605",
+      "qualified_success": true,
+      "robot_action_seconds": 348.25,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "6e2c577e6ebd06bcf08d81a22beaa7bd5b733028912b056ae70971930328acbe",
+        "actions.json": "48687bd9940be66cc5cfc55d98b56c5a3cdba66a4317fa4f5652d1e48a049af6",
+        "events.jsonl": "ef45cc44abc63e1a071ab5814b6b9fc96b49034f4bc979fbcf168169ff721623",
+        "result.json": "eeaf0ca9929b4e07a62bd221f60516005225162eb641380841f2efee8d944545",
+        "evaluator_trajectory.json": "433f3f43a82ed9d9d51d67f756d2fdf297236ceff88951f8b1c14c31f565ed00",
+        "disturbance_forces.json": "16e9478a16c998667265a5fa1618b1764d7a736bc614ff54b26bde897a575fc0"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 128,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/25_ProcTHOR-Val-605_seed42_dynamic.mp4",
+          "frames": 349,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 29.083333333333332,
+          "bytes": 3812442,
+          "sha256": "29397f343cd2ec6143545640ec6995d5ee072a461e0df64cb126ea7e8bfc7750",
+          "poster": "media/simulation/current50/25_ProcTHOR-Val-605_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2451",
+      "qualified_success": false,
+      "robot_action_seconds": 422.15,
+      "failure_reason": "Released placement unstable (0.35 s)",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "de7c3368db18b6a2cf158084724ea9498bc008b77e91c1eb36b61fb2b09f0597",
+        "actions.json": "6b8523a4ddbbf00aa73e7f8ac5d0d40c067155bc3bd32e6c8c51124b8ef3a116",
+        "events.jsonl": "a04494faf473bae5eeced151319c92f00157932e685487c94616c121f9a62b76",
+        "result.json": "b4ad241fd9f149e4568732856de6857dc0cae02d8a9b42e67421feb06554da8f",
+        "evaluator_trajectory.json": "1fb6b1381c892dd891b6fc545da12ea5cc68d27d2ed4304e1ff4d059b222f27d",
+        "disturbance_forces.json": "db965751dbbd7b27ca71da66d28538f5b3ce5e3c02204118384c55c57683b179"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 122,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/26_ProcTHOR-Train-2451_seed42_dynamic.mp4",
+          "frames": 423,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 35.25,
+          "bytes": 4035407,
+          "sha256": "ab080a5779c0a34432331514dd3f7b2a3ded86fb501bce118f1fef58698c9ccb",
+          "poster": "media/simulation/current50/26_ProcTHOR-Train-2451_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "27_ProcTHOR-Val-576_seed42_dynamic",
+      "scene": "ProcTHOR-Val-576",
+      "qualified_success": false,
+      "robot_action_seconds": 633.2,
+      "failure_reason": "Placement search or navigation incomplete",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "d5fbfa9b1e6bbf29059054b155a1c52f5d50942c9ec08461da25a6c0954a289d",
+        "actions.json": "f7eda1bcbc26519d329dfefeeee891c9e628e46da9395aa010dfc240070f2f05",
+        "events.jsonl": "9528f374fab34b2163e7107f2e7a44a14f4ecb05939fd919b2265aff745f6fa1",
+        "result.json": "97150e99aa77dda0d8be07163a3b4b68ae37a66fdb0111fcc42fb6b4f004b653",
+        "evaluator_trajectory.json": "cec18a13520cc9ac01435f47559d07227cb20558b4e5934e04b49afe19735a1d",
+        "disturbance_forces.json": "1a484cca1eced161a3b5ee9a55d52c2bb3696916cf7aa886ac1840fc043baa0c"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 229,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/27_ProcTHOR-Val-576_seed42_dynamic.mp4",
+          "frames": 634,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 52.833333333333336,
+          "bytes": 3917015,
+          "sha256": "fb6c9e5e7fa06d087d886ba447fa4051e68a2c34f062fbe446928cf1773428e2",
+          "poster": "media/simulation/current50/27_ProcTHOR-Val-576_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "28_ProcTHOR-Train-4956_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4956",
+      "qualified_success": true,
+      "robot_action_seconds": 822.7,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "9581a8fa889d6bfe047e22f914095665d5e67942e799bc9d501bfc531b1c1dc0",
+        "actions.json": "beb4fc6ad1a4c2b478c0d6e17ab2fd63604831eb10509bb854370b5831bdc416",
+        "events.jsonl": "bf04d2730dc71c559c1170638edb316c7ffa62ad1cf010d3edc32ca1a16b6c03",
+        "result.json": "5d6ad714c090440b8be33183ea9dc96e694032cdfe33d6450095febb9d9250da",
+        "evaluator_trajectory.json": "fa03af27ad104306fcd119593245488840781b0a28e5247878ff2ace471bf302",
+        "disturbance_forces.json": "8c4b7ad9435e5d42a04d70d8a022c2e1bcd993dfe8388fba630cc13cfc013b85"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 402,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/28_ProcTHOR-Train-4956_seed42_dynamic.mp4",
+          "frames": 823,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 68.58333333333333,
+          "bytes": 6974807,
+          "sha256": "62accb0c7730198e0cc207ec75071e07c2c53c012ac1077247b469178efe9ea7",
+          "poster": "media/simulation/current50/28_ProcTHOR-Train-4956_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "29_ProcTHOR-Train-5013_seed42_dynamic",
+      "scene": "ProcTHOR-Train-5013",
+      "qualified_success": true,
+      "robot_action_seconds": 343.0,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "e9cbaa52fd8eed5683e61733e4a1fcbc8b6d291534dc6279b49b8957ded95b50",
+        "actions.json": "0202bfa0771088c04dab720d8a7571ab5221cf5139af1046a59178c284cff0b0",
+        "events.jsonl": "1441d57bd25aff81762c4113fb42491ee36fafab38bd2efbc8c184d5a4cddefc",
+        "result.json": "1d87defffbcfcb1f0b994be4a00500005ee74ae38ad001fa94c56c2463f95310",
+        "evaluator_trajectory.json": "8e16ee589b5907e55cb978168cc8cdbe23d4d0c3a6f54d66836ba8b0e21921a3",
+        "disturbance_forces.json": "05f96b61368c482f814213785bb506a7249659a3e00be04d84017e9196367947"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 137,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/29_ProcTHOR-Train-5013_seed42_dynamic.mp4",
+          "frames": 343,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 28.583333333333332,
+          "bytes": 4030667,
+          "sha256": "f7158fb936ce5198399c0113eab73175db51045432ccb6e7d5442bd11005f52c",
+          "poster": "media/simulation/current50/29_ProcTHOR-Train-5013_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4732",
+      "qualified_success": false,
+      "robot_action_seconds": 1800.0,
+      "failure_reason": "Placement search reached 1800 s",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "b963532dbbe9689e1fea73f1891b9dca0f64ea25e1a32a27769773f879d0819d",
+        "actions.json": "c397cf7d2af5d5a7754d8428ebb02b6d0e5b43543369648c3f9c1396b1226b4b",
+        "events.jsonl": "d7fd7e89b5a794a199466e52bdea0246a0072320278cbdee6354e2c1d43f420a",
+        "result.json": "8de67af1a10a0e0f18c99b12fd4ecc576f0b195c0e143e3cce239d6d0e6b8f72",
+        "evaluator_trajectory.json": "91c55da96eaec0eb42013ff91ae58fd5f09371a3e17430d990a7a1c4dc1d3302",
+        "disturbance_forces.json": "28370e7843e3430783a6ce7add28c4a0daa9479a7c1a42c6ea0363eaeee88eb9"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 793,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/30_ProcTHOR-Train-4732_seed42_dynamic.mp4",
+          "frames": 1800,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 150.0,
+          "bytes": 20148330,
+          "sha256": "b1bcb3c76719cc6e04458a274ef78b6cc98559784f9bcbbd5a724a4697c1dd35",
+          "poster": "media/simulation/current50/30_ProcTHOR-Train-4732_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "31_ProcTHOR-Val-660_seed42_dynamic",
+      "scene": "ProcTHOR-Val-660",
+      "qualified_success": true,
+      "robot_action_seconds": 542.15,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "11b41b4e5b2510f3136da1ccedfdde54bb5fbe79de7441ad4ee156d85fe929bd",
+        "actions.json": "efe5dcb07641a4bac6f1a354a12fec9347adab95ca2d4357ffac453ad087da6e",
+        "events.jsonl": "83e64aae1e758e2659e0bd1ee4ff00d8acb0179e111c6e3af5427fc08d74db73",
+        "result.json": "f6d780718e5ac46ef83c04e5127c70c622e70eecbe1d5d02089448b5b857a36b",
+        "evaluator_trajectory.json": "741844f75badcba61d1e3f08df15b611cb866d5535caba04bdc4a71461bd5234",
+        "disturbance_forces.json": "7d0bbfa8c2dacfebbcff59ce6707d81895a0e2290f5f43a8bc34a1337b5da4e2"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 195,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/31_ProcTHOR-Val-660_seed42_dynamic.mp4",
+          "frames": 543,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 45.25,
+          "bytes": 7250438,
+          "sha256": "79ca3bb1f640e3f415304cfa6f049848659b0f1b8f253e745da38b8b3e98309d",
+          "poster": "media/simulation/current50/31_ProcTHOR-Val-660_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
+      "scene": "ProcTHOR-Train-7199",
+      "qualified_success": false,
+      "robot_action_seconds": 1800.0,
+      "failure_reason": "Placement search reached 1800 s",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "e482c3a321a412670fda3f07c7934f7dd627ce6bae264f89daa283633a497035",
+        "actions.json": "40f792f5ba5fb8c5da4d9534c40acb9b5bc05c6670b81fbb70849ed8af41bf5d",
+        "events.jsonl": "d77637932a5bede11d99b690b6883ccd3ff6e2684af8da5eb1982a6049657372",
+        "result.json": "fdaa1fd9403ad34704398db02f60910a7656c39c952180752eb460234a21efa1",
+        "evaluator_trajectory.json": "63e9867f41a403c6ae04a7e58a680f4a71d26ad02aaf6d35ada37a8b063be86c",
+        "disturbance_forces.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 736,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/32_ProcTHOR-Train-7199_seed42_dynamic.mp4",
+          "frames": 1800,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 150.0,
+          "bytes": 17288015,
+          "sha256": "53041aae84a25cce3e9df972c486cb9d7a5d0cdea2162d21e4cfcbc0a4b34c50",
+          "poster": "media/simulation/current50/32_ProcTHOR-Train-7199_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
+      "scene": "ProcTHOR-Train-5942",
+      "qualified_success": false,
+      "robot_action_seconds": 450.7,
+      "failure_reason": "Pickup search or navigation incomplete",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "a4ed2534844be4ef03775e2949998e35901c1f52e05b655c1de8bef6f446edc2",
+        "actions.json": "72e703cdb2f5df6c0ad86f3364a5bae9dd0c4e57399bffa77604611b8492aa5f",
+        "events.jsonl": "c65e1eadacf35ad12a39d21e71aed89cd2d27f0c11ac8cd61d941f1228180434",
+        "result.json": "bc56dd85995c2e2136a0f086af79375b305966ba020087a6f0146fac59f5fee8",
+        "evaluator_trajectory.json": "c7108ad14b5761f04c786d178ba737d5d1beae969306db830369c84fc3e17d84",
+        "disturbance_forces.json": "0343ef93d8c94ddfb583cf2b4316482aeca7929c15a21da642b1e966ad0ff36a"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 201,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/33_ProcTHOR-Train-5942_seed42_dynamic.mp4",
+          "frames": 451,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 37.583333333333336,
+          "bytes": 8692210,
+          "sha256": "569d9a26bb41ba59e713d7e9f4c2d3484ee105ddcfd73726d748cdd072a6242e",
+          "poster": "media/simulation/current50/33_ProcTHOR-Train-5942_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "34_ProcTHOR-Train-9419_seed42_dynamic",
+      "scene": "ProcTHOR-Train-9419",
+      "qualified_success": true,
+      "robot_action_seconds": 873.9,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "a210c8a5f260ef529926b668d120f707c33e7908815bf2167d36171ff64092d9",
+        "actions.json": "cee8f063bc344b07e743b6c45028287d145b1d7e125b6128c8fc10261ccccc40",
+        "events.jsonl": "1a1b00de5a5af2be00a6950fa157b074d7384442cc450572076ad92812cb1213",
+        "result.json": "32ca2278a8080873de8942895805d973fc59ca5a78316e249a86e010e05a7a86",
+        "evaluator_trajectory.json": "2234cd3e142a3eb7278c6ad0fdc4e660ae9681d869266ff6d89a34f907fbfad4",
+        "disturbance_forces.json": "1796f54b6eb5aeeec5c282d5873689e6c34b4b331cfcb48418bcc1f41f23db3f"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 439,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/34_ProcTHOR-Train-9419_seed42_dynamic.mp4",
+          "frames": 874,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 72.83333333333333,
+          "bytes": 8375188,
+          "sha256": "d76e8e36e96e07840f83c9d9027eae47c2f03637441923cd1826f0a8ba99ef35",
+          "poster": "media/simulation/current50/34_ProcTHOR-Train-9419_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
+      "scene": "ProcTHOR-Train-6673",
+      "qualified_success": false,
+      "robot_action_seconds": 835.65,
+      "failure_reason": "Placement search or navigation incomplete",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "546ac759585a31fe787567d957a49c5f328fbbc304bbe79401c4210307d0f672",
+        "actions.json": "3df748178a19ddbeed13fa1d01c597885b7bf09f4ca88bab45816b98ffcc8a11",
+        "events.jsonl": "09910a3396793959e94218db06f47ce6aead6d311450f6bff3798daf28f680d5",
+        "result.json": "c416c0183fbb830d17d36b58210e103a0d509b38d753bf59f2b0a42ca9a05901",
+        "evaluator_trajectory.json": "84f54f8a65591dd23ccb50020bfac04306ffc4c3a646f67957b4dea7fd3875b6",
+        "disturbance_forces.json": "3cdcfe510b6f2f9a74181ff1da9ce52e21612d7de5fededd3885668639d3ba34"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 402,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/35_ProcTHOR-Train-6673_seed42_dynamic.mp4",
+          "frames": 836,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 69.66666666666667,
+          "bytes": 8790422,
+          "sha256": "d43b3ad5678a463aa622e1a9bd862fb7af8272230ac0a32869da1c605bc4c522",
+          "poster": "media/simulation/current50/35_ProcTHOR-Train-6673_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "36_ProcTHOR-Test-959_seed42_dynamic",
+      "scene": "ProcTHOR-Test-959",
+      "qualified_success": true,
+      "robot_action_seconds": 243.15,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "ef9cb829fbbc92f711d876cd01769e226dc0fb95705574214d75694e7aa40349",
+        "actions.json": "ca5c7d50b82134ab19f7342e902681cf3e6db420f93cb3085f755f9948cdc196",
+        "events.jsonl": "ae2ace860b1322fdd08a9279754220af6c4b0043435cd9afddd5aaf3eb65c08f",
+        "result.json": "22cb59a9c15474e98cf59092224f3626a75057650166c42c7aa18baa79bc11eb",
+        "evaluator_trajectory.json": "1f76ae2a69c3e771da0270ae4fd2ae7f7eaa9934ed38fa43df0127539c2a820d",
+        "disturbance_forces.json": "b094453faa8c7c1e6d5cd3c187b0467592777e38a7db701f864b102f653650bd"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 82,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/36_ProcTHOR-Test-959_seed42_dynamic.mp4",
+          "frames": 244,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 20.333333333333332,
+          "bytes": 3244759,
+          "sha256": "592f3870802236251b90ec039e75866729a6f71981a9206251fee39bf7d57f06",
+          "poster": "media/simulation/current50/36_ProcTHOR-Test-959_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "37_ProcTHOR-Train-2063_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2063",
+      "qualified_success": true,
+      "robot_action_seconds": 1753.45,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "a8c11ac43ba00f3fc9d80c36d64dd238d5ed5aaf451c948b520dafc193215a67",
+        "actions.json": "baaa0fdb1b92b31df2f15cece5ab58fc1ca7242d6bb656f0a4bada58cd223295",
+        "events.jsonl": "df0206e33c94086715e2e15843964c0312b4357e177b79b595faf303f09acbac",
+        "result.json": "912e41cf73a5faface579949dc2522cdeaa1c6f24e1cc071d690dd40e811fbfd",
+        "evaluator_trajectory.json": "84e3d18f92a6d577460ec1a58b66e1d3981a285c6123f825f1f8b8c1e10bfb42",
+        "disturbance_forces.json": "59d1069e3296a147e16bffbfc7ad6572d53fa40fca78f357fefdd8f89be49ba6"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 912,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/37_ProcTHOR-Train-2063_seed42_dynamic.mp4",
+          "frames": 1754,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 146.16666666666666,
+          "bytes": 16689278,
+          "sha256": "47b8eb9a64c0b2880687fb3e856c71eaf42aef7d710d753f0171df09387d8703",
+          "poster": "media/simulation/current50/37_ProcTHOR-Train-2063_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "38_ProcTHOR-Train-2809_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2809",
+      "qualified_success": true,
+      "robot_action_seconds": 382.75,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "6770b3ef005ba59ebf03d54919fc8e053396a4b6a9d6ff17ce0703991de9e1b0",
+        "actions.json": "c0611797d762f798dab4adbb895277ad25d41a36bd79473d74243659235424cb",
+        "events.jsonl": "e48a102c72d9d58e16f3329bc292ee3907320c07ff80b27dfe406ac7a98de3eb",
+        "result.json": "13694a7b65c17af4bce9f288f9420b4c25ceda7e59e8986ac8b8eccf488530f2",
+        "evaluator_trajectory.json": "a954ed59073cbe246e4ca40bdca45e4bdd939cef6448d44c3c41c0cddd5abab0",
+        "disturbance_forces.json": "ad9b23a4289646da9676ccf05691ba11e4c6509e92c1a52844b21407a130020f"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 123,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/38_ProcTHOR-Train-2809_seed42_dynamic.mp4",
+          "frames": 383,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 31.916666666666668,
+          "bytes": 3407755,
+          "sha256": "467d0999251dffb9c74bb66a52ce7c971acbdc0711c428ee72a24136b9fb0178",
+          "poster": "media/simulation/current50/38_ProcTHOR-Train-2809_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "39_ProcTHOR-Train-406_seed42_dynamic",
+      "scene": "ProcTHOR-Train-406",
+      "qualified_success": true,
+      "robot_action_seconds": 647.55,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "ff24962171ef1be7a04f3c401677fda53f11b8c0d2d2cd82b371c366ce410012",
+        "actions.json": "2667ca3e682405583a0bd5d59a5f42ec25021d5dba5153769b81e942f920557c",
+        "events.jsonl": "f0b7f5bdaece08992ec1f5adc6eb5059c50dd693edd735f94e490cacffaf8815",
+        "result.json": "ed423b997cbafa46864913e36a3bb50e293461d2f5ba654297e0d57f9ba7cb9d",
+        "evaluator_trajectory.json": "0e4089ffac3d5f61a72e4e6a22f8ec0dee8972b35708423740f5b51bd175262c",
+        "disturbance_forces.json": "74e594ea3bbac00fff06bef49a7993223f121aac0a8a243a5c33dc03cba2e6d4"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 311,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/39_ProcTHOR-Train-406_seed42_dynamic.mp4",
+          "frames": 648,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 54.0,
+          "bytes": 7613912,
+          "sha256": "74ad379fa426a525534381f7b6823d96926749722e9dce43ad5442c0749d4c2b",
+          "poster": "media/simulation/current50/39_ProcTHOR-Train-406_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "40_ProcTHOR-Train-4574_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4574",
+      "qualified_success": true,
+      "robot_action_seconds": 349.35,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "8120fe2ad2fad3b793fc0fb42bb0abc6e3037867217252e3e3a51d93f0554993",
+        "actions.json": "a84cca4ddd0088518211b434f2f8792a08eae5a79fc1742065d8f479d94b65a1",
+        "events.jsonl": "b942e4b67b2051ce61252f6ebf1e9df0695ba61304508037fffacc3de1e00b98",
+        "result.json": "f9737ce916706d89e7034ab8884c82c12740aee68d1e4586cc262d149ab80eb3",
+        "evaluator_trajectory.json": "d022448459157dc62ec5744baffb0fcefeb88531e64d6e6b6471a7ad4bdc36e4",
+        "disturbance_forces.json": "796dd4998209cd5285c87f472248a1c274af0e8e5bc88755d90f9c18c558c964"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 119,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/40_ProcTHOR-Train-4574_seed42_dynamic.mp4",
+          "frames": 350,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 29.166666666666668,
+          "bytes": 3844206,
+          "sha256": "a88afc11e8a086e09b7782d7f46f894e60249c81495183885d24423f159f8c9a",
+          "poster": "media/simulation/current50/40_ProcTHOR-Train-4574_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "41_ProcTHOR-Train-1182_seed42_dynamic",
+      "scene": "ProcTHOR-Train-1182",
+      "qualified_success": true,
+      "robot_action_seconds": 710.4,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "8919cf0775ae354b823663e99a9fe9b3952d41bf9f046cc5c768b14dc6e8d1a4",
+        "actions.json": "48d7b11d1d7083f52775ef9e96b698b29edf0a325b60d5bde82bf7fee422216b",
+        "events.jsonl": "34a2ea9cf5ae58dc63bbe884fc32b5050ac694836e5ad0c98db5c7b171bc2646",
+        "result.json": "285adcad5b547f3cdc60c92bca28903990b9a1bfaad706f0c859d63d76829bad",
+        "evaluator_trajectory.json": "ff87e462855e86628e0c11af73d9fd9890e2ada08dd1882ee35b430f5a451eea",
+        "disturbance_forces.json": "017e80cbb6677a0bae1990dc8f3d2c6074afb47a49a13580e51fad7e7d9adc6c"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 302,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/41_ProcTHOR-Train-1182_seed42_dynamic.mp4",
+          "frames": 711,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 59.25,
+          "bytes": 7371371,
+          "sha256": "306f27f4433c349af39e9db94dfbfa057895806e9e4f5a3ff9cf36499e5b1c28",
+          "poster": "media/simulation/current50/41_ProcTHOR-Train-1182_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "42_ProcTHOR-Train-9100_seed42_dynamic",
+      "scene": "ProcTHOR-Train-9100",
+      "qualified_success": true,
+      "robot_action_seconds": 308.65,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "42a12a26476fdf972e38eaa0a4a3adbbf2e26fb575eb3fc36e577d6a57f80433",
+        "actions.json": "c0a4bc353d1369d1a1d366b16e9be4e402cefd873b7146b1c043192da10c6e58",
+        "events.jsonl": "10a5c1edef6a7d1baae4f8c632e60ef1f855126199d3f7704677f5a483f8f7b6",
+        "result.json": "5b0f65020330e9317424e7561c3ede811280a906cc89de319d7341ac20df4fac",
+        "evaluator_trajectory.json": "13ec806042a4bfacd118254792c20424a112a52ee6b3986fb72403394e76c4d6",
+        "disturbance_forces.json": "2d13dbde9b7d34adecd482d744c493be1f795937b5553632dc8f10c6c687cf66"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 113,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/42_ProcTHOR-Train-9100_seed42_dynamic.mp4",
+          "frames": 309,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 25.75,
+          "bytes": 3328980,
+          "sha256": "dcd9aaaa2510e7815c886738abf70865ba3032608343b2e34f2e4ecab4d6e251",
+          "poster": "media/simulation/current50/42_ProcTHOR-Train-9100_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "43_ProcTHOR-Train-5361_seed42_dynamic",
+      "scene": "ProcTHOR-Train-5361",
+      "qualified_success": true,
+      "robot_action_seconds": 292.9,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "286814225f5a504ac1fe6895840a458fa8121e9731b48ba6aa4cfc5339ccc1d1",
+        "actions.json": "243f0e228153c76d6e3be5e1d09f9480b9cbc644916780277b7919be0aa55e4b",
+        "events.jsonl": "526d25ff2c0f246fb578dc326231eb297eeb842c82b4c210f171007dc6e01bf7",
+        "result.json": "fb50638baaf450baef2e4bc14e1a6e3ed53095be0e57518a21228fb1655a3ab0",
+        "evaluator_trajectory.json": "dbe140669f192c65ba4b150279205eec0ca8b41101c9061356e2c88b4ff9c7df",
+        "disturbance_forces.json": "446808665459bf3ac3e2ea1470d8e6ae74092d32e5e8ee161b5535c2bc02fe7e"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 106,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/43_ProcTHOR-Train-5361_seed42_dynamic.mp4",
+          "frames": 293,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 24.416666666666668,
+          "bytes": 4111638,
+          "sha256": "8b47de466dd0ac9ffdd631e88bafe853e03298bd744e4c8d40de63afaf42ff04",
+          "poster": "media/simulation/current50/43_ProcTHOR-Train-5361_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "44_ProcTHOR-Train-2898_seed42_dynamic",
+      "scene": "ProcTHOR-Train-2898",
+      "qualified_success": true,
+      "robot_action_seconds": 304.3,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "5e6ee105b0e1ef7c4f8aa91f9cdd6196237247235b248c5e51f539183c065327",
+        "actions.json": "ab14bde85546d3de510f0626d644fdff7d15c5645c93a2a8031c144cfae37fcf",
+        "events.jsonl": "04bd91fc90d6b4eae1771b4dceb05a5b27848bdb87f2ed9cf1525d59b1a5d047",
+        "result.json": "a602ec4e9caf238bc09649f86e658578e2c79b70202cb0ed5d649b0d070cc7b4",
+        "evaluator_trajectory.json": "84bfc1b52cde5670e51e77abe99fdbac526d31800564879906ca04d74f7d5b1b",
+        "disturbance_forces.json": "f42cedc0dff576a0a558f5367bb71c10d2da6ea8fe3411497649546631df7088"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 111,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/44_ProcTHOR-Train-2898_seed42_dynamic.mp4",
+          "frames": 305,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 25.416666666666668,
+          "bytes": 3097515,
+          "sha256": "96ed6efa1a3862a44d5a51f864e958cd3534971e9b68c0b3f526bc399af72c33",
+          "poster": "media/simulation/current50/44_ProcTHOR-Train-2898_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "45_ProcTHOR-Train-6968_seed42_dynamic",
+      "scene": "ProcTHOR-Train-6968",
+      "qualified_success": true,
+      "robot_action_seconds": 1174.6,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "6759b590e837a1e0e3c6b1495e831138c82a278e91ba3060023ee1a273b52173",
+        "actions.json": "79e02ccd2d5c67c78b282321a85a6d654d74a209661e1eb2ffac18babd79590c",
+        "events.jsonl": "eadb5f8cfc2c6b9280a96041498b35c5d20eac9f26e0947246f43b117390409e",
+        "result.json": "46b43f3d1fa63ef55510942ed5f2ce62aa629c934fc045c11f9d9985f0be5912",
+        "evaluator_trajectory.json": "feaf607c07040039ee0d8969859c64aba72c9ecf89a930ae8834e9fa5433bbf5",
+        "disturbance_forces.json": "24fab74eb99027f74322c4aba0a246d313af6681f804d12b3578b9ed9673cd75"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 428,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/45_ProcTHOR-Train-6968_seed42_dynamic.mp4",
+          "frames": 1175,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 97.91666666666667,
+          "bytes": 11495512,
+          "sha256": "b0d0a8238acdb6a94d7fa9b6dd162cf8d4e260388c45dc9a5c590f460a6388c7",
+          "poster": "media/simulation/current50/45_ProcTHOR-Train-6968_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "46_ProcTHOR-Train-4899_seed42_dynamic",
+      "scene": "ProcTHOR-Train-4899",
+      "qualified_success": false,
+      "robot_action_seconds": 894.6,
+      "failure_reason": "Grasp alignment and empty-arm recovery failed",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "150e024a6c53c4c59d0582ef41deb5aad294a2ce536900b70fb62af19253c3cd",
+        "actions.json": "9ac6330e011abd526ba4a5000acf8eaacb4e59787f3d2a8876bed4c6e30732db",
+        "events.jsonl": "18daf4cf3183675c3f5e37baa5503dd2391754c43a5310910b9b2a4cdcd5f3b3",
+        "result.json": "baa75404affb7d75febd41c7eba1cda90d7a4cc5d65e318b0ba7fbb59b4bcf7d",
+        "evaluator_trajectory.json": "e10fe6c0403e0aeed63b976aa628b319bc67588684e39662655d73b649aa42e9",
+        "disturbance_forces.json": "cbab59c6604aa2d8f8de14424ddac3fc97ad331522a4591d45863f5fa1358d5e"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 315,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/46_ProcTHOR-Train-4899_seed42_dynamic.mp4",
+          "frames": 895,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 74.58333333333333,
+          "bytes": 14048255,
+          "sha256": "5956fd168c3892c1cda33ce0839baf73ba60ec89f738bcf3611e3e0a18d0170d",
+          "poster": "media/simulation/current50/46_ProcTHOR-Train-4899_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "47_ProcTHOR-Val-46_seed42_dynamic",
+      "scene": "ProcTHOR-Val-46",
+      "qualified_success": false,
+      "robot_action_seconds": 354.4,
+      "failure_reason": "Pickup search or navigation incomplete",
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "f7459fdf3f70de61e2dd1c9f308688f8fab59f28c7b06afc8546b5d342b2096c",
+        "actions.json": "48e4cb8d45bce894cd95671cece2f9b2b254ec3c6afb47e78a1a14836e392330",
+        "events.jsonl": "973410d9c3408ae333562b5d0737bc180cd1e938711b6cb81ddb0bfcbb3c1fb5",
+        "result.json": "3e4042c14900a4fd2913fb9459af3ae95128f366a08946aeea85a62776de39bd",
+        "evaluator_trajectory.json": "9486c93265387c91b491295c3afa2f09e28affd6747dd8384be8a1533d3e30eb",
+        "disturbance_forces.json": "ee5a019b3bbf6f185c9b22b5df2e21b7531a4261a1287df0daecfda4e1bfadf9"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 170,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/47_ProcTHOR-Val-46_seed42_dynamic.mp4",
+          "frames": 355,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 29.583333333333332,
+          "bytes": 4274908,
+          "sha256": "abaac8db07963b0269eb7e6b72e53e270f193c472a801cca5ea899c622f6b3b0",
+          "poster": "media/simulation/current50/47_ProcTHOR-Val-46_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "48_ProcTHOR-Train-6322_seed42_dynamic",
+      "scene": "ProcTHOR-Train-6322",
+      "qualified_success": true,
+      "robot_action_seconds": 737.35,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "dc05ada7bad6d9f21b7f6d1092b4cd57a314899c1328862a305f87ff75ea3e8c",
+        "actions.json": "02d97723219d6ee1ed5fb5ba5d024f539aa67ee0cb3f38762c1ec193a6dd3ce9",
+        "events.jsonl": "f786350e03d6e01c699a6fc71b0c1ca64d78b9e37ee92574331adf2daf75ec04",
+        "result.json": "336a8c2b4a06ce8bd578ae58da4b6d2d3a8ffd66ce7836a94e1d37103c386f5a",
+        "evaluator_trajectory.json": "ed94f9153fb785bdc69fb41220dd7ee441c2729649dc299b8a2e19f5b578c2da",
+        "disturbance_forces.json": "548fd269dbaa73e763b34f0590f80339bb974304574b09f8b04d263f01afd6f1"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 318,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/48_ProcTHOR-Train-6322_seed42_dynamic.mp4",
+          "frames": 738,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 61.5,
+          "bytes": 8761326,
+          "sha256": "6123e0b6712e67cb56c1f258008ab51c905101cf042003959c740115a85531cc",
+          "poster": "media/simulation/current50/48_ProcTHOR-Train-6322_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "49_ProcTHOR-Train-7428_seed42_dynamic",
+      "scene": "ProcTHOR-Train-7428",
+      "qualified_success": true,
+      "robot_action_seconds": 320.15,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "490f4bf3729e9d475d3e30c158eee0ad4262649eba7d62453dddbe52874efafe",
+        "actions.json": "a22dcf888abec6ec9c9441c85f3a0a7cce1a7429bea13849678730b05c5e8da8",
+        "events.jsonl": "46a5aa9bb57ee0166cbdc1304121f5db5bd345b351e14815d76366b654da62f9",
+        "result.json": "9f0cee22b4e65632e93153833425f05c1b54efd6f1056d8a45c84f8f2cb25b91",
+        "evaluator_trajectory.json": "7f872e25033d3ee928a12ea5b857188fb42b008cc92c3841b492907d5338c264",
+        "disturbance_forces.json": "84fdd22a8e5be8a6e85421cc52e83103b2dae2d2a2eac03971d99dcc54c26371"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 96,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/49_ProcTHOR-Train-7428_seed42_dynamic.mp4",
+          "frames": 321,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 26.75,
+          "bytes": 3056951,
+          "sha256": "fabb22f0e2e8a0c5e5daa5c8ca99067718f735885555c447e785cd8820ce0e13",
+          "poster": "media/simulation/current50/49_ProcTHOR-Train-7428_seed42_dynamic.jpg"
+        }
+      }
+    },
+    {
+      "name": "50_ProcTHOR-Val-902_seed42_dynamic",
+      "scene": "ProcTHOR-Val-902",
+      "qualified_success": true,
+      "robot_action_seconds": 302.3,
+      "failure_reason": null,
+      "input_sha256": {
+        "configuration.json": "0a3b60c79d6dd7d6d80ba96deb1a5b57a58554c53fe0a1b91ba7f3d7e4a7b2d2",
+        "environment_task.json": "c332079bfb808513271dc98293475c83b49b5e5d9507664180137999edb210fd",
+        "actions.json": "6e4ca004658bf3b75f9d6c6d1c3b91ceeff953ebdc0e0850f8a405c7169c4658",
+        "events.jsonl": "6aa9e8d9d612f253f843f853cae9de669e648a940d0deef9ae5dd5a441c64287",
+        "result.json": "54374283039ebc239723c308b803cf2c4b91aac250353ff5c52ae6dcc4589081",
+        "evaluator_trajectory.json": "1a7a4dde5052c03c1788f652e2ed8823274f6f9c9d744406eb2f0dd15ecccacb",
+        "disturbance_forces.json": "e2593628cf424ec2b3075fac6d07fe6236a88b73209cc3abf9335bbe900b957d"
+      },
+      "checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "observations_unchanged": true,
+        "frozen_sources_unchanged": true,
+        "panel_timestamps_not_future": true,
+        "panel_frames_complete": true
+      },
+      "head_checks": {
+        "physical_reexecution_matches": true,
+        "task_outcome_matches": true,
+        "task_criteria_match": true,
+        "all_controls_replayed": true,
+        "inputs_unchanged": true,
+        "frozen_sources_unchanged": true
+      },
+      "semantic_updates": 115,
+      "semantic_counts_match": true,
+      "videos": {
+        "overview": {
+          "file": "media/simulation/current50/50_ProcTHOR-Val-902_seed42_dynamic.mp4",
+          "frames": 303,
+          "fps": 12,
+          "playback_speed": 12,
+          "duration_s": 25.25,
+          "bytes": 3288081,
+          "sha256": "af99221e60d87cfb5686df9834b7b779f8761fec4436c9a979eabc7ad1620def",
+          "poster": "media/simulation/current50/50_ProcTHOR-Val-902_seed42_dynamic.jpg"
+        }
+      }
+    }
+  ]
+}

@@ -74,7 +74,7 @@ This prints the plan for `continuous_return`; add `--execute` to run it. The scr
 
 The historical `compact_v1` controller passed 36/50 (72%) and the slower corrected `staged_return` passed 32/50 (64%). To select either historical protocol through the script, set `DREAM_CONTROLLER` to its name and pass `--robot-time-limit-seconds 900 --wall-timeout-seconds 2700`. Explicit command-line values override the script defaults.
 
-The completed fast-return evaluations passed 33/50 (66%) at 900 action seconds and 35/50 (70%) at 1200 action seconds, including independent task and arm-return checks. The current controller adds bounded release-alignment recovery and passed **38/50 (76%)** in a separate completed cohort, with every success independently checked. It retained all 35 successes from the 1200-second cohort and completed scenes 15, 19, and 37. To reproduce this 30-minute action protocol with no fixed server deadline:
+The current controller includes bounded release-alignment recovery. To reproduce its 30-minute action protocol with no fixed server deadline:
 
 ```bash
 DREAM_CONTROLLER=continuous_return ./scripts/run_residential.sh \
@@ -85,7 +85,7 @@ DREAM_CONTROLLER=continuous_return ./scripts/run_residential.sh \
 
 Add `--execute` to run it, and use the Python and cache environment variables above for your installation. The limit is frozen in `protocol.json` before workers start and must match every recorded result. The runner accepts up to 1800 action seconds. `--wall-timeout-seconds 0` disables the separate server deadline; completed tasks finish immediately and robot-action timeouts still count as failures. A positive server limit can be set explicitly, up to 5400 seconds. `--wait-for-slot-seconds` controls only the worker queue wait (script default 1200, maximum 3600); it does not extend either execution clock. Direct calls to `python -m dream_sim.study` retain the CLI defaults of `staged_return`, 900 action seconds, a 2700-second server watchdog, and 120 seconds of queue waiting; pass the full options above to select the current residential protocol without the wrapper. The completed 1800-second evaluation and its public review both report 38/50 (76%); its records and failure analysis are in `results/residential-adjusted/`. The controller, action budget, and server deadline changed together relative to the preceding cohort. Changed time budgets define separate experiments; old task records cannot be rescored against a longer limit.
 
-The [current all-50 report](../reproducibility/evidence/residential-fast-return/results.json) retains all 38 qualified successes and 12 failures. Its [evidence directory](../reproducibility/evidence/residential-fast-return/) includes the original task and review records, failure analysis, paired return times, and file/member checksums. Follow that directory's integrity-check instructions to verify the portable records. Video qualification is separate; the existing gallery belongs to the historical diverse-object experiment.
+The [current all-50 report](../reproducibility/evidence/residential-fast-return/results.json) retains all 38 qualified successes and 12 failures. Its [evidence directory](../reproducibility/evidence/residential-fast-return/) includes the original task and review records, failure analysis, paired return times, and file/member checksums. Follow that directory's integrity-check instructions to verify the portable records. The current gallery includes all 50 of these attempts; failures are exported without requiring a successful-task review.
 
 The [historical compact-controller directory](../reproducibility/evidence/residential-evaluation/README.md) retains its 36/50 result and independent review records. Run `python -m dream_sim.evaluate` to check that archive and reconstruct its evaluated source. This command is specific to the historical compact controller. Large raw sensor arrays from both experiments remain in local experiment storage; the portable integrity check does not perform another physics replay.
 
@@ -150,20 +150,40 @@ The report verifies all 50 outcomes against their fixed inputs and checks indepe
 
 The audit directory contains a physical replay, video/source checks, and a status report for each successful task. Inspect the attempt's policy log and audit logs when a check fails. Replaying saved controls does not launch another policy attempt.
 
-## 5. Export a video
+## 5. Export a current trial video
 
-Use the composite video and its corresponding frame record:
+Use a complete recorded run directory, including its frozen workspace, task records, and independent reviews:
 
 ```bash
-python -m dream_sim.video --input PATH/TO/reviewer_view.mp4 \
-  --frames PATH/TO/video_frames.json --output PATH/TO/reviewer_view_4x.mp4
+python -m dream_sim.render_cohort_trial \
+  --run results/residential-adjusted \
+  --name 01_ProcTHOR-Test-722_seed42_dynamic \
+  --output /path/to/new-render-directory --manipulation-clips
 ```
 
-The export retains all frames at 1440×600. Source footage at 5 fps becomes 20 fps for 4× playback, with the simulation clock preserved and the speed label updated. Output uses H.264, yuv420p, and faststart for browser playback. The gallery's [video metadata](https://github.com/BJHYZJ/dream-web/blob/master/simulation/results.json) records source hashes and encoding settings.
+The exporter physically replays every control and disturbance. It supports both successful and failed tasks, checks that the original task criteria and outcome are preserved, and rejects state mismatches. The complete timeline is sampled once per robot second and encoded at 12 fps for 12× playback. The optional grasp and placement excerpts use five frames per robot second at 1×. This first export supplies the physically verified external view and saved observations. To reconstruct semantic heatmaps and compose all panels, use the same recording:
 
-### Earlier experiments
 
-The original ten demonstrations remain reproducible through `python -m dream_sim.run --case 01 --output results/original_case01`. Their configurations and source versions are in [`configs/cases.json`](../configs/cases.json). The earlier common-controller studies are stored under [`reproducibility/evidence/`](../reproducibility/evidence/). They use their own task manifests and remain separate from the diverse-object study. The earlier five-recipe, 50-house configuration remains in `configs/residential50/`.
+```bash
+python -m dream_sim.render_head_view \
+  --run results/residential-adjusted \
+  --name 01_ProcTHOR-Test-722_seed42_dynamic \
+  --render /path/to/new-render-directory --output /path/to/new-camera-directory
+python -m dream_sim.semantic_history \
+  --run results/residential-adjusted \
+  --name 01_ProcTHOR-Test-722_seed42_dynamic --output /path/to/new-semantic-directory
+python -m dream_sim.observation_panels \
+  --record results/residential-adjusted/01_ProcTHOR-Test-722_seed42_dynamic \
+  --render /path/to/new-render-directory --semantic /path/to/new-semantic-directory \
+  --head /path/to/new-camera-directory \
+  --output /path/to/new-composite-directory
+```
+
+Semantic reconstruction uses the original frozen encoder, mean voxel-feature pooling and depth clearing, and compares every update's voxel counts with the recording. The heatmap displays raw text-feature alignment before candidate rejection. The overlaid target and planned path come from the original controller log. RGB-D spatial history is a display reconstruction, not an exact copy of the controller's collision map. The current first-person pane is newly rendered during exact physical replay and updates with robot motion. The adjacent Saved observation pane retains the most recent actual semantic observation and its capture time. Newly rendered camera images are display-only and never enter the semantic reconstruction. Every memory/path panel uses only original observations and events at or before its displayed simulation time. These steps perform no new navigation or task decisions.
+
+Encoding uses a local temporary directory, H.264, yuv420p, and faststart. Every frame must decode before the output is accepted. The rendering receipt contains input, observation, protocol, and video hashes. The gallery's [video metadata](https://github.com/BJHYZJ/dream-web/blob/master/simulation/videos.json) links all 50 recordings to the 38/50 evaluation. Exporting them does not execute the policy again or change the denominator.
+
+`dream_sim.video` remains available for converting older archived composite recordings. Those profiles and their video format are distinct from the current gallery.
 
 ## Implementation boundary
 
@@ -182,11 +202,11 @@ The original ten demonstrations remain reproducible through `python -m dream_sim
 
 Small-object search also uses overlapping calibrated RGB-D crops. Memory retrieval verifies up to four semantically ranked observations and caches inference for each saved image and query. Cached detections remain subject to current stale-location rejection rules.
 
-The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera. The video’s left panel is a simulator overview; the lower-right panel is a depth-derived navigation map with semantic coloring. Robot self-filtering applies to that navigation map using joint poses and robot geometry. The held-object bound is reconstructed from observed dimensions and the recorded grasp frame, then transformed with the measured gripper pose. It includes a 2 cm uncertainty margin. The navigation self-filter accounts for the held geometry with a uniform 2.5 cm margin. These filters do not mask the raw camera images. The semantic-memory integrator receives the RGB-D observations without this navigation self-filter.
+The environment initializes the objects and applies a force-driven relocation after verified visual discovery. The policy detects changes through its RGB-D observations. Destination search keeps the existing scene memory and grounds the requested receptacle in a fresh view. During navigation, the arm stays folded and sensing uses the head camera. The controller constructs a depth-derived navigation map. The replay gallery separately shows the current camera, saved semantic observations, reconstructed semantic heatmaps, and logged routes. Robot self-filtering applies to that navigation map using joint poses and robot geometry. The held-object bound is reconstructed from observed dimensions and the recorded grasp frame, then transformed with the measured gripper pose. It includes a 2 cm uncertainty margin. The navigation self-filter accounts for the held geometry with a uniform 2.5 cm margin. These filters do not mask the raw camera images. The semantic-memory integrator receives the RGB-D observations without this navigation self-filter.
 
 ## Experiment records
 
-The [residential task manifest](../configs/residential50-diverse/task_manifest.json) contains the complete 50-house design. Experiment records include every task outcome, controller and asset hashes, and independent replay checks. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays are retained in the authors' archive.
+The [current residential task manifest](../configs/residential50-easy-grasp/task_manifest.json) contains the complete 50-house design. Experiment records include every task outcome, controller and asset hashes, and independent replay checks. Compact archives contain control, trajectory, and evaluation records; large raw sensor arrays are retained in the authors' archive.
 
 The [component measurements](../reproducibility/evidence/components/README.md) cover memory pruning, scaling, and exploration. The [architecture guide](architecture.md) maps the implementation to the perception, memory, navigation, and manipulation pipeline.
 
@@ -208,3 +228,5 @@ python -m dream_sim.render_trial \
 ```
 
 The output contains a complete-timeline overview at 24× playback (one frame per two robot seconds), 1× grasp and placement excerpts, frame timestamps, and a checksum-bound rendering receipt. Each control is physically re-executed even when it is not displayed. The exporter rejects control/state mismatches and rechecks both arm returns before writing its completion receipt. Use the simulation environment and asset caches described above; rendering uses the CPU and H.264 encoding. The [extended-search records](../reproducibility/evidence/long-search/README.md) document the different termination and memory settings used for that follow-up. Its one qualified completion among four selected cases does not replace the main 38/50 result.
+
+To add the synchronous head-camera replay, use `render_head_view` from Section 5 with the same extended-search run and render directory. Compose it with `observation_panels --geometry-only` in place of `--semantic`; this produces the published long-search layout with the saved observation and an RGB-D geometry/navigation map. The frame timeline and 24×/1× playback rates are inherited from that export. Optional semantic reconstruction uses `semantic_history` and `--semantic` as in the current 50-trial gallery.

@@ -18,9 +18,9 @@
       "instruction": "Please pick up the mug and place it on the plate on the table.",
       "category": "pickup_search_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_zh": "\u6293\u53d6\u524d\u641c\u7d22\u6216\u5bfc\u822a\u672a\u5b8c\u6210\uff1b\u7ec8\u6b62\u524d\u8bb0\u5f55\u5230\u8def\u7ebf\u6267\u884c\u672a\u5b8c\u6210",
       "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
-      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "uncertainty_zh": "\u8def\u7ebf\u672a\u5b8c\u6210\u4e0d\u7b49\u4e8e\u7269\u7406\u4e0a\u4e0d\u5b58\u5728\u53ef\u884c\u8def\u7ebf\uff1b\u611f\u77e5\u9057\u6f0f\u3001\u643a\u5e26\u51e0\u4f55\u548c\u89c4\u5212\u9650\u5236\u9700\u53e6\u884c\u9a8c\u8bc1\u3002",
       "final_stage": "pickup_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 30368,
@@ -204,7 +204,29 @@
       ],
       "recorded_unix_s": 1789574680.0106485,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:03_ProcTHOR-Train-6452_seed42_dynamic/"
+      }
     },
     {
       "name": "05_ProcTHOR-Test-288_seed42_dynamic",
@@ -214,9 +236,9 @@
       "instruction": "Please pick up the egg and place it on the plate on the table.",
       "category": "navigation_iteration_limit_inferred",
       "review_status": "task_failed",
-      "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+      "direct_cause_zh": "\u6839\u636e\u672b\u6bb5\u65e5\u5fd7\u4e0e\u51bb\u7ed3\u4ee3\u7801\uff0c\u5224\u65ad\u4e3a 110 \u6b21\u5168\u5c40\u641c\u7d22\u8fed\u4ee3\u4e0a\u9650\u8017\u5c3d",
       "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
-      "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+      "uncertainty_zh": "\u539f\u65e5\u5fd7\u672a\u76f4\u63a5\u8bb0\u5f55\u6700\u7ec8\u5faa\u73af\u7f16\u53f7\uff1b\u957f\u65f6\u95f4\u8865\u8dd1\u5c06\u6838\u5bf9\u539f\u52a8\u4f5c\u524d\u7f00\u53ca\u7b2c 110 \u6b21\u8fed\u4ee3\u8fb9\u754c\uff0c\u8fdb\u4e00\u6b65\u9a8c\u8bc1\u6b64\u5224\u65ad\u3002",
       "final_stage": "pickup_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 30238,
@@ -226,9 +248,9 @@
       "classifier_evidence": [],
       "analyst_annotation": {
         "category": "navigation_iteration_limit_inferred",
-        "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+        "direct_cause_zh": "\u6839\u636e\u672b\u6bb5\u65e5\u5fd7\u4e0e\u51bb\u7ed3\u4ee3\u7801\uff0c\u5224\u65ad\u4e3a 110 \u6b21\u5168\u5c40\u641c\u7d22\u8fed\u4ee3\u4e0a\u9650\u8017\u5c3d",
         "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
-        "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+        "uncertainty_zh": "\u539f\u65e5\u5fd7\u672a\u76f4\u63a5\u8bb0\u5f55\u6700\u7ec8\u5faa\u73af\u7f16\u53f7\uff1b\u957f\u65f6\u95f4\u8865\u8dd1\u5c06\u6838\u5bf9\u539f\u52a8\u4f5c\u524d\u7f00\u53ca\u7b2c 110 \u6b21\u8fed\u4ee3\u8fb9\u754c\uff0c\u8fdb\u4e00\u6b65\u9a8c\u8bc1\u6b64\u5224\u65ad\u3002",
         "evidence_status": "inferred_from_terminal_events_and_frozen_control_flow",
         "evidence": {
           "kind": "navigation_iteration_limit",
@@ -237,7 +259,7 @@
           "terminal_idle_controls_excluded": 40,
           "evidence": "Inferred from the frozen runner control flow: final route completed, only camera events followed, and normal forty-control termination occurred. Validate the iteration-110 boundary in the extended run."
         },
-        "proposed_followup": "取消全局迭代及动作截止时间，保留原停止点之前的动作和状态对照。",
+        "proposed_followup": "\u53d6\u6d88\u5168\u5c40\u8fed\u4ee3\u53ca\u52a8\u4f5c\u622a\u6b62\u65f6\u95f4\uff0c\u4fdd\u7559\u539f\u505c\u6b62\u70b9\u4e4b\u524d\u7684\u52a8\u4f5c\u548c\u72b6\u6001\u5bf9\u7167\u3002",
         "updated_unix_s": 1789574323.916722
       },
       "task_criteria": {
@@ -379,7 +401,29 @@
       ],
       "recorded_unix_s": 1789574681.2927668,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:05_ProcTHOR-Test-288_seed42_dynamic/"
+      }
     },
     {
       "name": "07_ProcTHOR-Train-1402_seed42_dynamic",
@@ -389,9 +433,9 @@
       "instruction": "Please pick up the candle and place it on the plate on the table.",
       "category": "navigation_iteration_limit_inferred",
       "review_status": "task_failed",
-      "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+      "direct_cause_zh": "\u6839\u636e\u672b\u6bb5\u65e5\u5fd7\u4e0e\u51bb\u7ed3\u4ee3\u7801\uff0c\u5224\u65ad\u4e3a 110 \u6b21\u5168\u5c40\u641c\u7d22\u8fed\u4ee3\u4e0a\u9650\u8017\u5c3d",
       "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
-      "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+      "uncertainty_zh": "\u539f\u65e5\u5fd7\u672a\u76f4\u63a5\u8bb0\u5f55\u6700\u7ec8\u5faa\u73af\u7f16\u53f7\uff1b\u957f\u65f6\u95f4\u8865\u8dd1\u5c06\u6838\u5bf9\u539f\u52a8\u4f5c\u524d\u7f00\u53ca\u7b2c 110 \u6b21\u8fed\u4ee3\u8fb9\u754c\uff0c\u8fdb\u4e00\u6b65\u9a8c\u8bc1\u6b64\u5224\u65ad\u3002",
       "final_stage": "placement_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 28882,
@@ -401,9 +445,9 @@
       "classifier_evidence": [],
       "analyst_annotation": {
         "category": "navigation_iteration_limit_inferred",
-        "direct_cause_zh": "根据末段日志与冻结代码，判断为 110 次全局搜索迭代上限耗尽",
+        "direct_cause_zh": "\u6839\u636e\u672b\u6bb5\u65e5\u5fd7\u4e0e\u51bb\u7ed3\u4ee3\u7801\uff0c\u5224\u65ad\u4e3a 110 \u6b21\u5168\u5c40\u641c\u7d22\u8fed\u4ee3\u4e0a\u9650\u8017\u5c3d",
         "direct_cause_en": "The terminal logs and frozen control flow indicate exhaustion of the 110-iteration navigation budget",
-        "uncertainty_zh": "原日志未直接记录最终循环编号；长时间补跑将核对原动作前缀及第 110 次迭代边界，进一步验证此判断。",
+        "uncertainty_zh": "\u539f\u65e5\u5fd7\u672a\u76f4\u63a5\u8bb0\u5f55\u6700\u7ec8\u5faa\u73af\u7f16\u53f7\uff1b\u957f\u65f6\u95f4\u8865\u8dd1\u5c06\u6838\u5bf9\u539f\u52a8\u4f5c\u524d\u7f00\u53ca\u7b2c 110 \u6b21\u8fed\u4ee3\u8fb9\u754c\uff0c\u8fdb\u4e00\u6b65\u9a8c\u8bc1\u6b64\u5224\u65ad\u3002",
         "evidence_status": "inferred_from_terminal_events_and_frozen_control_flow",
         "evidence": {
           "kind": "navigation_iteration_limit",
@@ -412,7 +456,7 @@
           "terminal_idle_controls_excluded": 40,
           "evidence": "Inferred from the frozen runner control flow: final route completed, only camera events followed, and normal forty-control termination occurred. Validate the iteration-110 boundary in the extended run."
         },
-        "proposed_followup": "取消全局迭代及动作截止时间，保留原停止点之前的动作和状态对照。",
+        "proposed_followup": "\u53d6\u6d88\u5168\u5c40\u8fed\u4ee3\u53ca\u52a8\u4f5c\u622a\u6b62\u65f6\u95f4\uff0c\u4fdd\u7559\u539f\u505c\u6b62\u70b9\u4e4b\u524d\u7684\u52a8\u4f5c\u548c\u72b6\u6001\u5bf9\u7167\u3002",
         "updated_unix_s": 1789574324.1247861
       },
       "task_criteria": {
@@ -519,7 +563,29 @@
       ],
       "recorded_unix_s": 1789574682.9127536,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:07_ProcTHOR-Train-1402_seed42_dynamic/"
+      }
     },
     {
       "name": "16_ProcTHOR-Train-507_seed42_dynamic",
@@ -529,9 +595,9 @@
       "instruction": "Please pick up the mug and place it on the plate on the table.",
       "category": "pickup_search_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_zh": "\u6293\u53d6\u524d\u641c\u7d22\u6216\u5bfc\u822a\u672a\u5b8c\u6210\uff1b\u7ec8\u6b62\u524d\u8bb0\u5f55\u5230\u8def\u7ebf\u6267\u884c\u672a\u5b8c\u6210",
       "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
-      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "uncertainty_zh": "\u8def\u7ebf\u672a\u5b8c\u6210\u4e0d\u7b49\u4e8e\u7269\u7406\u4e0a\u4e0d\u5b58\u5728\u53ef\u884c\u8def\u7ebf\uff1b\u611f\u77e5\u9057\u6f0f\u3001\u643a\u5e26\u51e0\u4f55\u548c\u89c4\u5212\u9650\u5236\u9700\u53e6\u884c\u9a8c\u8bc1\u3002",
       "final_stage": "pickup_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 18265,
@@ -706,7 +772,29 @@
       ],
       "recorded_unix_s": 1789574683.7250829,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:16_ProcTHOR-Train-507_seed42_dynamic/"
+      }
     },
     {
       "name": "26_ProcTHOR-Train-2451_seed42_dynamic",
@@ -716,9 +804,9 @@
       "instruction": "Please pick up the soap bottle and place it on the plate on the table.",
       "category": "placement_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "未达到稳定放置条件；评分记录的稳定放置时间为 0.35 秒",
+      "direct_cause_zh": "\u672a\u8fbe\u5230\u7a33\u5b9a\u653e\u7f6e\u6761\u4ef6\uff1b\u8bc4\u5206\u8bb0\u5f55\u7684\u7a33\u5b9a\u653e\u7f6e\u65f6\u95f4\u4e3a 0.35 \u79d2",
       "direct_cause_en": "The stable-placement criterion was not met; the recorded stable-placement duration was 0.35 s",
-      "uncertainty_zh": "这是本次任务评分的直接记录。具体脱离容器的过程可通过本次轨迹和视频进一步核对。",
+      "uncertainty_zh": "\u8fd9\u662f\u672c\u6b21\u4efb\u52a1\u8bc4\u5206\u7684\u76f4\u63a5\u8bb0\u5f55\u3002\u5177\u4f53\u8131\u79bb\u5bb9\u5668\u7684\u8fc7\u7a0b\u53ef\u901a\u8fc7\u672c\u6b21\u8f68\u8ff9\u548c\u89c6\u9891\u8fdb\u4e00\u6b65\u6838\u5bf9\u3002",
       "final_stage": "finished",
       "final_phase": "Fold arm with base stationary",
       "final_control_step": 8443,
@@ -728,9 +816,9 @@
       "classifier_evidence": [],
       "analyst_annotation": {
         "category": "placement_failure",
-        "direct_cause_zh": "未达到稳定放置条件；评分记录的稳定放置时间为 0.35 秒",
+        "direct_cause_zh": "\u672a\u8fbe\u5230\u7a33\u5b9a\u653e\u7f6e\u6761\u4ef6\uff1b\u8bc4\u5206\u8bb0\u5f55\u7684\u7a33\u5b9a\u653e\u7f6e\u65f6\u95f4\u4e3a 0.35 \u79d2",
         "direct_cause_en": "The stable-placement criterion was not met; the recorded stable-placement duration was 0.35 s",
-        "uncertainty_zh": "这是本次任务评分的直接记录。具体脱离容器的过程可通过本次轨迹和视频进一步核对。",
+        "uncertainty_zh": "\u8fd9\u662f\u672c\u6b21\u4efb\u52a1\u8bc4\u5206\u7684\u76f4\u63a5\u8bb0\u5f55\u3002\u5177\u4f53\u8131\u79bb\u5bb9\u5668\u7684\u8fc7\u7a0b\u53ef\u901a\u8fc7\u672c\u6b21\u8f68\u8ff9\u548c\u89c6\u9891\u8fdb\u4e00\u6b65\u6838\u5bf9\u3002",
         "evidence_status": "recorded_task_criterion",
         "evidence": {
           "task_criteria": {
@@ -1162,7 +1250,29 @@
       ],
       "recorded_unix_s": 1789574684.0154622,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:26_ProcTHOR-Train-2451_seed42_dynamic/"
+      }
     },
     {
       "name": "27_ProcTHOR-Val-576_seed42_dynamic",
@@ -1172,9 +1282,9 @@
       "instruction": "Please pick up the soap bottle and place it on the plate on the table.",
       "category": "placement_search_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "放置位置搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_zh": "\u653e\u7f6e\u4f4d\u7f6e\u641c\u7d22\u6216\u5bfc\u822a\u672a\u5b8c\u6210\uff1b\u7ec8\u6b62\u524d\u8bb0\u5f55\u5230\u8def\u7ebf\u6267\u884c\u672a\u5b8c\u6210",
       "direct_cause_en": "Receptacle search or navigation did not complete; the final navigation event reports incomplete route execution",
-      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "uncertainty_zh": "\u8def\u7ebf\u672a\u5b8c\u6210\u4e0d\u7b49\u4e8e\u7269\u7406\u4e0a\u4e0d\u5b58\u5728\u53ef\u884c\u8def\u7ebf\uff1b\u611f\u77e5\u9057\u6f0f\u3001\u643a\u5e26\u51e0\u4f55\u548c\u89c4\u5212\u9650\u5236\u9700\u53e6\u884c\u9a8c\u8bc1\u3002",
       "final_stage": "placement_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 12664,
@@ -1389,7 +1499,29 @@
       ],
       "recorded_unix_s": 1789574774.674014,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:27_ProcTHOR-Val-576_seed42_dynamic/"
+      }
     },
     {
       "name": "30_ProcTHOR-Train-4732_seed42_dynamic",
@@ -1399,9 +1531,9 @@
       "instruction": "Please pick up the apple and place it on the plate on the table.",
       "category": "action_timeout:placement_search",
       "review_status": "task_failed",
-      "direct_cause_zh": "在 placement_search 阶段用尽机器人动作预算，整场任务未完成",
+      "direct_cause_zh": "\u5728 placement_search \u9636\u6bb5\u7528\u5c3d\u673a\u5668\u4eba\u52a8\u4f5c\u9884\u7b97\uff0c\u6574\u573a\u4efb\u52a1\u672a\u5b8c\u6210",
       "direct_cause_en": "The robot-action budget expired during placement_search before task completion",
-      "uncertainty_zh": "到达预算仅说明任务在该预算内未完成；不能据此断言继续增加时间就一定成功。",
+      "uncertainty_zh": "\u5230\u8fbe\u9884\u7b97\u4ec5\u8bf4\u660e\u4efb\u52a1\u5728\u8be5\u9884\u7b97\u5185\u672a\u5b8c\u6210\uff1b\u4e0d\u80fd\u636e\u6b64\u65ad\u8a00\u7ee7\u7eed\u589e\u52a0\u65f6\u95f4\u5c31\u4e00\u5b9a\u6210\u529f\u3002",
       "final_stage": "placement_search",
       "final_phase": "Translate through observed passage",
       "final_control_step": 36000,
@@ -1556,7 +1688,29 @@
       ],
       "recorded_unix_s": 1789578242.3788812,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:30_ProcTHOR-Train-4732_seed42_dynamic/"
+      }
     },
     {
       "name": "32_ProcTHOR-Train-7199_seed42_dynamic",
@@ -1566,9 +1720,9 @@
       "instruction": "Please pick up the egg and place it on the plate on the table.",
       "category": "action_timeout:placement_search",
       "review_status": "task_failed",
-      "direct_cause_zh": "在 placement_search 阶段用尽机器人动作预算，整场任务未完成",
+      "direct_cause_zh": "\u5728 placement_search \u9636\u6bb5\u7528\u5c3d\u673a\u5668\u4eba\u52a8\u4f5c\u9884\u7b97\uff0c\u6574\u573a\u4efb\u52a1\u672a\u5b8c\u6210",
       "direct_cause_en": "The robot-action budget expired during placement_search before task completion",
-      "uncertainty_zh": "到达预算仅说明任务在该预算内未完成；不能据此断言继续增加时间就一定成功。",
+      "uncertainty_zh": "\u5230\u8fbe\u9884\u7b97\u4ec5\u8bf4\u660e\u4efb\u52a1\u5728\u8be5\u9884\u7b97\u5185\u672a\u5b8c\u6210\uff1b\u4e0d\u80fd\u636e\u6b64\u65ad\u8a00\u7ee7\u7eed\u589e\u52a0\u65f6\u95f4\u5c31\u4e00\u5b9a\u6210\u529f\u3002",
       "final_stage": "placement_search",
       "final_phase": "Verify remembered location",
       "final_control_step": 36000,
@@ -1674,7 +1828,29 @@
       ],
       "recorded_unix_s": 1789578244.3980193,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:32_ProcTHOR-Train-7199_seed42_dynamic/"
+      }
     },
     {
       "name": "33_ProcTHOR-Train-5942_seed42_dynamic",
@@ -1684,9 +1860,9 @@
       "instruction": "Please pick up the apple and place it on the plate on the table.",
       "category": "pickup_search_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_zh": "\u6293\u53d6\u524d\u641c\u7d22\u6216\u5bfc\u822a\u672a\u5b8c\u6210\uff1b\u7ec8\u6b62\u524d\u8bb0\u5f55\u5230\u8def\u7ebf\u6267\u884c\u672a\u5b8c\u6210",
       "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
-      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "uncertainty_zh": "\u8def\u7ebf\u672a\u5b8c\u6210\u4e0d\u7b49\u4e8e\u7269\u7406\u4e0a\u4e0d\u5b58\u5728\u53ef\u884c\u8def\u7ebf\uff1b\u611f\u77e5\u9057\u6f0f\u3001\u643a\u5e26\u51e0\u4f55\u548c\u89c4\u5212\u9650\u5236\u9700\u53e6\u884c\u9a8c\u8bc1\u3002",
       "final_stage": "pickup_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 9014,
@@ -1910,7 +2086,29 @@
       ],
       "recorded_unix_s": 1789575199.6210904,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:33_ProcTHOR-Train-5942_seed42_dynamic/"
+      }
     },
     {
       "name": "35_ProcTHOR-Train-6673_seed42_dynamic",
@@ -1920,9 +2118,9 @@
       "instruction": "Please pick up the apple and place it on the plate on the table.",
       "category": "placement_search_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "放置位置搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_zh": "\u653e\u7f6e\u4f4d\u7f6e\u641c\u7d22\u6216\u5bfc\u822a\u672a\u5b8c\u6210\uff1b\u7ec8\u6b62\u524d\u8bb0\u5f55\u5230\u8def\u7ebf\u6267\u884c\u672a\u5b8c\u6210",
       "direct_cause_en": "Receptacle search or navigation did not complete; the final navigation event reports incomplete route execution",
-      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "uncertainty_zh": "\u8def\u7ebf\u672a\u5b8c\u6210\u4e0d\u7b49\u4e8e\u7269\u7406\u4e0a\u4e0d\u5b58\u5728\u53ef\u884c\u8def\u7ebf\uff1b\u611f\u77e5\u9057\u6f0f\u3001\u643a\u5e26\u51e0\u4f55\u548c\u89c4\u5212\u9650\u5236\u9700\u53e6\u884c\u9a8c\u8bc1\u3002",
       "final_stage": "placement_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 16713,
@@ -2146,7 +2344,29 @@
       ],
       "recorded_unix_s": 1789576254.1882055,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:35_ProcTHOR-Train-6673_seed42_dynamic/"
+      }
     },
     {
       "name": "46_ProcTHOR-Train-4899_seed42_dynamic",
@@ -2156,9 +2376,9 @@
       "instruction": "Please pick up the soap bottle and place it on the plate on the table.",
       "category": "aborted_grasp_recovery_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "抓取对齐失败后，空手恢复未找到可行路径",
+      "direct_cause_zh": "\u6293\u53d6\u5bf9\u9f50\u5931\u8d25\u540e\uff0c\u7a7a\u624b\u6062\u590d\u672a\u627e\u5230\u53ef\u884c\u8def\u5f84",
       "direct_cause_en": "Grasp alignment failed and the subsequent empty-arm recovery found no feasible path",
-      "uncertainty_zh": "记录确认了终止阶段和未通过的条件；更深层原因需要结合观测、几何或回放验证。",
+      "uncertainty_zh": "\u8bb0\u5f55\u786e\u8ba4\u4e86\u7ec8\u6b62\u9636\u6bb5\u548c\u672a\u901a\u8fc7\u7684\u6761\u4ef6\uff1b\u66f4\u6df1\u5c42\u539f\u56e0\u9700\u8981\u7ed3\u5408\u89c2\u6d4b\u3001\u51e0\u4f55\u6216\u56de\u653e\u9a8c\u8bc1\u3002",
       "final_stage": "grasp",
       "final_phase": "Lift arm clear before folding",
       "final_control_step": 17892,
@@ -2295,7 +2515,29 @@
       ],
       "recorded_unix_s": 1789578426.2965496,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:46_ProcTHOR-Train-4899_seed42_dynamic/"
+      }
     },
     {
       "name": "47_ProcTHOR-Val-46_seed42_dynamic",
@@ -2305,9 +2547,9 @@
       "instruction": "Please pick up the tomato and place it on the plate on the table.",
       "category": "pickup_search_failure",
       "review_status": "task_failed",
-      "direct_cause_zh": "抓取前搜索或导航未完成；终止前记录到路线执行未完成",
+      "direct_cause_zh": "\u6293\u53d6\u524d\u641c\u7d22\u6216\u5bfc\u822a\u672a\u5b8c\u6210\uff1b\u7ec8\u6b62\u524d\u8bb0\u5f55\u5230\u8def\u7ebf\u6267\u884c\u672a\u5b8c\u6210",
       "direct_cause_en": "Pickup search or navigation did not complete; the final navigation event reports incomplete route execution",
-      "uncertainty_zh": "路线未完成不等于物理上不存在可行路线；感知遗漏、携带几何和规划限制需另行验证。",
+      "uncertainty_zh": "\u8def\u7ebf\u672a\u5b8c\u6210\u4e0d\u7b49\u4e8e\u7269\u7406\u4e0a\u4e0d\u5b58\u5728\u53ef\u884c\u8def\u7ebf\uff1b\u611f\u77e5\u9057\u6f0f\u3001\u643a\u5e26\u51e0\u4f55\u548c\u89c4\u5212\u9650\u5236\u9700\u53e6\u884c\u9a8c\u8bc1\u3002",
       "final_stage": "pickup_search",
       "final_phase": "Inspect nearby surfaces",
       "final_control_step": 7088,
@@ -2531,8 +2773,30 @@
       ],
       "recorded_unix_s": 1789577519.1870096,
       "independent_failure_replay_completed": false,
-      "evidence_scope": "Recorded execution and evaluator outcome. Failed-task causal explanations are not independent physical replay validations unless explicitly recorded as such."
+      "evidence_scope": "The complete original controls were physically replayed for video export, preserving the recorded task criteria and failed outcome. This establishes replay consistency; it does not isolate a unique cause of failure.",
+      "video_replay": {
+        "checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "observations_unchanged": true,
+          "frozen_sources_unchanged": true,
+          "panel_timestamps_not_future": true,
+          "panel_frames_complete": true
+        },
+        "head_checks": {
+          "physical_reexecution_matches": true,
+          "task_outcome_matches": true,
+          "task_criteria_match": true,
+          "all_controls_replayed": true,
+          "inputs_unchanged": true,
+          "frozen_sources_unchanged": true
+        },
+        "records": "video_records.zip:47_ProcTHOR-Val-46_seed42_dynamic/"
+      }
     }
   ],
-  "scope": "Recorded outcomes and annotated causes. Causes are not independently replayed unless explicitly stated; iteration-limit explanations for 05/07 remain inferred."
+  "scope": "All 12 failed trajectories were physically replayed for video export. Causal annotations remain interpretations of recorded events; iteration-limit explanations for 05/07 remain inferred."
 }

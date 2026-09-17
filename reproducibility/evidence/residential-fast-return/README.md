@@ -10,6 +10,8 @@ Each house has one native-scale pickup/place task, seed 42, dynamic memory, an *
 | [failures.json](failures.json) | All 12 failures, event evidence, measurements, and uncertainty in the causal interpretation |
 | [return_times.json](return_times.json) | Loaded and empty return durations for all 32 jointly qualified tasks in the staged/fast comparison |
 | [records.zip](records.zip) | Original protocol, task definitions and maps, all task results, frozen source identities, and all 38 physics and observation reviews |
+| [videos.json](videos.json) | All 50 current video identities, playback rates, source hashes, and outcomes |
+| [video_records.zip](video_records.zip) | All 50 external and head-camera replay checks, semantic reconstruction records, frame times, and executed rendering sources |
 | [manifest.json](manifest.json) | File and archive-member sizes and SHA-256 hashes |
 
 The reported endpoint is **audit-qualified task completion**. Original public-review records also retain a separate `strict_success` field for the more restrictive recording protocol; that field is not the endpoint used to calculate 38/50. The portable result's `strict_pass` means that task completion and independent reviews passed. The original fields and records are preserved in the archive.
@@ -25,17 +27,21 @@ The reported endpoint is **audit-qualified task completion**. Original public-re
 | Released object did not satisfy stable placement | 1 |
 | Grasp alignment failed; empty-arm recovery found no feasible path | 1 |
 
-Cases 05 and 07 are marked as **inferred** iteration-limit terminations because the original logs do not explicitly record the final loop index. Case 26 records only 0.35 seconds of stable placement. Case 46 records an unreachable grasp alignment followed by unsuccessful empty-arm recovery. A search-stage label does not prove correct-object acquisition or physical reachability. These causal explanations use recorded events and evaluator measurements; failed tasks have not all been independently replayed.
+Cases 05 and 07 are marked as **inferred** iteration-limit terminations because the original logs do not explicitly record the final loop index. Case 26 records only 0.35 seconds of stable placement. Case 46 records an unreachable grasp alignment followed by unsuccessful empty-arm recovery. A search-stage label does not prove correct-object acquisition or physical reachability. These causal explanations use recorded events and evaluator measurements. All 50 recordings, including every failed task, were physically replayed for video export; each replay preserved the original task criteria and outcome. This verifies the recorded behavior without proving a unique cause for every failure.
 
 Long-search supplements for cases 05, 07, 30, and 32 remove the action deadline and global navigation iteration limit. They are separate experiments and do not change this cohort's outcomes. Their trajectories must be compared with the original control and physical-state prefixes before interpreting any later success as an extension.
 
-## Comparison with preceding runs
-
-The preceding 1200-second run completed 35/50 tasks. All 35 also succeed here; cases 15, 19, and 37 additionally pass. Placement-alignment recovery, action time, and server deadline changed together, so the increase does not isolate the effect of extra time.
+## Arm-return timing comparison
 
 Among the 32 tasks qualified in both this run and the slower staged-return run, median complete loaded return takes 44.55 → 20.98 seconds, and empty return takes 52.40 → 24.38 seconds. Each duration includes the intermediate postures and final settling. These paired timing comparisons exclude tasks that did not qualify in both runs; success rates retain all 50 tasks.
 
-The [historical compact-controller result](../residential-evaluation/) remains 36/50 at 900 action seconds with a 2700-second server watchdog. The [video cohort](../residential50-seed42/) also retains its own task definitions and results.
+The [historical compact-controller result](../residential-evaluation/) remains 36/50 at 900 action seconds with a 2700-second server watchdog. The [archived diverse-object study](../residential50-seed42/) retains its own task definitions and results. Its recordings are separate from the current gallery.
+
+## Current video coverage
+
+The main gallery includes all 38 qualified successes and all 12 failures from this exact cohort. Complete timelines play at 12×. Trials 01 and 11 also include 1× grasp and placement excerpts with both arm returns. Each video combines the external replay, a synchronous head-camera replay, the latest saved semantic observation with its capture time, and a reconstructed semantic heatmap with logged targets and routes. Newly rendered camera images never enter the policy or memory. The heatmap uses the frozen encoder and original observations, with every recorded voxel-count update checked; it shows feature alignment before candidate rejection.
+
+The separately labeled extended-search case 07 belongs to the four-case follow-up and does not replace main trial 07 or change 38/50.
 
 ## Verify and reproduce
 
