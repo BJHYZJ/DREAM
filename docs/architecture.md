@@ -27,7 +27,11 @@ The environment initializes the house and task objects and moves the target afte
 | `dream_sim.profile` | Load recorded experiment profiles |
 | `dream_sim.audit` | Re-evaluate recorded episodes through physics replay and record checks |
 | `dream_sim.render` | Render an episode from a spectator camera using its saved controls |
-| `dream_sim.video` | Export the composite video at 4× playback |
+| `dream_sim.render_head_view` | Physically replay current head-camera views at the same frame times |
+| `dream_sim.semantic_history` | Reconstruct frozen-encoder memory and verify recorded voxel counts |
+| `dream_sim.observation_panels` | Compose external view, current camera, saved observation, and semantic heatmap |
+| `dream_sim.render_cohort_trial` | Replay a current success or failure and export its complete timeline and optional manipulation excerpts |
+| `dream_sim.video` | Convert older archived composite recordings |
 | `dream_sim.verify_evidence` | Check experiment archive hashes and video-to-case mappings |
 
 ## Controller modules
@@ -82,7 +86,7 @@ The extracted `DREAM_code` directory is the controller's workspace root. The hel
 
 Each run creates its own output directory with the launch plan, environment checks, saved episode, and evaluation results. The [run guide](reproduction.md#4-read-results) describes the output files.
 
-For algorithm development, copy a controller into a development workspace and record the modified source and task configuration in a new profile. Existing gallery profiles are checksum-locked to their recorded implementations. Changes to the generated source cache will be rejected by the runner.
+For algorithm development, copy a controller into a development workspace and record the modified source and task configuration in a new profile. Archived demonstration profiles are checksum-locked to their recorded implementations. Changes to the generated source cache will be rejected by the runner.
 
 ## Related repositories
 
